@@ -57,19 +57,62 @@ const migrationEnvironmentSchema = phase1ABaseSchema
   .strict();
 export type MigrationEnvironment = z.infer<typeof migrationEnvironmentSchema>;
 
+const localS3EndpointSchema = z
+  .string()
+  .url()
+  .refine((value) => {
+    const endpoint = new URL(value);
+    return (
+      endpoint.username === '' &&
+      endpoint.password === '' &&
+      endpoint.pathname === '/' &&
+      endpoint.search === '' &&
+      endpoint.hash === '' &&
+      ['127.0.0.1', 'localhost', '[::1]'].includes(endpoint.hostname)
+    );
+  }, 'Phase 1A storage endpoint must be an uncredentialed loopback URL.');
+
 const storageEnvironmentSchema = phase1ABaseSchema
   .extend({
-    S3_ACCESS_KEY_ID: z.string().min(1).max(256),
-    S3_BUCKET: z
+    S3_ACCESS_KEY_ID: z.string().min(16).max(256),
+    S3_BUCKET_PRIVATE: z
       .string()
       .min(3)
       .max(63)
       .regex(/^[a-z0-9][a-z0-9.-]+[a-z0-9]$/),
-    S3_ENDPOINT: z.string().url(),
-    S3_FORCE_PATH_STYLE: z.enum(['true', 'false']).transform((value) => value === 'true'),
+    S3_BUCKET_PUBLIC: z
+      .string()
+      .min(3)
+      .max(63)
+      .regex(/^[a-z0-9][a-z0-9.-]+[a-z0-9]$/),
+    S3_BUCKET_QUARANTINE: z
+      .string()
+      .min(3)
+      .max(63)
+      .regex(/^[a-z0-9][a-z0-9.-]+[a-z0-9]$/),
+    S3_ENDPOINT: localS3EndpointSchema,
+    S3_FORCE_PATH_STYLE: z.literal('true').transform(() => true as const),
+    S3_MAX_OBJECT_BYTES: positiveIntegerString(1, 10 * 1_024 * 1_024),
     S3_REGION: z.string().min(1).max(64),
+    S3_REQUEST_TIMEOUT_MS: positiveIntegerString(100, 30_000),
     S3_SECRET_ACCESS_KEY: z.string().min(16).max(512),
     SIGNED_URL_TTL_SECONDS: positiveIntegerString(30, 900),
+  })
+  .superRefine((environment, context) => {
+    const buckets = [
+      environment.S3_BUCKET_PUBLIC,
+      environment.S3_BUCKET_PRIVATE,
+      environment.S3_BUCKET_QUARANTINE,
+    ];
+    if (new Set(buckets).size !== buckets.length) {
+      for (const path of ['S3_BUCKET_PUBLIC', 'S3_BUCKET_PRIVATE', 'S3_BUCKET_QUARANTINE']) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Storage trust-zone bucket names must be distinct.',
+          path: [path],
+        });
+      }
+    }
   })
   .strict();
 export type StorageEnvironment = z.infer<typeof storageEnvironmentSchema>;
@@ -126,10 +169,14 @@ export function parseStorageEnvironment(source: EnvironmentSource): StorageEnvir
   return parseEnvironment('storage', storageEnvironmentSchema, source, [
     ...baseKeys,
     'S3_ACCESS_KEY_ID',
-    'S3_BUCKET',
+    'S3_BUCKET_PRIVATE',
+    'S3_BUCKET_PUBLIC',
+    'S3_BUCKET_QUARANTINE',
     'S3_ENDPOINT',
     'S3_FORCE_PATH_STYLE',
+    'S3_MAX_OBJECT_BYTES',
     'S3_REGION',
+    'S3_REQUEST_TIMEOUT_MS',
     'S3_SECRET_ACCESS_KEY',
     'SIGNED_URL_TTL_SECONDS',
   ]);

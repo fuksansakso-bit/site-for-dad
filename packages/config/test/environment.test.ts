@@ -5,6 +5,7 @@ import { parsePublicEnvironment } from '../src/public.js';
 import {
   parseDatabaseEnvironment,
   parseIdentityEnvironment,
+  parseStorageEnvironment,
   parseWebServerEnvironment,
   serverOnlyEnvironmentKeys,
 } from '../src/server.js';
@@ -75,5 +76,36 @@ describe('typed environment validation', () => {
     expect(() => parseIdentityEnvironment(baseEnvironment)).toThrowError(
       EnvironmentValidationError,
     );
+  });
+
+  it('keeps Phase 1A object storage on distinct loopback trust zones', () => {
+    const validStorageEnvironment = {
+      ...baseEnvironment,
+      S3_ACCESS_KEY_ID: 'synthetic-access-key',
+      S3_BUCKET_PRIVATE: 'project-name-test-private',
+      S3_BUCKET_PUBLIC: 'project-name-test-public',
+      S3_BUCKET_QUARANTINE: 'project-name-test-quarantine',
+      S3_ENDPOINT: 'http://127.0.0.1:4569',
+      S3_FORCE_PATH_STYLE: 'true',
+      S3_MAX_OBJECT_BYTES: '1048576',
+      S3_REGION: 'local',
+      S3_REQUEST_TIMEOUT_MS: '2000',
+      S3_SECRET_ACCESS_KEY: 'synthetic-secret-key-for-tests',
+      SIGNED_URL_TTL_SECONDS: '300',
+    } as const;
+
+    expect(parseStorageEnvironment(validStorageEnvironment).S3_FORCE_PATH_STYLE).toBe(true);
+    expect(() =>
+      parseStorageEnvironment({
+        ...validStorageEnvironment,
+        S3_ENDPOINT: 'https://object-provider.example',
+      }),
+    ).toThrowError(EnvironmentValidationError);
+    expect(() =>
+      parseStorageEnvironment({
+        ...validStorageEnvironment,
+        S3_BUCKET_PRIVATE: validStorageEnvironment.S3_BUCKET_PUBLIC,
+      }),
+    ).toThrowError(EnvironmentValidationError);
   });
 });

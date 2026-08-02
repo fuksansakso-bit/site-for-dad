@@ -7,6 +7,7 @@
 
 ### Added
 
+- Добавлен provider-neutral S3-compatible storage port с отдельными public/private/quarantine namespaces, immutable/checksum metadata, scoped signed grants и реальными negative access/recovery tests на одноразовом loopback-only RustFS без production credentials или медиа.
 - Добавлены PostgreSQL/Prisma foundation, две воспроизводимые инфраструктурные миграции, отдельные migrator/runtime роли, append-only audit и автоматическая Windows-проверка clean/repeat/upgrade/drift/forward-recovery на одноразовой SCRAM-базе без бизнес-таблиц.
 - Добавлены typed fail-fast environment schemas для local/test/CI, явный public allowlist, `.env.example` без значений секретов, deterministic log redaction и автоматический repository secret scan с подавлением найденных значений.
 - Созданы минимальные `apps/web` и отдельный `apps/worker`, versioned liveness/readiness routes, безопасный единый error contract, технические 404/error boundary и проверки health-контрактов без бизнес-функций.

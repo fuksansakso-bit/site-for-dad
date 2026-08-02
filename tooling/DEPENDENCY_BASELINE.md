@@ -10,6 +10,7 @@ Verification date: **2026-08-02**. This file records exact implementation inputs
 | Node.js    |       24.18.1 | MIT, official Node.js distribution                                       | Windows x64 archive SHA-256 `ec56b84a7551893ab2324ebdfdc4ab974a63b4781162600b68a1293cc3e53765`                                      |
 | pnpm       |       11.18.0 | MIT, npm registry                                                        | Requires Node.js `>=22.13`; pinned in `packageManager` and the lockfile                                                             |
 | PostgreSQL |          18.4 | PostgreSQL License, official EDB Windows binary linked by postgresql.org | Windows x64 archive SHA-256 `02e239529ed7833d169f98d915d3feffe0813264b08b3ae353e78e8b9c97e1a6`; password-authenticated smoke passed |
+| RustFS     | 1.0.0-beta.11 | Apache-2.0, official RustFS GitHub release                               | Windows x64 ZIP SHA-256 `e564ea478c969d69ee9b82371b598595fe2b320d5cedae60a76a7a089ac228bb`; loopback-only storage contract passed   |
 
 ## Application and quality toolchain
 
@@ -21,7 +22,7 @@ Verification date: **2026-08-02**. This file records exact implementation inputs
 | Runtime validation   | Zod 4.4.3                                                                                      |
 | PostgreSQL           | Prisma/Prisma Client/adapter-pg 7.9.1, pg 8.22.0                                               |
 | Durable jobs         | Graphile Worker 0.17.3                                                                         |
-| Object storage       | AWS SDK S3 client/presigner 3.1101.0; emulator selection is recorded with the storage commit   |
+| Object storage       | AWS SDK S3 client/presigner 3.1101.0; disposable RustFS 1.0.0-beta.11 emulator                 |
 | Telemetry            | OpenTelemetry API 1.9.1, SDK/exporter 0.221.0                                                  |
 | Tests                | Vitest/coverage 4.1.10, Playwright 1.62.1                                                      |
 | Static quality       | ESLint/@eslint-js 9.39.5, typescript-eslint 8.65.0, eslint-config-next 16.2.12, Prettier 3.9.6 |
@@ -55,6 +56,16 @@ only in its authorized phase.
 
 After applying those controls, `pnpm audit --audit-level moderate` reported no known vulnerabilities
 and the Next.js production build passed on 2026-08-02.
+
+The local S3-compatible emulator selection is deliberately non-production. `s3rver@3.7.1` was
+rejected after its current npm graph reported three high-severity advisories. The final MinIO
+Community binary was also rejected because its published advisory set includes an unauthenticated
+write signature bypass that conflicts with the Foundation trust boundary. RustFS 1.0.0-beta.11 is
+an exact, checksummed Windows build; the official GitHub advisory ranges reviewed on 2026-08-02 do
+not include this release in a high- or critical-severity range. It binds only to loopback, receives
+generated disposable credentials and synthetic objects, and passed real negative access tests.
+This selection does not authorize RustFS for production; any production object vendor still needs
+the gated residency, encryption, restore and provider-replacement decision.
 
 The selection does not choose a production hosting, storage, identity, secrets, telemetry, or CI
 vendor. No production credentials are required or permitted.

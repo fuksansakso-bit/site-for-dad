@@ -1,0 +1,42 @@
+{
+  "name": "@project-name/storage",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./errors": {
+      "types": "./dist/errors.d.ts",
+      "import": "./dist/errors.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "eslint . --max-warnings=0",
+    "test": "vitest run --config vitest.config.ts",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "catalog:",
+    "@aws-sdk/s3-request-presigner": "catalog:",
+    "@project-name/config": "workspace:*"
+  },
+  "devDependencies": {
+    "@project-name/tooling": "workspace:*",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "projectName": {
+    "layer": "storage",
+    "responsibility": "Provider-neutral private-by-default object port with S3-compatible trust-zone adapter.",
+    "publicInterface": [
+      ".",
+      "./errors"
+    ]
+  }
+}

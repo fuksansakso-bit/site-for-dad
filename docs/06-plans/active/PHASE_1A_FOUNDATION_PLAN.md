@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Plan ID | `PLAN-1A-001` |
-| Статус | **AUTHORIZED / IN PROGRESS — STEP 1A-04** |
+| Статус | **AUTHORIZED / IN PROGRESS — STEP 1A-05** |
 | Проверяемый результат | На чистой машине локально и в CI воспроизводится secure modular foundation с web/BFF, PostgreSQL, object adapter, durable worker, auth boundary, tests and operations; бизнес-функции отсутствуют. |
 | Scope source | [Implementation roadmap §1](../IMPLEMENTATION_ROADMAP.md#1-phase-1a--foundation) |
 | Technology evaluation | [PHASE_1A_TECHNOLOGY_EVALUATION](../PHASE_1A_TECHNOLOGY_EVALUATION.md) |
@@ -206,8 +206,8 @@ Only one item may be `in_progress` in the future execution copy:
 | 1A-01 | Record owner authorization, accept ADRs, pin verified toolchain | Phase 0C gate | `completed` |
 | 1A-02 | Bootstrap workspace/task graph and root quality commands | 1A-01 | `completed` |
 | 1A-03 | Add tooling configs and enforce dependency boundaries | 1A-02 | `completed` |
-| 1A-04 | Create minimal web/BFF and worker shells with liveness/readiness | 1A-03 | `in_progress` |
-| 1A-05 | Add typed environment and secrets/redaction protections | 1A-04 | `pending` |
+| 1A-04 | Create minimal web/BFF and worker shells with liveness/readiness | 1A-03 | `completed` |
+| 1A-05 | Add typed environment and secrets/redaction protections | 1A-04 | `in_progress` |
 | 1A-06 | Add PostgreSQL adapter and reviewed baseline migration/recovery tests | 1A-05 | `pending` |
 | 1A-07 | Add S3-compatible local adapter and trust-zone contract tests | 1A-06 | `pending` |
 | 1A-08 | Add durable job adapter/worker retry-idempotency tests | 1A-06 | `pending` |
@@ -270,3 +270,4 @@ Before shared data, commits/resources are reversible in reverse dependency order
 | 1.0.0 | 2026-08-02 | Подготовлен детальный, неисполняемый в 0C Foundation plan со stack, boundaries, CI, data/storage/jobs/auth/observability/security/testing, commits and rollback. |
 | 1.1.0 | 2026-08-02 | Product Owner разрешил только Phase 1A; QG-147/148 закрыты, ADR-0007–0010 accepted, Windows 11 закреплена; 1A-01 начат до pinning зависимостей. |
 | 1.2.0 | 2026-08-02 | Закреплены exact Node/pnpm/toolchain versions, проверены compatibility и advisory feeds, создан workspace/task graph и включены strict tooling/package-boundary gates; активирован 1A-04. |
+| 1.3.0 | 2026-08-02 | Созданы минимальные web/BFF и отдельный worker shells, безопасные error/health contracts, 404/error boundary и Windows runtime smoke; после transitive dependency controls audit/build прошли, активирован 1A-05. |

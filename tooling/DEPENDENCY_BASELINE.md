@@ -46,5 +46,14 @@ pnpm's release-age policy recorded an explicit exception for the directly pinned
 verified `tsx@4.23.4`; transitive versions remain gated by the lockfile supply-chain check. This
 exception permits only that exact release and does not relax lifecycle-script approval.
 
+Installing Next.js exposed advisories in its exact transitive `postcss@8.4.31` and optional
+`sharp@0.34.5`. The workspace overrides PostCSS with the compatible current 8.5.25 release and omits
+the unused optional Sharp dependency because Phase 1A has no image pipeline. The production build
+and audit are required to pass with these controls; image processing may add a reviewed Sharp release
+only in its authorized phase.
+
+After applying those controls, `pnpm audit --audit-level moderate` reported no known vulnerabilities
+and the Next.js production build passed on 2026-08-02.
+
 The selection does not choose a production hosting, storage, identity, secrets, telemetry, or CI
 vendor. No production credentials are required or permitted.

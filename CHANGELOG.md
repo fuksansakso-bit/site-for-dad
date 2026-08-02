@@ -7,6 +7,7 @@
 
 ### Added
 
+- Созданы минимальные `apps/web` и отдельный `apps/worker`, versioned liveness/readiness routes, безопасный единый error contract, технические 404/error boundary и проверки health-контрактов без бизнес-функций.
 - Добавлены strict TypeScript baseline, fail-closed ESLint/Prettier/Vitest configuration и машинная проверка направлений workspace-зависимостей, циклов, публичных интерфейсов и обязательных package verification scripts.
 - Инициализирован Phase 1A workspace: Node.js `24.18.1`, pnpm `11.18.0`, единый exact-version catalog, Turborepo task graph и зафиксированный dependency baseline для Windows 11 без выбора production-провайдера.
 - Зафиксированы `OWNER-DECISION-001`–`007`: разделение Product Owner/Business Owner, PriceVersion activation, per-item minimum 1500 рублей, authoritative local availability, AMIGO cadence/staleness, parity tolerance и regional production matrix.

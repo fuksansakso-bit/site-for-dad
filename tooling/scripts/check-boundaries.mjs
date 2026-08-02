@@ -131,11 +131,15 @@ function validateDependencyGraph(workspaces, errors) {
   const graph = new Map();
 
   for (const workspace of workspaces) {
-    const dependencies = {
+    const runtimeDependencies = {
       ...workspace.manifest.dependencies,
-      ...workspace.manifest.devDependencies,
       ...workspace.manifest.optionalDependencies,
       ...workspace.manifest.peerDependencies,
+    };
+    const devDependencies = workspace.manifest.devDependencies ?? {};
+    const dependencies = {
+      ...runtimeDependencies,
+      ...devDependencies,
     };
     const workspaceDependencies = Object.keys(dependencies).filter((name) => byName.has(name));
     graph.set(workspace.manifest.name, workspaceDependencies);
@@ -147,13 +151,25 @@ function validateDependencyGraph(workspaces, errors) {
       const dependency = byName.get(dependencyName);
       const targetLayer =
         dependency.workspaceType === 'apps' ? 'app' : dependency.manifest.projectName.layer;
-      if (!allowedTargets.has(targetLayer)) {
+      const isDevelopmentSupport =
+        Object.hasOwn(devDependencies, dependencyName) &&
+        !Object.hasOwn(runtimeDependencies, dependencyName) &&
+        ['testing', 'tooling'].includes(targetLayer);
+      if (!allowedTargets.has(targetLayer) && !isDevelopmentSupport) {
         errors.push(
           `${workspace.manifest.name}: ${sourceLayer} must not depend on ${dependencyName} (${targetLayer})`,
         );
       }
       if (dependency.workspaceType === 'apps') {
         errors.push(`${workspace.manifest.name}: workspaces must not depend on an application`);
+      }
+      if (
+        Object.hasOwn(runtimeDependencies, dependencyName) &&
+        ['testing', 'tooling'].includes(targetLayer)
+      ) {
+        errors.push(
+          `${workspace.manifest.name}: ${dependencyName} may be a development dependency only`,
+        );
       }
     }
   }

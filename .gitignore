@@ -36,6 +36,7 @@ dist/
 build/
 out/
 coverage/
+*.tsbuildinfo
 
 # Python-кэши и виртуальные окружения
 __pycache__/

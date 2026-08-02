@@ -55,9 +55,14 @@ Relational invariants и reproducible schema получают единый contr
 - [Technology evaluation](../06-plans/PHASE_1A_TECHNOLOGY_EVALUATION.md)
 - `DATA-SPEC-001`–`DATA-SPEC-012`, `DEPLOY-SPEC-001`–`DEPLOY-SPEC-020`, `ROADMAP-1A-001`
 
+## Phase 1A implementation evidence
+
+[packages/db](../../packages/db/package.json) использует PostgreSQL `18.4`, Prisma `7.9.1` и три reviewed, immutable infrastructure-only migrations. Disposable SCRAM database evidence подтверждает apply с пустой базы, безопасный повтор, upgrade с первого snapshot, clean drift, запрет runtime DDL, append-only audit и штатный failed-migration resolve + forward compensation. Production auto-migrate и business tables отсутствуют; полный протокол — в [Phase 1A report](../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
+
 ## История
 
 | Дата | Изменение |
 |---|---|
 | 2026-08-02 | Proposed persistence, migration и rollback boundary создан; SQL не создавался. |
 | 2026-08-02 | Accepted Product Owner для Phase 1A; Prisma/Migrate сделаны обязательным выбранным toolkit, а смена требует superseding ADR. |
+| 2026-08-02 | Phase 1A conformance verified on three migrations and clean/repeat/upgrade/drift/failure-recovery paths. |

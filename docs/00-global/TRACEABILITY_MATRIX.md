@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Фаза | 1A — Foundation authorized; Phase 1B+ forbidden |
-| Версия | 1.2.0 |
+| Фаза | 1A — Foundation completed and accepted; Phase 1B+ forbidden |
+| Версия | 1.3.0 |
 | Дата | 2026-08-02, Europe/Moscow |
 | Состояние покрытия | `COVERED_WITH_VISIBLE_TBD` |
 | Главный источник требований | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.7.0 |
@@ -149,12 +149,29 @@
 | `MVP-017` | content/portfolio and asset rights specs | `US-CONTENT-002` → `AC-PORTFOLIO-001` → `TS-PORTFOLIO-001` | 1F | Own-work rights/consent |
 | `MVP-018/019` | `SCOPE-010/012`, `FR-AUTH-007/008`, admin/auth specs | `US-ADMIN-002`, `US-CUSTOMER-001/002` and linked AC/tests | 1F | Identity/recovery/role gates; `TBD-ACCOUNT-001` resolved |
 | `MVP-020/026` | `SCOPE-007/041/042`, AI visualizer/pipeline/evaluation | `US-GUEST-006`, `US-AI-001`–`003` and linked AC/tests | 1G | Provider/privacy/TTL/evaluation/cost gates |
-| `ROADMAP-1A-001`, `PLAN-1A-001` | Architecture + accepted ADR-0007–0010 | `PLAN-1A-AC-001`–`010` execution evidence | 1A | QG-147/148 closed; only Foundation authorized |
+| `ROADMAP-1A-001`, `PLAN-1A-001` | Architecture + accepted ADR-0007–0010 | `PLAN-1A-AC-001`–`010` execution evidence in [Phase 1A report](../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md) | 1A | `PASSED_PHASE_1A_FOUNDATION`; Phase 1B forbidden |
 | `ROADMAP-1H-001` | deployment/security/performance/a11y/test specs | NFR stories/AC/tests + recovery/admin chains | 1H | Full launch checklist and go/no-go |
 
 Post-MVP IDs `POST-MVP-001`–`015` have no Phase 1 delivery commitment and MUST NOT be inferred from existing general feature stories without a future scope/traceability update.
 
-## 8. Coverage metrics
+## 8. Phase 1A execution evidence
+
+| Acceptance | Реализация | Проверка / результат |
+|---|---|---|
+| `PLAN-1A-AC-001` | [Windows lifecycle](../../tooling/scripts/foundation-environment.ps1), [local contract](../../infrastructure/local/README.md) | Clean bootstrap, healthy status, stop, restart with no pending migrations, reset passed |
+| `PLAN-1A-AC-002` | [CI contract](../../infrastructure/ci/pipeline.json), [verification runner](../../tooling/scripts/verify-foundation.ps1) | 9 / 9 stages passed in worktree and clean clone; browser 20 / 20 |
+| `PLAN-1A-AC-003` | Workspace package manifests and public `src/index.ts` interfaces | [Boundary checker](../../tooling/scripts/check-boundaries.mjs) passed for 11 workspaces |
+| `PLAN-1A-AC-004` | [Typed config](../../packages/config/src/server.ts), redaction and artifact scanner | Config negative tests, repository/build scans and generated secret canaries passed |
+| `PLAN-1A-AC-005` | [Prisma schema](../../packages/db/prisma/schema.prisma), three versioned migrations | Empty/repeat/upgrade/drift/failed recovery/forward compensation passed on PostgreSQL 18.4 |
+| `PLAN-1A-AC-006` | [S3 storage port](../../packages/storage/src/types.ts), [local provisioning](../../packages/storage/src/provision-local.ts) | RustFS contract: anonymous private/list/write denial, checksum, immutable put, scoped signed grants passed |
+| `PLAN-1A-AC-007` | [Graphile adapter](../../packages/jobs/src/adapter.ts), [worker runtime](../../apps/worker/src/runtime.ts) | Retry, timeout, durable idempotency, permanent failure, graceful drain and queue-lock release passed |
+| `PLAN-1A-AC-008` | [Identity port/policy](../../packages/identity/src/policy.ts), [request security](../../packages/identity/src/request-security.ts) | Deny-by-default, role/object matrix, revoke/expiry/current grants, workload separation passed |
+| `PLAN-1A-AC-009` | [Observability package](../../packages/observability/src/index.ts), web/worker readiness | Safe errors/logs/context/metrics/OTLP boundary and dependency degradation tests passed |
+| `PLAN-1A-AC-010` | [Phase scope scanner](../../tooling/scripts/validate-phase-scope.mjs) | No AMIGO/business/media/AI/production surfaces or tables found |
+
+Detailed runtime versions, commit list, skipped production-only checks and acceptance decision are in [PHASE_1A_FOUNDATION_REPORT.md](../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
+
+## 9. Coverage metrics
 
 | Метрика | Значение |
 |---|---:|
@@ -169,14 +186,16 @@ Post-MVP IDs `POST-MVP-001`–`015` have no Phase 1 delivery commitment and MUST
 | Непокрытые критические chains | 0 |
 | Phase 0C critical spec audit | 14 / 14 reviewed; 0 blocked/contradictory after fixes |
 | P0 classification | 61 / 61 classified; 0 unclassified |
+| Phase 1A acceptance | 10 / 10 `PLAN-1A-AC-*`; QG-149–158 passed |
+| Phase 1A automated tests | 61 unit/contract + 19 integration/recovery + 20 browser |
 
-## 9. Completion conditions
+## 10. Completion conditions
 
 Покрытие считается валидным, если автоматическая проверка подтверждает существование всех linked files и каждого ID, stories сохраняют полный шаблон, acceptance содержит позитивное и негативное проверяемое поведение, test strategy содержит level/preconditions/input/expected result/status, а открытые TBD не обозначены как выполненные tests.
 
-Матрица отражает письменное разрешение только Phase 1A после [Phase 0C gate](SPEC_QUALITY_GATE.md#6-implementation-readiness-gate-phase-0c). Она не разрешает Phase 1B+, AMIGO import или production deployment.
+Матрица отражает завершение только Phase 1A по [Phase 1A gate](SPEC_QUALITY_GATE.md#7-phase-1a-foundation-acceptance-gate). Она не разрешает Phase 1B+, AMIGO import или production deployment.
 
-## 10. История изменений
+## 11. История изменений
 
 | Версия | Дата | Изменение |
 |---|---|---|
@@ -184,3 +203,4 @@ Post-MVP IDs `POST-MVP-001`–`015` have no Phase 1 delivery commitment and MUST
 | 1.0.0 | 2026-08-02 | Все 18 critical chains и все 40 stories связаны с существующими feature/profile specs, AC и test scenarios; TBD сохранены видимыми. |
 | 1.1.0 | 2026-08-02 | Добавлены MVP/Phase 1A–1H chains, P0/audit metrics и исправлен тип standard preview; implementation остаётся не разрешена. |
 | 1.2.0 | 2026-08-02 | Добавлены chains `OWNER-DECISION-001`–`007`, accepted ADR/QG status и Phase 1A-only authorization boundaries. |
+| 1.3.0 | 2026-08-02 | Все `PLAN-1A-AC-001`–`010` связаны с фактическими ports, scripts и tests; добавлены Phase 1A counts/report и запрет перехода к 1B. |

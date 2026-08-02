@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD`; strategy and 40 critical scenarios defined, execution/feature fixtures await their implementation gates |
-| Версия | 0.2.0 |
+| Статус | Phase 1A Foundation test baseline executed; business/production scenarios retain their feature gates and TBD statuses |
+| Версия | 0.3.0 |
 | Дата | 2026-08-02 |
 | Requirements | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) and profile specs |
 | Acceptance | [ACCEPTANCE_CRITERIA.md](../specs/01-product/ACCEPTANCE_CRITERIA.md) |
@@ -151,13 +151,18 @@ Per change: static/unit/property/contract/fast a11y/security schema. Per integra
 
 Report requirement/AC/test coverage, pass/fail/blocked/quarantined, P0/P1 defects, flake, runtime, regression, budget, parity/AI distributions, a11y/manual evidence, security/privacy/deletion/restore and data freshness. Coverage percentage never hides untested critical risk or `BLOCKED_TBD`.
 
-## 13. Dependencies, risks and open questions
+## 13. Phase 1A execution evidence
+
+The provider-neutral `ci:verify` pipeline passed 9/9 stages in the working tree and a clean clone. Executed Foundation baseline: 61 unit/contract tests with per-workspace coverage artifacts, 19 real PostgreSQL/RustFS/Graphile/identity integration/recovery tests and 20 browser scenarios across Chromium, Firefox, WebKit, narrow viewport and reduced motion. Empty/repeat/upgrade/failed migrations, retry/timeout/idempotency/graceful worker drain, storage denial/outage, identity revoke/outage, safe readiness/errors, secret/artifact canaries and scope boundaries passed. This evidence does not change `DESIGNED`/`BLOCKED_TBD` status of Phase 1B+ business tests. Full detail: [Phase 1A report](../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
+
+## 14. Dependencies, risks and open questions
 
 Dependencies: all specs/ADRs/evaluations, implementation stack/environments, approved fixtures/business data/support matrix. Open: numeric budgets/thresholds, real price/source fixtures, browser/AT matrix, provider sandboxes, test tooling/owners, UAT roles, security test scope and retention of artifacts. Risks: fake fixtures mistaken production truth, flaky E2E, unlicensed media, provider dependence, automated a11y/AI false confidence and unsafe production testing.
 
-## 14. History
+## 15. History
 
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Defined risk-based multi-layer strategy and 40 critical scenarios mapped one-to-one to current acceptance criteria. |
 | 0.2.0 | 2026-08-02 | Updated parity tolerance/input contract and regional production matrix from `OWNER-DECISION-006/007`; Foundation execution evidence will be added at Phase 1A completion. |
+| 0.3.0 | 2026-08-02 | Added executed Phase 1A counts and clean-clone CI evidence without claiming any gated business/production scenario passed. |

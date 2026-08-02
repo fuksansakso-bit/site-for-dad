@@ -53,9 +53,14 @@ Job runner MAY be stopped and pending jobs preserved/replayed. Storage provider 
 - [AI_PIPELINE](../specs/04-technical/AI_PIPELINE.md)
 - `STORAGE-SPEC-001`–`STORAGE-SPEC-020`, `NFR-ARCH-005`, `ROADMAP-1A-001`
 
+## Phase 1A implementation evidence
+
+[packages/storage](../../packages/storage/package.json) реализует provider-neutral S3 port и отдельные private/quarantine/public trust zones; contract suite прошёл на loopback-only RustFS `1.0.0-beta.11`, включая anonymous-deny, signed grants, checksum, immutable put и dependency outage. [packages/jobs](../../packages/jobs/package.json) и [apps/worker](../../apps/worker/package.json) используют Graphile Worker `0.17.3` вне HTTP lifecycle; реальные PostgreSQL contracts покрывают explicit migration, least privilege, retry, timeout, durable idempotency, permanent failure and graceful drain. Evidence — в [Phase 1A report](../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
+
 ## История
 
 | Дата | Изменение |
 |---|---|
 | 2026-08-02 | Proposed local/provider-neutral storage and durable job strategy. |
 | 2026-08-02 | Accepted Product Owner для Phase 1A; подтверждены отдельный Graphile worker, Windows-compatible disposable emulator и provider replacement boundary. |
+| 2026-08-02 | Phase 1A conformance verified against disposable RustFS/PostgreSQL with no real media, business jobs or provider commitment. |

@@ -4,10 +4,10 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD`; logical architecture approved, Foundation stack awaits acceptance of ADR-0007–0010 |
-| Версия | 0.1.0 |
+| Статус | Phase 1A Foundation implemented and verified; feature/production topology remains gated |
+| Версия | 0.2.0 |
 | Дата | 2026-08-02 |
-| Global baseline | [GLOBAL_SPEC.md](../GLOBAL_SPEC.md) 0.6.0 |
+| Global baseline | [GLOBAL_SPEC.md](../GLOBAL_SPEC.md) 0.7.0 |
 | Decisions | [docs/adr](../../adr/) |
 
 ## 1. Назначение and boundaries
@@ -169,12 +169,17 @@ Every request/job/command carries correlation/causation and safe version identif
 
 Architecture acceptance is covered by domain AC plus contract/component/integration/failure/recovery/security tests in `TEST_STRATEGY`. Required architecture tests: adapter outage, no live AMIGO dependency, outbox atomicity, job idempotency/cancel/delete, mixed-version rejection, cache invalidation, role/object checks, secret/private telemetry scan, rolling compatibility and backup/restore.
 
-## 17. Dependencies, risks and open questions
+## 17. Phase 1A implementation record
 
-Dependencies: all specs, ADR/evaluations, data/API/sync/media/AI/storage/security/performance/observability/deployment. Open: framework/language, DB, queue, object storage, search, auth, AI, hosting/region/network, worker topology and RPO/RTO. Risks: premature microservices, distributed inconsistency, provider lock-in, hidden live-source dependency, privacy boundary collapse and untestable recovery.
+Implemented topology matches ADR-0007–0010: Next.js same-origin web/BFF, separate Node worker, PostgreSQL/Prisma, Graphile Worker, S3-compatible and identity ports, shared contracts/config/observability/testing packages and automated acyclic dependency direction. Only technical shell and synthetic Foundation behavior exist; no feature module or production topology was added. Evidence: [Phase 1A report](../../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
 
-## 18. История изменений
+## 18. Dependencies, risks and open questions
+
+Dependencies: all specs, ADR/evaluations, data/API/sync/media/AI/storage/security/performance/observability/deployment. Foundation runtime/framework/database/queue boundaries are fixed by ADR-0007–0010; open: production object/auth/telemetry/hosting providers, search, AI, region/network and RPO/RTO. Risks: premature microservices, distributed inconsistency, provider lock-in, hidden live-source dependency, privacy boundary collapse and untestable recovery.
+
+## 19. История изменений
 
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Defined vendor-neutral modular architecture, boundaries, commands/events/jobs, adapters, degradation and operational constraints. |
+| 0.2.0 | 2026-08-02 | Recorded Phase 1A implementation conformance and resolved Foundation stack/topology unknowns while retaining production provider gates. |

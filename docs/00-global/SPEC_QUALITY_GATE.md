@@ -4,7 +4,7 @@
 
 | Поле | Значение |
 |---|---|
-| Версия gate | 1.2.0 |
+| Версия gate | 1.3.0 |
 | Проверяемая входная база | Phase 0B baseline `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`; Phase 0C baseline `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; `GLOBAL_SPEC.md` 0.7.0 |
 | Дата entry self-audit | 2026-08-02, Europe/Moscow |
 | Решение по входу в 0B | **PASSED** |
@@ -12,7 +12,8 @@
 | Утверждающие роли | Product Owner — владелец проекта; Business Owner — отец владельца проекта (`OWNER-DECISION-001`) |
 | Текущий gate завершения 0B | **PASSED** — документационная фаза завершена |
 | Phase 0C Implementation Readiness Gate | **AUTHORIZED_FOR_PHASE_1A_FOUNDATION** — QG-147/148 закрыты 2026-08-02 |
-| Разрешённая реализация | Только Phase 1A Foundation; Phase 1B+, AMIGO data и production deployment запрещены |
+| Phase 1A Foundation Acceptance Gate | **PASSED_PHASE_1A_FOUNDATION** — QG-149–158 закрыты 2026-08-02 |
+| Разрешённая реализация | Новая implementation не разрешена; Phase 1B+, AMIGO data и production deployment запрещены |
 
 Entry gate подтверждает, что исправления 0A.1 внесены и письменное решение начать документную фазу 0B получено. Он не означает готовность ценовой формулы, импорта, приложения или запуска. Открытые TBD блокируют утверждение зависимой спецификации или функции, но не отменяют разрешение создавать документацию 0B с безопасным поведением.
 
@@ -201,12 +202,52 @@ Phase 0C проверяет готовность к контролируемом
 
 Разрешение ограничено Phase 1A. Completion Phase 1A не разрешает автоматически начинать Phase 1B; нужен отдельный письменный transition decision.
 
-## 7. История изменений
+## 7. Phase 1A Foundation Acceptance Gate
+
+Acceptance audit выполнен 2026-08-02 только для Foundation scope. Проверяемое implementation evidence собрано в [PHASE_1A_FOUNDATION_REPORT.md](../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md); production deployment, AMIGO data и Phase 1B surfaces не входили в проверку.
+
+### 7.1. Reproducibility and runtime
+
+- [x] **QG-149 — MUST:** отдельный чистый clone commit `0a4379cad3cd513863c366ff0b1e3849829c61ef` установил 638 packages через frozen lockfile и прошёл provider-neutral `ci:verify` без незакоммиченных prerequisite artifacts.
+- [x] **QG-150 — MUST:** Windows 11 lifecycle запускает и останавливает web, отдельный worker, loopback-only PostgreSQL и RustFS одной root command; повторный запуск видит zero pending Prisma/Graphile migrations.
+- [x] **QG-151 — MUST:** PostgreSQL 18.4 и Prisma 7.9.1 применяют три reviewed infrastructure-only migrations на empty/repeat/upgrade paths; drift, runtime DDL denial, append-only audit и failed-migration forward recovery проверены.
+- [x] **QG-152 — MUST:** Graphile Worker retry/timeout/idempotency/permanent-failure/graceful-drain contracts и S3 port private/quarantine/public policy, checksum, immutable put, signed grants and outage contracts проверены на disposable dependencies.
+
+### 7.2. Identity, security and observability
+
+- [x] **QG-153 — MUST:** synthetic IdentityPort поддерживает `GUEST`, `CUSTOMER`, `MANAGER`, `ADMIN`, `OWNER`, `SYSTEM_WORKER`, deny-by-default capability/object checks, current grants, revoke/expiry, workload separation and immutable audit attribution без production identity provider.
+- [x] **QG-154 — MUST:** typed environment validation, server/public allowlist, CSP/headers, origin/CSRF/request-size/rate boundary, safe errors, secret/PII redaction, request/correlation/trace context, structured logs, low-cardinality metrics and bounded liveness/readiness не раскрывают internals.
+
+### 7.3. Verification, scope and handoff
+
+- [x] **QG-155 — MUST:** 61 unit/contract, 19 integration/recovery и 20 browser tests пройдены; strict typecheck, lint, formatting, production build и package-boundary checks успешны.
+- [x] **QG-156 — MUST:** repository/build secret scans, generated-canary scan и critical dependency advisory scan прошли; известных vulnerabilities нет, production secrets/credentials не требовались.
+- [x] **QG-157 — MUST:** автоматический scope gate подтверждает отсутствие catalog/material/price/configurator/preview/cart/order/business-admin/account/customer-photo/AI/AMIGO-import/production-deployment surfaces и business tables.
+- [x] **QG-158 — MUST:** README, roadmap, gate, traceability, open questions, plan, accepted ADR, affected technical specs, changelog и completion report отражают фактическую реализацию; logical commits сохранены, remote/push отсутствуют, финальный worktree clean.
+
+### 7.4. Decision record
+
+| Поле | Значение |
+|---|---|
+| Gate result | **PASSED_PHASE_1A_FOUNDATION** |
+| Baseline | `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990` |
+| Branch | `phase/1a-foundation` |
+| Acceptance evidence | [PHASE_1A_FOUNDATION_REPORT.md](../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md) |
+| Required checks | 10 / 10 passed (`QG-149`–`QG-158`) |
+| Remaining TBD | 99 open; 0 reclassified or invented by Foundation |
+| Skipped by scope | Production regional/VPN matrix, production providers/secrets and all business/AMIGO/AI checks |
+| Allowed now | Review, verification and correction of Phase 1A Foundation/documentation artifacts |
+| Forbidden now | Phase 1B+, AMIGO pilot/import, all business features, user media/AI and production deployment |
+
+Gate confirms technical completion of the authorized phase only. It neither approves launch nor grants a Phase 1B transition; a new explicit Product Owner decision is required.
+
+## 8. История изменений
 
 | Версия | Дата | Изменение |
 |---|---|---|
 | 1.0.0 | 2026-08-02 | Completion checks `QG-112`–`130` пройдены на полном комплекте 0B; зафиксированы counts, unique IDs, links/tables/no-code evidence и запрет автоматического старта реализации. |
 | 1.1.0 | 2026-08-02 | Добавлены QG-131–148 для Phase 0C baseline/P0/MVP/audit/roadmap/Foundation safety; результат `READY_FOR_OWNER_AUTHORIZATION`, QG-147/148 намеренно открыты. |
 | 1.2.0 | 2026-08-02 | `OWNER-DECISION-001`–`007` закрыли owner P0; ADR-0007–0010 приняты после десяти проверок, QG-147/148 закрыты и разрешена только Phase 1A Foundation. |
+| 1.3.0 | 2026-08-02 | Добавлены QG-149–158 с clean-clone, runtime, migration, jobs/storage, identity/security/observability, test/scan/scope/docs evidence; Phase 1A получила `PASSED_PHASE_1A_FOUNDATION`, Phase 1B осталась запрещена. |
 | 0.2.0 | 2026-08-02 | Entry gate обновлён для `GLOBAL_SPEC` 0.4.0 и partner-authorized scope; письменное поручение владельца зафиксировано как разрешение начать 0B; добавлен отдельный completion gate 0B. |
 | 0.1.0 | 2026-08-02 | Предыдущий self-audit 0A.1 для версии 0.3.1; проверки `QG-001`–`087` впоследствии зарезервированы. |

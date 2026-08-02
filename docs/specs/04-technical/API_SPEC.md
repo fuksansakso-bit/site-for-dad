@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD`; conceptual contracts ready, concrete versioned routes/events are frozen per implementation phase |
-| Версия | 0.2.0 |
+| Статус | Phase 1A safe error and health contracts implemented; business routes remain conceptual and gated |
+| Версия | 0.3.0 |
 | Дата | 2026-08-02 |
 | Architecture/data | [ARCHITECTURE.md](ARCHITECTURE.md), [DATA_MODEL.md](DATA_MODEL.md) |
 | Security | [SECURITY_PRIVACY.md](SECURITY_PRIVACY.md) |
@@ -173,13 +173,18 @@ TLS, secure session/CSRF/CORS/CSP, object authorization, rate/abuse, schema vali
 
 Contract tests cover schemas/unknown fields as policy, auth/object matrix, idempotency, version conflicts, errors, exact money, pagination/cursors, upload spoof/completion, late callback/delete, public/private caching, redaction, event compatibility/dedup/order, provider outages and old/new client rolling compatibility. Domain AC/TS map to endpoints but API tests do not replace business tests.
 
-## 14. Dependencies, risks and open questions
+## 14. Phase 1A implementation record
+
+Concrete routes are limited to `GET /api/v1/health/live` and `GET /api/v1/health/ready`. They use the shared eight-code safe error/health contracts, request/correlation identifiers and bounded dependency details; no business mutation endpoint exists. Origin/CSRF/body-size/rate-limit interfaces are implemented as server-side Foundation boundaries for future mutation handlers, not exposed as fake business APIs. Evidence: [Phase 1A report](../../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
+
+## 15. Dependencies, risks and open questions
 
 Dependencies: all domain/technical specs, auth/provider/hosting ADRs. Next.js same-origin BFF and Foundation error status mapping are accepted; open: public API exposure, browser upload flow, future webhook transport, concrete rate limits, API lifecycle/support window and WhatsApp mode. Risks: CRUD bypass of invariants, IDOR, non-idempotent retry, private URL leak, mixed version, error data exposure and contract overcoupling to vendor.
 
-## 15. History
+## 16. History
 
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Defined versioned resource/command/query, public/admin/visualization contracts, errors, events, idempotency and privacy boundaries. |
 | 0.2.0 | 2026-08-02 | Fixed the eight Phase 1A safe error codes, HTTP mapping, correlation/validation envelope and prohibited disclosures. |
+| 0.3.0 | 2026-08-02 | Recorded the two implemented health routes and verified that no business API or mutation route entered Phase 1A. |

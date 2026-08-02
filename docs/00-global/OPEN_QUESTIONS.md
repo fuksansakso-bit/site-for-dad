@@ -302,11 +302,13 @@ Risk отражает последствия неверного предполо
 | TBD-ANALYTICS-005 | P1 | Какие источники обращения и правила атрибуции важны бизнесу? | Нужен согласованный словарь каналов и окно атрибуции. | Владелец / Marketing | Открыт |
 | TBD-ANALYTICS-006 | P2 | Кто и как часто просматривает отчёты и принимает действия? | Нужны ownership и operating cadence. | Владелец | Открыт |
 
-## Implementation gates после Phase 0C
+## Implementation gates после Phase 1A
 
-До synthetic/local Foundation нет P0 со статусом `BLOCKER_BEFORE_FOUNDATION`. `QG-147/148` закрыты письменным решением Product Owner 2026-08-02; разрешена только Phase 1A.
+До synthetic/local Foundation не было P0 со статусом `BLOCKER_BEFORE_FOUNDATION`. `QG-147/148` закрыты письменным решением Product Owner, а `QG-149`–`158` подтверждают завершение Phase 1A 2026-08-02. Foundation не закрывала и не придумывала ответы на business/data/privacy TBD; в реестре остаются 99 открытых из 119 исторических ID.
 
 Семь P0, ранее имевшие `OWNER_DECISION_REQUIRED`, решены 2026-08-02: `TBD-BIZ-001`, `TBD-PRICE-007`, `TBD-MIN-PRICE-001`, `TBD-PRICE-SOURCE-002`, `TBD-PRICE-PARITY-001`, `TBD-INVENTORY-002` и `TBD-INFRA-002`. External AMIGO data и `BLOCKER_BEFORE_FEATURE` по-прежнему закрываются перед указанными Phase 1B–1G activations, а не в Foundation.
+
+Phase 1B не разрешена. Её entry review MAY начаться только после нового письменного transition decision и проверки соответствующих AMIGO transport/pilot inventory/mapping/rights gates; completion Foundation сама по себе не меняет статусы `TBD-*`.
 
 `TBD-LEAD-001`, `TBD-SYSTEM-001`, `TBD-HORIZONTAL-001`, `TBD-VERTICAL-001`, `TBD-SERVICE-001`–`003`, `TBD-SOURCE-AMIGO-001`, `TBD-ASSET-AMIGO-001`–`002`, `TBD-PRICE-CATEGORY-001`, `TBD-DESIGN-003`, `TBD-ACCOUNT-001` и семь owner-decision P0 решены 2026-08-02 и сохранены выше только для трассируемости.
 

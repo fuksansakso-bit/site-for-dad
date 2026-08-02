@@ -4,10 +4,10 @@
 
 | Поле | Значение |
 |---|---|
-| Фаза документа | 1A |
-| Статус roadmap | **APPROVED SEQUENCE / PHASE 1A ONLY AUTHORIZED** |
+| Фаза документа | Phase 1A completed; transition paused before 1B |
+| Статус roadmap | **PHASE 1A PASSED / PHASE 1B NOT AUTHORIZED** |
 | Scope | [MVP_SCOPE](MVP_SCOPE.md) |
-| Активный будущий план | [PHASE_1A_FOUNDATION_PLAN](active/PHASE_1A_FOUNDATION_PLAN.md) |
+| Завершённый план / evidence | [PHASE_1A_FOUNDATION_PLAN](active/PHASE_1A_FOUNDATION_PLAN.md), [PHASE_1A_FOUNDATION_REPORT](completed/PHASE_1A_FOUNDATION_REPORT.md) |
 
 - **ROADMAP-001 — MUST:** фазы выполняются по порядку 1A–1H; параллельный research MAY идти, но dependent implementation не обходит entry gate.
 - **ROADMAP-002 — MUST:** каждая возможность включается feature flag только после собственных acceptance/security/data gates; наличие кода не равно production activation.
@@ -30,7 +30,7 @@
 | Запрещённые изменения | AMIGO import/media ingestion, production data, pricing rules, catalog UI, configurator, preview, lead forms, AI, provider commitments beyond accepted ADR scope. |
 | Rollback | Revert commits in documented sequence while data is synthetic; preserve migration history once shared; use ADR-0008 compensation/rebuild rehearsal; revoke any issued test credentials and remove disposable local resources. |
 
-Подробный активный порядок: [PHASE_1A_FOUNDATION_PLAN](active/PHASE_1A_FOUNDATION_PLAN.md). Начало Phase 1B требует нового письменного решения.
+Подробный execution record: [PHASE_1A_FOUNDATION_PLAN](active/PHASE_1A_FOUNDATION_PLAN.md); acceptance evidence: [PHASE_1A_FOUNDATION_REPORT](completed/PHASE_1A_FOUNDATION_REPORT.md). Phase 1A имеет статус `PASSED_PHASE_1A_FOUNDATION`; начало Phase 1B требует нового письменного решения.
 
 ## 2. PHASE 1B — AMIGO CATALOG PILOT
 
@@ -142,7 +142,7 @@
 | Переход | Минимальный gate |
 |---|---|
 | 0C → 1A | Explicit owner authorization + accepted ADR-0007–0010 + all Phase 0C stop conditions satisfied |
-| 1A → 1B | Foundation DoD + authorized pilot source/rights/mapping owner |
+| 1A → 1B | Foundation DoD + authorized pilot source/rights/mapping owner + separate explicit Product Owner transition decision |
 | 1B → 1C | Approved pilot catalog + rule-specific compatibility/price evidence |
 | 1C → 1D | Stable published configuration/material/profile inputs |
 | 1D → 1E | Price/cart contracts stable + PII/legal lead gate |
@@ -155,3 +155,4 @@
 | Версия | Дата | Изменение |
 |---|---|---|
 | 1.0.0 | 2026-08-02 | Зафиксированы последовательные Phase 1A–1H с entry, deliverables, tests, risks, DoD, forbidden changes and rollback. |
+| 1.1.0 | 2026-08-02 | Phase 1A отмечена `PASSED`; добавлены completion report и обязательное отдельное письменное решение для перехода к Phase 1B. |

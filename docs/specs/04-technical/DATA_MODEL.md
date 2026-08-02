@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD`; logical model/invariants ready, physical schema requires accepted ADR-0008 and feature-specific data |
-| Версия | 0.1.0 |
+| Статус | Phase 1A infrastructure schema implemented; all business aggregates remain logical and gated |
+| Версия | 0.2.0 |
 | Дата | 2026-08-02 |
 | Architecture | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | Glossary | [GLOSSARY.md](../../00-global/GLOSSARY.md) |
@@ -147,12 +147,17 @@ Schema changes use additive/read-old-write-new/dual-compatible evolution, backfi
 
 Tests: ID uniqueness, optimistic concurrency, effective interval overlap, hierarchy cycles, reference integrity, readiness matrix, exact money, historical replay, source rename/split/merge, dynamic category, ownership/IDOR, private graph deletion/late job, rights revoke, active pointer rollback, event/job deduplication, audit schema redaction, backup restore revocation and migration compatibility.
 
-## 17. Dependencies, risks and open questions
+## 17. Phase 1A physical schema record
 
-Dependencies: all domain specs, API/storage/security/deployment and ADRs. Open: physical database/storage/index/search, ID format, encryption/key strategy, PII/retention/legal schema, quantitative inventory and detailed order state. Risks: over-normalization vs opaque blobs, revision explosion, accidental cascade deletion, mutable history, enum lock-in and private data in generic metadata.
+The only physical Phase 1A tables are `actor_identity`, `role_grant`, `synthetic_session`, `audit_event`, `outbox_event`, `idempotency_record` and `service_heartbeat`, plus Prisma/Graphile migration metadata. Three reviewed migrations implement identity/audit, delivery/health and workload audit context. No product, material, price, quote, order, visualization or customer-photo table exists. Evidence: [schema and report](../../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
 
-## 18. History
+## 18. Dependencies, risks and open questions
+
+Dependencies: all domain specs, API/storage/security/deployment and ADRs. PostgreSQL/Prisma is fixed for Foundation; open: future business schema, production storage/index/search, ID evolution, encryption/key strategy, PII/retention/legal schema, quantitative inventory and detailed order state. Risks: over-normalization vs opaque blobs, revision explosion, accidental cascade deletion, mutable history, enum lock-in and private data in generic metadata.
+
+## 19. History
 
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Defined aggregate/entity model, version/provenance, classifications, private media graph, integrity/deletion and evolution rules. |
+| 0.2.0 | 2026-08-02 | Recorded the seven-table Phase 1A infrastructure schema and confirmed that logical business aggregates were not implemented. |

@@ -4,15 +4,16 @@
 
 | Поле | Значение |
 |---|---|
-| Состояние | Phase 0C complete; QG-147/148 closed; only Phase 1A Foundation authorized/in progress |
-| Версия roadmap | 1.2.0 |
+| Состояние | Phase 1A Foundation complete and accepted; Phase 1B+ not authorized |
+| Версия roadmap | 1.3.0 |
 | Дата | 2026-08-02 |
 | Entry gate | `PASSED`, [QG-088–QG-111](SPEC_QUALITY_GATE.md) |
 | Обязательный комплект 0B | `PASSED`, [QG-112–QG-130](SPEC_QUALITY_GATE.md) |
 | Phase 0C readiness | `AUTHORIZED_FOR_PHASE_1A_FOUNDATION`, [QG-131–QG-148](SPEC_QUALITY_GATE.md) |
-| Разрешённая implementation | Только Phase 1A; Phase 1B+, AMIGO import и production запрещены |
+| Phase 1A acceptance | `PASSED_PHASE_1A_FOUNDATION`, [QG-149–QG-158](SPEC_QUALITY_GATE.md) |
+| Разрешённая implementation | Новая implementation не разрешена; Phase 1B+, AMIGO import и production запрещены |
 
-Глобальная база: [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.7.0, [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md), [ASSET_RIGHTS_REGISTER.md](ASSET_RIGHTS_REGISTER.md) и [PRICING_SOURCE_POLICY.md](PRICING_SOURCE_POLICY.md). Письменное решение Product Owner разрешает Phase 1A Foundation, но не каталог/import/Phase 1B или production.
+Глобальная база: [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.7.0, [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md), [ASSET_RIGHTS_REGISTER.md](ASSET_RIGHTS_REGISTER.md) и [PRICING_SOURCE_POLICY.md](PRICING_SOURCE_POLICY.md). Письменное решение Product Owner разрешило и ограничило выполненную Phase 1A Foundation; оно не разрешает каталог/import/Phase 1B или production.
 
 Нормативные спецификации находятся только в `docs/specs/`. Gate, реестры, policies, quality strategy, evaluations и ADR остаются в профильных каталогах.
 
@@ -102,7 +103,7 @@ flowchart TD
 | [TEST_STRATEGY.md](../quality/TEST_STRATEGY.md) | 40 named critical scenarios + unit/property/contract/E2E/visual/a11y/security/privacy/performance/recovery | `CREATED_WITH_TBD` |
 | [AI_EVALUATION_SPEC.md](../evaluations/AI_EVALUATION_SPEC.md) | Rights-cleared benchmark, metrics, hard gates, human/privacy/performance evaluation | `CREATED_WITH_TBD` |
 | [TRACEABILITY_MATRIX.md](TRACEABILITY_MATRIX.md) | 18/18 critical chains и 40/40 story→AC→test mappings | `CREATED` |
-| [SPEC_QUALITY_GATE.md](SPEC_QUALITY_GATE.md) | Entry/completion 0B and Phase 0C readiness evidence | `AUTHORIZED_FOR_PHASE_1A_FOUNDATION` |
+| [SPEC_QUALITY_GATE.md](SPEC_QUALITY_GATE.md) | Entry/completion 0B, Phase 0C readiness and Phase 1A implementation evidence | `PASSED_PHASE_1A_FOUNDATION` |
 
 ## 7. Принятые ADR фазы 0B
 
@@ -125,7 +126,8 @@ ADR принимают устойчивую границу, а не неподт
 | [SPEC_READINESS_AUDIT.md](../06-plans/SPEC_READINESS_AUDIT.md) | 14 critical specs × 15 dimensions; 0 blocked/contradictory after fixes | `PASS_FOR_1A_REVIEW` |
 | [IMPLEMENTATION_ROADMAP.md](../06-plans/IMPLEMENTATION_ROADMAP.md) | Phase 1A–1H с entry/deliverables/tests/risks/DoD/rollback | `APPROVED_SEQUENCE` |
 | [PHASE_1A_TECHNOLOGY_EVALUATION.md](../06-plans/PHASE_1A_TECHNOLOGY_EVALUATION.md) | Vendor-neutral Foundation stack and alternatives | `ADR_ACCEPTED` |
-| [PHASE_1A_FOUNDATION_PLAN.md](../06-plans/active/PHASE_1A_FOUNDATION_PLAN.md) | Detailed Foundation execution plan and commit sequence | `AUTHORIZED_IN_PROGRESS` |
+| [PHASE_1A_FOUNDATION_PLAN.md](../06-plans/active/PHASE_1A_FOUNDATION_PLAN.md) | Detailed Foundation execution plan and commit sequence | `COMPLETED` |
+| [PHASE_1A_FOUNDATION_REPORT.md](../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md) | Actual implementation, commits, verification, skipped scope and acceptance | `PASSED_PHASE_1A_FOUNDATION` |
 
 ### 7.2. Accepted Phase 1A ADR
 
@@ -138,7 +140,7 @@ ADR принимают устойчивую границу, а не неподт
 
 ## 8. Незакрытые зависимости по implementation gate
 
-- **Phase 1A:** owner authorization и accepted ADR-0007–0010 зафиксированы; Foundation использует только synthetic/local data.
+- **Phase 1A:** завершена и проверена; Foundation использует только synthetic/local data, а дальнейшая implementation остановлена.
 - **До Phase 1B:** разрешённый AMIGO transport/file, pilot inventory/mapping and owners; полный ассортимент не требуется.
 - **До Phase 1C:** нужны active price snapshot, formula/rounding/compatibility/dimensions; activation roles, parity tolerance и per-item minimum уже решены, но не реализуются в Phase 1A.
 - **До Phase 1D:** approved `SceneProfile`, renderer profiles/assets and visual baselines (`TBD-PREVIEW-001`).
@@ -151,8 +153,8 @@ ADR принимают устойчивую границу, а не неподт
 ## 9. Implementation sequence after Phase 0C
 
 1. Product Owner принял ADR-0007–0010 и письменно разрешил только Phase 1A 2026-08-02.
-2. Phase 1A выполняется только по [активному плану](../06-plans/active/PHASE_1A_FOUNDATION_PLAN.md), без AMIGO import и business features.
-3. Дальнейшие Phase 1B–1H идут строго по [IMPLEMENTATION_ROADMAP](../06-plans/IMPLEMENTATION_ROADMAP.md) и своим entry gates.
+2. Phase 1A выполнена по [завершённому плану](../06-plans/active/PHASE_1A_FOUNDATION_PLAN.md) без AMIGO import и business features; результат зафиксирован в [completion report](../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
+3. Phase 1B не начинается до отдельного письменного transition decision; будущие Phase 1B–1H после разрешения идут строго по [IMPLEMENTATION_ROADMAP](../06-plans/IMPLEMENTATION_ROADMAP.md) и своим entry gates.
 4. Закрываются только те P0/P1 business/data/privacy вопросы, от которых зависит выбранный slice; safe fallback не выдаётся за решение.
 5. Source/hosting/AI evaluations используют только разрешённые данные и завершаются ADR до provider commitment.
 
@@ -169,3 +171,4 @@ ADR принимают устойчивую границу, а не неподт
 | 1.0.0 | 2026-08-02 | Roadmap синхронизирован с фактически созданными 33 specs, quality/evaluation, traceability и 6 ADR; следующий кодовый этап не разрешён. |
 | 1.1.0 | 2026-08-02 | Добавлены Phase 0C MVP/readiness artifacts, proposed ADR-0007–0010, P0 gates и обязательная sequence Phase 1A–1H без автоматического старта. |
 | 1.2.0 | 2026-08-02 | QG-147/148 закрыты, ADR-0007–0010 accepted, семь owner P0 resolved; только Phase 1A переведена в authorized/in-progress. |
+| 1.3.0 | 2026-08-02 | Phase 1A plan и report получили completion evidence, QG-149–158 passed; roadmap остановлен перед Phase 1B до нового письменного решения. |

@@ -2,7 +2,7 @@
 
 ## 0. Статус
 
-Phase 0C завершена; исходный commit Phase 1A — `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`. `GLOBAL_SPEC` 0.7.0 фиксирует `OWNER-DECISION-001`–`007`, ADR-0007–0010 приняты, QG-147/148 закрыты. Gate `AUTHORIZED_FOR_PHASE_1A_FOUNDATION` разрешает только Foundation; Phase 1B, import, business features и production запрещены.
+Phase 1A Foundation завершена 2026-08-02 от исходного commit `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`. `GLOBAL_SPEC` 0.7.0 фиксирует `OWNER-DECISION-001`–`007`, ADR-0007–0010 приняты и проверены реализацией, QG-149–158 пройдены. Gate `PASSED_PHASE_1A_FOUNDATION` не разрешает Phase 1B, import, business features или production deployment.
 
 ## 1. Порядок обязательного чтения
 
@@ -34,7 +34,7 @@ Phase 0C завершена; исходный commit Phase 1A — `83ed7c29bfacc
 | [OPEN_QUESTIONS.md](00-global/OPEN_QUESTIONS.md) | Канонический реестр `TBD-*`, владельцев, влияния и критериев закрытия |
 | [SPEC_ROADMAP.md](00-global/SPEC_ROADMAP.md) | Фактический комплект 0B/0C, accepted Foundation ADR, gates и последовательность 1A–1H |
 | [TRACEABILITY_MATRIX.md](00-global/TRACEABILITY_MATRIX.md) | 18 critical chains и полная 40-story связь со спеками, AC и tests |
-| [SPEC_QUALITY_GATE.md](00-global/SPEC_QUALITY_GATE.md) | Passed gates 0B и ограниченное разрешение `AUTHORIZED_FOR_PHASE_1A_FOUNDATION` |
+| [SPEC_QUALITY_GATE.md](00-global/SPEC_QUALITY_GATE.md) | Passed gates 0B/0C и Phase 1A acceptance `PASSED_PHASE_1A_FOUNDATION` |
 
 ## 3. Product specifications
 
@@ -96,7 +96,7 @@ Phase 0C завершена; исходный commit Phase 1A — `83ed7c29bfacc
 | [TEST_STRATEGY.md](quality/TEST_STRATEGY.md) | 40 critical scenarios и общий unit/property/contract/integration/E2E/visual/a11y/security/privacy/performance/recovery plan |
 | [AI_EVALUATION_SPEC.md](evaluations/AI_EVALUATION_SPEC.md) | Rights-cleared benchmark, stage metrics, hard gates, human/privacy/performance/cost evaluation |
 
-## 8. Phase 0C implementation-readiness plans
+## 8. Implementation-readiness and Phase 1A artifacts
 
 | Документ | Назначение |
 |---|---|
@@ -104,7 +104,8 @@ Phase 0C завершена; исходный commit Phase 1A — `83ed7c29bfacc
 | [SPEC_READINESS_AUDIT.md](06-plans/SPEC_READINESS_AUDIT.md) | Audit 14 critical specs по 15 dimensions и targeted contradiction fixes |
 | [IMPLEMENTATION_ROADMAP.md](06-plans/IMPLEMENTATION_ROADMAP.md) | Phase 1A–1H with entry, deliverables, tests, risks, DoD, forbidden changes and rollback |
 | [PHASE_1A_TECHNOLOGY_EVALUATION.md](06-plans/PHASE_1A_TECHNOLOGY_EVALUATION.md) | Stack comparison, migration/secrets baseline and official evidence |
-| [PHASE_1A_FOUNDATION_PLAN.md](06-plans/active/PHASE_1A_FOUNDATION_PLAN.md) | Active authorized Foundation execution plan; Phase 1B excluded |
+| [PHASE_1A_FOUNDATION_PLAN.md](06-plans/active/PHASE_1A_FOUNDATION_PLAN.md) | Completed Foundation execution record; Phase 1B excluded |
+| [PHASE_1A_FOUNDATION_REPORT.md](06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md) | Actual applications/packages, commits, migrations, tests, CI evidence, skipped scope and acceptance result |
 
 ## 9. Architecture decisions
 
@@ -149,7 +150,7 @@ Research snapshot не является вечным catalog/price fact. Нор�
 - Кто может выполнить действие — `ROLES_PERMISSIONS` и relevant domain spec.
 - Каких данных не хватает — `OPEN_QUESTIONS` по уникальному `TBD-*`.
 - Как требование проверяется — `TRACEABILITY_MATRIX`, AC и `TEST_STRATEGY`.
-- Можно ли начинать код — да, только Phase 1A Foundation: QG-147/148 выполнены; Phase 1B+, AMIGO import, business features и production по-прежнему запрещены.
+- Можно ли начинать следующий код — нет: Phase 1A Foundation завершена и QG-149–158 пройдены; Phase 1B+, AMIGO import, business features и production требуют нового письменного разрешения.
 
 ## 13. Правило навигации
 

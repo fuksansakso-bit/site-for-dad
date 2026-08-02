@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD` for synthetic Foundation; public PII/media/AI activation remains blocked by exact legal, retention and provider values |
-| Версия | 0.1.0 |
+| Статус | Phase 1A synthetic security baseline implemented; public PII/media/AI activation remains blocked by legal, retention and provider values |
+| Версия | 0.2.0 |
 | Дата | 2026-08-02 |
 | Data model | [DATA_MODEL.md](DATA_MODEL.md) |
 | Roles | [ROLES_PERMISSIONS.md](../01-product/ROLES_PERMISSIONS.md) |
@@ -137,12 +137,17 @@ Primary: `AC-SEC-001`, `AC-PRIV-001`, `AC-AUTH-001`, `AC-AI-UPLOAD-001`, `AC-VIS
 
 Tests: full authz/IDOR matrix, CSRF/XSS/injection/SSRF, headers/CORS/cache, auth/session/recovery/rate, upload/parser/polyglot/bomb, storage/public policy/signed URLs, provider callback/replay/delete, job/event idempotency, secret/PII telemetry scan, consent/version/withdrawal, retention/delete/backup restore, role/approval separation, dependency outage, supply-chain/config and incident tabletop.
 
-## 18. Dependencies, risks and open questions
+## 18. Phase 1A implementation record
+
+Implemented controls include typed server/public configuration, fail-fast secrets, secret/artifact scanning, nonce CSP and secure headers, exact-origin/CSRF/body-size/rate-limit boundaries, safe error contracts, redacted structured telemetry, private-by-default storage, deny-by-default server authorization and synthetic session revoke/expiry. Only generated test objects and identities are used; uploads, real PII, external auth and production credentials do not exist. Evidence: [Phase 1A report](../../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
+
+## 19. Dependencies, risks and open questions
 
 Dependencies: all specs, legal review, provider/hosting/storage/auth/AI ADR/evaluation. Open: `TBD-PRIV-*`, `TBD-ACCOUNT-*`, `TBD-INFRA-*`, controller/legal docs, exact retention/RPO/RTO, providers/regions/subprocessors, incident owners/timings, vulnerability SLAs and support access. Risks: legal incompleteness, public storage, IDOR, provider training/retention, secret/log leakage, incomplete deletion and security controls deferred after launch.
 
-## 19. History
+## 20. History
 
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Defined threat model, mandatory controls, data inventory, provider/media/privacy/retention/incident and test contracts without invented policy values. |
+| 0.2.0 | 2026-08-02 | Recorded verified synthetic Foundation controls while retaining all PII/media/legal/provider production gates. |

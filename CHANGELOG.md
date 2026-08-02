@@ -7,11 +7,16 @@
 
 ### Added
 
+- Завершён Phase 1A verification baseline: 61 unit/contract tests с coverage artifacts, 19 реальных PostgreSQL/RustFS/Graphile/identity integration/recovery tests и 20 Playwright smoke scenarios в Chromium, Firefox, WebKit, narrow viewport и reduced-motion profile.
+- Добавлен provider-neutral fail-closed CI contract из девяти стадий: frozen install, formatting/docs/scope/boundaries, lint/typecheck, coverage, disposable PostgreSQL migrations/jobs/identity, disposable RustFS storage contract, production build/artifact scan, multi-browser smoke и repository secret/critical advisory scan.
+- Добавлен единый Windows 11 lifecycle `dev`/`dev:status`/`dev:stop`/`dev:reset` для loopback-only PostgreSQL, RustFS, web и отдельного worker с безопасной очисткой только `.local/foundation-environment`, повторным запуском миграций и локальными журналами без секретов.
+- Добавлен общий `packages/testing` с synthetic environment и bounded wait utilities; все 11 workspace packages имеют непустой публичный интерфейс, направленные зависимости и собственную проверку.
+- Добавлены nonce-based CSP, secure headers, exact-origin/CSRF boundary, ограничение JSON request body, provider-neutral rate-limit interface и server-side deny-by-default authorization tests; production CSP не допускает `unsafe-inline`/`unsafe-eval`.
 - Добавлен provider-neutral observability foundation: allowlisted structured JSON logs, request/correlation/trace context, safe error classification, redaction of secrets/PII/URLs/paths, bounded dependency readiness, low-cardinality metrics и optional OpenTelemetry OTLP HTTP export; web проверяет process/PostgreSQL/storage, worker — database/queue/worker, а Node telemetry изолирован от Edge proxy.
 - Добавлен provider-neutral identity/RBAC foundation с шестью Phase 1A ролями, deny-by-default capability/object policy, synthetic human/workload credentials, HMAC-hashed revocable sessions, current-grant re-evaluation и immutable audit attribution; PostgreSQL contract покрывает ownership denial, role grant/revoke, expiry, session revoke и dependency outage без production auth provider.
 - Добавлен отдельный Graphile Worker foundation с versioned synthetic payload, bounded retry/timeout, durable idempotency, permanent-failure inspection, correlation-safe logs, явной operator-only миграцией и RLS hardening для runtime-роли без DDL; реальный PostgreSQL-тест подтверждает replay, retry, timeout, graceful drain и освобождение queue lock.
 - Добавлен provider-neutral S3-compatible storage port с отдельными public/private/quarantine namespaces, immutable/checksum metadata, scoped signed grants и реальными negative access/recovery tests на одноразовом loopback-only RustFS без production credentials или медиа.
-- Добавлены PostgreSQL/Prisma foundation, две воспроизводимые инфраструктурные миграции, отдельные migrator/runtime роли, append-only audit и автоматическая Windows-проверка clean/repeat/upgrade/drift/forward-recovery на одноразовой SCRAM-базе без бизнес-таблиц.
+- Добавлены PostgreSQL/Prisma foundation, три воспроизводимые инфраструктурные миграции, отдельные migrator/runtime роли, append-only audit и автоматическая Windows-проверка clean/repeat/upgrade/drift/forward-recovery на одноразовой SCRAM-базе без бизнес-таблиц.
 - Добавлены typed fail-fast environment schemas для local/test/CI, явный public allowlist, `.env.example` без значений секретов, deterministic log redaction и автоматический repository secret scan с подавлением найденных значений.
 - Созданы минимальные `apps/web` и отдельный `apps/worker`, versioned liveness/readiness routes, безопасный единый error contract, технические 404/error boundary и проверки health-контрактов без бизнес-функций.
 - Добавлены strict TypeScript baseline, fail-closed ESLint/Prettier/Vitest configuration и машинная проверка направлений workspace-зависимостей, циклов, публичных интерфейсов и обязательных package verification scripts.
@@ -48,6 +53,8 @@
 
 ### Changed
 
+- Phase 1A Foundation завершена со статусом `PASSED_PHASE_1A_FOUNDATION`: полный CI-equivalent конвейер прошёл 9/9 стадий в рабочей копии и в отдельном чистом клоне после frozen установки 638 зависимостей; Phase 1B и production deployment не разрешены.
+- Phase 1A plan, accepted ADR-0007–0010, technical implementation notes, roadmap, quality gate, traceability, open-question gate notes, index и README синхронизированы с фактической Foundation реализацией и completion report.
 - `QG-147/148` закрыты; gate переведён в `AUTHORIZED_FOR_PHASE_1A_FOUNDATION`. Разрешена только Phase 1A, а Phase 1B+, AMIGO import, business features и production deployment явно остаются запрещены.
 - Семь P0 `TBD-BIZ-001`, `TBD-PRICE-007`, `TBD-MIN-PRICE-001`, `TBD-PRICE-SOURCE-002`, `TBD-PRICE-PARITY-001`, `TBD-INVENTORY-002`, `TBD-INFRA-002` переведены в `RESOLVED` без удаления исторических IDs; P0 counts стали 19 resolved и 0 owner-decision-required.
 - `GLOBAL_SPEC.md` обновлён до 0.7.0; pricing/catalog/admin/RBAC/sync/performance/observability/deployment/test документы синхронизированы с owner decisions, а pricing/import/business implementation сохранены за пределами Phase 1A.

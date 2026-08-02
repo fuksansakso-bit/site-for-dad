@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Draft / alert ownership and SLO numbers `BLOCKED_BY_TBD-INFRA-008` |
-| Версия | 0.2.0 |
+| Статус | Phase 1A instrumentation baseline implemented; launch alerts/SLO ownership remain `BLOCKED_BY_TBD-INFRA-008` |
+| Версия | 0.3.0 |
 | Дата | 2026-08-02 |
 | Privacy/security | [SECURITY_PRIVACY.md](SECURITY_PRIVACY.md) |
 | Performance | [PERFORMANCE.md](PERFORMANCE.md) |
@@ -137,13 +137,18 @@ Tests: correlation across request→command→event→job/provider; safe schemas
 
 Primary AC: `AC-PERF-001`, `AC-SEC-001`, `AC-PRIV-001`, `AC-AMIGO-SYNC-001`, `AC-PRICE-ACTIVATE-001`, `AC-VIS-DELETE-001`.
 
-## 12. Dependencies, risks and open questions
+## 12. Phase 1A implementation record
+
+The Foundation provides allowlisted JSON logs, request/correlation/trace async context, safe error severity, deterministic redaction, low-cardinality in-memory metrics, optional OTLP HTTP export and separate web/worker liveness/readiness with bounded dependency states. PostgreSQL, queue and storage outages degrade safely without URL, credential, stack or component-version disclosure. No external telemetry provider was selected. Evidence: [Phase 1A report](../../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
+
+## 13. Dependencies, risks and open questions
 
 Dependencies: all modules, security/performance/deployment/testing. Regional locations are resolved by `OWNER-DECISION-007`; open: telemetry platform, `TBD-INFRA-008`, SLO targets/windows, on-call roles/hours, retention/sampling/cardinality/cost and incident comms. Risks: PII leakage, unactionable alert noise, missing-data green, cost explosion, blind async/provider stages and no reachable owner.
 
-## 13. History
+## 14. History
 
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Defined safe telemetry schemas, dashboard/health/SLO/alert/runbook process, privacy boundaries and verification. |
 | 0.2.0 | 2026-08-02 | Regional probe dimensions fixed by `OWNER-DECISION-007`; vendor/SLO/operations choices remain open. |
+| 0.3.0 | 2026-08-02 | Recorded Phase 1A logs/context/metrics/OTLP/health implementation and verified safe dependency degradation. |

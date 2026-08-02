@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Draft 0B — vendor-neutral release contract; hosting/CI/CD/runtime not selected |
-| Версия | 0.2.0 |
+| Статус | Phase 1A local/CI foundation implemented; production deployment and hosting remain forbidden/unselected |
+| Версия | 0.3.0 |
 | Дата | 2026-08-02 |
 | Architecture | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | Quality gate | [SPEC_QUALITY_GATE.md](../../00-global/SPEC_QUALITY_GATE.md) |
@@ -134,13 +134,18 @@ CI/deploy identities least privilege/short-lived where available, protected envi
 
 Tests: artifact traceability/reproducibility, environment isolation/no prod data/secrets in test, config missing/invalid, migration old/new/rollback/compensation, event/API rolling compatibility, canary stop/rollback, cache/active pointers, job drain/idempotency, provider sandbox, backup restore/deletion ledger, regional smoke, security/access/audit and failed telemetry/readiness.
 
-## 14. Dependencies, risks and open questions
+## 14. Phase 1A implementation record
+
+Provider-neutral CI and Windows local lifecycle are implemented and verified, including frozen install, code/docs/scope/boundary checks, coverage, disposable integration dependencies, migration validation, production build, artifact/secret scans and multi-browser smoke. No hosting configuration, deployment credential, domain, production environment or remote pipeline integration was created. The regional no-VPN matrix remains a future production release gate, not a skipped Foundation failure. Evidence: [Phase 1A report](../../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
+
+## 15. Dependencies, risks and open questions
 
 Dependencies: architecture/data/API/sync/media/AI/storage/security/performance/observability/test strategy/evaluations/ADRs. `TBD-INFRA-002` regional matrix is resolved; open: hosting/CI/CD/runtime, environments/domains, other applicable `TBD-INFRA-*`, RPO/RTO, owners/change windows, release cadence and artifact/signing/flag platforms. Risks: environment leak, irreversible migration, incompatible rollback, unobserved canary, provider prod call from test and data/version coupling.
 
-## 15. History
+## 16. History
 
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Defined vendor-neutral environments, artifact/config/migration/data release, progressive rollout/rollback and release evidence. |
 | 0.2.0 | 2026-08-02 | Phase 1A-only authorization and exact future regional production evidence matrix recorded; no production deployment authorized. |
+| 0.3.0 | 2026-08-02 | Recorded verified local/CI Foundation lifecycle; production topology, credentials and regional deployment checks remain outside authorization. |

@@ -57,9 +57,14 @@ Accepted [ADR-0001](ADR-0001-application-architecture.md) задаёт modular a
 - [Phase 1A plan](../06-plans/active/PHASE_1A_FOUNDATION_PLAN.md)
 - `NFR-ARCH-001`–`NFR-ARCH-012`, `DOR-008`, `ROADMAP-1A-001`
 
+## Phase 1A implementation evidence
+
+Решение реализовано без изменения boundary: Node.js `24.18.1`, pnpm `11.18.0`, TypeScript `6.0.3`, Next.js `16.2.12`, один lockfile и 11 non-empty workspaces. [apps/web](../../apps/web/package.json) содержит только technical shell/BFF health routes, [apps/worker](../../apps/worker/package.json) является отдельным process, а dependency checker запрещает обратные и циклические импорты. Root Windows lifecycle и provider-neutral CI прошли в рабочей копии и отдельном чистом clone; подробности — в [Phase 1A report](../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
+
 ## История
 
 | Дата | Изменение |
 |---|---|
 | 2026-08-02 | Proposed stack и topology подготовлены для owner acceptance; implementation не разрешена. |
 | 2026-08-02 | Accepted Product Owner для Phase 1A после проверки с `GLOBAL_SPEC` и Foundation plan; Windows 11 закреплена явно. |
+| 2026-08-02 | Phase 1A conformance verified: pinned workspace, separate worker, boundary tests, Windows lifecycle and clean-clone CI passed. |

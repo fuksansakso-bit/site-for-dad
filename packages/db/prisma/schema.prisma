@@ -1,0 +1,173 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum SystemRole {
+  GUEST
+  CUSTOMER
+  MANAGER
+  ADMIN
+  OWNER
+  SYSTEM_WORKER
+
+  @@map("system_role")
+}
+
+enum AuditActorType {
+  ANONYMOUS
+  IDENTITY
+  SYSTEM_WORKER
+
+  @@map("audit_actor_type")
+}
+
+enum AuditOutcome {
+  SUCCEEDED
+  DENIED
+  FAILED
+
+  @@map("audit_outcome")
+}
+
+enum OutboxStatus {
+  PENDING
+  PUBLISHED
+  FAILED
+
+  @@map("outbox_status")
+}
+
+enum IdempotencyStatus {
+  IN_PROGRESS
+  SUCCEEDED
+  FAILED
+
+  @@map("idempotency_status")
+}
+
+enum ServiceHealthStatus {
+  READY
+  NOT_READY
+  STOPPING
+
+  @@map("service_health_status")
+}
+
+model ActorIdentity {
+  id             String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  provider       String             @db.VarChar(64)
+  subject        String             @db.VarChar(255)
+  disabledAt     DateTime?          @map("disabled_at") @db.Timestamptz(6)
+  createdAt      DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime           @updatedAt @map("updated_at") @db.Timestamptz(6)
+  roleGrants     RoleGrant[]        @relation("role_target")
+  grantsAuthored RoleGrant[]        @relation("role_granter")
+  sessions       SyntheticSession[]
+  auditEvents    AuditEvent[]
+
+  @@unique([provider, subject], map: "actor_identity_provider_subject_key")
+  @@map("actor_identity")
+}
+
+model RoleGrant {
+  id               String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  actorId          String         @map("actor_id") @db.Uuid
+  role             SystemRole
+  grantedByActorId String?        @map("granted_by_actor_id") @db.Uuid
+  grantedAt        DateTime       @default(now()) @map("granted_at") @db.Timestamptz(6)
+  revokedAt        DateTime?      @map("revoked_at") @db.Timestamptz(6)
+  actor            ActorIdentity  @relation("role_target", fields: [actorId], references: [id], onDelete: Restrict)
+  grantedByActor   ActorIdentity? @relation("role_granter", fields: [grantedByActorId], references: [id], onDelete: Restrict)
+
+  @@unique([actorId, role], map: "role_grant_actor_role_key")
+  @@index([grantedByActorId], map: "role_grant_granter_idx")
+  @@map("role_grant")
+}
+
+model SyntheticSession {
+  id         String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  actorId    String        @map("actor_id") @db.Uuid
+  tokenHash  String        @unique(map: "synthetic_session_token_hash_key") @map("token_hash") @db.Char(64)
+  expiresAt  DateTime      @map("expires_at") @db.Timestamptz(6)
+  revokedAt  DateTime?     @map("revoked_at") @db.Timestamptz(6)
+  lastSeenAt DateTime?     @map("last_seen_at") @db.Timestamptz(6)
+  createdAt  DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  actor      ActorIdentity @relation(fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@index([actorId, expiresAt], map: "synthetic_session_actor_expiry_idx")
+  @@map("synthetic_session")
+}
+
+model AuditEvent {
+  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  occurredAt      DateTime       @default(now()) @map("occurred_at") @db.Timestamptz(6)
+  actorType       AuditActorType @map("actor_type")
+  actorIdentityId String?        @map("actor_identity_id") @db.Uuid
+  action          String         @db.VarChar(128)
+  outcome         AuditOutcome
+  correlationId   String         @map("correlation_id") @db.VarChar(128)
+  requestId       String?        @map("request_id") @db.VarChar(128)
+  targetType      String?        @map("target_type") @db.VarChar(128)
+  targetId        String?        @map("target_id") @db.VarChar(255)
+  reasonCode      String?        @map("reason_code") @db.VarChar(128)
+  actorIdentity   ActorIdentity? @relation(fields: [actorIdentityId], references: [id], onDelete: Restrict)
+
+  @@index([actorIdentityId, occurredAt], map: "audit_event_actor_time_idx")
+  @@index([correlationId], map: "audit_event_correlation_idx")
+  @@index([action, occurredAt], map: "audit_event_action_time_idx")
+  @@map("audit_event")
+}
+
+model OutboxEvent {
+  id             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  topic          String       @db.VarChar(128)
+  schemaVersion  Int          @default(1) @map("schema_version") @db.SmallInt
+  payload        Json         @db.JsonB
+  idempotencyKey String       @unique(map: "outbox_event_idempotency_key_key") @map("idempotency_key") @db.VarChar(255)
+  correlationId  String       @map("correlation_id") @db.VarChar(128)
+  status         OutboxStatus @default(PENDING)
+  attempts       Int          @default(0)
+  availableAt    DateTime     @default(now()) @map("available_at") @db.Timestamptz(6)
+  publishedAt    DateTime?    @map("published_at") @db.Timestamptz(6)
+  lastErrorCode  String?      @map("last_error_code") @db.VarChar(128)
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([status, availableAt], map: "outbox_event_delivery_idx")
+  @@map("outbox_event")
+}
+
+model IdempotencyRecord {
+  id            String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  scope         String            @db.VarChar(128)
+  key           String            @db.VarChar(255)
+  payloadDigest String            @map("payload_digest") @db.Char(64)
+  resultDigest  String?           @map("result_digest") @db.Char(64)
+  status        IdempotencyStatus @default(IN_PROGRESS)
+  lockedUntil   DateTime?         @map("locked_until") @db.Timestamptz(6)
+  completedAt   DateTime?         @map("completed_at") @db.Timestamptz(6)
+  createdAt     DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([scope, key], map: "idempotency_record_scope_key_key")
+  @@index([status, lockedUntil], map: "idempotency_record_lock_idx")
+  @@map("idempotency_record")
+}
+
+model ServiceHeartbeat {
+  id          String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  serviceName String              @map("service_name") @db.VarChar(64)
+  instanceId  String              @map("instance_id") @db.VarChar(128)
+  status      ServiceHealthStatus
+  observedAt  DateTime            @map("observed_at") @db.Timestamptz(6)
+  createdAt   DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime            @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([serviceName, instanceId], map: "service_heartbeat_service_instance_key")
+  @@index([status, observedAt], map: "service_heartbeat_status_time_idx")
+  @@map("service_heartbeat")
+}

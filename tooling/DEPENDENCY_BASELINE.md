@@ -40,7 +40,8 @@ ESLint 10 and TypeScript 7 were examined and intentionally not selected: the tra
 lint plugins declare ESLint support through major 9, and `typescript-eslint` declares TypeScript
 support below 6.1. The pinned versions are the newest releases inside those declared compatibility
 ranges. Lifecycle scripts are fail-closed; only `esbuild` and `unrs-resolver`, both required by the
-selected quality toolchain, are explicitly approved during this bootstrap.
+selected quality toolchain, plus the exact pinned Prisma CLI/engine packages required for schema
+generation and migration verification, are explicitly approved.
 
 pnpm's release-age policy recorded an explicit exception for the directly pinned and metadata-
 verified `tsx@4.23.4`; transitive versions remain gated by the lockfile supply-chain check. This

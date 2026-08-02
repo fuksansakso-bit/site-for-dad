@@ -37,6 +37,7 @@ build/
 out/
 coverage/
 *.tsbuildinfo
+packages/db/src/generated/
 
 # Python-кэши и виртуальные окружения
 __pycache__/

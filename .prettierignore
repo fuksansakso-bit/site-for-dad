@@ -9,3 +9,4 @@ node_modules/**
 .next/**
 .turbo/**
 pnpm-lock.yaml
+packages/db/src/generated/**

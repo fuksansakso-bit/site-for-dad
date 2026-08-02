@@ -1,0 +1,11 @@
+AGENTS.md
+CHANGELOG.md
+README.md
+docs/**
+reference/**
+coverage/**
+dist/**
+node_modules/**
+.next/**
+.turbo/**
+pnpm-lock.yaml

@@ -7,6 +7,7 @@
 
 ### Added
 
+- Инициализирован Phase 1A workspace: Node.js `24.18.1`, pnpm `11.18.0`, единый exact-version catalog, Turborepo task graph и зафиксированный dependency baseline для Windows 11 без выбора production-провайдера.
 - Зафиксированы `OWNER-DECISION-001`–`007`: разделение Product Owner/Business Owner, PriceVersion activation, per-item minimum 1500 рублей, authoritative local availability, AMIGO cadence/staleness, parity tolerance и regional production matrix.
 - ADR-0007–0010 приняты Product Owner для Phase 1A после проверки совместимости, Windows 11, migration safety, provider replacement, vendor-neutral secrets, separate worker и observability-from-start.
 - Создана рабочая ветка `phase/1a-foundation` от Phase 0C commit `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; remote не добавлялся и push не выполнялся.

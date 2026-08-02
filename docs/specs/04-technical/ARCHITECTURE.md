@@ -4,10 +4,10 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A Foundation implemented and verified; feature/production topology remains gated |
-| Версия | 0.4.0 |
+| Статус | Phase 1A verified; Phase 1B.1 catalog pilot topology authorized/in progress; later features/production gated |
+| Версия | 0.5.0 |
 | Дата | 2026-08-02 |
-| Global baseline | [GLOBAL_SPEC.md](../GLOBAL_SPEC.md) 0.9.0 |
+| Global baseline | [GLOBAL_SPEC.md](../GLOBAL_SPEC.md) 0.10.0 |
 | Decisions | [docs/adr](../../adr/) |
 
 ## 1. Назначение and boundaries
@@ -50,7 +50,7 @@ Architecture defines logical components, trust/data boundaries, synchronous/asyn
 - **ARCH-SPEC-019 — MUST:** PostgreSQL is the local transactional operational system of record for source captures, normalized catalog projections, local overlays, active pointers and audit; it is not authority to redefine AMIGO-origin or Business Owner-owned values.
 - **ARCH-SPEC-020 — MUST:** source-owned fields (AMIGO products, materials, technical data, catalog-image identity and base prices) and local-owned fields (availability, visibility/publication, price overrides, portfolio and commercial conditions) use separate version/provenance/mutation paths; cross-layer last-write-wins is prohibited.
 - **ARCH-SPEC-021 — MUST:** AMIGO image metadata, provenance, mapping, rights/publication state and object references MAY reside in PostgreSQL, while binary originals/derivatives MUST remain in managed object storage under ADR-0006/0009.
-- **ARCH-SPEC-022 — MUST:** documenting the PostgreSQL target and authority matrix does not assert an existing catalog schema/import or authorize Phase 1B; implementation still follows roadmap entry gates and reviewed migrations.
+- **ARCH-SPEC-022 — MUST:** `OWNER-DECISION-010` authorizes only the reviewed Phase 1B.1 catalog schema/import/publication slice; documenting later topology does not assert completion or authorize Phase 1B.2/1C+.
 - **ARCH-SPEC-023 — MUST:** by `OWNER-DECISION-009`, the public application MUST NOT read AMIGO, raw captures or staged candidates directly. Client catalog, search, filters, configurator, calculations, leads and analytics use PostgreSQL active approved catalog/transactional state as their only canonical runtime source.
 - **ARCH-SPEC-024 — MUST:** cache, search index, filter facets, analytics datasets and other read projections MAY serve requests only when derived from and pinned to an exact active `CatalogVersion`; they are rebuildable/disposable and cannot accept AMIGO directly or become a mutation authority.
 - **ARCH-SPEC-025 — MUST:** every AMIGO change follows `source capture → import/synchronization → PostgreSQL staged local catalog → validation/diff → Business Owner approval → explicit administrator activation → public catalog`. No adapter, worker, cache or admin shortcut may bypass a stage.

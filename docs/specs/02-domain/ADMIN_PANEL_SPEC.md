@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD`; operational contract ready, Phase 1F activation waits for final roles/identity and dependent feature data |
-| Версия | 0.3.0 |
+| Статус | Minimal catalog-only `/admin/catalog` slice authorized in Phase 1B.1; all other admin areas remain gated |
+| Версия | 0.4.0 |
 | Дата | 2026-08-02 |
 | Permissions | [ROLES_PERMISSIONS.md](../01-product/ROLES_PERMISSIONS.md) |
 | Source flows | Catalog, pricing, media, sync and order specs |
@@ -14,7 +14,7 @@
 
 Admin panel provides safe, explainable and audited operations for catalog, mappings, readiness, pricing versions, media rights/publication, partner record, sync runs, leads/orders, users/roles, content and operational status.
 
-Out of scope: unrestricted database editor, arbitrary code/expression execution, secret display, provider console replacement, production implementation and bypassing approvals/TBD.
+Out of scope: unrestricted database editor, arbitrary code/expression execution, secret/raw snapshot display, provider console replacement, non-catalog admin modules, production deployment and bypassing approvals/TBD.
 
 ## 2. Actors and capability groups
 

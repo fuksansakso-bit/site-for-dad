@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A safe error and health contracts implemented; business routes remain conceptual and gated |
-| Версия | 0.3.0 |
+| Статус | Phase 1A health/error contracts implemented; Phase 1B.1 catalog routes authorized; other business routes gated |
+| Версия | 0.4.0 |
 | Дата | 2026-08-02 |
 | Architecture/data | [ARCHITECTURE.md](ARCHITECTURE.md), [DATA_MODEL.md](DATA_MODEL.md) |
 | Security | [SECURITY_PRIVACY.md](SECURITY_PRIVACY.md) |

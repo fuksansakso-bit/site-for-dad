@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Версия gate | 1.5.0 |
-| Проверяемая входная база | Phase 0B baseline `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`; Phase 0C baseline `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; `GLOBAL_SPEC.md` 0.9.0 |
+| Версия gate | 1.6.0 |
+| Проверяемая входная база | Phase 0B baseline `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`; Phase 0C baseline `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; Phase 1A completion `943d4a2efa5e05f0d05493633cf5eb549e072a22`; `GLOBAL_SPEC.md` 0.10.0 |
 | Дата entry self-audit | 2026-08-02, Europe/Moscow |
 | Решение по входу в 0B | **PASSED** |
 | Основание письменного решения | Приложенное владельцем задание «AUTHORIZED AMIGO FUNCTIONAL PARITY AND SPECIALIZED SPECS» и повторное указание «так приступай к работе» |
@@ -13,8 +13,9 @@
 | Текущий gate завершения 0B | **PASSED** — документационная фаза завершена |
 | Phase 0C Implementation Readiness Gate | **AUTHORIZED_FOR_PHASE_1A_FOUNDATION** — QG-147/148 закрыты 2026-08-02 |
 | Phase 1A Foundation Acceptance Gate | **PASSED_PHASE_1A_FOUNDATION** — QG-149–158 закрыты 2026-08-02 |
-| Post-Phase 1A Owner Decision Documentation Audit | **PASSED_DOCS_ONLY** — QG-159–168 закрыты 2026-08-02; нового phase transition нет |
-| Разрешённая реализация | Новая implementation не разрешена; Phase 1B+, AMIGO data и production deployment запрещены |
+| Post-Phase 1A Owner Decision Documentation Audit | **PASSED_DOCS_ONLY** — QG-159–168 закрыты 2026-08-02 как исторический pre-transition audit |
+| Phase 1B.1 Entry Gate | **AUTHORIZED_PHASE_1B1_IN_PROGRESS** — QG-169–176 закрыты 2026-08-02 |
+| Разрешённая реализация | Только Phase 1B.1 catalog pilot/local publication layer; Phase 1B.2/1C+ и production запрещены |
 
 Entry gate подтверждает, что исправления 0A.1 внесены и письменное решение начать документную фазу 0B получено. Он не означает готовность ценовой формулы, импорта, приложения или запуска. Открытые TBD блокируют утверждение зависимой спецификации или функции, но не отменяют разрешение создавать документацию 0B с безопасным поведением.
 
@@ -262,7 +263,26 @@ Gate confirms technical completion of the authorized phase only. It neither appr
 
 Результат остаётся `PASSED_DOCS_ONLY`. Он уточняет архитектурный контракт будущих Phase 1B/1C, но не является transition decision и не изменяет фактическую Phase 1A schema.
 
-## 8. История изменений
+## 8. Phase 1B.1 entry and pilot acceptance gate
+
+### 8.1. Entry gate
+
+- [x] **QG-169 — MUST:** `OWNER-DECISION-010` письменно разрешает только Phase 1B.1 и явно запрещает Phase 1B.2/1C+, full import, calculator/configurator/preview/AI/cart/order/WhatsApp/account/final landing/starfield и production deployment.
+- [x] **QG-170 — MUST:** Phase 1A завершена `PASSED_PHASE_1A_FOUNDATION`; исходный commit `943d4a2efa5e05f0d05493633cf5eb549e072a22`, branch `phase/1b-amigo-catalog-pilot` и clean pre-change tree подтверждены.
+- [x] **QG-171 — MUST:** transport discovery прошёл в требуемом приоритете; official API/export/file не выдуманы, partner cabinet подтверждён без использования credentials, а owner-authorized public pages выбраны как bounded pilot fallback.
+- [x] **QG-172 — MUST:** четыре явных material paths отвечают без login/CAPTCHA и публикуют stable numeric material/system IDs, source section/path/title, текущую карточную цену и media paths; dated evidence сохранено.
+- [x] **QG-173 — MUST:** active plan фиксирует real allowlist из 32 material IDs четырёх семейств и четырёх real systems, включая roller/Zebra blackout, aluminum lamella и vertical fabric; fixture не считается import evidence.
+- [x] **QG-174 — MUST:** `PARTNER_LICENSE`, asset-level `PUBLICATION_APPROVED`, private-by-default object storage, no-hotlink и bounded media validation применяются; pilot JPEG preflight прошёл без скачивания полного медиакаталога.
+- [x] **QG-175 — MUST:** source/normalized/business-overlay ownership и PostgreSQL-only public runtime остаются каноническими по `OWNER-DECISION-008/009`; sync не активирует версии и не перезаписывает local decisions.
+- [x] **QG-176 — MUST:** active plan содержит один `IN_PROGRESS` step, stop conditions, exact commit sequence, verification/recovery и обязательный completion report; full-catalog `TBD-SOURCE-AMIGO-002` перенесён только в Phase 1B.2 gate.
+
+Entry result: **AUTHORIZED_PHASE_1B1_IN_PROGRESS**. Pilot completion остаётся непроверенным до implementation/test/media/import evidence; новый phase transition этим статусом не выдаётся.
+
+### 8.2. Pilot acceptance gate
+
+Phase 1B.1 получит итоговый статус только после проверки реального импорта, idempotency, local media, ownership separation, overlay survival, source-removal tombstone, exact diff/activation/bulk publication, PostgreSQL-only public catalog, hidden filtering, required unit/contract/integration/browser/recovery tests, build/CI-equivalent, synchronized docs, clean tree и отсутствия Phase 1C work. До completion report этот gate имеет статус **IN PROGRESS**.
+
+## 9. История изменений
 
 | Версия | Дата | Изменение |
 |---|---|---|
@@ -272,5 +292,6 @@ Gate confirms technical completion of the authorized phase only. It neither appr
 | 1.3.0 | 2026-08-02 | Добавлены QG-149–158 с clean-clone, runtime, migration, jobs/storage, identity/security/observability, test/scan/scope/docs evidence; Phase 1A получила `PASSED_PHASE_1A_FOUNDATION`, Phase 1B осталась запрещена. |
 | 1.4.0 | 2026-08-02 | Добавлены QG-159–163 для `OWNER-DECISION-008`: authority matrix синхронизирована и механически проверена, отсутствие catalog/import implementation подтверждено, Phase 1B hold сохранён. |
 | 1.5.0 | 2026-08-02 | Добавлены QG-164–168 для `OWNER-DECISION-009`: PostgreSQL public-serving contract, diff/owner/admin activation, no-auto-delete, override/audit/version/rollback синхронизированы и проверены; Phase 1B hold сохранён. |
+| 1.6.0 | 2026-08-02 | `OWNER-DECISION-010` и QG-169–176 отдельно разрешили только Phase 1B.1 после real public-page transport/ID/media preflight; pilot acceptance оставлен `IN PROGRESS`, Phase 1B.2/1C+ запрещены. |
 | 0.2.0 | 2026-08-02 | Entry gate обновлён для `GLOBAL_SPEC` 0.4.0 и partner-authorized scope; письменное поручение владельца зафиксировано как разрешение начать 0B; добавлен отдельный completion gate 0B. |
 | 0.1.0 | 2026-08-02 | Предыдущий self-audit 0A.1 для версии 0.3.1; проверки `QG-001`–`087` впоследствии зарезервированы. |

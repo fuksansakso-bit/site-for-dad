@@ -4,11 +4,11 @@
 
 | Поле | Значение |
 |---|---|
-| Фаза | 1A — Foundation completed and accepted; Phase 1B+ forbidden |
-| Версия | 1.5.0 |
+| Фаза | Phase 1A passed; only Phase 1B.1 pilot authorized/in progress |
+| Версия | 1.6.0 |
 | Дата | 2026-08-02, Europe/Moscow |
 | Состояние покрытия | `COVERED_WITH_VISIBLE_TBD` |
-| Главный источник требований | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.9.0 |
+| Главный источник требований | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.10.0 |
 | Feature contract | [FEATURE_SPEC.md](../specs/01-product/FEATURE_SPEC.md) |
 | Stories | [USER_STORIES.md](../specs/01-product/USER_STORIES.md) |
 | Acceptance | [ACCEPTANCE_CRITERIA.md](../specs/01-product/ACCEPTANCE_CRITERIA.md) |
@@ -190,12 +190,13 @@ Detailed runtime versions, commit list, skipped production-only checks and accep
 | P0 classification | 61 / 61 classified; 0 unclassified |
 | Phase 1A acceptance | 10 / 10 `PLAN-1A-AC-*`; QG-149–158 passed |
 | Phase 1A automated tests | 61 unit/contract + 19 integration/recovery + 20 browser |
+| Phase 1B.1 entry | QG-169–176 passed; real 32-ID pilot acceptance still in progress |
 
 ## 10. Completion conditions
 
 Покрытие считается валидным, если автоматическая проверка подтверждает существование всех linked files и каждого ID, stories сохраняют полный шаблон, acceptance содержит позитивное и негативное проверяемое поведение, test strategy содержит level/preconditions/input/expected result/status, а открытые TBD не обозначены как выполненные tests.
 
-Матрица отражает завершение только Phase 1A по [Phase 1A gate](SPEC_QUALITY_GATE.md#7-phase-1a-foundation-acceptance-gate). Она не разрешает Phase 1B+, AMIGO import или production deployment.
+Матрица отражает завершённую Phase 1A и отдельно разрешённую Phase 1B.1 по [active plan](../06-plans/active/PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN.md). Она не объявляет pilot завершённым и не разрешает Phase 1B.2/1C+, full import или production deployment.
 
 ## 11. История изменений
 
@@ -208,3 +209,4 @@ Detailed runtime versions, commit list, skipped production-only checks and accep
 | 1.3.0 | 2026-08-02 | Все `PLAN-1A-AC-001`–`010` связаны с фактическими ports, scripts и tests; добавлены Phase 1A counts/report и запрет перехода к 1B. |
 | 1.4.0 | 2026-08-02 | Добавлена цепочка `OWNER-DECISION-008` для AMIGO/Business Owner authority и PostgreSQL/object-storage projection; existing import/price/asset TBD и Phase 1B hold сохранены. |
 | 1.5.0 | 2026-08-02 | Добавлена цепочка `OWNER-DECISION-009` для единственного PostgreSQL public-serving source, обязательных diff/owner/admin activation, no-auto-delete, override precedence, audit/version/rollback и существующих test chains; Phase 1B hold сохранён. |
+| 1.6.0 | 2026-08-02 | `OWNER-DECISION-010`, QG-169–176, active 32-ID plan и dated transport evidence связаны как Phase 1B.1 entry; later-phase hold и незавершённый acceptance сохранены. |

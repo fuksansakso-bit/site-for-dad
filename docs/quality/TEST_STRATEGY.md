@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A Foundation test baseline executed; business/production scenarios retain their feature gates and TBD statuses |
-| Версия | 0.3.0 |
+| Статус | Phase 1A baseline executed; Phase 1B.1 catalog pilot tests authorized/in progress; later/production tests gated |
+| Версия | 0.4.0 |
 | Дата | 2026-08-02 |
 | Requirements | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) and profile specs |
 | Acceptance | [ACCEPTANCE_CRITERIA.md](../specs/01-product/ACCEPTANCE_CRITERIA.md) |
@@ -153,7 +153,7 @@ Report requirement/AC/test coverage, pass/fail/blocked/quarantined, P0/P1 defect
 
 ## 13. Phase 1A execution evidence
 
-The provider-neutral `ci:verify` pipeline passed 9/9 stages in the working tree and a clean clone. Executed Foundation baseline: 61 unit/contract tests with per-workspace coverage artifacts, 19 real PostgreSQL/RustFS/Graphile/identity integration/recovery tests and 20 browser scenarios across Chromium, Firefox, WebKit, narrow viewport and reduced motion. Empty/repeat/upgrade/failed migrations, retry/timeout/idempotency/graceful worker drain, storage denial/outage, identity revoke/outage, safe readiness/errors, secret/artifact canaries and scope boundaries passed. This evidence does not change `DESIGNED`/`BLOCKED_TBD` status of Phase 1B+ business tests. Full detail: [Phase 1A report](../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
+The provider-neutral `ci:verify` pipeline passed 9/9 stages in the working tree and a clean clone. Executed Foundation baseline: 61 unit/contract tests, 19 PostgreSQL/RustFS/Graphile/identity integration/recovery tests and 20 browser scenarios. This evidence authorizes no feature by itself; `OWNER-DECISION-010` separately moves only Phase 1B.1 catalog tests from designed to required execution. Full Phase 1A detail: [report](../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
 
 ## 14. Dependencies, risks and open questions
 

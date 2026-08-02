@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Draft 0B — logical storage contract; vendor/region/RPO/RTO/retention pending ADR/TBD |
-| Версия | 0.2.0 |
+| Статус | Phase 1A local S3 port verified; Phase 1B.1 pilot catalog media use authorized; production provider/region gated |
+| Версия | 0.3.0 |
 | Дата | 2026-08-02 |
 | Media pipeline | [ASSET_MEDIA_PIPELINE.md](ASSET_MEDIA_PIPELINE.md) |
 | Privacy/security | [SECURITY_PRIVACY.md](SECURITY_PRIVACY.md) |

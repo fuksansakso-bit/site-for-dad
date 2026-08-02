@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD` for Foundation; actual pilot inventory requires `TBD-ASSORT-002`/authorized source before Phase 1B activation |
-| Версия | 0.3.0 |
+| Статус | Phase 1B.1 32-variant catalog/overlay pilot authorized; full inventory remains `TBD-ASSORT-002` |
+| Версия | 0.4.0 |
 | Дата | 2026-08-02 |
 | Sources | [EXTERNAL_SOURCES.md](../../00-global/EXTERNAL_SOURCES.md) |
 | Rights | [ASSET_RIGHTS_REGISTER.md](../../00-global/ASSET_RIGHTS_REGISTER.md) |
@@ -16,7 +16,7 @@
 
 In scope: supplier/partner/source catalogs, dynamic product hierarchy, materials/variants/properties, options/compatibility/dimensions, source/local states, provenance, aliases and availability records.
 
-Out of scope: physical DB schema/SQL, exact source transport, real stock quantities, unverified technical limits, price formulas and production imports.
+Out of scope: full AMIGO inventory, real stock quantities, unverified technical limits, price formulas/calculation and production imports/deployment. Phase 1B.1 physical schema and bounded public-page transport follow the active plan and technical specs.
 
 ## 2. Акторы, термины и ownership
 

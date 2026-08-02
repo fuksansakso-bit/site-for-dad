@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A synthetic security baseline implemented; public PII/media/AI activation remains blocked by legal, retention and provider values |
-| Версия | 0.2.0 |
+| Статус | Phase 1A security baseline implemented; Phase 1B.1 non-PII catalog/media/RBAC controls authorized; user media/AI/production gated |
+| Версия | 0.3.0 |
 | Дата | 2026-08-02 |
 | Data model | [DATA_MODEL.md](DATA_MODEL.md) |
 | Roles | [ROLES_PERMISSIONS.md](../01-product/ROLES_PERMISSIONS.md) |

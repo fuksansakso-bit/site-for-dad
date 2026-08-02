@@ -8,7 +8,7 @@
 
 Фаза **1A — FOUNDATION** завершена 2026-08-02 в ветке `phase/1a-foundation` от исходного commit `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`. Принятые ADR-0007–0010 реализованы и повторно проверены: созданы workspace, минимальные web/BFF и worker shells, PostgreSQL/Prisma migration foundation, Graphile Worker, S3-compatible storage port, synthetic identity/RBAC, observability, security baseline, тесты и provider-neutral CI.
 
-[Phase 1A Acceptance Gate](docs/00-global/SPEC_QUALITY_GATE.md#7-phase-1a-foundation-acceptance-gate) имеет статус `PASSED_PHASE_1A_FOUNDATION`. Полный конвейер прошёл как в рабочей копии, так и после установки 638 зависимостей по frozen lockfile в отдельном чистом клоне. Каталог, AMIGO import, цена, конфигуратор, preview, cart/order, бизнес-админка, пользовательские фото, AI и production deployment не создавались. **Phase 1B не разрешена и не начинается автоматически.**
+[Phase 1A Acceptance Gate](docs/00-global/SPEC_QUALITY_GATE.md#7-phase-1a-foundation-acceptance-gate) имеет статус `PASSED_PHASE_1A_FOUNDATION`. `OWNER-DECISION-010` отдельно разрешил начать только **Phase 1B.1 — AMIGO CATALOG PILOT AND LOCAL PUBLICATION LAYER** в ветке `phase/1b-amigo-catalog-pilot`. Активный план фиксирует реальный allowlist из 32 AMIGO-материалов четырёх семейств, четыре системы, bounded public-page transport и PostgreSQL-only publication layer. Phase 1B.2/1C+, полный импорт, calculation/configurator/preview/AI/cart/order/WhatsApp/account/final landing и production deployment не разрешены.
 
 ## С чего начать
 
@@ -31,7 +31,7 @@
 - `docs/specs/` содержит глобальную и 33 нормативные профильные спецификации product/domain/UX/technical.
 - `docs/00-global/` содержит управляющие и справочные документы: реестры, политики, roadmap, quality gate, допущения и открытые вопросы.
 - `docs/quality/` и `docs/evaluations/` содержат test/evaluation artifacts, а `docs/adr/` — десять принятых решений об устойчивых архитектурных границах.
-- `docs/06-plans/` содержит frozen MVP, critical-spec audit, implementation roadmap, technology evaluation, завершённый Phase 1A plan и [Foundation report](docs/06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
+- `docs/06-plans/` содержит frozen MVP, critical-spec audit, implementation roadmap, technology evaluation, завершённый Phase 1A plan/report и активный [Phase 1B.1 catalog pilot plan](docs/06-plans/active/PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN.md).
 
 ## Референсы
 
@@ -72,4 +72,4 @@ pnpm.cmd dev:stop
 
 ## Текущая разрешённая работа
 
-Phase 1A завершена. До нового письменного transition decision разрешены только проверка и корректировка её Foundation/documentation artifacts. Нерешённые pricing, export, privacy и legal TBD продолжают блокировать соответствующие feature gates и не подменяются догадками. Phase 1B, import/media ingestion, бизнес-функции и production deployment не разрешены.
+Разрешена только Phase 1B.1 по [active plan](docs/06-plans/active/PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN.md): controlled real catalog import, local media, sync/diff/version/overlays и минимальные admin/public catalog surfaces. Нерешённые full-export, calculation, compatibility, privacy и legal TBD блокируют только соответствующие поздние gates и не подменяются догадками. Phase 1B.2/1C+ и production deployment не начинаются автоматически.

@@ -4,14 +4,14 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Нормативная политика; pricing implementation остаётся за пределами Phase 1A |
-| Версия | 1.4.0 |
+| Статус | Нормативная политика; Phase 1B.1 разрешает только source card prices/local base overrides без calculator |
+| Версия | 1.5.0 |
 | Дата | 2026-08-02, Europe/Moscow |
 | Главный источник правды | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) |
 | Внешние источники | [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md) |
 | Будущая детализация | `PRICING_CALCULATOR_SPEC.md` и `TEST_STRATEGY.md`, запланированные в [SPEC_ROADMAP.md](SPEC_ROADMAP.md) |
 
-Политика задаёт происхождение, версии, подтверждение и деградацию цены. Она не определяет неподтверждённую формулу, не копирует алгоритм AMIGO и не разрешает pricing implementation в Phase 1A.
+Политика задаёт происхождение, версии, подтверждение и деградацию цены. Phase 1B.1 MAY импортировать опубликованную карточную цену «от», её context/currency/date/version и separate local base override; формула, размеры, minimum 1500 и calculator остаются запрещены до Phase 1C.
 
 ## 1. Основные требования владельца
 
@@ -27,6 +27,7 @@
 - **PRICING-SOURCE-010 — MUST:** по `OWNER-DECISION-008` AMIGO является authority для AMIGO-origin base price, а PostgreSQL хранит immutable source snapshot и active local projection; import/normalization MUST NOT превращать source price в редактируемое локальное значение.
 - **PRICING-SOURCE-011 — MUST:** Business Owner является decision authority для local price overrides и commercial conditions. Они хранятся отдельными versioned/audited слоями, не переписывают AMIGO base price и не активируются без применимых owner, financial и legal gates.
 - **PRICING-SOURCE-012 — MUST:** по `OWNER-DECISION-009` конфигуратор и расчёт MUST получать catalog/material/base-price inputs только из совместимых активных одобренных `CatalogVersion`/`PriceVersion` в PostgreSQL. Client request MUST NOT читать AMIGO, raw capture, staged candidate, cache/search source или неподтверждённую цену напрямую.
+- **PRICING-SOURCE-013 — MUST:** Phase 1B.1 хранит только decimal minor-unit source card price «от» с currency `RUB`, published regional/source context, capture/version/status и nullable verified `sourcePriceCategory`; отсутствующее/нулевое/неразбираемое значение получает `PRICE_ON_REQUEST`, а opaque DOM token не выдаётся за подтверждённую price category.
 
 ## 2. Приоритет источников и способ получения
 
@@ -39,7 +40,7 @@
 
 - **PRICING-SYNC-001 — MUST:** более низкий приоритет используется только при отсутствии доступного и разрешённого источника более высокого приоритета; причина фиксируется.
 - **PRICING-SYNC-002 — MUST:** любой полученный набор остаётся draft до валидации и административного подтверждения.
-- **PRICING-SYNC-003 — MUST:** обновления AMIGO проверяются автоматически один раз в сутки и вручную по запросу администратора; это schedule будущей sync-функции, не разрешённой в Phase 1A.
+- **PRICING-SYNC-003 — MUST:** Phase 1B.1 проверяет source card prices автоматически раз в сутки и вручную OWNER/ADMIN; проверка создаёт staged diff и никогда не активирует `PriceVersion` автоматически.
 - **PRICING-SYNC-006 — MUST:** данные старше 7 дней получают `STALE_WARNING`; возраст более 30 дней блокирует публикацию изменённой цены или нового товара до обязательной административной проверки.
 - **PRICING-SYNC-004 — MUST:** город/регион AMIGO, используемый для базового сравнения, определяется `TBD-PRICE-SOURCE-001`; московский контекст не считается автоматически применимым к Чеченской Республике.
 - **PRICING-SYNC-005 — MUST NOT:** нельзя утверждать существование публичного официального API AMIGO только из факта партнёрства; конкретный transport/export/API подтверждается отдельно по `TBD-SOURCE-AMIGO-002`.
@@ -89,7 +90,7 @@
 - **PRICING-LOCAL-002 — MUST:** «Замер», «Доставка» и «Установка» являются отдельными строками расчёта со значением `0` рублей и клиентской подписью «Бесплатно» в пределах всей обслуживаемой Чеченской Республики.
 - **PRICING-LOCAL-003 — MUST:** цены AMIGO на замер, доставку и монтаж для Москвы или другого региона не переносятся в PROJECT_NAME.
 - **PRICING-LOCAL-004 — MUST:** минимальная стоимость равна 1500 рублей для каждой отдельно изготавливаемой единицы изделия и применяется до суммирования заказа: 1100 рублей по формуле → 1500 рублей; две такие единицы → 3000 рублей.
-- **PRICING-LOCAL-005 — MUST:** правило `PRICING-LOCAL-004` документируется, но не реализуется в Phase 1A и не активируется до подтверждения остальных formula/source/version gates Phase 1C.
+- **PRICING-LOCAL-005 — MUST:** правило `PRICING-LOCAL-004` документируется, но не реализуется в Phase 1B.1 и не активируется до подтверждения остальных formula/source/version gates Phase 1C.
 - **PRICING-LOCAL-006 — MUST:** денежные значения хранятся в целых копейках и сопровождаются валютой; правила округления остаются `TBD-PRICE-002`.
 - **PRICING-LOCAL-007 — MUST:** для первой версии `localSalePrice = sourceAmigoPrice` из активного проверенного snapshot, если отсутствует применимый утверждённый `LocalOverride`.
 - **PRICING-LOCAL-008 — MUST:** `LocalOverride` MAY задавать fixed price, процентную надбавку, процентную скидку, minimum, manual price или price-on-request с датами действия; конкретные значения и приоритеты не активируются без owner approval.
@@ -186,3 +187,4 @@ PricingProvider
 | 1.2.0 | 2026-08-02 | Зафиксированы owner activation, daily/manual freshness, per-item minimum и parity tolerance при сохранении Phase 1A boundary. |
 | 1.3.0 | 2026-08-02 | По `OWNER-DECISION-008` AMIGO base price отделена от Business Owner local overrides/commercial conditions и локальной PostgreSQL-проекции. |
 | 1.4.0 | 2026-08-02 | По `OWNER-DECISION-009` public calculations переведены на активные PostgreSQL `CatalogVersion`/`PriceVersion`; зафиксированы override precedence, staged diff, owner/admin activation, audit/source timestamps и отсутствие direct AMIGO runtime reads. |
+| 1.5.0 | 2026-08-02 | `OWNER-DECISION-010` разрешил Phase 1B.1 source card prices/PRICE_ON_REQUEST/local base overrides и daily diff, сохранив calculator/formulas/minimum rule для Phase 1C. |

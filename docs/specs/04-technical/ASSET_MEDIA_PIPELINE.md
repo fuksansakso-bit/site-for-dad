@@ -4,15 +4,15 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Draft 0B — future controlled pipeline defined; no media imported in 0B |
-| Версия | 0.2.0 |
+| Статус | Phase 1B.1 controlled pilot media import authorized; user media/production pipeline gated |
+| Версия | 0.3.0 |
 | Дата | 2026-08-02 |
 | Rights | [ASSET_RIGHTS_REGISTER.md](../../00-global/ASSET_RIGHTS_REGISTER.md) |
 | Storage | [STORAGE_MEDIA.md](STORAGE_MEDIA.md) |
 
 ## 1. Purpose and boundaries
 
-The pipeline registers, validates, stores, transforms, maps, reviews, publishes, revokes and deletes owner/partner/content/preview media with full provenance. Partner permission allows future controlled use, but phase 0B creates no importer, downloaded catalog or production storage.
+The pipeline registers, validates, stores, maps, reviews, publishes, revokes and deletes owner/partner media with full provenance. Phase 1B.1 MAY import only media referenced by the frozen pilot allowlist through the local private-by-default storage port; no full media crawl, user upload or production storage is authorized.
 
 Out of scope: bulk scraping, hotlink, watermark removal, authorship change, training use, client-photo public content and arbitrary transformations beyond rights/profile.
 

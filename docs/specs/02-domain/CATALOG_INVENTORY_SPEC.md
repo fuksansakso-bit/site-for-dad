@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD` for Foundation; actual pilot inventory requires `TBD-ASSORT-002`/authorized source before Phase 1B activation |
-| Версия | 0.2.0 |
+| Версия | 0.3.0 |
 | Дата | 2026-08-02 |
 | Sources | [EXTERNAL_SOURCES.md](../../00-global/EXTERNAL_SOURCES.md) |
 | Rights | [ASSET_RIGHTS_REGISTER.md](../../00-global/ASSET_RIGHTS_REGISTER.md) |
@@ -22,7 +22,7 @@ Out of scope: physical DB schema/SQL, exact source transport, real stock quantit
 
 Actors: public reader, catalog admin, content manager, owner/approver, sync system, pricing/configurator consumers. `Source Catalog` is a captured external namespace/version; `Local Catalog` is independently governed projection. `Availability` is evidence-backed status, not inferred from publication, image or price.
 
-Catalog admin owns mapping/readiness; content owns media mapping; pricing role owns price readiness; supply/manager owns availability evidence; owner resolves high-impact classification conflicts.
+AMIGO owns the meaning of AMIGO-origin products, materials, technical data, catalog-image identity and base-price fields. Business Owner owns local availability, visibility/publication, price overrides, portfolio composition and commercial conditions. Catalog admin records delegated mapping/readiness operations; content owns media mapping; pricing role operates approved price data; supply/manager records availability evidence. PostgreSQL is the operational system of record for snapshots, normalized projections and local decisions, not the authority that may redefine either layer.
 
 ## 3. Entity model
 
@@ -110,8 +110,13 @@ Dimension constraints use millimetres and square metres conceptually but exact n
 - **CAT-INV-020 — MUST:** stale/expired evidence becomes `UNKNOWN/STALE` under approved policy, not permanently available.
 - **CAT-INV-021 — MUST:** negative quantity and unbalanced movements are invalid if quantitative inventory is introduced.
 - **CAT-INV-022 — MUST:** reserved/order quantities are separate from on-hand and need auditable movements; no model is assumed before approval.
-- **CAT-INV-023 — MUST:** local admin-confirmed status is the availability source of truth; an AMIGO-proposed status is stored separately and never auto-overwrites it.
+- **CAT-INV-023 — MUST:** Business Owner-confirmed local status, recorded through the authorized admin/PostgreSQL workflow, is the availability operational source of record; an AMIGO-proposed status is stored separately and never auto-overwrites it.
 - **CAT-INV-024 — MUST:** source age over 7 days carries `STALE_WARNING`; age over 30 days requires admin verification before a new product is published.
+- **CAT-INV-025 — MUST:** AMIGO-origin product/material/technical/image/base-price fields are source-owned and change only through a new versioned AMIGO capture plus mapping/verification; a local editor MUST NOT overwrite their source value in place.
+- **CAT-INV-026 — MUST:** local availability, visibility/publication, price overrides, portfolio relations and commercial conditions are Business Owner-owned overlays with independent version, provenance, approval and audit; sync MUST NOT overwrite them.
+- **CAT-INV-027 — MUST:** PostgreSQL stores immutable captures, normalized local catalog projections, readiness overlays and active pointers. A database row is operational state, not evidence that its value came from the correct authority.
+- **CAT-INV-028 — MUST:** every sync/import field has declared authority (`AMIGO_SOURCE` or `BUSINESS_OWNER_LOCAL`); missing/ambiguous ownership or an attempted cross-layer update blocks the affected candidate instead of using last-write-wins.
+- **CAT-INV-029 — MUST:** PostgreSQL stores catalog-image metadata, provenance, exact entity mapping, rights/publication state and object reference; image binary originals/derivatives are stored in managed object storage under media policy.
 
 ## 9. Core flows and state transitions
 
@@ -179,3 +184,4 @@ Links: `FR-CATALOG-*`, `FR-MATERIAL-*`, `FR-VARIANT-*`, `AMIGO-SYNC-*`, `ASSET-*
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Определены normalized entity model, identifiers, four readiness dimensions, material properties, compatibility, availability boundary and lifecycle. |
 | 0.2.0 | 2026-08-02 | Локальная admin availability закреплена как source of truth; AMIGO proposal и 7/30-day freshness gates разделены. |
+| 0.3.0 | 2026-08-02 | По `OWNER-DECISION-008` добавлены field-level authority, PostgreSQL operational projection, защита local overlays от sync и object-storage boundary для image binaries. |

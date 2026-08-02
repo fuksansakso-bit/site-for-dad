@@ -7,6 +7,8 @@
 
 ### Added
 
+- Зафиксировано `OWNER-DECISION-009` «LOCAL CATALOG AS PUBLIC SOURCE OF TRUTH»: AMIGO остаётся upstream authority, публичная часть читает только активную одобренную PostgreSQL `CatalogVersion`/transactional state, а source changes проходят import/sync → local staging → validation/diff → Business Owner approval → explicit admin activation. Запрещены auto-delete локальных данных и direct AMIGO/staging runtime reads; local overrides имеют явный приоритет в публичной проекции, все версии/изменения аудируются и имеют source/timestamps/rollback.
+- Зафиксировано `OWNER-DECISION-008` и каноническая authority matrix: AMIGO определяет AMIGO-origin products/materials/technical data/catalog images/base prices; Business Owner определяет local availability/visibility/price overrides/portfolio/commercial conditions; PostgreSQL хранит версионированную operational projection, а image binaries — object storage.
 - Завершён Phase 1A verification baseline: 61 unit/contract tests с coverage artifacts, 19 реальных PostgreSQL/RustFS/Graphile/identity integration/recovery tests и 20 Playwright smoke scenarios в Chromium, Firefox, WebKit, narrow viewport и reduced-motion profile.
 - Добавлен provider-neutral fail-closed CI contract из девяти стадий: frozen install, formatting/docs/scope/boundaries, lint/typecheck, coverage, disposable PostgreSQL migrations/jobs/identity, disposable RustFS storage contract, production build/artifact scan, multi-browser smoke и repository secret/critical advisory scan.
 - Добавлен единый Windows 11 lifecycle `dev`/`dev:status`/`dev:stop`/`dev:reset` для loopback-only PostgreSQL, RustFS, web и отдельного worker с безопасной очисткой только `.local/foundation-environment`, повторным запуском миграций и локальными журналами без секретов.
@@ -53,6 +55,10 @@
 
 ### Changed
 
+- `GLOBAL_SPEC.md` обновлён до 0.9.0, `ARCHITECTURE.md`/`AMIGO_SYNC_ARCHITECTURE.md`/`DATA_MODEL.md`/`FEATURE_SPEC.md`/`PRICING_CALCULATOR_SPEC.md` — до 0.4.0, `AMIGO_CATALOG_PARITY_SPEC.md` — до 0.3.0, `TRACEABILITY_MATRIX.md`/`SPEC_ROADMAP.md`/`SPEC_QUALITY_GATE.md` — до 1.5.0; glossary/external-source/pricing/open-question/specification-and-implementation-roadmap/test-strategy/index/README контекст и QG-164–168 синхронизированы с `OWNER-DECISION-009`. Existing transport/import/price/asset TBD и запрет Phase 1B сохранены; бизнес-таблицы и импорт не создавались.
+- `GLOBAL_SPEC.md` обновлён до 0.8.0; glossary, external/rights/pricing policies, open questions, feature/RBAC, parity/catalog/pricing/admin/content, architecture/data/sync/media/storage, roadmap, traceability, index и README синхронизированы с field-level authority и запретом cross-layer overwrite.
+- `SPEC_QUALITY_GATE.md` обновлён до 1.4.0: QG-159–163 фиксируют docs-only audit, успешные documentation/format/phase-scope checks и отсутствие фактической catalog/import implementation; Phase 1B hold сохранён.
+- Формулировка «каталог импортируется в локальный PostgreSQL» закреплена как целевая Phase 1B operational topology, а не как доказательство завершённого импорта: текущая Prisma schema по-прежнему содержит только Foundation tables, `TBD-SOURCE-AMIGO-002`/`TBD-ASSORT-002`/pricing и asset inventory остаются открыты, отдельное Phase 1B authorization не получено.
 - Phase 1A Foundation завершена со статусом `PASSED_PHASE_1A_FOUNDATION`: полный CI-equivalent конвейер прошёл 9/9 стадий в рабочей копии и в отдельном чистом клоне после frozen установки 638 зависимостей; Phase 1B и production deployment не разрешены.
 - Phase 1A plan, accepted ADR-0007–0010, technical implementation notes, roadmap, quality gate, traceability, open-question gate notes, index и README синхронизированы с фактической Foundation реализацией и completion report.
 - `QG-147/148` закрыты; gate переведён в `AUTHORIZED_FOR_PHASE_1A_FOUNDATION`. Разрешена только Phase 1A, а Phase 1B+, AMIGO import, business features и production deployment явно остаются запрещены.

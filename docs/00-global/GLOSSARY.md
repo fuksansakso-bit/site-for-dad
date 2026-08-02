@@ -11,6 +11,9 @@
 | Изделие | Конкретная сконфигурированная единица подтверждённого семейства для одного окна, проёма или створки, которую предстоит изготовить и установить. Не равно абстрактной карточке каталога. |
 | Product Family (семейство изделия) | Динамический верхнеуровневый класс изделий. Начальный проверенный baseline включает рулонные; рулонные «Зебра»/«День-Ночь»; горизонтальные алюминиевые; вертикальные жалюзи, но data model допускает все текущие и будущие source categories без релиза кода. Материал не является семейством. |
 | Source Catalog Entity | Сущность внешнего каталога с точным source ID/slug/title и provenance. Может иметь составное маркетинговое название и не подменяет нормализованный Product System. |
+| Local Catalog Projection | Версионированное нормализованное представление AMIGO-origin каталога и Business Owner overlays в PostgreSQL для mapping, readiness, approval, audit и public serving. Staged projection не публикуется; active approved `CatalogVersion` является public-serving source of truth, но не становится upstream authority. |
+| CatalogVersion | Неизменяемая версия локального каталога с точными source/source-version references, timestamp, нормализованными revision refs, применёнными local overrides/readiness decisions, diff, Business Owner approval, administrator activation, predecessor и rollback target. Исправление создаёт новую версию. |
+| Public Catalog (публичный каталог) | Клиентское представление только активной одобренной `CatalogVersion`. Search/filter/cache/analytics projections могут обслуживать его как version-pinned производные, а approved binaries — из object storage; ни один из этих слоёв не читает AMIGO или staging независимо. |
 | Product System (система изделия) | Стабильная локальная конструктивная система внутри Product Family, определяющая совместимость и технические ограничения и связанная с одной или несколькими проверенными внешними сущностями. Не смешивается со способом монтажа, моделью механизма или размером ламели. |
 | Product Type (тип изделия) | Нормализованный конструктивный или материальный тип внутри семейства; хранится отдельно от маркетингового названия и Product System. |
 | Модель изделия | Каталожное описание конструкции и совместимых опций, на основе которого создаётся конкретное изделие. |
@@ -52,7 +55,10 @@
 
 | Термин | Определение |
 |---|---|
-| AMIGO | Основной внешний изменяемый `AUTHORIZED_PARTNER_SOURCE` каталога, разрешённых медиа и предварительной цены. Не является локальным runtime-источником правды, гарантией наличия или подтверждением конкретного публичного API. |
+| AMIGO | Основной внешний изменяемый `AUTHORIZED_PARTNER_SOURCE` и upstream authority для AMIGO-origin products, materials, technical data, catalog images и base prices. Публичная часть приложения никогда не читает AMIGO напрямую: storefront работает по активной одобренной PostgreSQL `CatalogVersion` и approved object-storage binaries. AMIGO не является live runtime dependency, источником локального наличия или доказательством конкретного публичного API. |
+| Source Authority | Субъект, уполномоченный определять исходный бизнес-смысл конкретной группы полей. Для AMIGO-origin products/materials/technical data/catalog images/base prices это AMIGO; для local availability/visibility/price overrides/portfolio/commercial conditions — Business Owner. |
+| Operational System of Record | Локальная система, хранящая активную версию, транзакционные записи, историю и аудируемые решения для работы приложения. PostgreSQL выполняет эту роль и по `OWNER-DECISION-009` является единственным каноническим runtime-источником публичных catalog/search/filter/configurator/calculation/lead/analytics данных, но не меняет Source Authority и не превращает импортированное значение в локально придуманный факт. |
+| Public-serving source of truth | Активная одобренная `CatalogVersion` и связанные транзакционные записи в PostgreSQL, из которых приложение и rebuildable projections получают публичные/операционные данные. Термин не означает upstream ownership: AMIGO и Business Owner сохраняют authority по `OWNER-DECISION-008`. |
 | Authorized Partner Source | Relationship status внешнего поставщика, для которого владелец подтвердил официальное партнёрство и permission scope; не отменяет snapshots, mapping, audit и publication lifecycle. |
 | PartnerRelationship | Версионируемая запись партнёрского статуса, имени/региона партнёра, badge, permission scope, owner confirmation, времени, optional evidence и brand notes. |
 | External Source (внешний источник) | Зарегистрированная внешняя организация, страница, выгрузка или разрешённый канал, из которого получено значение с provenance и ограничениями использования. |
@@ -62,7 +68,7 @@
 | `lastVerifiedAt` | Момент последней проверки конкретного внешнего значения уполномоченным процессом. |
 | Verification Status | `UNVERIFIED`, `RESEARCH_CAPTURED`, `ADMIN_VERIFIED`, `STALE` или `REJECTED`; определяет доверие и допустимость публикации, но не права на медиа. |
 | `STALE_WARNING` | Неблокирующее предупреждение для данных AMIGO старше 7 дней. После возраста более 30 дней изменённая цена или новый товар не публикуются без обязательной административной проверки. |
-| Local Override | Отдельная локальная корректировка внешнего значения с областью, причиной, автором и временем. Не уничтожает и не меняет source snapshot. |
+| Local Override | Отдельная локальная корректировка внешнего значения с областью, причиной, автором, approval, effective interval и версией. Применимый approved override имеет приоритет в composed public projection, но не уничтожает и не меняет source snapshot. |
 | Provenance | Проверяемая цепочка происхождения данных/актива: источник, сущность, URL, время, версия, правообладатель и преобразования. |
 | Hotlink | Публичная загрузка внешнего медиа непосредственно с URL правообладателя. Для AMIGO запрещена даже при доступном URL. |
 
@@ -137,7 +143,7 @@
 | Менеджер | Внутренняя роль для обработки заявок, замеров и заказов в пределах выданных полномочий. |
 | Администратор | Внутренняя роль управления системой, каталогом, ценами, доступами и настройками по принципу наименьших привилегий. |
 | Product Owner | Владелец проекта, утверждающий продуктовые решения, UX, технические этапы, приоритеты и MVP. |
-| Business Owner | Отец владельца проекта, утверждающий цены, ассортимент, наличие, правила изготовления, гарантийные решения и коммерческие условия. |
+| Business Owner | Отец владельца проекта и decision authority для локального наличия, локальной видимости/публикации, local price overrides, локального портфолио и коммерческих условий; решения фиксируются в локальном operational system of record и не переписывают AMIGO-origin source facts. |
 | `OWNER` | Высокопривилегированная системная RBAC-роль для явно разрешённых approvals; сама по себе не объединяет governance-полномочия Product Owner и Business Owner. |
 | Контент-менеджер | Внутренняя роль подготовки описаний, media mapping, alt-text и portfolio drafts без автоматического права утверждать цену, лицензию или публикацию. |
 | Система синхронизации | Технический actor, который создаёт source snapshots, diffs и validation results, но не принимает owner/admin publication decisions. |

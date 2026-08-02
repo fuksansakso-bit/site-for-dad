@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Состояние | Phase 1A Foundation complete and accepted; Phase 1B+ not authorized |
-| Версия roadmap | 1.3.0 |
+| Версия roadmap | 1.5.0 |
 | Дата | 2026-08-02 |
 | Entry gate | `PASSED`, [QG-088–QG-111](SPEC_QUALITY_GATE.md) |
 | Обязательный комплект 0B | `PASSED`, [QG-112–QG-130](SPEC_QUALITY_GATE.md) |
@@ -13,7 +13,7 @@
 | Phase 1A acceptance | `PASSED_PHASE_1A_FOUNDATION`, [QG-149–QG-158](SPEC_QUALITY_GATE.md) |
 | Разрешённая implementation | Новая implementation не разрешена; Phase 1B+, AMIGO import и production запрещены |
 
-Глобальная база: [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.7.0, [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md), [ASSET_RIGHTS_REGISTER.md](ASSET_RIGHTS_REGISTER.md) и [PRICING_SOURCE_POLICY.md](PRICING_SOURCE_POLICY.md). Письменное решение Product Owner разрешило и ограничило выполненную Phase 1A Foundation; оно не разрешает каталог/import/Phase 1B или production.
+Глобальная база: [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.9.0, [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md), [ASSET_RIGHTS_REGISTER.md](ASSET_RIGHTS_REGISTER.md) и [PRICING_SOURCE_POLICY.md](PRICING_SOURCE_POLICY.md). `OWNER-DECISION-008` разделяет AMIGO source authority и Business Owner local authority; `OWNER-DECISION-009` делает активную одобренную PostgreSQL `CatalogVersion` единственным public-serving runtime source после staged diff/owner/admin activation. Оба решения сохраняют открытыми transport/import/data gates и не являются transition decision. Письменное решение Product Owner разрешило и ограничило выполненную Phase 1A Foundation; оно не разрешает каталог/import/Phase 1B или production.
 
 Нормативные спецификации находятся только в `docs/specs/`. Gate, реестры, policies, quality strategy, evaluations и ADR остаются в профильных каталогах.
 
@@ -172,3 +172,5 @@ ADR принимают устойчивую границу, а не неподт
 | 1.1.0 | 2026-08-02 | Добавлены Phase 0C MVP/readiness artifacts, proposed ADR-0007–0010, P0 gates и обязательная sequence Phase 1A–1H без автоматического старта. |
 | 1.2.0 | 2026-08-02 | QG-147/148 закрыты, ADR-0007–0010 accepted, семь owner P0 resolved; только Phase 1A переведена в authorized/in-progress. |
 | 1.3.0 | 2026-08-02 | Phase 1A plan и report получили completion evidence, QG-149–158 passed; roadmap остановлен перед Phase 1B до нового письменного решения. |
+| 1.4.0 | 2026-08-02 | Глобальная база обновлена до 0.8.0 с authority matrix `OWNER-DECISION-008`; Phase 1B entry/import evidence и transition hold не изменены. |
+| 1.5.0 | 2026-08-02 | Глобальная база обновлена до 0.9.0 с PostgreSQL public-serving contract `OWNER-DECISION-009`; Phase 1B entry/import evidence и transition hold не изменены. |

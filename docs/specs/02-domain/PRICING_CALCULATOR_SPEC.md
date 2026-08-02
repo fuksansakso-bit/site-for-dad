@@ -5,9 +5,9 @@
 | Поле | Значение |
 |---|---|
 | Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD` for Foundation; numeric pricing activation is blocked before Phase 1C until formula, PriceVersion and parity approval exist |
-| Версия | 0.2.0 |
+| Версия | 0.4.0 |
 | Дата | 2026-08-02 |
-| Policy | [PRICING_SOURCE_POLICY.md](../../00-global/PRICING_SOURCE_POLICY.md) 1.2.0 |
+| Policy | [PRICING_SOURCE_POLICY.md](../../00-global/PRICING_SOURCE_POLICY.md) 1.4.0 |
 | Inputs | [PRODUCT_CONFIGURATOR_SPEC.md](PRODUCT_CONFIGURATOR_SPEC.md) |
 
 ## 1. Назначение, границы и запрещённые выводы
@@ -18,7 +18,7 @@ Out of scope until confirmed: actual price tables, area rounding, minimum billab
 
 ## 2. Термины, акторы и roles
 
-`Source Price` is authorized AMIGO-origin value/rule in a captured context. `Local Sale Price` equals verified source price absent active override. `PriceVersion` is immutable approved set. `Quote` is immutable calculation result. `Manual Quote` contains no fabricated numeric result.
+`Source Price` is authorized AMIGO-origin value/rule in a captured context and remains AMIGO-owned. `Local Sale Price` equals verified source price absent a Business Owner-approved active override. `PriceVersion` is immutable approved set. `Quote` is immutable calculation result. `Manual Quote` contains no fabricated numeric result. PostgreSQL is the operational store for these layers and their history, not the authority allowed to blur them.
 
 Actors: guest/customer requester, manager draft/confirmation role, price editor, separate activator/owner, sync system, pricing provider adapter and auditor.
 
@@ -58,6 +58,10 @@ Actors: guest/customer requester, manager draft/confirmation role, price editor,
 - **PRICE-SPEC-018 — MUST:** rule errors/conflicts/overflow/non-finite values fail closed and generate no amount.
 - **PRICE-SPEC-019 — MUST:** manager adjustment does not overwrite preliminary quote and needs authorization/reason/client-visible explanation.
 - **PRICE-SPEC-020 — MUST:** client/API payload excludes proprietary internal expression/source credentials while retaining an understandable breakdown and version reference.
+- **PRICE-SPEC-021 — MUST:** AMIGO-origin base prices are source-owned immutable snapshots; import, normalization, activation or admin UI MUST NOT edit the captured AMIGO amount in place.
+- **PRICE-SPEC-022 — MUST:** Business Owner is decision authority for local price overrides and commercial conditions; each is a separate versioned/audited layer with applicable approval/legal/financial gates and never rewrites the base price.
+- **PRICE-SPEC-023 — MUST:** PostgreSQL stores source snapshots, override/commercial-condition revisions, active pointers and quote history as the operational system of record; physical presence of imported rows does not make an incomplete or unverified PriceVersion active.
+- **PRICE-SPEC-024 — MUST:** public calculation input resolution follows `OWNER-DECISION-009`: server runtime reads only compatible active approved `CatalogVersion` and `PriceVersion` records from PostgreSQL. AMIGO adapters, raw captures, staged candidates and rebuildable cache/search projections MUST NOT become independent calculation sources; every quote snapshot pins both version IDs and the selected source/override revisions.
 
 ## 5. Provider contract
 
@@ -209,3 +213,5 @@ Links: `PRICING-SOURCE-*`, `PRICING-SNAPSHOT-*`, `PRICING-VERSION-*`, `PRICING-L
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Определены provider contract, symbolic pipeline, versions/overrides, exact arithmetic, breakdown, failures and parity matrix without invented business values. |
 | 0.2.0 | 2026-08-02 | Зафиксированы per-item minimum, `OWNER`/`ADMIN` activation с diff/audit и parity tolerance ≤1 рубля; pricing implementation остаётся вне Phase 1A. |
+| 0.3.0 | 2026-08-02 | По `OWNER-DECISION-008` AMIGO base-price authority отделена от Business Owner overrides/commercial conditions и PostgreSQL operational storage; Phase 1C gates сохранены. |
+| 0.4.0 | 2026-08-02 | По `OWNER-DECISION-009` public calculation path ограничен совместимыми active approved PostgreSQL `CatalogVersion`/`PriceVersion`; direct AMIGO/staging/derived-source reads запрещены, quote pinning уточнён. |

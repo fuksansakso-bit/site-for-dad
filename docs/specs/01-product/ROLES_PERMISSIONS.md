@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Статус | Draft 0B — logical RBAC/ownership contract |
-| Версия | 0.2.0 |
+| Версия | 0.3.0 |
 | Дата | 2026-08-02 |
 | Scope | Public, client, staff, service identities and approvals |
 | Security detail | [SECURITY_PRIVACY.md](../04-technical/SECURITY_PRIVACY.md) |
@@ -51,6 +51,7 @@ Actors:
 - **RBAC-020 — MUST:** service credentials and user sessions are separate identities with minimum scopes, rotation/revocation and no shared secret in logs/docs.
 - **RBAC-021 — MUST:** `price.activate/rollback` is granted only to `OWNER` or `ADMIN`; the actor must review the exact diff, explicitly confirm and produce immutable audit evidence.
 - **RBAC-022 — MUST:** Phase 1A implements only `GUEST`, `CUSTOMER`, `MANAGER`, `ADMIN`, `OWNER` and `SYSTEM_WORKER`; later specialized service roles narrow `SYSTEM_WORKER` and never inherit human capabilities.
+- **RBAC-023 — MUST:** data authority from `OWNER-DECISION-008` is not inferred from an RBAC label. `ADMIN`/staff MAY record or execute Business Owner decisions only through explicitly delegated capability and evidence; they cannot redefine AMIGO source fields or silently become Business Owner.
 
 ## 3. Capability catalog
 
@@ -187,3 +188,4 @@ Dependencies: `AUTH_ACCOUNTS_SPEC`, `ADMIN_PANEL_SPEC`, `SECURITY_PRIVACY`, doma
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Определены восемь actors, 22 capabilities, object ownership, separation of duties, state authorization и failure behavior. |
 | 0.2.0 | 2026-08-02 | Разделены governance owners и RBAC `OWNER`, добавлен Phase 1A `SYSTEM_WORKER`, а PriceVersion activation ограничена `OWNER`/`ADMIN` с diff, confirmation и audit. |
+| 0.3.0 | 2026-08-02 | Уточнено, что RBAC-права лишь исполняют решения authority из `OWNER-DECISION-008` и не позволяют менять AMIGO source fields или подменять Business Owner. |

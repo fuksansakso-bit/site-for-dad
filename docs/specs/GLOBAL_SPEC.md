@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Статус | Phase 1A Foundation письменно разрешена; Phase 1B и production activation не разрешены |
-| Версия | 0.7.0 |
+| Версия | 0.9.0 |
 | Дата | 2026-08-02, Europe/Moscow |
 | Владелец документа | Product Owner — владелец проекта; Business Owner — отец владельца проекта (`OWNER-DECISION-001`) |
 | Продукт | `PROJECT_NAME` до отдельного решения о бренде |
@@ -46,6 +46,8 @@
 | 0.5.0 | 2026-08-02 | Глобальная база связана с фактически созданным комплектом 0B, 40 stories/AC/tests, quality/evaluation documents и ADR; неизвестные формулы, providers и business transitions сохранены как TBD. |
 | 0.6.0 | 2026-08-02 | Phase 0C: заморожен MVP первого запуска, P0 TBD классифицированы, введён roadmap 1A–1H и readiness gate; базовый кабинет и ограниченный AI pilot включены в MVP, online payment и расширенный ассортимент явно перенесены post-MVP. |
 | 0.7.0 | 2026-08-02 | Зафиксированы `OWNER-DECISION-001`–`007`, закрыты семь owner-decision P0 и QG-147/148; письменно разрешена только Phase 1A Foundation без перехода к Phase 1B или production. |
+| 0.8.0 | 2026-08-02 | Зафиксировано `OWNER-DECISION-008`: AMIGO и Business Owner разделены как authority для source-backed и локальных полей; PostgreSQL определён как локальная операционная проекция, а не новый upstream-источник. Фактический импорт и Phase 1B этим решением не объявлены завершёнными или разрешёнными. |
+| 0.9.0 | 2026-08-02 | Зафиксировано `OWNER-DECISION-009` «LOCAL CATALOG AS PUBLIC SOURCE OF TRUTH»: публичный runtime использует только активную одобренную локальную версию в PostgreSQL, а AMIGO остаётся upstream authority. Добавлены обязательные diff/approval/override/audit/version/rollback границы без разрешения Phase 1B. |
 
 ## 1. Нормативный язык и приоритет источников
 
@@ -94,7 +96,7 @@
 
 ### 2.2. Решения владельца для implementation governance и будущих feature gates
 
-Источник `OWNER-DECISION-*` — письменное разрешение Product Owner от 2026-08-02 начать только Phase 1A Foundation.
+Источник `OWNER-DECISION-*` — письменные решения Product Owner от 2026-08-02. Они задают бизнес- и архитектурные границы; ни одно из них не расширяет implementation scope без отдельного transition decision. Единственное ранее выданное implementation-разрешение относилось к завершённой Phase 1A Foundation.
 
 - **OWNER-DECISION-001 — MUST:** Product Owner — владелец проекта; Business Owner — отец владельца проекта. Product Owner утверждает продуктовые решения, UX, технические этапы, приоритеты и MVP. Business Owner утверждает цены, ассортимент, наличие, правила изготовления, гарантийные решения и коммерческие условия.
 - **OWNER-DECISION-002 — MUST:** новую `PriceVersion` может активировать только actor с ролью `OWNER` или `ADMIN`, после просмотра точного diff и явного подтверждения; каждая попытка и успешная активация MUST попадать в audit log.
@@ -103,8 +105,64 @@
 - **OWNER-DECISION-005 — MUST:** проверка обновлений AMIGO планируется автоматически один раз в сутки и вручную по запросу администратора. Данные старше 7 дней получают `STALE_WARNING`; данные старше 30 дней требуют обязательной административной проверки перед публикацией изменённой цены или нового товара.
 - **OWNER-DECISION-006 — MUST:** при одинаковых source version, системе, материале, размерах, фурнитуре, опциях и количестве абсолютное отклонение локального результата от результата AMIGO MUST быть не более 1 рубля; большее отклонение является parity error.
 - **OWNER-DECISION-007 — MUST:** production-доступность без VPN проверяется в Грозном, Урус-Мартане, Аргуне и Гудермесе через мобильное подключение и домашний или офисный Wi-Fi, минимум по двум разным сетевым маршрутам, в mobile Chrome и desktop Chrome. Production infrastructure выбирается позднее отдельным решением.
+- **OWNER-DECISION-008 — MUST:** для AMIGO-origin записей AMIGO является upstream authority для продуктов, материалов, технических данных, catalog images и базовых цен; Business Owner является decision authority для локального наличия, локальной видимости/публикации, локальных ценовых override, локального портфолио и коммерческих условий. PostgreSQL хранит версионированные source snapshots, нормализованную локальную проекцию и решения Business Owner как operational system of record, но импорт не переносит authority между слоями и не разрешает редактировать source-поля как локальные факты. Бинарные изображения хранятся в управляемом object storage, а PostgreSQL хранит их provenance, mapping, rights/publication metadata и object references. Решение задаёт ownership данных, но само по себе не доказывает завершённый импорт и не разрешает Phase 1B.
+- **OWNER-DECISION-009 — MUST:** «LOCAL CATALOG AS PUBLIC SOURCE OF TRUTH». AMIGO остаётся upstream source of truth для импортируемых product/material metadata, технических спецификаций, identity/provenance изображений поставщика и базовых цен, но публичная часть приложения MUST NOT читать AMIGO напрямую. Активная одобренная `CatalogVersion` и связанные транзакционные записи в PostgreSQL являются единственным каноническим runtime-источником для клиентского каталога, поиска, фильтров, конфигуратора, расчётов, заявок и аналитики. Полный pipeline, правила публикации, приоритета overrides, аудита и версионирования в §2.2.1 являются частью решения. Object storage доставляет только approved image binaries по ссылкам из активной версии и не становится отдельным источником каталожной истины. Решение не доказывает существование business schema/imported data, не закрывает source/price/asset TBD и не разрешает Phase 1B.
 
 Гарантийная политика MUST NOT уменьшать обязательные права потребителя, предусмотренные применимым законодательством. Порядок обращения, доказательства, сроки проверки и способы удовлетворения требования остаются в `TBD-WARRANTY-001` и не придумываются.
+
+### 2.2.1. OWNER-DECISION-009 — public-serving catalog pipeline
+
+Канонический поток данных:
+
+```text
+AMIGO Source
+        ↓
+Import/Synchronization Layer
+        ↓
+PostgreSQL Local Catalog (immutable capture + staged candidate)
+        ↓
+Validation/Diff
+        ↓
+Business Owner Approval
+        ↓
+Public Catalog (explicit administrator activation)
+```
+
+Обязательные правила решения:
+
+1. Импорт AMIGO MUST NOT автоматически удалять локальные сущности, local-only данные, Business Owner overlays или исторические ссылки. Исчезновение у источника создаёт source-removal candidate и diff; скрытие, архивирование или иное локальное действие требует явного решения и сохраняет историю.
+2. Любое source-изменение сначала создаёт immutable capture, staged candidate и проверяемый field/relationship/price/media diff. Candidate, raw capture и непроверенная версия MUST NOT читаться публичными flows.
+3. Business Owner утверждает локальный состав и видимость публичного каталога в пределах `OWNER-DECISION-008`; уполномоченный администратор фиксирует явное подтверждение публикации и атомарно активирует точную одобренную `CatalogVersion`. Наличие обеих полномочий у одного человека не предполагается только из системной роли.
+4. Применимый локальный override MUST иметь приоритет в опубликованной локальной проекции, но MUST NOT изменять AMIGO source snapshot. Override хранит scope, причину, автора, approval, effective interval и версию.
+5. Capture/import, validation, diff resolution, local edit/override, approval, activation, rejection, hide/archive, rollback и rebuild производных read models MUST оставлять audit trail с actor, временем, причиной, before/after reference и correlation ID.
+6. Каждая `CatalogVersion` MUST иметь уникальный ID, `createdAt`, nullable `publishedAt`, source/source-version manifest, ссылки на sync run/captures/diff, Business Owner approval, administrator activation, предыдущую версию и rollback target. Опубликованная версия неизменяема; исправление создаёт новую версию.
+7. Search index, cache, filter facets и analytics/read projections MAY использоваться только как rebuildable производные точной активной `CatalogVersion` из PostgreSQL. Они MUST быть version-pinned, MUST NOT принимать AMIGO/staging напрямую и MUST NOT становиться независимым mutation source.
+
+Причины решения:
+
+1. Независимость от доступности AMIGO.
+2. Возможность локальных изменений без повреждения source facts.
+3. История версий и воспроизводимость публичного состояния.
+4. Контроль владельца бизнеса над публикацией и локальными решениями.
+5. Быстрый публичный runtime без live-запросов к поставщику.
+6. Возможность атомарного отката на ранее подтверждённую версию.
+7. Поддержка нескольких поставщиков в будущем через тот же source/version/approval contract.
+
+### 2.3. Каноническая матрица authority
+
+| Данные | Authority | Локальная запись и допустимое изменение |
+|---|---|---|
+| AMIGO products и materials | AMIGO | Версионированный snapshot и нормализованная проекция в PostgreSQL; локально меняются только mapping/readiness/override-поля, не исходный факт. |
+| AMIGO technical data | AMIGO | Значение хранится с source version/provenance; неизвестное не дополняется догадкой Business Owner или импортёра. |
+| AMIGO catalog images | AMIGO в пределах `PARTNER_LICENSE` | PostgreSQL хранит metadata/provenance/mapping/status; разрешённый binary хранится в object storage и публикуется только после asset-level gate. |
+| AMIGO base prices | AMIGO | Source snapshot неизменяем; Business Owner MAY утвердить отдельный local override, не переписывая базовую цену. |
+| Local availability | Business Owner | Подтверждённое локальное решение записывается в PostgreSQL; AMIGO status MAY храниться только как proposal. |
+| Local visibility/publication | Business Owner | Отдельное локальное состояние в PostgreSQL; импорт никогда не публикует запись автоматически. |
+| Local price overrides | Business Owner | Отдельная versioned/audited запись с областью и сроком; source price сохраняется без изменения. |
+| Local portfolio | Business Owner при наличии прав/согласий на конкретный актив | AMIGO examples остаются partner examples и не становятся `LOCAL_PORTFOLIO`. |
+| Commercial conditions | Business Owner с требуемой legal/financial проверкой | Версионируются отдельно от AMIGO; неполные условия остаются соответствующими `TBD-*`. |
+
+Термин `authority` в этой матрице означает полномочие определять бизнес-смысл поля. PostgreSQL является локальным operational system of record для активной версии и аудита, но не заменяет ни upstream AMIGO, ни decision authority Business Owner. Формулировка `LOCAL CATALOG AS PUBLIC SOURCE OF TRUTH` в `OWNER-DECISION-009` означает единственный public-serving/runtime source после approval, а не перенос upstream authority на базу данных.
 
 Прежние идентификаторы сохранены и не переиспользуются:
 
@@ -117,7 +175,7 @@
 
 ## 3. Краткое описание продукта
 
-`PROJECT_NAME` — публичное веб-приложение и внутренний рабочий контур локального официального партнёра AMIGO, который изготавливает и устанавливает солнцезащитные изделия по индивидуальным размерам.
+`PROJECT_NAME` — публичное веб-приложение и внутренний рабочий контур локального официального партнёра AMIGO, который изготавливает и устанавливает солнцезащитные изделия по индивидуальным размерам. AMIGO-origin каталог обслуживается только из активной одобренной локальной PostgreSQL-версии после import/diff/approval/activation gate, сохраняя authority-разделение `OWNER-DECISION-008`, public-serving boundary `OWNER-DECISION-009` и независимость storefront от live AMIGO.
 
 Клиент сможет увидеть реальный ассортимент и наличие, собрать конфигурацию для одного или нескольких окон, получить предварительную стоимость, примерить выбранный материал на фотографии, сравнить результат и передать расчёт в WhatsApp или заявку на замер/звонок.
 
@@ -285,9 +343,9 @@
 - **AMIGO-PARITY-004 — MUST:** каждое parity-наблюдение фиксирует source URL/version, дату, выбранный контекст, состояние загрузки, ошибки и применимость к локальному бизнесу.
 - **AMIGO-PARITY-005 — MUST:** отсутствие функции или данных в разрешённом source channel приводит к документированному gap, Manual Review или локальному процессу, но не к выдуманному поведению.
 
-- **AMIGO-SYNC-001 — MUST:** сайт обслуживает клиента из локального опубликованного catalog snapshot и object storage, а не обращается к AMIGO при каждом открытии страницы.
+- **AMIGO-SYNC-001 — MUST:** сайт обслуживает клиента только из активной одобренной `CatalogVersion` в PostgreSQL и approved binaries в object storage; ни один публичный catalog/search/filter/configurator/calculation/lead/analytics flow не читает AMIGO, raw capture или staged candidate напрямую.
 - **AMIGO-SYNC-002 — MUST:** [AMIGO_SYNC_ARCHITECTURE](04-technical/AMIGO_SYNC_ARCHITECTURE.md) поддерживает manual run, scheduled run после утверждения cadence, dry-run, diff preview, административное принятие/отклонение, публикацию и rollback.
-- **AMIGO-SYNC-003 — MUST:** sync diff обнаруживает новые, изменённые и удалённые source entities, цену, свойства и media hash; удаление у источника не удаляет локальную историю физически.
+- **AMIGO-SYNC-003 — MUST:** sync diff обнаруживает новые, изменённые и удалённые source entities, цену, свойства и media hash; удаление у источника не удаляет автоматически локальные сущности, local-only данные, Business Owner overlays или историю и требует явного локального решения.
 - **AMIGO-SYNC-004 — MUST:** source lifecycle поддерживает `SOURCE_ACTIVE`, `SOURCE_CHANGED`, `SOURCE_REMOVED`; local lifecycle — `LOCAL_REVIEW_REQUIRED`, `LOCAL_ACTIVE`, `LOCAL_HIDDEN`, `LOCAL_ARCHIVED`.
 - **AMIGO-SYNC-005 — MUST:** каждый run имеет ID, source/version, acquisition method, started/finished timestamps, counters, validation errors, actor, decision и audit reference.
 - **AMIGO-SYNC-006 — MUST:** способ получения выбирается по разрешённому приоритету: официальный партнёрский канал/API при доказанном существовании → партнёрский кабинет → официальная выгрузка → разрешённый файл → разрешённая фиксация публичных страниц → ручной ввод.
@@ -359,7 +417,7 @@
 - **FR-INVENTORY-006 — MUST:** каждое изменение наличия фиксирует автора, время, основание и предыдущий/новый статус.
 - **FR-INVENTORY-007 — SHOULD:** при устаревшем или неизвестном источнике система не показывает `IN_STOCK` по умолчанию.
 - **FR-INVENTORY-008 — MUST:** расчёт сохраняет snapshot статуса наличия, но перед заявкой система повторно показывает актуальный статус.
-- **FR-INVENTORY-009 — MUST:** подтверждённое локальное наличие из админ-панели является authoritative status; предложенное AMIGO значение хранится отдельно и не перезаписывает его автоматически.
+- **FR-INVENTORY-009 — MUST:** подтверждённое Business Owner локальное наличие, записанное через авторизованный admin/PostgreSQL workflow, является authoritative local status; предложенное AMIGO значение хранится отдельно и не перезаписывает его автоматически.
 
 ### 10.3.1. Собственный конфигуратор
 
@@ -503,7 +561,7 @@
 
 ### 10.10. Портфолио
 
-- **FR-PORTFOLIO-001 — MUST:** предоставленные владельцем фотографии работ разрешены для публикации в портфолио.
+- **FR-PORTFOLIO-001 — MUST:** Business Owner определяет состав локального портфолио из подтверждённых работ бизнеса; конкретная фотография публикуется только после проверки provenance, прав/согласий, PII и asset-level `PUBLICATION_APPROVED`.
 - **FR-PORTFOLIO-002 — MUST:** исходные файлы работ не удаляются в рамках подготовки публикационной версии.
 - **FR-PORTFOLIO-003 — MUST:** обработанные версии хранятся отдельно и имеют связь с исходником.
 - **FR-PORTFOLIO-004 — MUST:** отсутствие подтверждённых оригиналов без водяных знаков не компенсируется удалением водяных знаков или вымышленным исходником.
@@ -795,7 +853,7 @@
 
 - **NFR-ARCH-001 — Web application:** публичный responsive UI, клиентский кабинет при включении и отдельная административная поверхность.
 - **NFR-ARCH-002 — API:** единая серверная граница авторизации, каталога, расчёта, проектов, заявок и orchestrated jobs.
-- **NFR-ARCH-003 — Database:** транзакционный источник правды для каталога, версий цены, расчётов, статусов, consent и audit references; технология не выбрана.
+- **NFR-ARCH-003 — Database:** PostgreSQL является локальным транзакционным operational system of record для source snapshots, нормализованных каталоговых проекций, локальных решений, версий цены, расчётов, заявок, статусов, consent и audit references. По `OWNER-DECISION-009` его активная одобренная версия является единственным каноническим runtime-источником публичных catalog/search/filter/configurator/calculation/lead/analytics данных; это MUST NOT подменять upstream/decision authority из `OWNER-DECISION-008`, а object storage и rebuildable projections остаются delivery/derived layers.
 - **NFR-ARCH-004 — Object storage:** private хранилище оригиналов и производных с lifecycle controls; провайдер не выбран.
 - **NFR-ARCH-005 — Background jobs:** идемпотентные задачи upload processing, detection, render, refinement, уведомлений и удаления.
 - **NFR-ARCH-006 — AI/CV worker:** изолированная вычислительная граница для detection/segmentation/rendering без коммерческих правил.
@@ -868,6 +926,7 @@
 | RISK-017 | Изображение AMIGO будет опубликовано вне партнёрского scope, с неверной связью или через hotlink. | `PARTNER_LICENSE`, локальный asset, asset-level mapping, `PUBLICATION_APPROVED`, provenance, отзыв и запреты `ASSET-*`. |
 | RISK-018 | Нейтральная рассрочка превратится в ложное обещание кредита. | Единственный утверждённый текст, запрещённые claims, manual WhatsApp и `TBD-INSTALLMENT-001`–`013`. |
 | RISK-019 | Локальный калькулятор разойдётся с контрольным результатом AMIGO. | Pricing parity matrix, source version, diff, owner-approved tolerance и остановка автоматической публикации при необъяснённом расхождении. |
+| RISK-020 | Публичный flow, search/cache/analytics projection или импорт обойдёт активную PostgreSQL `CatalogVersion`, покажет staged AMIGO data либо автоматически удалит локальное решение. | Запрет direct AMIGO/staging reads, version-pinned rebuildable projections, обязательные diff/Business Owner approval/admin activation, no-auto-delete, audit и rollback по `OWNER-DECISION-009`. |
 
 ## 21. Поэтапный roadmap без календарных обещаний
 

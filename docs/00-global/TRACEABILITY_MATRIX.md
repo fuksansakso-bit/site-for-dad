@@ -5,10 +5,10 @@
 | Поле | Значение |
 |---|---|
 | Фаза | 1A — Foundation completed and accepted; Phase 1B+ forbidden |
-| Версия | 1.3.0 |
+| Версия | 1.5.0 |
 | Дата | 2026-08-02, Europe/Moscow |
 | Состояние покрытия | `COVERED_WITH_VISIBLE_TBD` |
-| Главный источник требований | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.7.0 |
+| Главный источник требований | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.9.0 |
 | Feature contract | [FEATURE_SPEC.md](../specs/01-product/FEATURE_SPEC.md) |
 | Stories | [USER_STORIES.md](../specs/01-product/USER_STORIES.md) |
 | Acceptance | [ACCEPTANCE_CRITERIA.md](../specs/01-product/ACCEPTANCE_CRITERIA.md) |
@@ -117,12 +117,12 @@
 | Цепочка | Нормативная связь | Состояние |
 |---|---|---|
 | Partner permission | `PARTNER-001` → `AMIGO-PERMISSION-2026-08-02-001` → asset-level rights/publication → audit | Source scope подтверждён; конкретные assets проходят mapping |
-| Dynamic catalog | source snapshot → normalized UUID/source identity → compatibility/property mapping → local readiness/publication | Model complete; real full inventory ожидает transport/data |
-| Price | `PricingProvider` → immutable source/price version → exact input/breakdown → quote history → parity suite | Boundary complete; formula/data TBD, tolerance/minimum scope/activator resolved |
+| Dynamic catalog | AMIGO authority → import/sync → PostgreSQL staged local catalog → validation/diff → Business Owner approval → explicit admin activation of immutable `CatalogVersion` → version-pinned public/derived reads | Serving/version model complete; real full inventory/import evidence ожидает transport/data |
+| Price | AMIGO base-price authority → immutable source/price version in PostgreSQL → applicable Business Owner local override with explicit precedence → exact input/breakdown → quote history → parity suite | Boundary complete; public calculation never reads AMIGO directly; formula/data TBD, tolerance/minimum scope/activator resolved |
 | Standard preview | published configuration/material → renderer profile/assets → deterministic `STANDARD_INTERIOR_PREVIEW` → fallback | Отдельный от client-photo geometry/AI обязательный путь |
 | AI preview | private upload → user-confirmed geometry → base render → optional constrained refinement → validation/delete | Provider/benchmark/TTL TBD; base/manual fallback обязателен |
 | Media | source/right evidence → immutable original → derivatives → asset-level approval → public/private delivery → revoke/delete | Hotlink запрещён; client/AI всегда private |
-| Sync | authorized capture → immutable snapshot → normalize/validate → diff → approval → activation/rollback | Live dependency запрещена; transport TBD, daily/manual cadence defined |
+| Sync | authorized capture → immutable snapshot/staged candidate in PostgreSQL → validate/diff → Business Owner approval → admin activation/rollback → rebuild version-pinned projections | Live/staging dependency and auto-delete prohibited; transport TBD, daily/manual cadence defined |
 
 ### 6.1. Owner decision chains
 
@@ -135,13 +135,15 @@
 | `OWNER-DECISION-005` | `TBD-PRICE-SOURCE-002` | external/pricing/sync/admin/observability | freshness boundary tests; Phase 1B/1C |
 | `OWNER-DECISION-006` | `TBD-PRICE-PARITY-001` | global/pricing/test strategy | pricing parity suite; Phase 1C |
 | `OWNER-DECISION-007` | `TBD-INFRA-002` | performance/observability/deployment/tests | `TS-PERF-001`; Phase 1H |
+| `OWNER-DECISION-008` | Authority split clarified; `TBD-SOURCE-AMIGO-002`, `TBD-ASSORT-002`, `TBD-PRICE-001` and asset inventory remain open | `GLOBAL_SPEC`, glossary, external/pricing/rights policies, catalog/parity/pricing/admin/content, architecture/data/sync/media/storage specs | `TS-AMIGO-SYNC-001`, `TS-CATALOG-DYNAMIC-001`, `TS-PRICE-001`, `TS-PORTFOLIO-001`; Phase 1B/1C/1F |
+| `OWNER-DECISION-009` | No TBD closed: public-serving topology, approval/no-delete/override/audit/version rules resolved; `TBD-SOURCE-AMIGO-002`, `TBD-ASSORT-002`, `TBD-PRICE-001` and asset inventory remain open | `GLOBAL_SPEC`, feature/parity/pricing, glossary, external/pricing policies, architecture, data model, AMIGO sync, specification/implementation roadmaps, quality gate, test strategy and this matrix | `TS-AMIGO-SYNC-001`, `TS-SYNC-DIFF-001`, `TS-SYNC-ROLLBACK-001`, `TS-CATALOG-DYNAMIC-001`, `TS-PRICE-001`; Phase 1B/1C, not Phase 1A implementation evidence |
 
 ## 7. Phase 0C MVP and implementation traceability
 
 | Freeze / plan requirement | Canonical behavior | Existing story / AC / test | Implementation phase | Gate |
 |---|---|---|---|---|
 | `MVP-001/002` | `SCOPE-001`, `NFR-MOTION-001`–`005`, landing/UX specs | `US-GUEST-009/011` → `AC-PERF/ACCESS-001` → `TS-PERF/ACCESS-001` | 1A shell; release in 1H | Brand/assets/performance evidence |
-| `MVP-003`–`007`, `MVP-021/022` | `SCOPE-002/003/039/040`, catalog/parity/sync specs | `US-GUEST-001/002`, `US-ADMIN-001`, `US-SYNC-001` and linked AC/tests | 1B | Authorized source/pilot/rights |
+| `MVP-003`–`007`, `MVP-021/022` | `SCOPE-002/003/039/040`, catalog/parity/sync specs, `OWNER-DECISION-008/009` | `US-GUEST-001/002`, `US-ADMIN-001`, `US-SYNC-001` and linked AC/tests | 1B | Authorized source/pilot/rights plus local staged diff, Business Owner approval, admin activation, immutable `CatalogVersion`, audit and rollback evidence |
 | `MVP-008/009` | `FR-CONFIG-*`, configurator spec | `US-GUEST-003` → `AC-CONFIG-001` → `TS-CONFIG-001` | 1C | Compatibility/size/dimension evidence |
 | `MVP-010/024` | `FR-PRICE-*`, pricing policy/spec | `US-GUEST-004`, `US-ADMIN-004` and linked AC/tests | 1C | Formula/PriceVersion/source fixtures; per-item minimum/parity/activator resolved |
 | `MVP-011/023` | `SCOPE-034/042`, standard preview spec | `US-GUEST-005` → `AC-STANDARD-PREVIEW-001` → `TS-STANDARD-PREVIEW-001` | 1D | `TBD-PREVIEW-001` |
@@ -204,3 +206,5 @@ Detailed runtime versions, commit list, skipped production-only checks and accep
 | 1.1.0 | 2026-08-02 | Добавлены MVP/Phase 1A–1H chains, P0/audit metrics и исправлен тип standard preview; implementation остаётся не разрешена. |
 | 1.2.0 | 2026-08-02 | Добавлены chains `OWNER-DECISION-001`–`007`, accepted ADR/QG status и Phase 1A-only authorization boundaries. |
 | 1.3.0 | 2026-08-02 | Все `PLAN-1A-AC-001`–`010` связаны с фактическими ports, scripts и tests; добавлены Phase 1A counts/report и запрет перехода к 1B. |
+| 1.4.0 | 2026-08-02 | Добавлена цепочка `OWNER-DECISION-008` для AMIGO/Business Owner authority и PostgreSQL/object-storage projection; existing import/price/asset TBD и Phase 1B hold сохранены. |
+| 1.5.0 | 2026-08-02 | Добавлена цепочка `OWNER-DECISION-009` для единственного PostgreSQL public-serving source, обязательных diff/owner/admin activation, no-auto-delete, override precedence, audit/version/rollback и существующих test chains; Phase 1B hold сохранён. |

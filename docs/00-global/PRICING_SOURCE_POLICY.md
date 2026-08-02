@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Статус | Нормативная политика; pricing implementation остаётся за пределами Phase 1A |
-| Версия | 1.2.0 |
+| Версия | 1.4.0 |
 | Дата | 2026-08-02, Europe/Moscow |
 | Главный источник правды | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) |
 | Внешние источники | [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md) |
@@ -24,6 +24,9 @@
 - **PRICING-SOURCE-007 — MUST NOT:** запрещено копировать программный код, сетевые API, дизайн или закрытые алгоритмы калькулятора AMIGO; разрешена самостоятельная реализация аналогичного пользовательского сценария с коммерчески необходимыми параметрами.
 - **PRICING-SOURCE-008 — MUST:** AMIGO имеет status `AUTHORIZED_PARTNER_SOURCE`; владелец подтвердил право использовать цены и самостоятельно воспроизводить калькуляторную логику, но конкретный transport/export/API и формулы должны иметь собственное доказательство.
 - **PRICING-SOURCE-009 — MUST:** source price category хранится как `sourcePriceCategory: string`; nullable `localPriceTier: string` является отдельным локальным отображением. Наблюдаемые `E`, `0`, `1`, `2`, `3`, `4`, `5` не образуют закрытый общий enum.
+- **PRICING-SOURCE-010 — MUST:** по `OWNER-DECISION-008` AMIGO является authority для AMIGO-origin base price, а PostgreSQL хранит immutable source snapshot и active local projection; import/normalization MUST NOT превращать source price в редактируемое локальное значение.
+- **PRICING-SOURCE-011 — MUST:** Business Owner является decision authority для local price overrides и commercial conditions. Они хранятся отдельными versioned/audited слоями, не переписывают AMIGO base price и не активируются без применимых owner, financial и legal gates.
+- **PRICING-SOURCE-012 — MUST:** по `OWNER-DECISION-009` конфигуратор и расчёт MUST получать catalog/material/base-price inputs только из совместимых активных одобренных `CatalogVersion`/`PriceVersion` в PostgreSQL. Client request MUST NOT читать AMIGO, raw capture, staged candidate, cache/search source или неподтверждённую цену напрямую.
 
 ## 2. Приоритет источников и способ получения
 
@@ -53,7 +56,7 @@
 | Контекст источника | `sourceCity/sourceRegion`, `sourceVersion`, `sourceCurrency`, `sourceContext` |
 | Конфигурация | `productFamilyId`, `productSystemId`, `productModelId`, `materialVariantId`, `sourceMaterialId`, `materialCode`, `sourcePriceCategory`, nullable `localPriceTier`, `widthMm`, `heightMm`, `mountingMethodId`, `controlTypeId`, `optionSelections`, `quantity` |
 | Результат | `sourcePrice`, `sourceBreakdown` при наличии, `localOverride`, `localSalePrice`, `resultCurrency` |
-| Управление | `verificationStatus`, `verifiedBy`, `verifiedAt`, `administrativeComment`, `priceVersionId` |
+| Управление | `verificationStatus`, `verifiedBy`, `verifiedAt`, `administrativeComment`, `catalogVersionId`, `priceVersionId` |
 
 - **PRICING-SNAPSHOT-001 — MUST:** snapshot неизменяем после фиксации; исправление создаёт новую ревизию, связанную с предыдущей.
 - **PRICING-SNAPSHOT-002 — MUST:** отсутствующее поле источника сохраняется как отсутствующее с объяснением, а не заполняется догадкой.
@@ -77,6 +80,8 @@
 - **PRICING-OVERRIDE-001 — MUST:** local override применяется только утверждённым правилом бизнеса, не маскирует исходную цену и виден в административной разбивке.
 - **PRICING-OVERRIDE-002 — MUST:** ручное изменение подтверждённой клиенту суммы сохраняет предыдущую сумму, новую сумму, причину, автора и связь с новой ревизией предложения.
 - **PRICING-OVERRIDE-003 — MUST:** неподтверждённые наценки, скидки, округления и формулы не применяются автоматически.
+- **PRICING-OVERRIDE-004 — MUST:** AMIGO sync/import не создаёт, не изменяет и не удаляет Business Owner override или commercial condition; конфликт ownership блокирует affected candidate до review.
+- **PRICING-OVERRIDE-005 — MUST:** applicable approved local override имеет приоритет над AMIGO base price только при композиции public/local result в заявленных scope/effective interval; исходный snapshot сохраняется, а выбранные source и override revisions фиксируются в `CatalogVersion`, `PriceVersion` и calculation snapshot.
 
 ## 5. Локальные ценовые правила
 
@@ -145,17 +150,18 @@ PricingProvider
 - **PRICING-ARCH-002 — MUST:** `healthCheck()` сообщает состояние источника, но сбой внешней проверки не останавливает каталог, контакты или доступ к историческому расчёту.
 - **PRICING-ARCH-003 — MUST:** реализация провайдера и способ доступа выбираются позднее через профильную спецификацию и, при архитектурной значимости, ADR.
 - **PRICING-ARCH-004 — MUST NOT:** публичный сайт PROJECT_NAME не должен синхронно зависеть от доступности сайта AMIGO для каждого клиентского просмотра или расчёта.
+- **PRICING-ARCH-005 — MUST:** `AdminManagedPricingProvider`/runtime provider читает только активную совместимую PostgreSQL `CatalogVersion` + `PriceVersion`; `AmigoAuthorizedProvider` и `AmigoSnapshotProvider` являются acquisition/validation adapters и не вызываются из public calculation path.
 
 ## 11. План синхронизации без неподтверждённого расписания
 
 1. Получить данные разрешённым способом по приоритету раздела 2.
-2. Зафиксировать raw provenance и immutable snapshots без публикации.
-3. Сопоставить source entities с нормализованными локальными ID и подтвердить allowlist семейства.
+2. Зафиксировать raw provenance и immutable snapshots в PostgreSQL staging без публикации.
+3. Сопоставить source entities с нормализованными локальными ID, применимыми local overlays и подтвердить allowlist семейства.
 4. Провести schema, currency, region, dimensions, options и anomaly validation.
-5. Показать администратору diff и контрольные quotes.
-6. Утвердить новую `PriceVersion` отдельным действием.
-7. Выполнить parity checks и наблюдать расхождения.
-8. Сохранить отчёт и возможность безопасного rollback.
+5. Сформировать exact catalog/price diff и контрольные quotes; source removal не удаляет локальные data/overrides.
+6. Получить Business Owner approval применимых локальных решений и явную administrator activation совместимых `CatalogVersion`/`PriceVersion`.
+7. Выполнить parity checks и перестроить version-pinned производные projections.
+8. Сохранить audit/report, source/timestamps и возможность безопасного rollback.
 
 Расписание и staleness thresholds заданы `OWNER-DECISION-005`: daily + manual, `STALE_WARNING` после 7 дней и обязательная admin verification после 30 дней перед публикацией changed price/new product. Объём выборки и конкретный transport остаются gated.
 
@@ -170,3 +176,13 @@ PricingProvider
 ## 13. Открытые решения
 
 Блокирующими для автоматического production-pricing остаются реальные snapshots и правила из `TBD-PRICE-001`–`006`, `TBD-MECHANISM-001`, `TBD-PRICE-SOURCE-001`, а также конкретный export/transport `TBD-SOURCE-AMIGO-002`. `TBD-PRICE-007`, `TBD-MIN-PRICE-001`, `TBD-PRICE-SOURCE-002`, `TBD-PRICE-PARITY-001`, `TBD-SOURCE-AMIGO-001` и `TBD-PRICE-CATEGORY-001` решены и сохраняются для истории. Срок предложения остаётся `TBD-PRICE-008` и не получает выдуманного периода.
+
+`OWNER-DECISION-008` закрывает authority слоёв, а `OWNER-DECISION-009` — public-serving PostgreSQL topology, diff/approval/no-delete/override/audit/version rules. Ни одно из них не доказывает наличие active `CatalogVersion`/`PriceVersion`, completeness импортированных base prices, формулу, source region или parity fixtures и поэтому не закрывает перечисленные pricing TBD.
+
+## 14. История изменений
+
+| Версия | Дата | Изменение |
+|---|---|---|
+| 1.2.0 | 2026-08-02 | Зафиксированы owner activation, daily/manual freshness, per-item minimum и parity tolerance при сохранении Phase 1A boundary. |
+| 1.3.0 | 2026-08-02 | По `OWNER-DECISION-008` AMIGO base price отделена от Business Owner local overrides/commercial conditions и локальной PostgreSQL-проекции. |
+| 1.4.0 | 2026-08-02 | По `OWNER-DECISION-009` public calculations переведены на активные PostgreSQL `CatalogVersion`/`PriceVersion`; зафиксированы override precedence, staged diff, owner/admin activation, audit/source timestamps и отсутствие direct AMIGO runtime reads. |

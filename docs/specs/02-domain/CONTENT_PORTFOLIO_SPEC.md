@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Статус | Draft 0B — content lifecycle and provenance rules defined; actual content inventory pending |
-| Версия | 0.1.0 |
+| Версия | 0.2.0 |
 | Дата | 2026-08-02 |
 | Rights source | [ASSET_RIGHTS_REGISTER.md](../../00-global/ASSET_RIGHTS_REGISTER.md) |
 | UX source | [INFORMATION_ARCHITECTURE.md](../03-ux/INFORMATION_ARCHITECTURE.md) |
@@ -20,7 +20,7 @@ Out of scope: actual copywriting/legal text still TBD, CMS/vendor, mass media im
 
 ## 2. Actors and permissions
 
-Content manager drafts/maps; subject expert verifies technical/business facts; rights approver verifies media/partner scope; owner approves brand/high-risk claims; admin publishes by capability; auditor reads history. No single role gains rights merely by uploading a file.
+Content manager drafts/maps; subject expert verifies technical/business facts; rights approver verifies media/partner scope; Business Owner is decision authority for the local portfolio and commercial conditions; owner/admin publishes only through granted capability; auditor reads history. No single role gains rights merely by uploading a file, and Business Owner portfolio selection does not replace asset-level rights/consent review.
 
 ## 3. Content types
 
@@ -59,6 +59,8 @@ Content manager drafts/maps; subject expert verifies technical/business facts; r
 - **CONTENT-SPEC-018 — MUST:** personal/contact/address/order data is excluded from public content and previews; redaction occurs before review/publication.
 - **CONTENT-SPEC-019 — MUST:** links/canonical/structured data match actual page state and region/service truth; hidden keyword pages are prohibited.
 - **CONTENT-SPEC-020 — MUST:** content deletion/revoke includes page caches, search indexes, feeds, derivatives and external publication surfaces under control.
+- **CONTENT-SPEC-021 — MUST:** Business Owner determines which verified local works belong to `LocalPortfolioProject` and the applicable commercial framing, but every project/asset still requires evidence, rights/consent/PII review and independent publication approval.
+- **CONTENT-SPEC-022 — MUST:** AMIGO remains source authority for AMIGO catalog-image identity and product/material mapping; importing metadata into PostgreSQL or binaries into object storage never reclassifies an AMIGO asset as local portfolio.
 
 ## 5. Content record and fields
 
@@ -154,3 +156,4 @@ Links: `PARTNER-*`, `ASSET-*`, `FR-CATALOG-*`, `BUSINESS-*`, `CONTENT-SPEC-001`�
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Определены content types, claims/provenance, local-vs-partner portfolio boundary, lifecycle, publication/revocation and tests. |
+| 0.2.0 | 2026-08-02 | По `OWNER-DECISION-008` Business Owner закреплён как portfolio/commercial decision authority, а AMIGO image identity сохранена отдельно от PostgreSQL/object-storage copies и local-work claims. |

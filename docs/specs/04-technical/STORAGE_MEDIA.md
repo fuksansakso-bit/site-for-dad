@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Статус | Draft 0B — logical storage contract; vendor/region/RPO/RTO/retention pending ADR/TBD |
-| Версия | 0.1.0 |
+| Версия | 0.2.0 |
 | Дата | 2026-08-02 |
 | Media pipeline | [ASSET_MEDIA_PIPELINE.md](ASSET_MEDIA_PIPELINE.md) |
 | Privacy/security | [SECURITY_PRIVACY.md](SECURITY_PRIVACY.md) |
@@ -52,6 +52,7 @@ Logical classes MAY map to separate buckets/accounts/projects/keys according to 
 - **STORAGE-SPEC-018 — MUST:** production assets/user photos never enter test/dev; synthetic/rights-cleared fixtures use separated namespaces/accounts.
 - **STORAGE-SPEC-019 — MUST:** repository and build artifacts exclude storage dumps, credentials, signed URLs, AMIGO media and user uploads.
 - **STORAGE-SPEC-020 — MUST:** restore/export/migration has integrity checks, counts/checksums, dry run, rollback/exit path and audit.
+- **STORAGE-SPEC-021 — MUST:** for AMIGO catalog images, PostgreSQL stores metadata copied from versioned authoritative AMIGO records, mappings, rights/publication state and opaque object references, while original/derivative bytes remain in object storage. Neither a database row nor an object alone transfers AMIGO authority or grants publication.
 
 ## 4. Object record and key strategy
 
@@ -147,3 +148,4 @@ Dependencies: media/AI/data/API/security/performance/observability/deployment/ev
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Defined storage classes, private/public upload/delivery, retention/delete/backup/restore, failures and vendor-neutral controls. |
+| 0.2.0 | 2026-08-02 | Clarified `OWNER-DECISION-008` boundary between AMIGO image authority, PostgreSQL metadata and object-storage binary content. |

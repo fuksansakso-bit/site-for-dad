@@ -2,7 +2,7 @@
 
 ## 0. Статус
 
-Phase 1A Foundation завершена 2026-08-02 от исходного commit `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`. `GLOBAL_SPEC` 0.7.0 фиксирует `OWNER-DECISION-001`–`007`, ADR-0007–0010 приняты и проверены реализацией, QG-149–158 пройдены. Gate `PASSED_PHASE_1A_FOUNDATION` не разрешает Phase 1B, import, business features или production deployment.
+Phase 1A Foundation завершена 2026-08-02 от исходного commit `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`. `GLOBAL_SPEC` 0.9.0 фиксирует `OWNER-DECISION-001`–`009`: AMIGO source authority, Business Owner local authority и единственный PostgreSQL public-serving runtime source разделены; staged import/diff/approval/activation contract не является Phase 1B transition или evidence завершённого import. ADR-0007–0010 приняты и проверены реализацией, QG-149–158 пройдены; последующие docs-only audits QG-159–168 подтвердили authority/serving sync и отсутствие catalog/import implementation. Gate `PASSED_PHASE_1A_FOUNDATION` не разрешает Phase 1B, import, business features или production deployment.
 
 ## 1. Порядок обязательного чтения
 
@@ -26,7 +26,7 @@ Phase 1A Foundation завершена 2026-08-02 от исходного commit
 | Документ | Назначение |
 |---|---|
 | [GLOBAL_SPEC.md](specs/GLOBAL_SPEC.md) | Scope, роли, flows, глобальные FR/NFR, модели, риски и phase boundaries |
-| [GLOSSARY.md](00-global/GLOSSARY.md) | Единые значения catalog, price, preview, media, sync и state терминов |
+| [GLOSSARY.md](00-global/GLOSSARY.md) | Единые значения catalog, price, preview, media, sync, source authority и operational system of record |
 | [EXTERNAL_SOURCES.md](00-global/EXTERNAL_SOURCES.md) | 15 source records: 14 публичных AMIGO страниц и volatile customizer |
 | [ASSET_RIGHTS_REGISTER.md](00-global/ASSET_RIGHTS_REGISTER.md) | Partner license, asset-level publication, provenance, AI/training/delete границы |
 | [PRICING_SOURCE_POLICY.md](00-global/PRICING_SOURCE_POLICY.md) | Authorized price source, immutable versions, local rules, fallback и parity |
@@ -143,6 +143,8 @@ Research snapshot не является вечным catalog/price fact. Нор�
 
 - Поведение продукта — `GLOBAL_SPEC`, затем accepted ADR в его границах, затем профильная спека.
 - Что именно подтверждено владельцем/AMIGO — `GLOBAL_SPEC`, `EXTERNAL_SOURCES`, `ASSET_RIGHTS_REGISTER`.
+- Кто определяет конкретное поле — authority matrix `OWNER-DECISION-008`: AMIGO для source-backed catalog/image/base-price данных; Business Owner для local availability/visibility/override/portfolio/commercial условий.
+- Откуда публичное приложение читает данные — `OWNER-DECISION-009`: только активная одобренная PostgreSQL `CatalogVersion`/transactional state; AMIGO и staging не являются runtime read path, а cache/search/analytics projections остаются rebuildable и version-pinned.
 - Можно ли публиковать изображение — asset-level state в `ASSET_RIGHTS_REGISTER` и media specs.
 - Почему цена недоступна или как воспроизводится — `PRICING_SOURCE_POLICY` и `PRICING_CALCULATOR_SPEC`.
 - Как работает AMIGO parity/sync — parity spec, sync architecture и ADR-0002.

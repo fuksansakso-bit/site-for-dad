@@ -38,14 +38,14 @@
 |---|---|
 | ID / цель | **ROADMAP-1B-001:** доказать authorized snapshot pipeline и публичный каталог на 20–50 материалах без требования полного AMIGO assortment. |
 | Зависимости | 1A; ADR-0002/0006/0009; AMIGO parity, catalog, sync, media specs; rights/source registers. |
-| Входные условия | Доказан разрешённый transport или проверенный ручной файл (`TBD-SOURCE-AMIGO-002`); import owner; schema/mapping version; pilot allowlist; rights/publication evidence; local media zone operational. |
-| Deliverables | Dynamic catalog model; authorized import interface; immutable source snapshot; staging/normalize/validate/diff; manual approval/activation; provenance; local licensed media; 20–50 pilot materials across allowed initial families; public catalog/search/filter; admin catalog screen. |
-| Acceptance criteria | Re-import idempotent; source identity preserved; unknown fields/categories quarantined; activation atomic and reversible; only `PUBLICATION_APPROVED` material/media public; binary availability explicit; full assortment not required. |
-| Тесты | Parser/mapping fixtures; property/contract import tests; duplicate/stale/missing field; diff/review/rollback; rights revocation; public/private object access; catalog empty/filter/search/a11y/mobile; source outage fallback. |
-| Риски | Undocumented export schema, wrong mapping, mass publish, stale availability, rights mismatch, media leakage. |
-| Definition of Done | Approved pilot snapshot and audit record; 20–50 verified materials visible; rollback to previous snapshot rehearsed; unresolved items quarantined; no numeric pricing implied. |
-| Запрещённые изменения | Scraping/access bypass, hotlink, watermarks removal, bulk unmanaged download, auto-publication, assumptions about full assortment or AMIGO API/cadence. |
-| Rollback | Deactivate snapshot, restore previous active version, revoke derivative URLs, preserve immutable evidence/audit; migration compensation only through ADR-0008. |
+| Входные условия | `OWNER-DECISION-008/009` authority и public-serving contracts приняты, но дополнительно доказаны разрешённый transport или проверенный ручной файл (`TBD-SOURCE-AMIGO-002`), import owner, manifest/schema/mapping version, pilot allowlist, rights/publication evidence и operational local media zone; получено отдельное Phase 1B transition decision. |
+| Deliverables | Dynamic catalog model и immutable AMIGO snapshots/normalized projection в PostgreSQL; authority-aware import interface; staged candidate/validation/exact diff; Business Owner approval и explicit administrator activation точной `CatalogVersion`; local overlays с declared precedence; provenance/audit/source timestamps/rollback; local licensed media binaries in object storage; 20–50 pilot materials across allowed initial families; public catalog/search/filter и version-pinned rebuildable projections; admin catalog screen. |
+| Acceptance criteria | Re-import idempotent; source identity preserved; unknown fields/categories quarantined; source removal никогда автоматически не удаляет/скрывает local data или overlays; activation atomic and reversible; public reads use only the active approved PostgreSQL `CatalogVersion`; only `PUBLICATION_APPROVED` material/media public; binary availability explicit; full assortment not required. |
+| Тесты | Parser/mapping fixtures; property/contract import tests; duplicate/stale/missing field; exact diff/Business Owner approval/admin activation; direct AMIGO/staging read denial; no-auto-delete on source removal; override precedence without source mutation; source/timestamp/audit completeness; projection pinning; rollback; rights revocation; public/private object access; catalog empty/filter/search/a11y/mobile; source outage fallback. |
+| Риски | Undocumented export schema, wrong mapping, staged/direct-source exposure, destructive sync, override loss, mass publish, projection drift, stale availability, rights mismatch, media leakage. |
+| Definition of Done | Active approved pilot `CatalogVersion` and complete audit/source/timestamp record; 20–50 verified materials visible only through PostgreSQL public-serving path; rollback to previous version rehearsed; unresolved items quarantined; no numeric pricing implied. |
+| Запрещённые изменения | Scraping/access bypass, hotlink, watermarks removal, bulk unmanaged download, auto-publication, auto-delete/hide of local data, direct public reads from AMIGO/staging, assumptions about full assortment or AMIGO API/cadence. |
+| Rollback | Atomically restore the previous active `CatalogVersion`, rebuild version-pinned projections, revoke affected derivative URLs and preserve immutable evidence/audit; migration compensation only through ADR-0008. |
 
 ## 3. PHASE 1C — CONFIGURATOR AND PRICING
 
@@ -156,3 +156,5 @@
 |---|---|---|
 | 1.0.0 | 2026-08-02 | Зафиксированы последовательные Phase 1A–1H с entry, deliverables, tests, risks, DoD, forbidden changes and rollback. |
 | 1.1.0 | 2026-08-02 | Phase 1A отмечена `PASSED`; добавлены completion report и обязательное отдельное письменное решение для перехода к Phase 1B. |
+| 1.2.0 | 2026-08-02 | Phase 1B уточнена `OWNER-DECISION-008`: PostgreSQL хранит source/local revisions, object storage — media binaries; transport/manifest/evidence и отдельное transition decision остаются обязательными. |
+| 1.3.0 | 2026-08-02 | Phase 1B синхронизирована с `OWNER-DECISION-009`: active PostgreSQL `CatalogVersion` обслуживает public runtime после staged diff/Business Owner approval/admin activation; добавлены no-auto-delete, override/audit/version/projection/rollback gates без разрешения реализации. |

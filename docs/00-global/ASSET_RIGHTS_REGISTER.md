@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Статус | Нормативный глобальный документ фазы 0A.1 |
-| Версия | 1.1.0 |
+| Версия | 1.2.0 |
 | Дата | 2026-08-02, Europe/Moscow |
 | Главный источник правды | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) |
 | Реестр происхождения | [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md) |
@@ -29,6 +29,8 @@
 - **ASSET-013 — MUST:** официальный партнёрский статус и permission scope AMIGO подтверждены `PARTNER-001`–`007`; AMIGO-source assets используют relationship status `AUTHORIZED_PARTNER_SOURCE` и rights basis `PARTNER_LICENSE`.
 - **ASSET-014 — MUST:** подтверждённый широкий permission scope не отменяет карточку конкретного файла: перед публикацией MUST быть известны source asset, связь с сущностью, hash/revision, допустимая поверхность и `publicationStatus = PUBLICATION_APPROVED`.
 - **ASSET-015 — MUST:** отсутствие загруженной копии договора или бейджа не блокирует документацию и подготовку импорта; `optionalEvidenceReference` остаётся nullable, а факт подтверждения владельцем, дата и scope сохраняются в `PartnerRelationship`.
+- **ASSET-016 — MUST:** AMIGO является authority для происхождения и identity AMIGO catalog images; локальный import/derivative не меняет source, правообладателя, product/material mapping или attribution. PostgreSQL хранит asset metadata/provenance/status/object reference, а binary original/derivatives хранятся в управляемом object storage.
+- **ASSET-017 — MUST:** Business Owner является decision authority для состава локального портфолио, но это решение не заменяет доказательство авторства, прав, consent/PII review и `PUBLICATION_APPROVED`; AMIGO-source image MUST NOT стать `LOCAL_PORTFOLIO`.
 
 ## 2. Состояния прав и публикации
 
@@ -210,3 +212,10 @@ AMIGO-source asset MUST NOT иметь роль `LOCAL_PORTFOLIO`. Только 
 ## 6. Остановочные условия
 
 Публикация или AI-использование MUST быть остановлены, если неизвестен правообладатель, нет доказательства согласия/лицензии, неясна территория или цель, истёк срок, требуется удалённая атрибуция, которую продукт не может выполнить, либо актив невозможно однозначно связать с правильным `MaterialVariant`.
+
+## 7. История изменений
+
+| Версия | Дата | Изменение |
+|---|---|---|
+| 1.1.0 | 2026-08-02 | Зафиксированы `PARTNER_LICENSE`, asset-level publication gate и управляемый будущий import AMIGO media. |
+| 1.2.0 | 2026-08-02 | По `OWNER-DECISION-008` разделены AMIGO image authority, PostgreSQL metadata и object-storage binaries; Business Owner закреплён как authority локального portfolio composition без ослабления rights/consent gate. |

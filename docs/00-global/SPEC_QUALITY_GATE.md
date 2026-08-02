@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Версия gate | 1.3.0 |
-| Проверяемая входная база | Phase 0B baseline `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`; Phase 0C baseline `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; `GLOBAL_SPEC.md` 0.7.0 |
+| Версия gate | 1.5.0 |
+| Проверяемая входная база | Phase 0B baseline `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`; Phase 0C baseline `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; `GLOBAL_SPEC.md` 0.9.0 |
 | Дата entry self-audit | 2026-08-02, Europe/Moscow |
 | Решение по входу в 0B | **PASSED** |
 | Основание письменного решения | Приложенное владельцем задание «AUTHORIZED AMIGO FUNCTIONAL PARITY AND SPECIALIZED SPECS» и повторное указание «так приступай к работе» |
@@ -13,6 +13,7 @@
 | Текущий gate завершения 0B | **PASSED** — документационная фаза завершена |
 | Phase 0C Implementation Readiness Gate | **AUTHORIZED_FOR_PHASE_1A_FOUNDATION** — QG-147/148 закрыты 2026-08-02 |
 | Phase 1A Foundation Acceptance Gate | **PASSED_PHASE_1A_FOUNDATION** — QG-149–158 закрыты 2026-08-02 |
+| Post-Phase 1A Owner Decision Documentation Audit | **PASSED_DOCS_ONLY** — QG-159–168 закрыты 2026-08-02; нового phase transition нет |
 | Разрешённая реализация | Новая implementation не разрешена; Phase 1B+, AMIGO data и production deployment запрещены |
 
 Entry gate подтверждает, что исправления 0A.1 внесены и письменное решение начать документную фазу 0B получено. Он не означает готовность ценовой формулы, импорта, приложения или запуска. Открытые TBD блокируют утверждение зависимой спецификации или функции, но не отменяют разрешение создавать документацию 0B с безопасным поведением.
@@ -241,6 +242,26 @@ Acceptance audit выполнен 2026-08-02 только для Foundation scop
 
 Gate confirms technical completion of the authorized phase only. It neither approves launch nor grants a Phase 1B transition; a new explicit Product Owner decision is required.
 
+### 7.5. Post-Phase 1A authority documentation audit
+
+- [x] **QG-159 — MUST:** письменное решение `OWNER-DECISION-008` закрепляет AMIGO как upstream authority для AMIGO-origin products/materials/technical data/catalog images/base prices, Business Owner как decision authority для local availability/visibility/price overrides/portfolio/commercial conditions и PostgreSQL как operational system of record, который не переносит authority между слоями.
+- [x] **QG-160 — MUST:** authority matrix синхронизирована с glossary, external/rights/pricing policies, open questions, feature/RBAC, catalog/parity/pricing/admin/content и architecture/data/sync/media/storage specs без изменения принятых ADR задним числом.
+- [x] **QG-161 — MUST:** проверка фактического репозитория подтверждает, что Prisma schema и три migration остаются Foundation-only, catalog/import surfaces отсутствуют, а документация не выдаёт owner statement за доказательство завершённого импорта.
+- [x] **QG-162 — MUST:** `TBD-SOURCE-AMIGO-002`, `TBD-ASSORT-002`, `TBD-PRICE-001` и связанные asset/portfolio evidence остаются открыты; `OWNER-DECISION-008` не интерпретируется как Phase 1B transition decision и не вводит выдуманные business data.
+- [x] **QG-163 — MUST:** `docs:check` прошёл для 70 Markdown-файлов и 1269 normative IDs, `phase-scope:check` подтвердил только Foundation surfaces/tables, `format:check` и `git diff --check` прошли без ошибок.
+
+Результат `PASSED_DOCS_ONLY` подтверждает только согласованность документации после owner decision. Он не изменяет `PASSED_PHASE_1A_FOUNDATION`, не утверждает существование catalog schema/import batch и не разрешает Phase 1B.
+
+### 7.6. Post-Phase 1A public-serving catalog documentation audit
+
+- [x] **QG-164 — MUST:** письменное решение `OWNER-DECISION-009` закрепляет AMIGO как upstream source для импортируемых product/material metadata, technical specifications, supplier-image identity/provenance и base prices, а активную одобренную PostgreSQL `CatalogVersion`/transactional state — как единственный канонический public-serving runtime source; public flows не читают AMIGO или staging напрямую.
+- [x] **QG-165 — MUST:** `GLOBAL_SPEC`, feature/parity/pricing, architecture, AMIGO sync, data model, test strategy и traceability, а также glossary, external/pricing/open-question governance, specification/implementation roadmaps, index/README/changelog синхронизированы с source→staging→validation/diff→Business Owner approval→explicit admin activation pipeline без изменения accepted ADR задним числом.
+- [x] **QG-166 — MUST:** импорт не удаляет local/local-only/Business Owner/history data автоматически; applicable local overrides имеют declared priority без изменения AMIGO snapshot; все catalog changes audited, а `CatalogVersion` хранит source/timestamps/approvals/predecessor/rollback.
+- [x] **QG-167 — MUST:** `docs:check` прошёл для 70 Markdown-файлов и 1303 normative IDs, `format:check` и `git diff --check` прошли без ошибок; ссылки, таблицы и identifiers валидны.
+- [x] **QG-168 — MUST:** `phase-scope:check` подтверждает только Foundation surfaces/tables; `OWNER-DECISION-009` не закрывает `TBD-SOURCE-AMIGO-002`, `TBD-ASSORT-002`, `TBD-PRICE-001`/asset evidence, не доказывает active catalog/import и не разрешает Phase 1B.
+
+Результат остаётся `PASSED_DOCS_ONLY`. Он уточняет архитектурный контракт будущих Phase 1B/1C, но не является transition decision и не изменяет фактическую Phase 1A schema.
+
 ## 8. История изменений
 
 | Версия | Дата | Изменение |
@@ -249,5 +270,7 @@ Gate confirms technical completion of the authorized phase only. It neither appr
 | 1.1.0 | 2026-08-02 | Добавлены QG-131–148 для Phase 0C baseline/P0/MVP/audit/roadmap/Foundation safety; результат `READY_FOR_OWNER_AUTHORIZATION`, QG-147/148 намеренно открыты. |
 | 1.2.0 | 2026-08-02 | `OWNER-DECISION-001`–`007` закрыли owner P0; ADR-0007–0010 приняты после десяти проверок, QG-147/148 закрыты и разрешена только Phase 1A Foundation. |
 | 1.3.0 | 2026-08-02 | Добавлены QG-149–158 с clean-clone, runtime, migration, jobs/storage, identity/security/observability, test/scan/scope/docs evidence; Phase 1A получила `PASSED_PHASE_1A_FOUNDATION`, Phase 1B осталась запрещена. |
+| 1.4.0 | 2026-08-02 | Добавлены QG-159–163 для `OWNER-DECISION-008`: authority matrix синхронизирована и механически проверена, отсутствие catalog/import implementation подтверждено, Phase 1B hold сохранён. |
+| 1.5.0 | 2026-08-02 | Добавлены QG-164–168 для `OWNER-DECISION-009`: PostgreSQL public-serving contract, diff/owner/admin activation, no-auto-delete, override/audit/version/rollback синхронизированы и проверены; Phase 1B hold сохранён. |
 | 0.2.0 | 2026-08-02 | Entry gate обновлён для `GLOBAL_SPEC` 0.4.0 и partner-authorized scope; письменное поручение владельца зафиксировано как разрешение начать 0B; добавлен отдельный completion gate 0B. |
 | 0.1.0 | 2026-08-02 | Предыдущий self-audit 0A.1 для версии 0.3.1; проверки `QG-001`–`087` впоследствии зарезервированы. |

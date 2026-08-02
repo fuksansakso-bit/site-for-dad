@@ -1,0 +1,77 @@
+# Changelog
+
+Все заметные изменения проекта документируются в этом файле.
+Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/), а версии следуют [Semantic Versioning](https://semver.org/lang/ru/) после начала версионируемых выпусков.
+
+## [Unreleased]
+
+### Added
+
+- Создан полный нормативный комплект Phase 0B в `docs/specs/`: 5 product, 11 domain, 6 UX и 11 technical/operations документов без production-кода или placeholder-файлов.
+- В `USER_STORIES.md`, `ACCEPTANCE_CRITERIA.md` и `TEST_STRATEGY.md` определены соответственно 40 полных stories для восьми акторов, 40 позитивно-негативных acceptance criteria и 40 именованных критических test scenarios.
+- Добавлены отдельные спецификации функционального AMIGO parity, динамического каталога, конфигуратора, версионированной цены, standard preview, private AI visualizer, cart/order/WhatsApp, installment, account, admin и content/portfolio.
+- Добавлен полный UX-комплект: IA, premium interior-tech design system, starfield/motion, screen, responsive и WCAG 2.2 AA accessibility contracts.
+- Добавлен vendor-neutral technical комплект: modular architecture, logical data/API contracts, AMIGO sync, media pipeline/storage, AI pipeline, security/privacy, performance, observability и deployment/rollback.
+- Созданы `docs/evaluations/AI_EVALUATION_SPEC.md` с rights-cleared benchmark/hard gates и `docs/quality/TEST_STRATEGY.md` с pricing parity, degradation, privacy, accessibility, recovery и idempotency coverage.
+- Приняты шесть содержательных ADR `ADR-0001`–`ADR-0006`: application boundary, AMIGO snapshots, versioned pricing, deterministic standard preview, geometry-first AI и public/private media storage; конкретные vendors оставлены TBD.
+- Добавлен `docs/research/AMIGO_PUBLIC_PARITY_SNAPSHOT_2026-08-02.md`: read-only проверка 14 публичных URL и текущего calculator iframe/customizer без скачивания media или обхода доступа.
+- Создан `docs/00-global/TRACEABILITY_MATRIX.md` с critical global-to-0B chains, reserved user story/acceptance/test IDs и честными coverage gaps.
+- Добавлены `PARTNER-001`–`007`, `AMIGO-PARITY-001`–`005`, `AMIGO-SYNC-001`–`006`, `FR-CONFIG-*`, `FR-STANDARD-PREVIEW-*`, `FR-AI-VIS-001` и `FR-CART-*`.
+- В `SPEC_ROADMAP.md` добавлен обязательный модульный набор product, domain, UX, technical, quality и evaluation artifacts 0B без создания пустых файлов.
+- Создан выделенный каталог `docs/specs/`, в котором находятся только нормативные спецификации; пустые файлы будущих спек не создавались.
+- Добавлен корневой `.gitignore` для секретов, локальных окружений, зависимостей, сборок, кэшей, runtime-данных и приватных пользовательских загрузок.
+- Инициализирован локальный Git-репозиторий с основной веткой `main`; удалённый `origin` не задан, поэтому `TBD-INFRA-001` остаётся открытым.
+- Добавлена корректирующая документационная фаза 0A.1: External Source, Pricing, Warranty and Asset Governance Update.
+- Создан `docs/00-global/EXTERNAL_SOURCES.md` с семью зарегистрированными публичными страницами AMIGO, provenance-моделью, статусами проверки, границами использования, update и fallback.
+- Создан `docs/00-global/ASSET_RIGHTS_REGISTER.md` с восемью категориями активов, состояниями прав, publication gate, AI-ограничениями, import metadata и delete paths.
+- Создан `docs/00-global/PRICING_SOURCE_POLICY.md` с `PRICING-SOURCE-001`–`007`, immutable snapshots/versions, административным подтверждением, local override, fallback, audit, `PricingProvider` и pricing parity matrix.
+- Зафиксированы прямые ответы владельца: 2–7 календарных дней, 12-месячная гарантия с покрытием/исключениями, вся Чеченская Республика, бесплатные замер/доставка/установка, WhatsApp и нейтральный ручной сценарий рассрочки.
+- Подтверждены четыре Product Family и полный переданный владельцем allowlist рулонных, Zebra, горизонтальных и вертикальных source/catalog entities AMIGO.
+- Добавлены требуемые `TBD-INSTALLMENT-001`–`010` и дополнительные `TBD-INSTALLMENT-011`–`013` для порядка заявки, географии и иных eligibility-критериев, а также source/access, asset-license, source-region/sync и pricing-parity TBD; сохранён `TBD-MIN-PRICE-001`.
+
+### Changed
+
+- Completion gate Phase 0B `QG-112`–`130` пройден: 33 specs, 6 ADR, 40/40/40 story–AC–test, 1 202 уникальных definition IDs, 0 битых ссылок/ошибок таблиц/запрещённых code-media artifacts; проект переведён в transition hold без разрешения реализации.
+- `GLOBAL_SPEC.md` обновлён до 0.5.0 и связан с фактически созданными профильными specs, traceability, tests и ADR; устаревшие ссылки на будущие/несуществующие документы заменены каноническими путями 0B.
+- `TRACEABILITY_MATRIX.md` обновлён с планового состояния до 18/18 critical chains и полной карты 40 story → 40 AC → 40 test с видимыми `BLOCKED_TBD`.
+- `SPEC_ROADMAP.md` и `docs/INDEX.md` переписаны как фактическая карта 33 specs, quality/evaluation artifacts и шести ADR с post-gate порядком без автоматического перехода к коду.
+- Entry gate `QG-088`–`111` отмечен `PASSED` по письменному поручению владельца; отдельные completion checks `QG-112`–`130` добавлены для финального аудита Phase 0B.
+- `GLOBAL_SPEC.md` обновлён до 0.4.0: зафиксированы официальный партнёрский статус AMIGO, permission scope, динамический каталог, dynamic source price categories, два visualizer flows, cart/handoff и sync boundaries.
+- `EXTERNAL_SOURCES.md`, `ASSET_RIGHTS_REGISTER.md` и `PRICING_SOURCE_POLICY.md` обновлены до 1.1.0; `AUTHORIZED_PARTNER_SOURCE`, `PARTNER_LICENSE` и asset-level `PUBLICATION_APPROVED` разделены по своим измерениям.
+- Source registry расширен с семи записей до 15: 14 заданных публичных страниц плюс volatile customizer, обнаруженный через calculator iframe.
+- Каталог больше не ограничивает data model четырьмя семействами: начальный baseline сохранён, а все текущие/будущие категории AMIGO регистрируются динамически с независимыми publication, availability, pricing и orderability states.
+- `sourcePriceCategory` определён строкой, а nullable `localPriceTier` отделён от source code; наблюдаемые наборы `E`, `0`, `1`–`5` больше не моделируются закрытым enum.
+- `ASM-001` и `ASM-002` перенесены из активных assumptions в подтверждённые owner decisions; гостевой путь и scope кабинета внесены в нормативные требования.
+- `TBD-SOURCE-AMIGO-001`, `TBD-ASSET-AMIGO-001`–`002`, `TBD-PRICE-CATEGORY-001` и `TBD-DESIGN-003` отмечены решёнными; добавлен `TBD-ASSET-AMIGO-003` для точной атрибуции/brand guidelines.
+- `GLOBAL_SPEC.md` перемещён из `docs/00-global/` в `docs/specs/` и обновлён до версии 0.3.1 без изменения бизнес-смысла требований.
+- Будущие нормативные спецификации в `SPEC_ROADMAP.md` перенаправлены в тематические подкаталоги `docs/specs/`; evaluations, threat model, test strategy и ADR оставлены вне каталога спецификаций.
+- `AGENTS.md`, `README.md`, `docs/INDEX.md`, governance-документы и reference-навигация синхронизированы с новой структурой.
+- `GLOBAL_SPEC.md` обновлён до версии 0.3.0 и остаётся главным источником правды, с нормативными ссылками на три новых глобальных документа.
+- Каталог нормализован: source/marketing title, Product Family, Product Type, Product System, Mechanism Model, Mounting Method, Shaft Enclosure и Lamella Spec больше не смешиваются в одном поле.
+- Материал AMIGO теперь моделируется внешней сущностью с source fields, availability/price metadata и обязательным локальным `PUBLICATION_APPROVED` изображением.
+- Area/rate/minimum-модель `ASM-020` заменена source-based pricing; неподтверждённая формула удалена из глобальной архитектурной модели.
+- Будущие roadmap-файлы переименованы в `CATALOG_INVENTORY_SPEC.md` и `TEST_STRATEGY.md`; последняя обязана включить pricing parity matrix.
+- `AGENTS.md`, `README.md`, `docs/INDEX.md`, глоссарий, assumptions, open questions и roadmap синхронизированы с фазой 0A.1.
+- `TBD-LEAD-001`, `TBD-SYSTEM-001`, `TBD-HORIZONTAL-001`, `TBD-VERTICAL-001` и `TBD-SERVICE-001`–`003` сохранены как решённые записи с датой и нормативными ссылками.
+
+### Fixed
+
+- Устранены противоречия о том, что AMIGO используется только для public research, партнёрство/права ожидаются, media всегда `REFERENCE_ONLY`, категории ограничены четырьмя семействами, а price categories — только 1–5.
+- Стандартный интерьерный preview отделён от privacy-sensitive примерки на фотографии клиента и optional generative refinement.
+- Устранены противоречия: срок больше не помечен как рабочие/календарные дни TBD; гарантия больше не ограничена одним сроком без условий.
+- «Зебра» признана отдельным подтверждённым Product Family; пластиковые и мультифактурные вертикальные жалюзи удалены из запрещённого ассортимента.
+- Бесплатные услуги больше не сопровождаются открытыми исключениями; московские условия AMIGO явно не применяются к Чеченской Республике.
+- Публичные цены и изображения AMIGO больше не могут трактоваться как постоянные локальные значения или разрешённые публикационные активы.
+
+## [0.1.0] - 2026-08-01
+
+### Added
+
+- Создана документационная основа фазы 0A.
+- Добавлен `GLOBAL_SPEC.md` как главный источник правды о продукте.
+- Добавлены глоссарий, реестр допущений и категоризированный реестр открытых вопросов.
+- Добавлены roadmap будущих специализированных спецификаций и проверяемый quality gate.
+- Добавлены правила работы агентов, карта документации и правила хранения референсов.
+- Зафиксированы результаты первичного анализа LAYEL, Vengeance UI и отсутствие локальных изображений на дату инвентаризации.
+
+Ссылки сравнения версий будут добавлены после появления канонического Git-репозитория (`TBD-INFRA-001`); фиктивный URL намеренно не используется.

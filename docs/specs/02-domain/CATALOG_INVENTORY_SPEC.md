@@ -1,0 +1,178 @@
+# Catalog and inventory specification PROJECT_NAME
+
+## 0. Метаданные
+
+| Поле | Значение |
+|---|---|
+| Статус | Draft 0B — schema and safety rules defined; actual inventory `BLOCKED_BY_TBD-ASSORT-002` |
+| Версия | 0.1.0 |
+| Дата | 2026-08-02 |
+| Sources | [EXTERNAL_SOURCES.md](../../00-global/EXTERNAL_SOURCES.md) |
+| Rights | [ASSET_RIGHTS_REGISTER.md](../../00-global/ASSET_RIGHTS_REGISTER.md) |
+
+## 1. Назначение и границы
+
+Документ нормализует partner source catalog, local catalog readiness и inventory/availability without inventing stock. It is canonical for entities, identifiers, properties, states and relationships consumed by configurator, pricing, media, sync and admin.
+
+In scope: supplier/partner/source catalogs, dynamic product hierarchy, materials/variants/properties, options/compatibility/dimensions, source/local states, provenance, aliases and availability records.
+
+Out of scope: physical DB schema/SQL, exact source transport, real stock quantities, unverified technical limits, price formulas and production imports.
+
+## 2. Акторы, термины и ownership
+
+Actors: public reader, catalog admin, content manager, owner/approver, sync system, pricing/configurator consumers. `Source Catalog` is a captured external namespace/version; `Local Catalog` is independently governed projection. `Availability` is evidence-backed status, not inferred from publication, image or price.
+
+Catalog admin owns mapping/readiness; content owns media mapping; pricing role owns price readiness; supply/manager owns availability evidence; owner resolves high-impact classification conflicts.
+
+## 3. Entity model
+
+| Entity | Identity / purpose | Required relationships |
+|---|---|---|
+| `Supplier` | AMIGO or future supplier stable local ID | PartnerRelationship, SourceCatalog |
+| `PartnerRelationship` | Status/scope/region/badge/evidence | Supplier, MediaAsset, approvals |
+| `SourceCatalog` | Source namespace, context and captured version | Supplier, SourceEntity, SyncRun |
+| `SourceEntity` | Raw external identity/title/type/parent/version | Mapped local entity or conflict |
+| `ProductFamily` | Dynamic top-level commercial family | ProductType/System, local states |
+| `ProductType` | Optional intermediate source/business grouping | Family/System |
+| `ProductSystem` | Technical system identity | Models, constraints, options |
+| `ProductModel` | Specific model within system | Configuration schema, options |
+| `ProductConfiguration` | Versioned user selections | System/model/material/options |
+| `MountingType` | Mounting semantic and instructions | Compatibility/constraints |
+| `ControlType` | Chain/cord/motor/manual control semantic | Options/compatibility |
+| `Material` | Shared material identity/collection | MaterialVariant/property |
+| `MaterialVariant` | Selectable color/article/source variant | Asset, category, compatibility |
+| `MaterialPropertyDefinition` | Typed property and unit/semantics | Values and filter behavior |
+| `MaterialPropertyValue` | Source/local value + evidence | Material or variant |
+| `OptionGroup` / `OptionValue` | Configurable hardware/control/extras | Model and compatibility rule |
+| `CompatibilityRule` | Evidence-backed allow/deny/require relation | Versioned subjects/conditions |
+| `DimensionConstraint` | Min/max/area/shape/conditional limit | System/model/material/mounting |
+| `AvailabilityRecord` | Status/quantity optional/unit/location/evidence | Variant/component/version |
+| `PriceCategory` | Dynamic source category string/context | Variant/system/source version |
+| `MediaAsset` / `SourceAsset` | Managed original/derivative/provenance | Exact domain entity + assetRole |
+| `LocalOverride` | Versioned local field override with reason | Target field/entity/source version |
+| `PublicationState` | Public exposure decision | Local entity/revision |
+| `CatalogSyncRun/Difference` | Capture, mapping, diff and approval evidence | Source/local versions |
+
+## 4. Identifier and version rules
+
+- **CAT-INV-001 — MUST:** every local entity has immutable UUID/ULID-like identifier independent of source slug/title.
+- **CAT-INV-002 — MUST:** source identity is `(supplierId, sourceCatalogId/context, sourceEntityId)`; text labels cannot be the sole key.
+- **CAT-INV-003 — MUST:** source aliases/slugs are versioned and retain rename/move history.
+- **CAT-INV-004 — MUST:** mapping supports one-to-one, one-to-many and explicit conflict; automatic many-to-one merge is prohibited.
+- **CAT-INV-005 — MUST:** mutable records use revision/version and optimistic concurrency; historical configuration references immutable revisions.
+- **CAT-INV-006 — MUST:** physical deletion is prohibited while a quote/order/audit references the entity; retire/tombstone is used.
+
+## 5. Independent readiness states
+
+Each selectable/public entity has four independent dimensions:
+
+| Dimension | States | Meaning |
+|---|---|---|
+| Publication | `DRAFT`, `REVIEW`, `PUBLISHED`, `HIDDEN`, `RETIRED`, `BLOCKED` | Public discovery/detail visibility |
+| Availability | `UNKNOWN`, `AVAILABLE`, `UNAVAILABLE`, `ORDER_ONLY`, `DISCONTINUED` | Evidence-backed supply state |
+| Pricing | `UNKNOWN`, `READY`, `STALE`, `UNAVAILABLE`, `MANUAL_ONLY` | Whether active price can be calculated |
+| Orderability | `UNKNOWN`, `INQUIRY_ONLY`, `CONFIGURABLE`, `ORDERABLE`, `BLOCKED` | Allowed customer action |
+
+- **CAT-INV-007 — MUST:** no dimension implies another; `PUBLISHED` does not mean available/priced/orderable.
+- **CAT-INV-008 — MUST:** public CTA is derived from all four dimensions and rights/compatibility gates.
+- **CAT-INV-009 — MUST:** unknown is preserved as unknown and displayed safely; it never defaults to positive.
+- **CAT-INV-010 — MUST:** source disappearance proposes `RETIRED/HIDDEN/UNKNOWN` impact but requires policy/approval before local activation.
+
+## 6. Material model and filter semantics
+
+Required variant fields:
+
+`materialId`, `variantId`, `sourceEntityId`, `article/SKU`, `sourceName`, `localDisplayName`, `collection`, `colorName/code/family`, `pattern`, `texture/structure`, `composition`, `transparencyClass`, `usageTags`, `wetRoomSuitability`, `reflectiveLayer`, `sourcePriceCategory`, nullable `localPriceTier`, `compatibilityRefs`, `availabilityState`, `publicationState`, `pricingState`, `orderabilityState`, `primaryAssetId`, `sourceVersion`, verification metadata.
+
+Property definitions include `propertyKey`, localized label, data type (`boolean`, `triState`, `enum`, `multiEnum`, `number`, `text`), optional unit, allowed source values, normalized value mapping, filter/operator semantics, unknown behavior and provenance.
+
+- **CAT-INV-011 — MUST:** observed `E`, `0`, `1`–`5` are dynamic `sourcePriceCategory` strings scoped by source version/context, not fixed enum.
+- **CAT-INV-012 — MUST:** filter facets show only definitions with meaningful verified values and counts for current compatible result set.
+- **CAT-INV-013 — MUST:** unknown value is not grouped into `Нет/Не подходит`; it remains unknown/omitted per facet policy.
+- **CAT-INV-014 — MUST:** color/pattern/texture can be normalized for discovery while preserving exact source label/code.
+- **CAT-INV-015 — MUST:** composition/use/reflective properties do not create performance/safety claims beyond source evidence.
+
+## 7. Compatibility and dimension constraints
+
+Compatibility is an explicit graph, not hardcoded UI branching. A rule has `ruleId`, version, subject types/IDs, condition expression in approved declarative vocabulary, outcome (`ALLOW`, `DENY`, `REQUIRE`, `LIMIT`, `WARN`, `MANUAL_REVIEW`), reason code/message key, source/evidence and effective interval.
+
+Dimension constraints use millimetres and square metres conceptually but exact normalization/rounding is TBD. They can depend on family/system/model/material/mounting/control/shape/quantity. More specific verified rule overrides a general rule only through declared precedence; conflicts block validation.
+
+- **CAT-INV-016 — MUST:** no compatibility/limit is inferred from mere source UI visibility.
+- **CAT-INV-017 — MUST:** rule evaluation is deterministic, explainable and versioned with the configuration.
+- **CAT-INV-018 — MUST:** missing required rule produces `MANUAL_REVIEW`, not allow.
+
+## 8. Availability and physical inventory boundary
+
+`AvailabilityRecord` fields: target entity/component, status, optional quantity, unit, location, lot/batch, captured/verified/effective/expires timestamps, source, actor, evidence and version. Quantitative stock, units, reserves and lots remain inactive until `TBD-INVENTORY-*` closes.
+
+- **CAT-INV-019 — MUST:** availability cannot be inferred from AMIGO page presence, price or image.
+- **CAT-INV-020 — MUST:** stale/expired evidence becomes `UNKNOWN/STALE` under approved policy, not permanently available.
+- **CAT-INV-021 — MUST:** negative quantity and unbalanced movements are invalid if quantitative inventory is introduced.
+- **CAT-INV-022 — MUST:** reserved/order quantities are separate from on-hand and need auditable movements; no model is assumed before approval.
+
+## 9. Core flows and state transitions
+
+### Source-to-local mapping
+
+`DISCOVERED → CAPTURED → NORMALIZED → MAPPED/CONFLICT → REVIEWED → ACTIVE/REJECTED`. Mapping revisions do not mutate raw capture. New/changed/removed entities are classified by sync diff.
+
+### Publication readiness
+
+Local draft passes required field validation, partner scope, rights/asset mapping, compatibility evidence, and relevant approval. It may then become `PUBLISHED` while remaining inquiry-only if price/availability/orderability are not ready.
+
+### Retirement
+
+Source removal or business decision creates proposed retirement. New discovery/configuration is disabled at effective time; historical references and audit remain. Alternative/replacement mapping is explicit, never silently substituted.
+
+## 10. Validation and invariants
+
+- unique source identity within catalog/context and unique active local alias where required;
+- acyclic parent hierarchy and no entity as its own ancestor;
+- exact domain type/relationship cardinality;
+- no published variant without approved primary media mapping;
+- no configurable variant without system/model/compatibility mapping;
+- no `READY` pricing without active applicable price version/reference;
+- no `ORDERABLE` while availability/orderability/business rule conflicts;
+- version effective intervals do not overlap illegally;
+- local override includes field, previous/source value, new value, reason, actor, approval and expiry/review;
+- unknown fields are nullable/explicit, not empty string/default zero masquerading as known.
+
+## 11. Errors, edge cases and failure behavior
+
+| Case | Required handling |
+|---|---|
+| Duplicate source ID with changed type | Quarantine/schema conflict, no activation |
+| Rename/move | Alias/history update, stable local ID retained |
+| Split/merge | Explicit mapping revision and impact review |
+| Circular source hierarchy | Validation failure and affected subtree blocked |
+| Material asset maps wrong variant | Publication blocked; existing exposure revoked if confirmed |
+| Price category unseen value | Store dynamic string; pricing remains unknown until rule exists |
+| Availability feed absent | `UNKNOWN`, inquiry path only |
+| Concurrent admin edits | Optimistic conflict, no last-write-wins |
+| Source outage | Active local version remains; staleness visible |
+| Partial activation failure | Atomic rollback/compensation and alert |
+
+## 12. Security, privacy, performance and analytics
+
+Catalog public projection excludes partner credentials, internal notes, source transport details and non-public assets. Admin mutations follow RBAC/audit. Catalog data contains no client photos. Query/index design must support faceted search and dynamic categories within approved performance budgets; high-cardinality/source text is bounded/normalized. Analytics track searches, zero results, filter use, inquiry-only gaps, stale/unknown states and mapping conflicts without private inputs.
+
+## 13. Acceptance criteria and test scenarios
+
+Primary AC: `AC-CATALOG-001`, `AC-CATALOG-DYNAMIC-001`, `AC-AMIGO-PARITY-001`, `AC-ASSET-MAP-001`, `AC-ADMIN-001`.
+
+Tests: unique IDs/aliases; parent cycle; new price category `X`; unknown property; rename/move/split/merge; publication readiness matrix; missing/wrong asset; compatibility conflict; dimension boundary tables; stale availability; source removal; concurrent edit; historical quote after retirement; source outage and rollback.
+
+## 14. Dependencies, risks and open questions
+
+Dependencies: parity, configurator, pricing, media, sync, admin, data model. Open: `TBD-ASSORT-002`–`007`, `TBD-SYSTEM-*`, `TBD-SIZE-001`, `TBD-INVENTORY-*`, `TBD-SOURCE-AMIGO-002`, `TBD-ASSET-AMIGO-003`, `TBD-PRICE-*`.
+
+Risks: text-key merges, auto-publication, unknown-as-positive, mismapped images, stale availability, fixed price-category enum and history loss. Mitigations are stable identities, independent states, explicit mappings, approvals and immutable revisions.
+
+## 15. Связанные требования и история
+
+Links: `FR-CATALOG-*`, `FR-MATERIAL-*`, `FR-VARIANT-*`, `AMIGO-SYNC-*`, `ASSET-*`, `PRICING-*`, `CAT-INV-001`–`022`.
+
+| Версия | Дата | Изменение |
+|---|---|---|
+| 0.1.0 | 2026-08-02 | Определены normalized entity model, identifiers, four readiness dimensions, material properties, compatibility, availability boundary and lifecycle. |

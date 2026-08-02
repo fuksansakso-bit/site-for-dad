@@ -116,6 +116,7 @@ New-Item -ItemType Directory -Path $runRoot -Force | Out-Null
 $adminPassword = "local$([guid]::NewGuid().ToString('N'))"
 $migrationPassword = "local$([guid]::NewGuid().ToString('N'))"
 $runtimePassword = "local$([guid]::NewGuid().ToString('N'))"
+$sessionSigningKey = "local$([guid]::NewGuid().ToString('N'))$([guid]::NewGuid().ToString('N'))"
 
 $listener = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopback, 0)
 $listener.Start()
@@ -225,6 +226,8 @@ CREATE ROLE foundation_runtime LOGIN PASSWORD '$runtimePassword'
     $env:LOG_LEVEL = 'info'
     $env:DATABASE_STATEMENT_TIMEOUT_MS = '5000'
     $env:WORKER_RUNTIME_DATABASE_ROLE = 'foundation_runtime'
+    $env:SESSION_SIGNING_KEY = $sessionSigningKey
+    $env:SYNTHETIC_IDENTITY_ENABLED = 'true'
 
     Write-Output 'stage=empty-and-repeat-deploy'
     $env:MIGRATION_DATABASE_URL = & $migrationUrlFor 'foundation_empty'
@@ -273,6 +276,7 @@ GRANT SELECT, INSERT ON audit_event TO foundation_runtime;
     $env:WORKER_SHUTDOWN_TIMEOUT_MS = '5000'
     Invoke-Pnpm -Arguments @('--filter', '@project-name/jobs', 'test:integration') -FailureMessage 'Durable job integration tests failed'
     Invoke-Pnpm -Arguments @('--filter', '@project-name/worker', 'test:integration') -FailureMessage 'Worker process integration tests failed'
+    Invoke-Pnpm -Arguments @('--filter', '@project-name/identity', 'test:integration') -FailureMessage 'Identity integration tests failed'
 
     $env:PGPASSWORD = $runtimePassword
     $previousErrorActionPreference = $ErrorActionPreference
@@ -304,8 +308,8 @@ GRANT SELECT, INSERT ON audit_event TO foundation_runtime;
         -FailureMessage 'Snapshot baseline resolve failed'
     Invoke-Pnpm -Arguments @('--filter', '@project-name/db', 'db:migrate:deploy') -FailureMessage 'Snapshot upgrade failed'
     $appliedUpgradeCount = & $psql -h '127.0.0.1' -p $port -U 'foundation_migrator' -d 'foundation_upgrade' -Atc "SELECT count(*) FROM _prisma_migrations WHERE finished_at IS NOT NULL AND rolled_back_at IS NULL;"
-    if ($LASTEXITCODE -ne 0 -or $appliedUpgradeCount -ne '2') {
-        throw 'Snapshot upgrade did not produce two applied migrations'
+    if ($LASTEXITCODE -ne 0 -or $appliedUpgradeCount -ne '3') {
+        throw 'Snapshot upgrade did not produce three applied migrations'
     }
 
     Write-Output 'stage=failed-migration-recovery'
@@ -357,6 +361,7 @@ GRANT SELECT, INSERT ON audit_event TO foundation_runtime;
         appendOnlyAudit = $true
         drift = 'clean'
         emptyReplay = 'passed'
+        identityIntegration = 'session-rbac-revocation-workload-separation-audit-outage'
         passwordAuthentication = 'scram-sha-256'
         recovery = 'rolled-back-and-compensated'
         repeatedDeploy = 'passed'
@@ -377,6 +382,8 @@ finally {
     $env:PGCONNECT_TIMEOUT = $null
     $env:PGPASSWORD = $null
     $env:PRISMA_MIGRATIONS_PATH = $null
+    $env:SESSION_SIGNING_KEY = $null
+    $env:SYNTHETIC_IDENTITY_ENABLED = $null
     $env:WORKER_CONCURRENCY = $null
     $env:WORKER_HEALTH_HOST = $null
     $env:WORKER_HEALTH_PORT = $null

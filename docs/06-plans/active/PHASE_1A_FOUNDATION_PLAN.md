@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Plan ID | `PLAN-1A-001` |
-| Статус | **AUTHORIZED / IN PROGRESS — STEP 1A-09** |
+| Статус | **AUTHORIZED / IN PROGRESS — STEP 1A-10** |
 | Проверяемый результат | На чистой машине локально и в CI воспроизводится secure modular foundation с web/BFF, PostgreSQL, object adapter, durable worker, auth boundary, tests and operations; бизнес-функции отсутствуют. |
 | Scope source | [Implementation roadmap §1](../IMPLEMENTATION_ROADMAP.md#1-phase-1a--foundation) |
 | Technology evaluation | [PHASE_1A_TECHNOLOGY_EVALUATION](../PHASE_1A_TECHNOLOGY_EVALUATION.md) |
@@ -211,8 +211,8 @@ Only one item may be `in_progress` in the future execution copy:
 | 1A-06 | Add PostgreSQL adapter and reviewed baseline migration/recovery tests | 1A-05 | `completed` |
 | 1A-07 | Add S3-compatible local adapter and trust-zone contract tests | 1A-06 | `completed` |
 | 1A-08 | Add durable job adapter/worker retry-idempotency tests | 1A-06 | `completed` |
-| 1A-09 | Add synthetic identity/RBAC/session boundary | 1A-06 | `in_progress` |
-| 1A-10 | Add OTel/logging/health integration and denylist tests | 1A-07–09 | `pending` |
+| 1A-09 | Add synthetic identity/RBAC/session boundary | 1A-06 | `completed` |
+| 1A-10 | Add OTel/logging/health integration and denylist tests | 1A-07–09 | `in_progress` |
 | 1A-11 | Complete CI, browser/recovery/security gates and clean-machine runbook | 1A-10 | `pending` |
 | 1A-12 | Audit against acceptance/traceability, update docs and request phase sign-off | 1A-11 | `pending` |
 
@@ -275,3 +275,4 @@ Before shared data, commits/resources are reversible in reverse dependency order
 | 1.5.0 | 2026-08-02 | Добавлены Prisma/PostgreSQL adapter, две инфраструктурные миграции без бизнес-таблиц, отдельные migrator/runtime roles и реальные проверки empty/repeat/upgrade/drift/append-only audit/forward-recovery на одноразовом PostgreSQL 18.4; активирован 1A-07. |
 | 1.6.0 | 2026-08-02 | Добавлены provider-neutral object port, три trust-zone bucket namespaces, checksum/metadata/immutable semantics и scoped grants; RustFS 1.0.0-beta.11 на loopback прошёл signed/anonymous-deny/cross-zone/dependency-failure contracts, активирован 1A-08. |
 | 1.7.0 | 2026-08-02 | Добавлены operator-only Graphile migrations с RLS runtime hardening, versioned synthetic task, bounded retry/timeout, durable idempotency/permanent failure и отдельный worker lifecycle; реальный PostgreSQL прогон подтвердил replay, graceful drain и отсутствие остаточного queue lock, активирован 1A-09. |
+| 1.8.0 | 2026-08-02 | Добавлены provider-neutral IdentityPort, шесть Phase 1A ролей, deny-by-default capability/object policy, synthetic human/workload separation, HMAC-hashed revocable sessions и audit context; forward migration разрешила атрибуцию workload identity, реальные session/RBAC/revocation/outage contracts прошли, активирован 1A-10. |

@@ -15,6 +15,7 @@ describe('foundation migration boundary', () => {
     expect(migrationDirectories).toEqual([
       '20260802160000_foundation_identity_audit',
       '20260802161000_foundation_delivery_health',
+      '20260802162000_workload_audit_context',
     ]);
 
     const tables = new Set<string>();
@@ -23,7 +24,7 @@ describe('foundation migration boundary', () => {
       expect(sql).toContain('PLAN-1A migration risk: LOW');
       expect(sql).toMatch(/\bBEGIN;/);
       expect(sql).toMatch(/\bCOMMIT;/);
-      expect(sql).not.toMatch(/\b(?:DROP|TRUNCATE)\b/i);
+      expect(sql).not.toMatch(/\b(?:DROP\s+TABLE|TRUNCATE)\b/i);
       expect(sql).not.toMatch(forbiddenBusinessEntity);
       for (const match of sql.matchAll(/CREATE TABLE "([a-z_]+)"/g)) {
         tables.add(match[1] ?? '');

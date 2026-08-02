@@ -1,0 +1,44 @@
+{
+  "name": "@project-name/identity",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./synthetic": {
+      "types": "./dist/synthetic.d.ts",
+      "import": "./dist/synthetic.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "eslint . --max-warnings=0",
+    "test": "vitest run --config vitest.config.ts",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@project-name/config": "workspace:*",
+    "@project-name/contracts": "workspace:*",
+    "pg": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@project-name/tooling": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/pg": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "projectName": {
+    "layer": "auth",
+    "responsibility": "Provider-neutral identity port, deny-by-default capability policy, audit context, and explicit synthetic local/test adapter.",
+    "publicInterface": [
+      ".",
+      "./synthetic"
+    ]
+  }
+}

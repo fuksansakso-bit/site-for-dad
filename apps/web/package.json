@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "@project-name/config": "workspace:*",
     "@project-name/contracts": "workspace:*",
     "next": "catalog:",
     "react": "catalog:",

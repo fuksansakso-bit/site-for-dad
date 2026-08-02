@@ -7,6 +7,7 @@
 
 ### Added
 
+- Добавлены typed fail-fast environment schemas для local/test/CI, явный public allowlist, `.env.example` без значений секретов, deterministic log redaction и автоматический repository secret scan с подавлением найденных значений.
 - Созданы минимальные `apps/web` и отдельный `apps/worker`, versioned liveness/readiness routes, безопасный единый error contract, технические 404/error boundary и проверки health-контрактов без бизнес-функций.
 - Добавлены strict TypeScript baseline, fail-closed ESLint/Prettier/Vitest configuration и машинная проверка направлений workspace-зависимостей, циклов, публичных интерфейсов и обязательных package verification scripts.
 - Инициализирован Phase 1A workspace: Node.js `24.18.1`, pnpm `11.18.0`, единый exact-version catalog, Turborepo task graph и зафиксированный dependency baseline для Windows 11 без выбора production-провайдера.

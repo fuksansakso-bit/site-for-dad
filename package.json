@@ -18,6 +18,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "turbo run lint",
+    "security:secrets": "node tooling/scripts/scan-secrets.mjs",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck"
   },

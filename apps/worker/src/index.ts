@@ -1,17 +1,15 @@
 import { once } from 'node:events';
 
+import { parseWorkerEnvironment } from '@project-name/config/server';
+
 import { createWorkerHealthServer } from './health-server.js';
 
-const rawPort = process.env['WORKER_HEALTH_PORT'] ?? '9464';
-const healthPort = Number.parseInt(rawPort, 10);
-if (!Number.isSafeInteger(healthPort) || healthPort < 1 || healthPort > 65_535) {
-  throw new Error('WORKER_HEALTH_PORT is invalid');
-}
+const environment = parseWorkerEnvironment(process.env);
 
 let acceptingWork = true;
 let stopping = false;
 const server = createWorkerHealthServer({ isReady: () => acceptingWork });
-server.listen(healthPort, '127.0.0.1');
+server.listen(environment.WORKER_HEALTH_PORT, environment.WORKER_HEALTH_HOST);
 await once(server, 'listening');
 
 process.stdout.write(
@@ -33,7 +31,7 @@ async function shutdown(signal: NodeJS.Signals): Promise<void> {
       `${JSON.stringify({ event: 'worker.shutdown.timeout', level: 'error', service: 'worker' })}\n`,
     );
     process.exitCode = 1;
-  }, 10_000);
+  }, environment.WORKER_SHUTDOWN_TIMEOUT_MS);
   forceTimer.unref();
 
   server.close();

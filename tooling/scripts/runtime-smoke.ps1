@@ -50,7 +50,14 @@ $workerProcess = $null
 $smokePassed = $false
 try {
     $env:NEXT_TELEMETRY_DISABLED = '1'
+    $env:APP_ENV = 'local'
+    $env:HEALTH_CHECK_TIMEOUT_MS = '2000'
+    $env:LOG_LEVEL = 'info'
+    $env:REQUEST_BODY_LIMIT_BYTES = '1048576'
+    $env:WORKER_CONCURRENCY = '1'
+    $env:WORKER_HEALTH_HOST = '127.0.0.1'
     $env:WORKER_HEALTH_PORT = $WorkerPort.ToString([System.Globalization.CultureInfo]::InvariantCulture)
+    $env:WORKER_SHUTDOWN_TIMEOUT_MS = '10000'
 
     $webProcess = Start-Process `
         -FilePath $NodeExecutable `
@@ -150,7 +157,14 @@ finally {
         }
     }
     $env:NEXT_TELEMETRY_DISABLED = $null
+    $env:APP_ENV = $null
+    $env:HEALTH_CHECK_TIMEOUT_MS = $null
+    $env:LOG_LEVEL = $null
+    $env:REQUEST_BODY_LIMIT_BYTES = $null
+    $env:WORKER_CONCURRENCY = $null
+    $env:WORKER_HEALTH_HOST = $null
     $env:WORKER_HEALTH_PORT = $null
+    $env:WORKER_SHUTDOWN_TIMEOUT_MS = $null
 
     if ($smokePassed) {
         foreach ($logPath in @($webOut, $webError, $workerOut, $workerError)) {

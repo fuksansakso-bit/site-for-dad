@@ -1,33 +1,36 @@
 {
-  "name": "@project-name/worker",
+  "name": "@project-name/observability",
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./redaction": {
+      "types": "./dist/redaction.d.ts",
+      "import": "./dist/redaction.js"
+    }
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "dev": "tsx watch src/index.ts",
     "lint": "eslint . --max-warnings=0",
-    "start": "node dist/index.js",
     "test": "vitest run --config vitest.config.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json"
-  },
-  "dependencies": {
-    "@project-name/config": "workspace:*",
-    "@project-name/contracts": "workspace:*"
   },
   "devDependencies": {
     "@project-name/tooling": "workspace:*",
     "@types/node": "catalog:",
-    "tsx": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
   "projectName": {
-    "layer": "app",
-    "responsibility": "Separate background worker process shell with safe health and graceful shutdown.",
+    "layer": "observability",
+    "responsibility": "Provider-neutral telemetry safety primitives, beginning with deterministic redaction.",
     "publicInterface": [
-      "worker process",
-      "HTTP health listener"
+      ".",
+      "./redaction"
     ]
   }
 }

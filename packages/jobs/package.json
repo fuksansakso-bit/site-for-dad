@@ -19,6 +19,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "@project-name/catalog": "workspace:*",
     "@project-name/config": "workspace:*",
     "@project-name/contracts": "workspace:*",
     "@project-name/observability": "workspace:*",

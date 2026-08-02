@@ -6,6 +6,7 @@ export const amigoAdapterVersions = {
 } as const;
 
 export const amigoOrigin = 'https://shop.amigo.ru';
+export const amigoPilotCatalogSourceId = '00000000-0000-4000-8000-000000000103';
 
 export interface AmigoPilotCategoryConfig {
   readonly categoryName: string;

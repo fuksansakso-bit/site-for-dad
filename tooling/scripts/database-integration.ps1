@@ -242,22 +242,12 @@ CREATE ROLE foundation_runtime LOGIN PASSWORD '$runtimePassword'
 
     Write-Output 'stage=runtime-least-privilege'
     $env:PGPASSWORD = $migrationPassword
-    $grantSql = @"
-REVOKE CREATE ON SCHEMA public FROM PUBLIC;
-GRANT USAGE ON SCHEMA public TO foundation_runtime;
-GRANT SELECT, INSERT, UPDATE, DELETE ON
-    actor_identity,
-    role_grant,
-    synthetic_session,
-    outbox_event,
-    idempotency_record,
-    service_heartbeat
-TO foundation_runtime;
-GRANT SELECT, INSERT ON audit_event TO foundation_runtime;
-"@
     Invoke-Checked `
         -Executable $psql `
-        -Arguments @('-h', '127.0.0.1', '-p', "$port", '-U', 'foundation_migrator', '-d', 'foundation_empty', '-v', 'ON_ERROR_STOP=1', '-c', $grantSql) `
+        -Arguments @(
+            '-h', '127.0.0.1', '-p', "$port", '-U', 'foundation_migrator', '-d', 'foundation_empty',
+            '-v', 'ON_ERROR_STOP=1', '-f', (Join-Path $resolvedRepositoryRoot 'infrastructure\local\runtime-grants.sql')
+        ) `
         -FailureMessage 'Runtime grants failed'
 
     $env:DATABASE_URL = & $runtimeUrlFor 'foundation_empty'

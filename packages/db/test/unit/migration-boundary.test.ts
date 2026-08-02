@@ -17,6 +17,7 @@ describe('Phase 1B.1 migration boundary', () => {
       '20260802161000_foundation_delivery_health',
       '20260802162000_workload_audit_context',
       '20260802233000_catalog_source_model',
+      '20260803001000_amigo_pilot_source_registry',
     ]);
 
     const tables = new Set<string>();

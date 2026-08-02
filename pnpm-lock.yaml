@@ -357,6 +357,9 @@ importers:
 
   packages/jobs:
     dependencies:
+      '@project-name/catalog':
+        specifier: workspace:*
+        version: link:../catalog
       '@project-name/config':
         specifier: workspace:*
         version: link:../config

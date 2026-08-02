@@ -1,6 +1,7 @@
 export { AmigoCatalogSourceAdapter } from './adapters/amigo/adapter.js';
 export {
   amigoAdapterVersions,
+  amigoPilotCatalogSourceId,
   amigoPilotCategories,
   amigoPilotMaterialCount,
   amigoPilotSystems,

@@ -1,0 +1,28 @@
+{
+  "name": "@project-name/tooling",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./tsconfig/base.json": "./tsconfig/base.json",
+    "./vitest": "./src/vitest.ts"
+  },
+  "scripts": {
+    "lint": "eslint . --max-warnings=0",
+    "test": "vitest run --config vitest.config.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "projectName": {
+    "layer": "tooling",
+    "responsibility": "Shared TypeScript and test configuration for Phase 1A workspaces.",
+    "publicInterface": [
+      "./tsconfig/base.json",
+      "./vitest"
+    ]
+  }
+}

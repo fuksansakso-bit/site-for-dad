@@ -13,24 +13,28 @@ Verification date: **2026-08-02**. This file records exact implementation inputs
 
 ## Application and quality toolchain
 
-| Responsibility       | Exact selection                                                                              |
-| -------------------- | -------------------------------------------------------------------------------------------- |
-| Workspace/task graph | Turborepo 2.10.8                                                                             |
-| Language             | TypeScript 6.0.3, `@types/node` 24.13.3                                                      |
-| Web/BFF              | Next.js 16.2.12, React/React DOM 19.2.8                                                      |
-| Runtime validation   | Zod 4.4.3                                                                                    |
-| PostgreSQL           | Prisma/Prisma Client/adapter-pg 7.9.1, pg 8.22.0                                             |
-| Durable jobs         | Graphile Worker 0.17.3                                                                       |
-| Object storage       | AWS SDK S3 client/presigner 3.1101.0; emulator selection is recorded with the storage commit |
-| Telemetry            | OpenTelemetry API 1.9.1, SDK/exporter 0.221.0                                                |
-| Tests                | Vitest/coverage 4.1.10, Playwright 1.62.1                                                    |
-| Static quality       | ESLint 9.39.5, eslint-config-next 16.2.12, Prettier 3.9.6                                    |
+| Responsibility       | Exact selection                                                                                |
+| -------------------- | ---------------------------------------------------------------------------------------------- |
+| Workspace/task graph | Turborepo 2.10.8                                                                               |
+| Language             | TypeScript 6.0.3, `@types/node` 24.13.3                                                        |
+| Web/BFF              | Next.js 16.2.12, React/React DOM 19.2.8                                                        |
+| Runtime validation   | Zod 4.4.3                                                                                      |
+| PostgreSQL           | Prisma/Prisma Client/adapter-pg 7.9.1, pg 8.22.0                                               |
+| Durable jobs         | Graphile Worker 0.17.3                                                                         |
+| Object storage       | AWS SDK S3 client/presigner 3.1101.0; emulator selection is recorded with the storage commit   |
+| Telemetry            | OpenTelemetry API 1.9.1, SDK/exporter 0.221.0                                                  |
+| Tests                | Vitest/coverage 4.1.10, Playwright 1.62.1                                                      |
+| Static quality       | ESLint/@eslint-js 9.39.5, typescript-eslint 8.65.0, eslint-config-next 16.2.12, Prettier 3.9.6 |
 
 All direct dependencies are exact catalog entries. New dependencies require an explicit Phase 1A
 responsibility, current license/engine review, lockfile update, and advisory scan. The locked graph is
 checked with `pnpm audit --audit-level critical`; the locked bootstrap graph reported no known
 vulnerabilities on 2026-08-02. The audit is repeated against the complete Phase 1A graph in the final
 report.
+
+The npm registry bulk advisory endpoint also reported zero advisory-bearing packages for all 27
+direct catalog selections on 2026-08-02. This direct-version check supplements, but does not replace,
+the repeated transitive lockfile audit.
 
 ESLint 10 and TypeScript 7 were examined and intentionally not selected: the transitive Next.js
 lint plugins declare ESLint support through major 9, and `typescript-eslint` declares TypeScript

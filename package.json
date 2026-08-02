@@ -11,8 +11,9 @@
     "pnpm": "11.18.0"
   },
   "scripts": {
+    "architecture:check": "node tooling/scripts/check-boundaries.mjs",
     "build": "turbo run build",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test",
+    "check": "pnpm format:check && pnpm architecture:check && pnpm lint && pnpm typecheck && pnpm test",
     "dev": "turbo run dev --parallel",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -21,16 +22,17 @@
     "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
+    "@eslint/js": "catalog:",
     "@playwright/test": "catalog:",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
-    "eslint-config-next": "catalog:",
     "globals": "catalog:",
     "prettier": "catalog:",
     "tsx": "catalog:",
     "turbo": "catalog:",
     "typescript": "catalog:",
+    "typescript-eslint": "catalog:",
     "vitest": "catalog:"
   }
 }

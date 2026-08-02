@@ -4,7 +4,7 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Draft / `BLOCKED_BY_TBD` — geometry-first contract defined; provider, benchmark thresholds, TTL/legal basis pending |
+| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD` for Foundation; Phase 1G activation blocked by provider, benchmark, privacy/legal, TTL and cost gates |
 | Версия | 0.1.0 |
 | Дата | 2026-08-02 |
 | Standard preview | [STANDARD_INTERIOR_PREVIEW_SPEC.md](STANDARD_INTERIOR_PREVIEW_SPEC.md) |
@@ -48,6 +48,7 @@ All originals, stripped originals, thumbnails, masks, geometry points, intermedi
 - **AIVIS-SPEC-020 — MUST:** quality thresholds are approved through evaluation; no invented numeric threshold is encoded in this spec.
 - **AIVIS-SPEC-021 — MUST:** user can compare original/base/refined revisions and revert to base without changing configuration.
 - **AIVIS-SPEC-022 — MUST:** photo is not required for catalog, quote, cart or contact flow.
+- **AIVIS-SPEC-023 — MUST:** first-launch activation is limited to roller and Zebra product profiles; horizontal, vertical and all other families remain disabled/post-MVP until a separate profile/evaluation/privacy gate is passed.
 
 ## 4. Data model and fields
 
@@ -92,7 +93,7 @@ Renderer uses catalog `ProductRenderProfile` and `MaterialRenderProfile`. It han
 
 - roller: plane/roll/cassette/lower bar/open percentage;
 - Zebra: band scale/phase and open/closed alignment;
-- horizontal/vertical: slat/lamella width, angle and stacking only when profile approved;
+- horizontal/vertical: post-MVP only, after a separately approved slat/lamella profile and evaluation gate;
 - pleated/cellular: fold/compression profile;
 - complex/soft products/ZIP/roof/shutters only after profile and benchmark readiness.
 
@@ -185,7 +186,7 @@ Dependencies: configurator/catalog/media/storage/AI pipeline/security/API/accoun
 
 ## 16. Связанные требования и история
 
-Links: `FR-VIS-001`–`022`, `FR-AI-VIS-001`, `NFR-PRIV-*`, `NFR-SEC-*`, `NFR-UPLOAD-*`, `ASSET-*`, `AIVIS-SPEC-001`–`022`.
+Links: `FR-VIS-001`–`022`, `FR-AI-VIS-001`, `NFR-PRIV-*`, `NFR-SEC-*`, `NFR-UPLOAD-*`, `ASSET-*`, `AIVIS-SPEC-001`–`023`.
 
 | Версия | Дата | Изменение |
 |---|---|---|

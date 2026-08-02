@@ -4,14 +4,15 @@
 
 | Поле | Значение |
 |---|---|
-| Версия gate | 1.0.0 |
-| Проверяемая входная база | `GLOBAL_SPEC.md` 0.5.0; governance-документы 1.1.0; полный комплект 0B |
+| Версия gate | 1.1.0 |
+| Проверяемая входная база | baseline commit `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`; `GLOBAL_SPEC.md` 0.6.0; полный комплект 0B и Phase 0C plans/audit |
 | Дата entry self-audit | 2026-08-02, Europe/Moscow |
 | Решение по входу в 0B | **PASSED** |
 | Основание письменного решения | Приложенное владельцем задание «AUTHORIZED AMIGO FUNCTIONAL PARITY AND SPECIALIZED SPECS» и повторное указание «так приступай к работе» |
 | Утверждающая роль | Владелец бизнеса / Product Owner; персональное имя остаётся `TBD-BIZ-001` для будущего audit record |
 | Текущий gate завершения 0B | **PASSED** — документационная фаза завершена |
-| Production-реализация | **ЗАПРЕЩЕНА** до отдельного post-0B решения |
+| Phase 0C Implementation Readiness Gate | **READY_FOR_OWNER_AUTHORIZATION** — artifacts ready, Phase 1A не разрешена |
+| Production-реализация | **ЗАПРЕЩЕНА** до отдельного решения и выполнения Phase 1A entry conditions |
 
 Entry gate подтверждает, что исправления 0A.1 внесены и письменное решение начать документную фазу 0B получено. Он не означает готовность ценовой формулы, импорта, приложения или запуска. Открытые TBD блокируют утверждение зависимой спецификации или функции, но не отменяют разрешение создавать документацию 0B с безопасным поведением.
 
@@ -37,7 +38,7 @@ Entry gate подтверждает, что исправления 0A.1 внес
 
 ### 2.2. Каноническая продуктовая база
 
-- [x] **QG-093 — MUST:** `GLOBAL_SPEC.md` 0.4.0 фиксирует приоритет owner facts → authorized partner data → global spec → specialized specs → assumptions/TBD.
+- [x] **QG-093 — MUST:** entry baseline `GLOBAL_SPEC.md` 0.4.0 сохранял подтверждённые owner/partner facts выше assumptions/TBD; текущий repository precedence Global → accepted ADR → approved specialized spec уточнён в 0.6.0 и проверен QG-138.
 - [x] **QG-094 — MUST:** партнёрский статус, permission scope, badge и обязательные partner metadata описаны требованиями `PARTNER-001`–`007`.
 - [x] **QG-095 — MUST:** AMIGO является `AUTHORIZED_PARTNER_SOURCE`; разрешённые активы используют `PARTNER_LICENSE`, а публикация конкретного файла требует отдельный `PUBLICATION_APPROVED` record.
 - [x] **QG-096 — MUST:** каталог динамический и охватывает текущие и будущие source categories без автоматической публикации, доступности, цены или orderability.
@@ -139,10 +140,59 @@ Evidence получен read-only PowerShell/`rg` проверками рабо�
 | Остаточные блокеры | 106 открытых `TBD-*`; они не препятствуют завершению boundary-документации, но блокируют соответствующие approvals/implementation |
 | Следующий шаг после `PASSED` | Только новое письменное решение владельца о следующей фазе; разработка автоматически не начинается |
 
-## 6. История изменений
+## 6. Implementation Readiness Gate Phase 0C
+
+Phase 0C проверяет готовность к контролируемому решению о Foundation, а не готовность продукта к launch. Технологические предложения остаются `Proposed`; явное разрешение Phase 1A отсутствует по замыслу текущего поручения.
+
+### 6.1. Baseline, scope and P0 triage
+
+- [x] **QG-131 — MUST:** первый Git commit существует: `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`, message `docs: establish Phase 0B specification baseline`; remote/push не создавались.
+- [x] **QG-132 — MUST:** до baseline проверены `.gitignore`, filenames/content и binary signatures; secrets, customer photos, temp/cache/system files and unnecessary binaries не обнаружены.
+- [x] **QG-133 — MUST:** все 61 исторических P0 ID получили одну из девяти Phase 0C classifications; до triage было 50 открытых/unclassified и 11 historical resolved, после — 0 unclassified.
+- [x] **QG-134 — MUST:** `MVP_SCOPE.md` фиксирует 20 обязательных first-launch capabilities, dynamic catalog boundary and 15 explicit post-MVP items; full AMIGO assortment не является launch dependency.
+- [x] **QG-135 — MUST:** подтверждённые owner facts не возвращены в TBD; `TBD-ACCOUNT-001` закрыт, `TBD-MIN-PRICE-001` остаётся открытым и minimum 1500 не применяется.
+
+### 6.2. Critical specifications and consistency
+
+- [x] **QG-136 — MUST:** 14 critical documents audited across requirements, I/O, states/transitions, rules, errors/fallback/edges, security, AC/tests, traceability, dependencies and open questions.
+- [x] **QG-137 — MUST:** итог audit — 14 `READY_WITH_NON_BLOCKING_TBD`, 0 `BLOCKED`, 0 `NEEDS_EXPANSION`, 0 `CONTRADICTORY` after fixes for Foundation entry review.
+- [x] **QG-138 — MUST:** precedence conflict and standard-preview result-type conflict corrected; catalog/price/rights/privacy boundaries have no unresolved direct contradiction.
+- [x] **QG-139 — MUST:** stale/nonexistent ADR references and Architecture global-baseline version corrected; new real preview coverage gap registered as `TBD-PREVIEW-001`.
+
+### 6.3. Implementation sequence and Foundation safety
+
+- [x] **QG-140 — MUST:** `IMPLEMENTATION_ROADMAP.md` defines Phase 1A–1H with objective, dependencies, entry, deliverables, acceptance, tests, risks, DoD, forbidden changes and rollback.
+- [x] **QG-141 — MUST:** `PHASE_1A_FOUNDATION_PLAN.md` defines recommended stack, repository/modules, responsibilities, environment/local/CI, database/storage/jobs/auth/observability/security/testing, commit sequence, acceptance and rollback without code.
+- [x] **QG-142 — MUST:** secret strategy is known: ignored local/OS values, names-only example, managed CI/runtime injection, typed public/server allowlist, scanning, redaction and rotation/revocation gate.
+- [x] **QG-143 — MUST:** migration rollback strategy is known: versioned reviewed SQL history, expand/contract, N/N-1 compatibility, failed-migration recovery, forward compensation and rehearsed backup/restore for destructive risk.
+- [x] **QG-144 — MUST:** technology comparison exists and every proposed Foundation choice maps to ADR-0007–0010; hosting, production region and AI provider remain unselected rather than guessed.
+
+### 6.4. Repository and transition decision
+
+- [x] **QG-145 — MUST:** Phase 0C changed only Markdown/governance/reference files; no package, dependency, application, SQL, migration, import/media or production configuration was created.
+- [x] **QG-146 — MUST:** final mechanical verification covers links, unique IDs, tables, whitespace, prohibited artifacts and committed clean worktree; evidence is recorded in final Phase 0C report.
+- [ ] **QG-147 — MUST BEFORE PHASE 1A:** owner accepts or supersedes proposed ADR-0007–0010.
+- [ ] **QG-148 — MUST BEFORE PHASE 1A:** owner separately and explicitly authorizes Phase 1A after reading the final Phase 0C report.
+
+### 6.5. Decision record
+
+| Поле | Значение |
+|---|---|
+| Gate result | **READY_FOR_OWNER_AUTHORIZATION** |
+| Documentation readiness | **PASS** |
+| Critical spec blockers before Foundation | **0** |
+| Feature-specific P0 gates retained | 20 `BLOCKER_BEFORE_FEATURE`, 10 `EXTERNAL_AMIGO_DATA_REQUIRED`, 7 `OWNER_DECISION_REQUIRED` |
+| Unmet transition decisions | QG-147 and QG-148 |
+| Allowed now | Review/correct Phase 0C documentation and decide ADR/authorization |
+| Forbidden now | Any Phase 1A work, dependency installation, application/schema/import/media/provider activation |
+
+`READY_FOR_OWNER_AUTHORIZATION` is intentionally not `PASSED_TO_IMPLEMENTATION`. Satisfying QG-147/148 requires a future recorded owner decision and does not happen implicitly from this document.
+
+## 7. История изменений
 
 | Версия | Дата | Изменение |
 |---|---|---|
 | 1.0.0 | 2026-08-02 | Completion checks `QG-112`–`130` пройдены на полном комплекте 0B; зафиксированы counts, unique IDs, links/tables/no-code evidence и запрет автоматического старта реализации. |
+| 1.1.0 | 2026-08-02 | Добавлены QG-131–148 для Phase 0C baseline/P0/MVP/audit/roadmap/Foundation safety; результат `READY_FOR_OWNER_AUTHORIZATION`, QG-147/148 намеренно открыты. |
 | 0.2.0 | 2026-08-02 | Entry gate обновлён для `GLOBAL_SPEC` 0.4.0 и partner-authorized scope; письменное поручение владельца зафиксировано как разрешение начать 0B; добавлен отдельный completion gate 0B. |
 | 0.1.0 | 2026-08-02 | Предыдущий self-audit 0A.1 для версии 0.3.1; проверки `QG-001`–`087` впоследствии зарезервированы. |

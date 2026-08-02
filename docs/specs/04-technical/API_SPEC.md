@@ -4,7 +4,7 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Draft 0B — conceptual HTTP/event contracts; no routes implemented |
+| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD`; conceptual contracts ready, concrete versioned routes/events are frozen per implementation phase |
 | Версия | 0.1.0 |
 | Дата | 2026-08-02 |
 | Architecture/data | [ARCHITECTURE.md](ARCHITECTURE.md), [DATA_MODEL.md](DATA_MODEL.md) |

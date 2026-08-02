@@ -4,7 +4,7 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Draft / `BLOCKED_BY_TBD-SOURCE-AMIGO-002` for production transport/cadence; pipeline contract defined |
+| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD` for Foundation; Phase 1B data capture is blocked until `TBD-SOURCE-AMIGO-002` has authorized transport/evidence |
 | Версия | 0.1.0 |
 | Дата | 2026-08-02 |
 | Source registry | [EXTERNAL_SOURCES.md](../../00-global/EXTERNAL_SOURCES.md) |

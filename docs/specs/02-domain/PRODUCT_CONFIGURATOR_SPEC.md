@@ -4,7 +4,7 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Draft 0B — flow/contract defined; real compatibility and limits `BLOCKED_BY_TBD` |
+| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD` for Foundation; each configuration path remains blocked before Phase 1C activation until its compatibility/limits are proven |
 | Версия | 0.1.0 |
 | Дата | 2026-08-02 |
 | Catalog model | [CATALOG_INVENTORY_SPEC.md](CATALOG_INVENTORY_SPEC.md) |

@@ -4,7 +4,7 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Draft 0B — strategy and 40 critical scenarios defined; execution awaits implementation/fixtures/TBD closures |
+| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD`; strategy and 40 critical scenarios defined, execution/feature fixtures await their implementation gates |
 | Версия | 0.1.0 |
 | Дата | 2026-08-02 |
 | Requirements | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) and profile specs |

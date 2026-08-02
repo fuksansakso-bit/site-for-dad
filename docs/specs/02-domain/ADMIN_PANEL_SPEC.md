@@ -4,7 +4,7 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Draft 0B — operational capabilities/workflows defined; UI/technology not selected |
+| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD`; operational contract ready, Phase 1F activation waits for final roles/identity and dependent feature data |
 | Версия | 0.1.0 |
 | Дата | 2026-08-02 |
 | Permissions | [ROLES_PERMISSIONS.md](../01-product/ROLES_PERMISSIONS.md) |

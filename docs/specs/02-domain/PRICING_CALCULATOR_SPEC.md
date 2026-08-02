@@ -4,7 +4,7 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Draft / `BLOCKED_BY_TBD` — engine contract ready, production formula and active PriceVersion not approved |
+| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD` for Foundation; numeric pricing activation is blocked before Phase 1C until formula, PriceVersion and parity approval exist |
 | Версия | 0.1.0 |
 | Дата | 2026-08-02 |
 | Policy | [PRICING_SOURCE_POLICY.md](../../00-global/PRICING_SOURCE_POLICY.md) 1.1.0 |

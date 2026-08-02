@@ -4,7 +4,7 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Draft 0B — logical model/invariants; no SQL or vendor types |
+| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD`; logical model/invariants ready, physical schema requires accepted ADR-0008 and feature-specific data |
 | Версия | 0.1.0 |
 | Дата | 2026-08-02 |
 | Architecture | [ARCHITECTURE.md](ARCHITECTURE.md) |

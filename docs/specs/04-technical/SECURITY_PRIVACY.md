@@ -4,7 +4,7 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Draft / policy values `BLOCKED_BY_TBD`; mandatory controls and threat model defined |
+| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD` for synthetic Foundation; public PII/media/AI activation remains blocked by exact legal, retention and provider values |
 | Версия | 0.1.0 |
 | Дата | 2026-08-02 |
 | Data model | [DATA_MODEL.md](DATA_MODEL.md) |

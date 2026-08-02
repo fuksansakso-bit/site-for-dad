@@ -7,6 +7,11 @@
 
 ### Added
 
+- Создан baseline commit Phase 0B `7105ef03c1fb1cb726161fcbc02cbb0c340e212e` с сообщением `docs: establish Phase 0B specification baseline` после проверки `.gitignore`, secrets, media, binaries, cache/temp и ссылок; remote/push не создавались.
+- Добавлены Phase 0C plans: `MVP_SCOPE.md`, `SPEC_READINESS_AUDIT.md`, `IMPLEMENTATION_ROADMAP.md`, `PHASE_1A_TECHNOLOGY_EVALUATION.md` и `active/PHASE_1A_FOUNDATION_PLAN.md` без приложения, schema, dependencies или production configuration.
+- Зафиксирован first-launch MVP из 20 возможностей, 8 cross-cutting safety boundaries и 15 явных post-MVP направлений; полный ассортимент AMIGO не является launch dependency, pilot ограничен 20–50 проверенными материалами.
+- Добавлены proposed ADR-0007–0010 для Foundation application stack, PostgreSQL/migration safety, S3-compatible storage/Postgres-backed jobs и identity/secrets/OTLP boundary; они требуют owner acceptance и не разрешают Phase 1A.
+- Добавлен `TBD-PREVIEW-001` для проверяемого набора scene/renderer profiles, assets и family coverage standard preview Phase 1D.
 - Создан полный нормативный комплект Phase 0B в `docs/specs/`: 5 product, 11 domain, 6 UX и 11 technical/operations документов без production-кода или placeholder-файлов.
 - В `USER_STORIES.md`, `ACCEPTANCE_CRITERIA.md` и `TEST_STRATEGY.md` определены соответственно 40 полных stories для восьми акторов, 40 позитивно-негативных acceptance criteria и 40 именованных критических test scenarios.
 - Добавлены отдельные спецификации функционального AMIGO parity, динамического каталога, конфигуратора, версионированной цены, standard preview, private AI visualizer, cart/order/WhatsApp, installment, account, admin и content/portfolio.
@@ -31,6 +36,11 @@
 
 ### Changed
 
+- Все 61 исторических P0 ID классифицированы для Phase 0C: 12 `RESOLVED`, 7 `OWNER_DECISION_REQUIRED`, 10 `EXTERNAL_AMIGO_DATA_REQUIRED`, 0 `BLOCKER_BEFORE_FOUNDATION`, 20 `BLOCKER_BEFORE_FEATURE`, 7 `SAFE_DEFAULT_AVAILABLE`, 5 `DEFERRED_POST_MVP`, 0 `DUPLICATE`, 0 `INVALIDATED`; unclassified стало 0.
+- `GLOBAL_SPEC.md` обновлён до 0.6.0: frozen MVP/basic saved-calculation account/roller+Zebra AI pilot/online-payment deferral и Phase 1A–1H synchronized; `ASM-004/021` перенесены в подтверждённые, `TBD-ACCOUNT-001` закрыт, `TBD-MIN-PRICE-001` оставлен открытым.
+- Critical-spec audit проверил 14 документов по 15 dimensions: итог 14 `READY_WITH_NON_BLOCKING_TBD`, 0 `BLOCKED`, 0 `NEEDS_EXPANSION`, 0 `CONTRADICTORY` после focused fixes; feature-specific TBD продолжают fail closed.
+- `SPEC_QUALITY_GATE.md` получил QG-131–148 и итог `READY_FOR_OWNER_AUTHORIZATION`: documentation readiness пройдена, но QG-147/148 (acceptance ADR и отдельное разрешение Phase 1A) намеренно не выполнены.
+- `SPEC_ROADMAP`, `TRACEABILITY_MATRIX`, `docs/INDEX`, `README` и `AGENTS` синхронизированы с Phase 0C, proposed ADR, P0 gates и запретом автоматического начала разработки.
 - Completion gate Phase 0B `QG-112`–`130` пройден: 33 specs, 6 ADR, 40/40/40 story–AC–test, 1 202 уникальных definition IDs, 0 битых ссылок/ошибок таблиц/запрещённых code-media artifacts; проект переведён в transition hold без разрешения реализации.
 - `GLOBAL_SPEC.md` обновлён до 0.5.0 и связан с фактически созданными профильными specs, traceability, tests и ADR; устаревшие ссылки на будущие/несуществующие документы заменены каноническими путями 0B.
 - `TRACEABILITY_MATRIX.md` обновлён с планового состояния до 18/18 critical chains и полной карты 40 story → 40 AC → 40 test с видимыми `BLOCKED_TBD`.
@@ -56,6 +66,9 @@
 
 ### Fixed
 
+- Устранено противоречие приоритета источников: `GLOBAL_SPEC` → accepted ADR → approved specialized spec; dynamic AMIGO snapshot не может переписать нормативное поведение.
+- `STANDARD_INTERIOR_PREVIEW` больше не называется `GEOMETRIC_PREVIEW` в ADR-0004/traceability; client-photo geometry и optional AI result остаются отдельными типами.
+- Исправлены stale/nonexistent ID ranges в ADR-0002/0004/0006 и ссылка `ARCHITECTURE` на устаревший `GLOBAL_SPEC` 0.4.0.
 - Устранены противоречия о том, что AMIGO используется только для public research, партнёрство/права ожидаются, media всегда `REFERENCE_ONLY`, категории ограничены четырьмя семействами, а price categories — только 1–5.
 - Стандартный интерьерный preview отделён от privacy-sensitive примерки на фотографии клиента и optional generative refinement.
 - Устранены противоречия: срок больше не помечен как рабочие/календарные дни TBD; гарантия больше не ограничена одним сроком без условий.

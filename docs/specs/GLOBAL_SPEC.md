@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Approved completion baseline документационной фазы 0B; implementation не разрешена, профильные approvals зависят от своих TBD |
-| Версия | 0.5.0 |
+| Статус | Phase 0C MVP/readiness baseline; implementation не разрешена без отдельного письменного решения и entry gate Phase 1A |
+| Версия | 0.6.0 |
 | Дата | 2026-08-02, Europe/Moscow |
 | Владелец документа | Владелец бизнеса / Product Owner; именованный утверждающий — `TBD-BIZ-001` |
 | Продукт | `PROJECT_NAME` до отдельного решения о бренде |
@@ -26,6 +26,10 @@
 - [Feature specification](01-product/FEATURE_SPEC.md)
 - [Матрица трассируемости](../00-global/TRACEABILITY_MATRIX.md)
 - [Test strategy](../quality/TEST_STRATEGY.md)
+- [MVP scope](../06-plans/MVP_SCOPE.md)
+- [Implementation roadmap](../06-plans/IMPLEMENTATION_ROADMAP.md)
+- [Specification readiness audit](../06-plans/SPEC_READINESS_AUDIT.md)
+- [Phase 1A Foundation plan](../06-plans/active/PHASE_1A_FOUNDATION_PLAN.md)
 - [Правила работы](../../AGENTS.md)
 - [История изменений](../../CHANGELOG.md)
 - [Правила референсов](../../reference/README.md)
@@ -40,6 +44,7 @@
 | 0.3.1 | 2026-08-02 | Документация организована: глобальная спецификация перенесена в `docs/specs/`, а будущие профильные спецификации направлены в тот же выделенный контур. |
 | 0.4.0 | 2026-08-02 | Подтверждены официальный партнёрский статус AMIGO, разрешённый scope каталога, медиа, цен, калькуляторной логики и бейджа; каталог и source price categories сделаны динамическими; разделены стандартный интерьерный preview и примерка на фото клиента; добавлены parity, sync и cart boundaries. |
 | 0.5.0 | 2026-08-02 | Глобальная база связана с фактически созданным комплектом 0B, 40 stories/AC/tests, quality/evaluation documents и ADR; неизвестные формулы, providers и business transitions сохранены как TBD. |
+| 0.6.0 | 2026-08-02 | Phase 0C: заморожен MVP первого запуска, P0 TBD классифицированы, введён roadmap 1A–1H и readiness gate; базовый кабинет и ограниченный AI pilot включены в MVP, online payment и расширенный ассортимент явно перенесены post-MVP. |
 
 ## 1. Нормативный язык и приоритет источников
 
@@ -47,12 +52,11 @@
 
 При конфликте данных MUST применяться такой приоритет:
 
-1. Подтверждённые владельцем бизнес-данные.
-2. Авторизованные данные партнёра AMIGO в пределах зафиксированного permission scope.
-3. Этот `GLOBAL_SPEC.md`.
-4. Утверждённые специализированные спецификации.
-5. Принятые ADR и иные архитектурные решения, не меняющие бизнес-смысл.
-6. Неподтверждённые допущения и открытые вопросы.
+1. Этот `GLOBAL_SPEC.md`, включая перенесённые сюда подтверждённые владельцем бизнес-данные и границы партнёрского permission scope.
+2. Принятые ADR в пределах их решения, если они не меняют бизнес-смысл.
+3. Утверждённые специализированные спецификации.
+4. Авторизованные versioned snapshots AMIGO для динамических operational values в пределах `EXTERNAL_SOURCES`, rights и pricing policies; snapshot не переписывает нормативное поведение.
+5. Неподтверждённые допущения и открытые вопросы, которые не могут переопределять пункты выше.
 
 - **PRINCIPLE-001 — MUST:** подтверждённые данные нельзя заменять догадкой, типичным рыночным правилом или удобством реализации.
 - **PRINCIPLE-002 — MUST:** отсутствующее значение оформляется уникальным `TBD-*`; зависимая функция использует безопасный fallback.
@@ -168,10 +172,10 @@
 - **SCOPE-004 — MUST:** серверный калькулятор предварительной стоимости для одного и нескольких окон.
 - **SCOPE-005 — MUST:** отдельные строки «Замер», «Доставка» и «Установка» со значением `0` рублей и подписью «Бесплатно» для всей обслуживаемой Чеченской Республики.
 - **SCOPE-006 — MUST:** загрузка фотографии, предложение области окна, ручная правка четырёх углов и геометрический рендер.
-- **SCOPE-007 — SHOULD:** первый проверяемый scope визуализатора — рулонные жалюзи и «Зебра»/«День-Ночь» (`ASM-021`).
+- **SCOPE-007 — MUST:** первый проверяемый scope визуализатора — рулонные жалюзи и «Зебра»/«День-Ночь»; остальные семейства проходят отдельный post-MVP gate.
 - **SCOPE-008 — MUST:** сравнение исходной фотографии и результата.
 - **SCOPE-009 — MUST:** отправка контекста расчёта/визуализации в WhatsApp и создание заявки.
-- **SCOPE-010 — MUST:** сохранение расчёта с версией цены; постоянный guest-link или аккаунт выбирается по `TBD-ACCOUNT-001`.
+- **SCOPE-010 — MUST:** сохранение расчёта с версией цены доступно в базовом добровольном аккаунте; полноценный гостевой расчёт и заявка не требуют регистрации.
 - **SCOPE-011 — MUST:** портфолио только из разрешённых фотографий работ.
 - **SCOPE-012 — MUST:** админ-панель для реальных товаров, вариантов, наличия, ценовых категорий, прайс-листов, заявок и контента.
 - **SCOPE-013 — MUST:** минимальный жизненный цикл заявки и история изменений.
@@ -181,12 +185,18 @@
 - **SCOPE-035 — MUST:** корзина из одной или нескольких независимых конфигураций, гостевое оформление и структурированный handoff заявки в WhatsApp без обязательной регистрации.
 - **SCOPE-036 — MUST:** партнёрский бейдж AMIGO публикуется в разрешённом scope и связан с `PartnerRelationship` и approved asset.
 - **SCOPE-037 — MUST:** AMIGO functional parity документируется для каталога, конфигуратора, preview, предварительного расчёта, корзины и процесса заявки; техническая реализация и визуальный язык остаются самостоятельными.
+- **SCOPE-038 — MUST:** канонический состав первого запуска задают `MVP-001`–`028` в [MVP_SCOPE](../06-plans/MVP_SCOPE.md); изменение состава требует письменного решения и impact analysis.
+- **SCOPE-039 — MUST:** для первого запуска обязательны четыре семейства — рулонные, «Зебра»/«День-Ночь», горизонтальные алюминиевые и вертикальные; полный ассортимент AMIGO не является launch dependency.
+- **SCOPE-040 — MUST:** Phase 1B начинает с 20–50 проверенных материалов, а каждая последующая категория/позиция активирует publication, availability, pricing, configurator, preview, AI и orderability независимо.
+- **SCOPE-041 — MUST:** первая AI-примерка включает private upload, ручную коррекцию, геометрическую базу, optional gated refinement, before/after, fallback, evaluation и cost limits только для рулонных и Zebra.
+- **SCOPE-042 — MUST:** стандартный preview и AI-примерка имеют разные типы результата, data/privacy boundaries и release gates.
+- **SCOPE-043 — MUST:** разработка следует Phase 1A–1H из [IMPLEMENTATION_ROADMAP](../06-plans/IMPLEMENTATION_ROADMAP.md); завершение документационного gate не разрешает следующий этап автоматически.
 
 ### 6.2. После MVP или после отдельного quality gate
 
-- **SCOPE-015 — MAY:** generative refinement после сравнительной оценки провайдера, privacy review и проверки инвариантов.
+- **SCOPE-015 — MAY:** optional generative refinement входит только в контролируемый MVP pilot рулонных/Zebra после provider, privacy, evaluation, protected-region и cost gates; для иных семейств это post-MVP.
 - **SCOPE-016 — MAY:** визуализация горизонтальных и вертикальных жалюзи после подтверждения качества первого scope.
-- **SCOPE-017 — MAY:** полноценный клиентский кабинет, если он не войдёт в MVP по `TBD-ACCOUNT-001`.
+- **SCOPE-017 — MAY:** расширенный клиентский кабинет сверх базового сохранения расчётов — повторные заказы, адресная книга, избранное, полная история статусов и иные CRM-функции — относится к post-MVP, если отдельное решение не изменит scope.
 - **SCOPE-018 — MAY:** детальные производственные статусы, расписание и расширенная история заказа по `QUOTES_ORDERS_SPEC.md`.
 - **SCOPE-019 — MAY:** расширенная аналитика, сегментация, эксперименты и отчёты по причинам расхождения цены.
 - **SCOPE-020 — MAY:** онлайн-оплата после отдельного business/security/legal решения.
@@ -474,7 +484,7 @@
 - **FR-AUTH-004 — MUST:** внутренние роли используют least privilege и deny-by-default.
 - **FR-AUTH-005 — MUST:** чувствительные административные действия требуют свежей/усиленной аутентификации после security design.
 - **FR-AUTH-006 — MUST:** восстановление доступа не раскрывает существование чужого аккаунта или заказа.
-- **FR-AUTH-007 — MUST:** кабинет поддерживает сохранённые проекты, историю расчётов, повторные заказы, сохранённые визуализации, избранные материалы, заявки/статусы, адреса и повторный WhatsApp handoff; детальная MVP-очерёдность функций остаётся roadmap-зависимостью.
+- **FR-AUTH-007 — MUST:** базовый MVP-кабинет поддерживает собственные сохранённые расчёты. Расширенные проекты, повторные заказы, сохранённые визуализации, избранное, полная история статусов, адреса и CRM-функции требуют отдельного post-MVP scope decision.
 - **FR-AUTH-008 — MUST:** наличие кабинета не меняет и не блокирует гостевой путь каталога, конфигуратора, preview, расчёта, корзины и заявки.
 
 ### 10.10. Портфолио
@@ -847,13 +857,17 @@
 
 1. **0A — Global documentation:** завершённая исходная глобальная продуктовая база.
 2. **0A.1 — External source, pricing, warranty and asset governance update:** завершённая корректирующая документационная фаза; entry gate пройден 2026-08-02.
-3. **0B — Specialized specifications:** обязательный комплект продуктовых, catalog, pricing, visualizer, UX, privacy, security, architecture и quality документов создан; completion gate пройден 2026-08-02, но код, импорт и media ingestion не разрешены.
-4. **Foundation:** утверждённая архитектура, identity boundaries, реальный каталог/контент и admin foundation.
-5. **Pricing path:** server calculator, price versions, multi-window, Manual Review и сохранение.
-6. **Visualizer path:** private upload, geometry/CV, zebra render, before/after и optional gated refinement.
-7. **Operations path:** заявки, замеры, WhatsApp, orders, audit, analytics, observability и backups.
-8. **Launch readiness:** реальный data load, accessibility/security/privacy/performance validation, restore/rollback и regional access.
-9. **Post-MVP:** production/order/visualizer readiness для сложных импортированных категорий AMIGO, расширенные visualizer-типы, детальные статусы, AI enhancements, payment или SaaS только по отдельным решениям.
+3. **0B — Specialized specifications:** обязательный комплект создан; completion gate пройден 2026-08-02 без разрешения кода/import/media ingestion.
+4. **0C — Implementation readiness, MVP freeze and P0 TBD triage:** MVP, P0 classification, critical spec audit, sequence 1A–1H и Foundation plan подготовлены; итог gate не является implementation authorization.
+5. **1A — Foundation:** monorepo, web/BFF, data/storage/jobs, environment/CI/tests, auth/observability/security baseline без бизнес-функций.
+6. **1B — AMIGO catalog pilot:** authorized import of 20–50 verified materials, local media, diff/approval и public/admin catalog.
+7. **1C — Configurator and pricing:** compatibility, millimetres/quantity, versioned preliminary price, override/manual fallback и parity tests.
+8. **1D — Standard preview:** deterministic prepared-scene rendering for supported MVP profiles.
+9. **1E — Cart, WhatsApp and orders:** multi-item cart, guest/measurement lead, neutral installment request and saved calculation.
+10. **1F — Admin and accounts:** operational admin surfaces, RBAC and basic saved-calculation account.
+11. **1G — AI visualizer pilot:** private geometry-first roller/Zebra pilot, manual correction, optional refinement and evaluation/cost gates.
+12. **1H — Hardening and release:** security/accessibility/performance/browser/mobile/recovery/monitoring/deployment and launch gate.
+13. **Post-MVP:** только перечисленные в [MVP_SCOPE §3](../06-plans/MVP_SCOPE.md#3-post-mvp-scope) функции по отдельным решениям.
 
 ## 22. Definition of Ready для специализированных спек
 
@@ -899,10 +913,10 @@
 - рассрочка: `TBD-INSTALLMENT-001`–`013`;
 - наличие/размеры: `TBD-INVENTORY-*`, `TBD-DIM-*`;
 - монтаж/доставка/аккаунты: `TBD-INSTALL-*`, `TBD-DELIVERY-*`, `TBD-ACCOUNT-*`;
-- дизайн/AI: `TBD-DESIGN-*`, `TBD-AI-*`;
+- дизайн/preview/AI: `TBD-DESIGN-*`, `TBD-PREVIEW-*`, `TBD-AI-*`;
 - инфраструктура/privacy/analytics: `TBD-INFRA-*`, `TBD-PRIV-*`, `TBD-ANALYTICS-*`.
 
-`TBD-LEAD-001`, `TBD-SYSTEM-001`, `TBD-HORIZONTAL-001`, `TBD-VERTICAL-001` и `TBD-SERVICE-001`–`003` сохраняются в реестре как решённые и не считаются открытыми блокерами.
+`TBD-LEAD-001`, `TBD-SYSTEM-001`, `TBD-HORIZONTAL-001`, `TBD-VERTICAL-001`, `TBD-SERVICE-001`–`003` и `TBD-ACCOUNT-001` сохраняются в реестре как решённые и не считаются открытыми блокерами.
 
 ## 25. Специализированная документация фазы 0B
 

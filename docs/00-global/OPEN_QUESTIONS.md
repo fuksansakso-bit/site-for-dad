@@ -6,6 +6,103 @@
 
 Вопрос имеет статус `Открыт`, пока ответ не подтверждён владельцем решения и не перенесён в нормативный документ. Решённая запись не удаляется: она получает дату, ссылку на нормативное решение и сохраняет исторический ID. `Владелец ответа` обозначает роль, а не назначенного человека.
 
+## Phase 0C — triage всех P0
+
+Классификация не заменяет статус вопроса и не выдаёт fallback за решение. Она отвечает, где именно неизвестное останавливает работу:
+
+- `RESOLVED` — есть доказуемое нормативное решение;
+- `OWNER_DECISION_REQUIRED` — требуется явный ответ владельца, но до указанного момента действует безопасное поведение;
+- `EXTERNAL_AMIGO_DATA_REQUIRED` — нужны авторизованные данные, выгрузка или подтверждение AMIGO;
+- `BLOCKER_BEFORE_FOUNDATION` — вопрос должен быть закрыт до начала Phase 1A;
+- `BLOCKER_BEFORE_FEATURE` — Foundation не блокируется, но указанная функция не активируется;
+- `SAFE_DEFAULT_AVAILABLE` — безопасный MVP-вариант уже определён, вопрос остаётся открытым для улучшения;
+- `DEFERRED_POST_MVP` — решение не нужно для замороженного MVP;
+- `DUPLICATE` — смысл полностью покрыт другим ID;
+- `INVALIDATED` — предпосылка вопроса больше не действует.
+
+Risk отражает последствия неверного предположения, а не исходный приоритет `P0`. `До какого момента` является gate, а не календарным обещанием.
+
+| ID | Формулировка | Категория / затронутые функции | Risk | Классификация | Решение и источник | Безопасный fallback | До какого момента | Владелец решения |
+|---|---|---|---|---|---|---|---|---|
+| `TBD-BIZ-001` | Кто является именованным Product Owner и финальным утверждающим? | Governance; approvals всех фаз | High | `OWNER_DECISION_REQUIRED` | Роль известна, персональное имя не дано; [GLOBAL_SPEC §0](../specs/GLOBAL_SPEC.md#0-метаданные-документа) | Письменные решения пользователя считаются решениями роли; имя не выдумывается | До финального acceptance Phase 1A и назначения production-доступов | Владелец бизнеса |
+| `TBD-BIZ-004` | Как устроена фактическая воронка от сообщения до завершённого заказа? | Lead, measure, order, admin, account status | High | `BLOCKER_BEFORE_FEATURE` | Доказанного workflow нет | MVP создаёт заявку и использует только общий безопасный статус; заказ автоматически не создаётся | До реализации переходов заказа в Phase 1E/1F | Владелец бизнеса |
+| `TBD-BIZ-005` | Какие юридические реквизиты, документы и формулировки обязательны? | Legal pages, lead, account, warranty, privacy | Critical | `BLOCKER_BEFORE_FEATURE` | Юридическое заключение отсутствует | Не публиковать вымышленные реквизиты/обещания; shared/production-сбор PII выключен | До публичного запуска форм и аккаунтов | Владелец бизнеса / юрист |
+| `TBD-LEAD-001` | Срок 2–7 дней календарный или рабочий? | Landing, cart, WhatsApp, orders | High | `RESOLVED` | Календарные дни, включая выходные; `BUSINESS-LEAD-TIME-001` | — | Закрыт 2026-08-02 | Владелец бизнеса |
+| `TBD-WARRANTY-001` | Как подаётся и рассматривается гарантийное обращение? | Warranty content/workflow, admin | High | `SAFE_DEFAULT_AVAILABLE` | Покрытие и исключения подтверждены, процесс нет; `BUSINESS-WARRANTY-001`–`003` | Показать подтверждённые условия и ручной контакт; не обещать сроки и не выносить авто-решение | До автоматизации warranty workflow; юридический текст — до launch | Владелец бизнеса / юрист |
+| `TBD-ASSORT-002` | Каков полный inventory AMIGO и какие позиции локально активны? | Import, catalog, filters, orderability | High | `EXTERNAL_AMIGO_DATA_REQUIRED` | Динамическая модель подтверждена, фактический набор нет | Phase 1B pilot только на 20–50 проверенных материалах; остальное hidden/review | До Phase 1B pilot data activation; полный набор не блокирует MVP | Владелец / менеджер каталога / AMIGO |
+| `TBD-ASSORT-003` | Какова совместимость механизмов, кассет, направляющих и опций? | Configurator, price, preview, order | Critical | `EXTERNAL_AMIGO_DATA_REQUIRED` | Матрица не предоставлена | Неизвестное сочетание → `MANUAL_REVIEW`, без точной цены/обещания заказа | До активации соответствующей комбинации в Phase 1C | Мастер / владелец / AMIGO |
+| `TBD-SYSTEM-001` | Какие рулонные системы производятся? | Catalog baseline | High | `RESOLVED` | Перечень зафиксирован в [GLOBAL_SPEC §11.1](../specs/GLOBAL_SPEC.md#111-каталог) | — | Закрыт 2026-08-02 | Владелец / мастер |
+| `TBD-HORIZONTAL-001` | Какие размеры алюминиевых ламелей доступны? | Horizontal catalog | High | `RESOLVED` | 16/25/50 мм и «Волна» 35 мм; [GLOBAL_SPEC §11.1](../specs/GLOBAL_SPEC.md#111-каталог) | — | Закрыт 2026-08-02 | Владелец / мастер |
+| `TBD-VERTICAL-001` | Какие типы вертикальных жалюзи доступны? | Vertical catalog | High | `RESOLVED` | Тканевые, «Бриз», пластиковые, алюминиевые, мультифактурные; [GLOBAL_SPEC §11.1](../specs/GLOBAL_SPEC.md#111-каталог) | — | Закрыт 2026-08-02 | Владелец / мастер |
+| `TBD-SOURCE-AMIGO-001` | Подтверждены ли партнёрство и permission scope AMIGO? | Catalog, price, media, badge | Critical | `RESOLVED` | `PARTNER-001`–`006` | — | Закрыт 2026-08-02 | Владелец / AMIGO |
+| `TBD-SOURCE-AMIGO-002` | Каков разрешённый export/transport AMIGO и процесс обновления? | Phase 1B import, Phase 1C price sync | Critical | `EXTERNAL_AMIGO_DATA_REQUIRED` | Конкретный transport/schema/cadence не доказан | Проверенный ручной импорт разрешённого файла; никакого обхода доступа | До первой Phase 1B загрузки AMIGO | Владелец / AMIGO / менеджер каталога |
+| `TBD-ASSET-AMIGO-001` | Разрешён ли локальный импорт/публикация изображений AMIGO? | Catalog media, preview, badge | Critical | `RESOLVED` | `PARTNER_LICENSE`, `PARTNER-002/003`, `ASSET-013`–`015` | — | Закрыт 2026-08-02 | Владелец / AMIGO |
+| `TBD-ASSET-AMIGO-002` | Какие категории media покрывает разрешение? | Product/material/examples/badge | Critical | `RESOLVED` | `PARTNER-002/006`, `ASSET-IMPORT-*` | — | Закрыт 2026-08-02 | Владелец контента / AMIGO |
+| `TBD-PRICE-001` | Какая AMIGO-origin PriceVersion активна и проверена? | Preliminary pricing, quote history | Critical | `EXTERNAL_AMIGO_DATA_REQUIRED` | Источник определён, активных snapshots/rules нет | `PRICE_ON_REQUEST` / ручной расчёт; никогда `0` | До numeric pricing activation в Phase 1C | Владелец / бухгалтер / AMIGO |
+| `TBD-PRICE-002` | Как округляются размеры и площадь? | Pricing, dimensions, parity | Critical | `EXTERNAL_AMIGO_DATA_REQUIRED` | Правило и контрольные примеры отсутствуют | Не округлять догадкой; позиция требует ручного расчёта | До numeric pricing activation в Phase 1C | Владелец / мастер / AMIGO |
+| `TBD-PRICE-003` | Какова minimum Billable Area и scope? | Pricing rules | Critical | `EXTERNAL_AMIGO_DATA_REQUIRED` | Значение/область отсутствуют | Minimum billable area не применяется | До numeric pricing activation в Phase 1C | Владелец / мастер / AMIGO |
+| `TBD-PRICE-004` | Какова формула горизонтальных алюминиевых жалюзи? | Horizontal pricing | Critical | `EXTERNAL_AMIGO_DATA_REQUIRED` | Формула и примеры отсутствуют | Ручной расчёт для семейства | До numeric horizontal pricing | Владелец / мастер / AMIGO |
+| `TBD-PRICE-005` | Какова формула вертикальных жалюзи? | Vertical pricing | Critical | `EXTERNAL_AMIGO_DATA_REQUIRED` | Формула и примеры отсутствуют | Ручной расчёт для семейства | До numeric vertical pricing | Владелец / мастер / AMIGO |
+| `TBD-PRICE-006` | Каковы налоговый режим и обязательный показ цены? | Price UI, legal, quote | Critical | `BLOCKER_BEFORE_FEATURE` | Финансово-юридическое решение отсутствует | Не делать налоговых/офертных утверждений; сумма только предварительная | До публичного numeric pricing | Владелец / бухгалтер / юрист |
+| `TBD-PRICE-007` | Кто и как вводит PriceVersion в действие? | Admin pricing activation, audit | Critical | `OWNER_DECISION_REQUIRED` | Технический staged/approve/activate workflow определён, роли не назначены | Только draft; активация запрещена без явного approver | До Phase 1C activation workflow | Владелец / администратор |
+| `TBD-PRICE-008` | Каков срок применимости preliminary quote? | Saved calculations, cart, order | High | `SAFE_DEFAULT_AVAILABLE` | Срок не подтверждён | Не показывать срок; перед заказом требовать явную перепроверку без изменения истории | До обещания срока/expiry в UI | Владелец / юрист |
+| `TBD-PRICE-CATEGORY-001` | Ограничены ли price categories значениями 1–5? | Catalog/pricing schema | High | `RESOLVED` | Dynamic string; `FR-CATALOG-020`, `FR-VARIANT-001` | — | Закрыт 2026-08-02 | Владелец / менеджер каталога |
+| `TBD-MIN-PRICE-001` | 1500 рублей — minimum на изделие или заказ? | Pricing minimum | Critical | `OWNER_DECISION_REQUIRED` | Пользователь явно оставил вопрос открытым в Phase 0C | Не применять автоматически и не использовать `max(...)` | До любого применения minimum в Phase 1C | Владелец / бухгалтер |
+| `TBD-MECHANISM-001` | Что входит в базовую стоимость механизма? | Base price/breakdown/config | Critical | `BLOCKER_BEFORE_FEATURE` | Состав не подтверждён | Не показывать детализированную базовую комплектацию/числовой breakdown | До numeric pricing конкретной системы | Владелец / мастер |
+| `TBD-PRICE-SOURCE-001` | Какой AMIGO region/context использовать для snapshots? | Source price, parity | Critical | `EXTERNAL_AMIGO_DATA_REQUIRED` | Регион сравнения не подтверждён | Не переносить московский контекст; manual quote | До первого approved price snapshot | Владелец / бухгалтер / AMIGO |
+| `TBD-PRICE-SOURCE-002` | Каковы cadence и staleness threshold каталога/цен? | Sync, alerts, price activation | High | `OWNER_DECISION_REQUIRED` | Период не подтверждён | Ручная verification перед activation; stale не считается active по умолчанию | До scheduled sync и launch numeric pricing | Владелец / администратор |
+| `TBD-PRICE-PARITY-001` | Какое отклонение от AMIGO допустимо? | Pricing parity gate | Critical | `OWNER_DECISION_REQUIRED` | Tolerance отсутствует | Любое ненулевое расхождение → review; не активировать | До production pricing activation | Владелец / бухгалтер |
+| `TBD-INVENTORY-001` | В каких единицах учитывать физические остатки? | Quantitative stock/reservations | High | `SAFE_DEFAULT_AVAILABLE` | MVP требует только binary availability | Не вести/не показывать количественный остаток; manual `IN_STOCK/OUT_OF_STOCK` | До quantitative inventory post-MVP | Владелец / снабжение |
+| `TBD-INVENTORY-002` | Где source of truth наличия и cadence обновления? | Catalog availability/admin | High | `OWNER_DECISION_REQUIRED` | Источник/ответственный не названы | Ручное бинарное изменение с actor/time/reason; unknown не становится in-stock | До публикации Phase 1B availability | Владелец / снабжение |
+| `TBD-SIZE-001` | Каковы технические пределы каждой Product System? | Configurator, price, preview, order | Critical | `EXTERNAL_AMIGO_DATA_REQUIRED` | Матрица не получена | Неизвестный размер → `MANUAL_REVIEW` и бесплатный замер | До auto-validation соответствующей системы | Мастер / владелец / AMIGO |
+| `TBD-DIM-002` | Какие ширину/высоту вводить для каждого монтажа? | Configurator UX, quote | Critical | `BLOCKER_BEFORE_FEATURE` | Схемы замера отсутствуют | Поля маркируются как пользовательские ориентиры; точная цена/заказ блокируются, предлагается замер | До public dimension flow Phase 1C | Мастер / UX |
+| `TBD-DIM-003` | Какие вычеты, припуски и допуски применяются? | Configuration/pricing/manufacturing | Critical | `BLOCKER_BEFORE_FEATURE` | Формулы отсутствуют | Не преобразовывать пользовательские размеры автоматически | До calculation rules Phase 1C | Мастер |
+| `TBD-DIM-004` | Как считать створки, зазоры и группы окон? | Multi-item config/pricing | Critical | `BLOCKER_BEFORE_FEATURE` | Правила отсутствуют | Каждая створка — отдельная черновая позиция; итог требует ручной проверки | До multi-sash automatic calculation | Мастер |
+| `TBD-INSTALL-001` | Какие способы/поверхности монтажа поддерживаются? | Configurator, measure, order | Critical | `BLOCKER_BEFORE_FEATURE` | Справочник совместимости отсутствует | Не обещать совместимость; route на бесплатный замер | До activation mounting options Phase 1C | Мастер |
+| `TBD-INSTALL-002` | Какие условия объекта делают монтаж невозможным/особым? | Warnings, measure, order | Critical | `BLOCKER_BEFORE_FEATURE` | Критерии отсутствуют | Не подтверждать монтаж по фото/анкете; решение после замера | До automatic install eligibility | Мастер |
+| `TBD-SERVICE-001` | Бесплатен ли замер при любом размере заказа? | Service lines, lead | High | `RESOLVED` | Да, для подтверждённого ассортимента/региона; `BUSINESS-FREE-SERVICES-001` | — | Закрыт 2026-08-02 | Владелец |
+| `TBD-SERVICE-002` | Бесплатна ли доставка по всей Чеченской Республике? | Service lines, landing/cart | High | `RESOLVED` | Да; `BUSINESS-FREE-SERVICES-001` | — | Закрыт 2026-08-02 | Владелец |
+| `TBD-SERVICE-003` | Бесплатна ли установка для подтверждённых систем? | Service lines, landing/cart | High | `RESOLVED` | Да; техническая возможность отдельно; `BUSINESS-FREE-SERVICES-001` | — | Закрыт 2026-08-02 | Владелец / мастер |
+| `TBD-INSTALLMENT-001` | Кто предоставляет рассрочку? | Automated installment | Critical | `DEFERRED_POST_MVP` | MVP заморожен на neutral manager handoff; `BUSINESS-INSTALLMENT-001` | Только утверждённая нейтральная фраза и WhatsApp | До post-MVP автоматизации/условий | Владелец / юрист |
+| `TBD-INSTALLMENT-009` | Кто сторона договора рассрочки? | Automated installment/legal | Critical | `DEFERRED_POST_MVP` | Автоматическая заявка исключена из MVP | Никакого договора/одобрения на сайте; manager handoff | До post-MVP автоматизации | Владелец / провайдер / юрист |
+| `TBD-INSTALLMENT-010` | Как обрабатываются данные в рассрочке? | Automated installment/privacy | Critical | `DEFERRED_POST_MVP` | MVP не собирает документы и не передаёт их провайдеру | WhatsApp payload ограничен расчётом и введённым именем | До post-MVP сбора/передачи данных | Privacy / юрист / провайдер |
+| `TBD-INSTALLMENT-012` | Доступна ли рассрочка во всех населённых пунктах? | Installment claims/eligibility | High | `DEFERRED_POST_MVP` | География не подтверждена; neutral claim не обещает eligibility | Условия и доступность уточняет менеджер индивидуально | До публикации географии/eligibility | Владелец / провайдер |
+| `TBD-ACCOUNT-001` | Входит ли кабинет в MVP? | Account scope, saved calculations | High | `RESOLVED` | Phase 0C: базовый кабинет с сохранёнными расчётами входит в MVP; регистрация не обязательна; [MVP_SCOPE](../06-plans/MVP_SCOPE.md) | Гостевой каталог/config/quote/lead остаётся полным | Закрыт 2026-08-02 | Владелец продукта |
+| `TBD-ACCOUNT-003` | Как связать существующий заказ с аккаунтом? | Historical order claim | Critical | `DEFERRED_POST_MVP` | Замороженный кабинет MVP хранит расчёты; claim существующих заказов не обязателен | Не показывать/не присоединять заказ без proof of ownership | До post-MVP order claim | Владелец / Security |
+| `TBD-DESIGN-001` | Каковы финальные brand/logo/palette/type? | Landing/design/content | High | `SAFE_DEFAULT_AVAILABLE` | Бренд не утверждён; `PROJECT_NAME` и существующий premium interior-tech direction остаются рабочими | Нейтральный wordmark `PROJECT_NAME`, без чужого брендинга | До production brand publication Phase 1H | Владелец / дизайнер |
+| `TBD-AI-001` | Как сравнивать AI/CV providers/self-hosted? | Phase 1G provider decision | Critical | `BLOCKER_BEFORE_FEATURE` | Criteria/evaluation не утверждены | Только deterministic/manual geometry; provider не выбирается | До provider ADR и external processing | Architecture / Product |
+| `TBD-AI-002` | Какой benchmark и метрики определяют качество? | Detection/segmentation/AI gate | Critical | `BLOCKER_BEFORE_FEATURE` | Rights-cleared dataset/thresholds отсутствуют | Не заявлять auto quality; manual correction/base-only | До Phase 1G acceptance | Product / CV / мастер |
+| `TBD-AI-003` | Какие file/image limits допустимы? | Upload security/UX/cost | Critical | `BLOCKER_BEFORE_FEATURE` | Форматы/лимиты не подтверждены | Upload endpoint/production storage не включать | До реализации upload Phase 1G | Engineering / Security / Product |
+| `TBD-AI-005` | Как включается generative refinement? | AI UX/consent/cost | High | `SAFE_DEFAULT_AVAILABLE` | Контракт допускает только optional refinement после base | Выключено по умолчанию; запуск только явным действием и feature flag | До решения изменить default | Product / Privacy |
+| `TBD-AI-006` | Каковы guest/customer processing limits? | Abuse/cost/queues | Critical | `BLOCKER_BEFORE_FEATURE` | Бюджет/лимиты отсутствуют | External AI выключен; bounded synthetic tests only | До public Phase 1G pilot | Product / владелец |
+| `TBD-AI-007` | Гарантирует ли provider no-training/region/delete? | Private external processing | Critical | `BLOCKER_BEFORE_FEATURE` | Provider/contract не выбран | Ничего не передавать внешнему AI; geometric local fallback | До первого external photo transfer | Privacy / Legal / Architecture |
+| `TBD-INFRA-002` | Где проверять региональную доступность без VPN? | Hosting/performance/release | High | `OWNER_DECISION_REQUIRED` | Конкретные сети/точки не названы | Foundation локально; production release не получает regional PASS без измерений | До Phase 1H release gate | Владелец / Engineering |
+| `TBD-INFRA-004` | Какие data residency требования применимы? | Production DB/storage/AI/backup | Critical | `BLOCKER_BEFORE_FEATURE` | Legal/privacy ограничение неизвестно | Phase 1A только local/isolated synthetic data; production provider и PII запрещены | До shared staging/production с PII или private media | Privacy / Legal |
+| `TBD-INFRA-006` | Каков WhatsApp integration mode? | Phase 1E handoff | High | `SAFE_DEFAULT_AVAILABLE` | Business API не подтверждён | Editable `wa.me`/deep-link или copy-to-clipboard с confirmed number; не заявлять delivery | До выбора Business API/automation | Владелец / Architecture |
+| `TBD-PRIV-001` | Каков TTL гостевых фото и производных? | Guest upload/delete | Critical | `BLOCKER_BEFORE_FEATURE` | TTL юридически не утверждён | Не принимать production guest photos | До Phase 1G guest upload | Privacy / владелец |
+| `TBD-PRIV-002` | Каковы сроки фото клиента, заявки и заказа? | Account/lead/order/media retention | Critical | `BLOCKER_BEFORE_FEATURE` | Retention matrix отсутствует | Synthetic data only; не включать долговременное photo storage | До соответствующего PII/media feature | Privacy / юрист |
+| `TBD-PRIV-003` | Каковы basis/consent для upload и AI? | Photo upload/AI processing | Critical | `BLOCKER_BEFORE_FEATURE` | Legal text/record absent | Upload/AI external processing disabled | До Phase 1G upload | Privacy / юрист |
+| `TBD-PRIV-004` | Кто data controller и как выполняются access/delete requests? | Legal notice, DSAR, accounts/leads | Critical | `BLOCKER_BEFORE_FEATURE` | Реквизиты/process отсутствуют | Не собирать реальные PII в shared environment; ручной канал не выдумывать | До public account/lead/photo collection | Владелец / юрист |
+| `TBD-PRIV-005` | Какие subprocessors/contracts допустимы? | Hosting, storage, AI, analytics | Critical | `BLOCKER_BEFORE_FEATURE` | Список/DPA отсутствуют | Только local synthetic Foundation; внешняя обработка выключена | До подключения любого PII/private-media processor | Privacy / Legal |
+| `TBD-ANALYTICS-002` | Какие решения должен поддерживать первый reporting? | Product analytics/dashboard | High | `SAFE_DEFAULT_AVAILABLE` | Сложная аналитика отнесена post-MVP | На MVP — только privacy-safe operational health; behavioral analytics off until purpose/consent | До включения продуктовой аналитики Phase 1H/post-MVP | Владелец / Product |
+
+### Сводка P0 Phase 0C
+
+| Показатель | Значение |
+|---|---:|
+| Всего исторических P0 ID | 61 |
+| Открытых и неклассифицированных до Phase 0C | 50 |
+| Классифицированных после Phase 0C | 61 |
+| Неклассифицированных после Phase 0C | 0 |
+| `RESOLVED` | 12 |
+| `OWNER_DECISION_REQUIRED` | 7 |
+| `EXTERNAL_AMIGO_DATA_REQUIRED` | 10 |
+| `BLOCKER_BEFORE_FOUNDATION` | 0 |
+| `BLOCKER_BEFORE_FEATURE` | 20 |
+| `SAFE_DEFAULT_AVAILABLE` | 7 |
+| `DEFERRED_POST_MVP` | 5 |
+| `DUPLICATE` / `INVALIDATED` | 0 / 0 |
+
 ## Бизнес
 
 | ID | P | Вопрос | Зачем нужен ответ / критерий закрытия | Владелец ответа | Статус |
@@ -134,7 +231,7 @@
 
 | ID | P | Вопрос | Зачем нужен ответ / критерий закрытия | Владелец ответа | Статус |
 |---|---|---|---|---|---|
-| TBD-ACCOUNT-001 | P0 | Входит ли клиентский кабинет в MVP или расчёт сохраняется гостевой ссылкой? | Нужна однозначная граница первого выпуска. | Владелец продукта | Открыт |
+| TBD-ACCOUNT-001 | P0 | Входит ли клиентский кабинет в MVP или расчёт сохраняется гостевой ссылкой? | Решено: базовый кабинет с сохранёнными расчётами входит в MVP, но каталог, конфигуратор, расчёт и заявка полностью доступны гостю. | Владелец продукта | Решён — 2026-08-02, [MVP_SCOPE](../06-plans/MVP_SCOPE.md) |
 | TBD-ACCOUNT-002 | P1 | Какие способы входа допустимы для клиента? | Нужны UX, security и стоимость каналов подтверждения. | Product / Security | Открыт |
 | TBD-ACCOUNT-003 | P0 | Как безопасно связать существующие заказы с аккаунтом клиента? | Нужен проверяемый proof-of-ownership. | Владелец / Security | Открыт |
 | TBD-ACCOUNT-004 | P1 | Как гостевой расчёт переносится в новый или существующий аккаунт? | Нужны правила владения, дедупликации и срока токена. | Product / Security | Открыт |
@@ -151,6 +248,7 @@
 | TBD-DESIGN-004 | P1 | Какие реальные фото работ разрешены для главной и портфолио? | Нужны исходники, качество, согласие и подписи. | Владелец контента | Открыт |
 | TBD-DESIGN-005 | P1 | Какая формулировка предупреждает о приблизительности экранного цвета и визуализации? | Нужен понятный, юридически проверенный текст. | Product / юрист | Открыт |
 | TBD-DESIGN-006 | P2 | Нужны ли дополнительные языки кроме русского? | Влияет на контент-модель, SEO и layout. | Владелец | Открыт |
+| TBD-PREVIEW-001 | P1 | Какие `SceneProfile`, renderer profiles, family states и assets образуют проверяемое покрытие standard preview первого запуска? | Нужны versioned scene/geometry/material mappings, rights approval, visual baselines и fallback для каждого из четырёх MVP-семейств; без них Phase 1D не активируется. | Product / дизайн / мастер / контент | Открыт |
 
 ## AI и computer vision
 
@@ -204,10 +302,12 @@
 | TBD-ANALYTICS-005 | P1 | Какие источники обращения и правила атрибуции важны бизнесу? | Нужен согласованный словарь каналов и окно атрибуции. | Владелец / Marketing | Открыт |
 | TBD-ANALYTICS-006 | P2 | Кто и как часто просматривает отчёты и принимает действия? | Нужны ownership и operating cadence. | Владелец | Открыт |
 
-## Критические вопросы перед следующими спецификациями
+## Implementation gates после Phase 0C
 
-Для старта или утверждения затронутых профильных спек приоритетно нужны: `TBD-BIZ-001`, `TBD-BIZ-004`, `TBD-WARRANTY-001`, `TBD-ASSORT-002`–`003`, `TBD-SOURCE-AMIGO-002`, `TBD-PRICE-001`–`008`, `TBD-PRICE-SOURCE-001`–`002`, `TBD-PRICE-PARITY-001`, `TBD-MIN-PRICE-001`, `TBD-MECHANISM-001`, `TBD-INVENTORY-001`–`002`, `TBD-SIZE-001`, `TBD-DIM-002`–`004`, `TBD-INSTALLMENT-001`, `TBD-INSTALLMENT-009`–`010`, `TBD-INSTALLMENT-012`, `TBD-ACCOUNT-001`, `TBD-AI-001`–`003`, `TBD-AI-005`–`007`, `TBD-INFRA-002`, `TBD-INFRA-004` и `TBD-PRIV-001`–`005`. Решённые partner/rights/source-category вопросы больше не являются блокерами старта, но asset mapping и конкретные data transports остаются зависимостями соответствующих спек.
+До synthetic/local Foundation нет P0 со статусом `BLOCKER_BEFORE_FOUNDATION`. Начало Phase 1A всё равно требует acceptance/supersede proposed ADR-0007–0010 и отдельного письменного решения владельца по `QG-147/148`.
 
-`TBD-LEAD-001`, `TBD-SYSTEM-001`, `TBD-HORIZONTAL-001`, `TBD-VERTICAL-001`, `TBD-SERVICE-001`–`003`, `TBD-SOURCE-AMIGO-001`, `TBD-ASSET-AMIGO-001`–`002`, `TBD-PRICE-CATEGORY-001` и `TBD-DESIGN-003` решены 2026-08-02 и сохранены выше только для трассируемости.
+Ответ владельца всё ещё нужен по семи P0: `TBD-BIZ-001`, `TBD-PRICE-007`, `TBD-MIN-PRICE-001`, `TBD-PRICE-SOURCE-002`, `TBD-PRICE-PARITY-001`, `TBD-INVENTORY-002` и `TBD-INFRA-002`. Их точные deadlines/fallback находятся в Phase 0C triage table выше. External AMIGO data и `BLOCKER_BEFORE_FEATURE` закрываются перед указанными Phase 1B–1G activations, а не перед Foundation.
+
+`TBD-LEAD-001`, `TBD-SYSTEM-001`, `TBD-HORIZONTAL-001`, `TBD-VERTICAL-001`, `TBD-SERVICE-001`–`003`, `TBD-SOURCE-AMIGO-001`, `TBD-ASSET-AMIGO-001`–`002`, `TBD-PRICE-CATEGORY-001`, `TBD-DESIGN-003` и `TBD-ACCOUNT-001` решены 2026-08-02 и сохранены выше только для трассируемости.
 
 Наличие P0 не разрешает придумывать ответ. Оно определяет порядок интервью, сбора артефактов и прохождения профильных gates.

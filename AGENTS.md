@@ -5,8 +5,8 @@
 Этот файл обязателен для людей и автоматизированных агентов, работающих во всём репозитории.
 Более локальный `AGENTS.md` в будущем MAY уточнять правила только для своей директории, но не может ослаблять требования этого файла.
 
-Документационная фаза **0B: AUTHORIZED AMIGO FUNCTIONAL PARITY AND SPECIALIZED SPECS** завершена: completion gate пройден 2026-08-02 на базе `GLOBAL_SPEC.md` 0.5.0 и полного профильного комплекта. Проект находится в transition hold, следующая фаза не выбрана и не разрешена.
-До нового письменного решения владельца разрешены только проверка и корректировка документации, research без обхода доступа, схемы, таблицы, псевдокод, контракты, acceptance criteria, test design, evaluations и обоснованные ADR. Переход к импорту данных, media ingestion или реализации запрещён, даже несмотря на `PASSED` [SPEC_QUALITY_GATE](docs/00-global/SPEC_QUALITY_GATE.md).
+Фаза **0C: IMPLEMENTATION READINESS, MVP FREEZE AND P0 TBD TRIAGE** документально завершена 2026-08-02 на базе baseline commit `7105ef03c1fb1cb726161fcbc02cbb0c340e212e` и `GLOBAL_SPEC.md` 0.6.0. Gate имеет статус `READY_FOR_OWNER_AUTHORIZATION`, не `PASSED_TO_IMPLEMENTATION`; Phase 1A не начата и не разрешена.
+До отдельного письменного решения владельца и выполнения `QG-147/148` разрешены только проверка/корректировка документации, research без обхода доступа, схемы, таблицы, псевдокод, контракты, acceptance criteria, test design, evaluations и обоснованные ADR. Переход к dependency installation, приложению, schema/migrations, импорту данных, media ingestion или реализации запрещён.
 
 ## 2. Обязательный порядок чтения
 
@@ -30,13 +30,15 @@
 ## 3. Запрет на преждевременную реализацию
 
 - Нельзя писать production-код, компоненты, API routes, SQL, миграции или инфраструктурные конфигурации до прохождения quality gate.
-- Нельзя создавать `package.json`, устанавливать зависимости или запускать генераторы проекта в фазах 0A/0A.1/0B.
+- Нельзя создавать `package.json`, устанавливать зависимости или запускать генераторы проекта в фазах 0A/0A.1/0B/0C.
 - Нельзя создавать пустые файлы будущих спецификаций.
 - Нормативные спецификации MUST размещаться только в `docs/specs/`; roadmap, quality gates, реестры, политики, evaluations, ADR и иные управляющие документы MUST оставаться вне этого каталога.
-- В 0B нельзя создавать scraping/import scripts, каталог в базе, калькулятор, UI, авторизацию, AI-интеграцию, production storage или локальный набор изображений AMIGO.
+- В 0B/0C нельзя создавать scraping/import scripts, каталог в базе, калькулятор, UI, авторизацию, AI-интеграцию, production storage или локальный набор изображений AMIGO.
 - Нельзя обходить авторизацию, CAPTCHA, rate limits или закрытые интерфейсы внешнего источника.
 - Название `PROJECT_NAME` MUST использоваться до отдельного решения о бренде.
 - Окончательные технологии, хостинг и AI-провайдер MUST выбираться только через соответствующие сравнительные документы и ADR.
+
+Phase 1A MUST NOT начинаться, пока не выполнены все stop conditions Phase 0C: baseline commit и clean tree, 0 critical specs со статусом `BLOCKED`/`CONTRADICTORY`, frozen `MVP_SCOPE`, `IMPLEMENTATION_ROADMAP`, `PHASE_1A_FOUNDATION_PLAN`, полная P0-классификация, непротиворечивые price/catalog/rights/privacy boundaries, известные secrets/migration rollback strategies, accepted или superseding ADR-0007–0010 и отдельное письменное разрешение владельца.
 
 ## 4. Планирование работы
 

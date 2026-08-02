@@ -4,7 +4,7 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Draft 0B — schema and safety rules defined; actual inventory `BLOCKED_BY_TBD-ASSORT-002` |
+| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD` for Foundation; actual pilot inventory requires `TBD-ASSORT-002`/authorized source before Phase 1B activation |
 | Версия | 0.1.0 |
 | Дата | 2026-08-02 |
 | Sources | [EXTERNAL_SOURCES.md](../../00-global/EXTERNAL_SOURCES.md) |

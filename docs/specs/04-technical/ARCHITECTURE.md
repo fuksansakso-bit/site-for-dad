@@ -4,10 +4,10 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Draft 0B — logical architecture approved for specification; vendors/frameworks remain TBD/ADR |
+| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD`; logical architecture approved, Foundation stack awaits acceptance of ADR-0007–0010 |
 | Версия | 0.1.0 |
 | Дата | 2026-08-02 |
-| Global baseline | [GLOBAL_SPEC.md](../GLOBAL_SPEC.md) 0.4.0 |
+| Global baseline | [GLOBAL_SPEC.md](../GLOBAL_SPEC.md) 0.6.0 |
 | Decisions | [docs/adr](../../adr/) |
 
 ## 1. Назначение and boundaries

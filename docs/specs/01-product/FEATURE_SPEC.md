@@ -8,7 +8,7 @@
 | Версия | 0.1.0 |
 | Дата | 2026-08-02, Europe/Moscow |
 | Владелец | Владелец бизнеса / Product Owner; имя `TBD-BIZ-001` |
-| Главный источник | [GLOBAL_SPEC.md](../GLOBAL_SPEC.md) 0.4.0 |
+| Главный источник | [GLOBAL_SPEC.md](../GLOBAL_SPEC.md) 0.6.0 |
 | Связанные документы | [USER_STORIES.md](USER_STORIES.md), [USER_FLOWS.md](USER_FLOWS.md), [ROLES_PERMISSIONS.md](ROLES_PERMISSIONS.md), [ACCEPTANCE_CRITERIA.md](ACCEPTANCE_CRITERIA.md) |
 
 ## 1. Назначение и границы ответственности
@@ -52,15 +52,15 @@ Out of scope фазы 0B:
 | Feature | Ценность | MVP | Каноническая спецификация | Approval blocker |
 |---|---|---|---|---|
 | Partner identity | Доверие и доказуемое происхождение | Да | `AMIGO_CATALOG_PARITY_SPEC` | Brand placement `TBD-ASSET-AMIGO-003` не блокирует нейтральную подпись |
-| Dynamic catalog | Выбор всего подтверждённого ассортимента | Да | `CATALOG_INVENTORY_SPEC` | Полный inventory `TBD-ASSORT-002` |
+| Dynamic catalog | Выбор локально проверенного pilot/расширяемого ассортимента | Да | `CATALOG_INVENTORY_SPEC` | Полный inventory `TBD-ASSORT-002` не блокирует MVP |
 | Product configurator | Совместимая конфигурация изделия | Да | `PRODUCT_CONFIGURATOR_SPEC` | Compatibility/size `TBD-ASSORT-003`, `TBD-SIZE-001` |
 | Preliminary price | Воспроизводимый расчёт | Да | `PRICING_CALCULATOR_SPEC` | Active version/formulas/parity TBD |
-| Standard preview | Быстрый visual feedback | Да | `STANDARD_INTERIOR_PREVIEW_SPEC` | Scene/assets inventory |
-| AI window visualizer | Персональная примерка | Да, base geometry; refinement optional | `AI_WINDOW_VISUALIZER_SPEC` | Benchmark/privacy/provider TBD |
+| Standard preview | Быстрый visual feedback | Да | `STANDARD_INTERIOR_PREVIEW_SPEC` | `TBD-PREVIEW-001` scene/profile/assets coverage |
+| AI window visualizer | Персональная примерка roller/Zebra | Да, geometry-first pilot; refinement optional/gated | `AI_WINDOW_VISUALIZER_SPEC` | Benchmark/privacy/provider/cost TBD |
 | Cart/project | Несколько конфигураций и редактирование | Да | `CART_CHECKOUT_ORDERS_SPEC` | Guest TTL TBD |
 | WhatsApp/order handoff | Связь с локальным менеджером | Да | `CART_CHECKOUT_ORDERS_SPEC` | Confirmed contact/SLA TBD |
 | Installment inquiry | Безопасный интерес к рассрочке | Да, manual neutral | `INSTALLMENT_SPEC` | `TBD-INSTALLMENT-001`–`013` |
-| Account/history | Возврат к проектам и статусам | Да | `AUTH_ACCOUNTS_SPEC` | Auth/recovery decisions TBD |
+| Account/history | Собственные сохранённые расчёты; extended CRM post-MVP | Да, basic | `AUTH_ACCOUNTS_SPEC` | Auth/recovery decisions TBD |
 | Admin operations | Управляемые данные и approvals | Да | `ADMIN_PANEL_SPEC` | Named role assignments |
 | Portfolio/content | Локальное доказательство работ | Да | `CONTENT_PORTFOLIO_SPEC` | Content inventory/rights |
 | AMIGO sync | Обновления без runtime dependency | Да, controlled process | `AMIGO_SYNC_ARCHITECTURE` | Transport/cadence TBD |

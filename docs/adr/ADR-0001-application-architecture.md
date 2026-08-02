@@ -97,7 +97,7 @@ flowchart LR
 - [DATA_MODEL.md](../specs/04-technical/DATA_MODEL.md)
 - [DEPLOYMENT.md](../specs/04-technical/DEPLOYMENT.md)
 - `NFR-ARCH-001`–`NFR-ARCH-012`, `NFR-SEC-001`, `NFR-PERF-001`, `AMIGO-SYNC-001`
-- Open: `TBD-INFRA-001`–`009`, `TBD-ACCOUNT-001`–`003`
+- Open: `TBD-INFRA-001`–`009`, `TBD-ACCOUNT-002`–`006`
 
 ## История
 

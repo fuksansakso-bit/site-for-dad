@@ -2,7 +2,7 @@
 
 ## 0. Статус
 
-Документационная фаза **0B — AUTHORIZED AMIGO FUNCTIONAL PARITY AND SPECIALIZED SPECS** завершена 2026-08-02. Глобальная база обновлена до `GLOBAL_SPEC` 0.5.0, обязательные 33 профильные спецификации, test/evaluation artifacts и 6 ADR созданы, completion gate пройден. Проект находится в transition hold; production-реализация, импорт и скачивание каталога не разрешены.
+Фаза **0C — IMPLEMENTATION READINESS, MVP FREEZE AND P0 TBD TRIAGE** документально завершена 2026-08-02 на baseline commit `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`. `GLOBAL_SPEC` обновлён до 0.6.0, MVP заморожен, 61/61 P0 классифицированы, 14 critical specs audited без Foundation blockers, а Phase 1A–1H и detailed Foundation plan определены. Gate имеет статус `READY_FOR_OWNER_AUTHORIZATION`, не `PASSED_TO_IMPLEMENTATION`: код, dependencies, import и Phase 1A не разрешены.
 
 ## 1. Порядок обязательного чтения
 
@@ -16,9 +16,10 @@
 8. [PRICING_SOURCE_POLICY.md](00-global/PRICING_SOURCE_POLICY.md) — snapshots, версии, overrides, fallback и parity.
 9. [ASSUMPTIONS.md](00-global/ASSUMPTIONS.md) и [OPEN_QUESTIONS.md](00-global/OPEN_QUESTIONS.md) — неподтверждённые решения и пробелы.
 10. Релевантная профильная спека из разделов ниже.
-11. [CHANGELOG.md](../CHANGELOG.md) — история содержательных изменений.
+11. Для implementation readiness — [MVP scope](06-plans/MVP_SCOPE.md), [critical audit](06-plans/SPEC_READINESS_AUDIT.md), [roadmap](06-plans/IMPLEMENTATION_ROADMAP.md) и [Phase 1A plan](06-plans/active/PHASE_1A_FOUNDATION_PLAN.md).
+12. [CHANGELOG.md](../CHANGELOG.md) — история содержательных изменений.
 
-При конфликте действует приоритет из `GLOBAL_SPEC`: подтверждённые owner facts → authorized partner data → global spec → принятый ADR → профильная спецификация → assumptions/open questions. Противоречие останавливает зависимую работу.
+При конфликте действует repository precedence: `GLOBAL_SPEC` (включая перенесённые owner/partner decisions) → accepted ADR → approved профильная спецификация → governed dynamic snapshot → assumptions/open questions. Противоречие останавливает зависимую работу.
 
 ## 2. Global governance
 
@@ -31,9 +32,9 @@
 | [PRICING_SOURCE_POLICY.md](00-global/PRICING_SOURCE_POLICY.md) | Authorized price source, immutable versions, local rules, fallback и parity |
 | [ASSUMPTIONS.md](00-global/ASSUMPTIONS.md) | Версионируемые гипотезы, которые не становятся фактом без решения |
 | [OPEN_QUESTIONS.md](00-global/OPEN_QUESTIONS.md) | Канонический реестр `TBD-*`, владельцев, влияния и критериев закрытия |
-| [SPEC_ROADMAP.md](00-global/SPEC_ROADMAP.md) | Фактический комплект 0B, зависимости, ADR и post-gate порядок |
+| [SPEC_ROADMAP.md](00-global/SPEC_ROADMAP.md) | Фактический комплект 0B/0C, proposed Foundation ADR, gates и последовательность 1A–1H |
 | [TRACEABILITY_MATRIX.md](00-global/TRACEABILITY_MATRIX.md) | 18 critical chains и полная 40-story связь со спеками, AC и tests |
-| [SPEC_QUALITY_GATE.md](00-global/SPEC_QUALITY_GATE.md) | Пройденный entry gate и проверяемый completion gate 0B |
+| [SPEC_QUALITY_GATE.md](00-global/SPEC_QUALITY_GATE.md) | Passed gates 0B и Phase 0C readiness `READY_FOR_OWNER_AUTHORIZATION` |
 
 ## 3. Product specifications
 
@@ -95,7 +96,17 @@
 | [TEST_STRATEGY.md](quality/TEST_STRATEGY.md) | 40 critical scenarios и общий unit/property/contract/integration/E2E/visual/a11y/security/privacy/performance/recovery plan |
 | [AI_EVALUATION_SPEC.md](evaluations/AI_EVALUATION_SPEC.md) | Rights-cleared benchmark, stage metrics, hard gates, human/privacy/performance/cost evaluation |
 
-## 8. Architecture decisions
+## 8. Phase 0C implementation-readiness plans
+
+| Документ | Назначение |
+|---|---|
+| [MVP_SCOPE.md](06-plans/MVP_SCOPE.md) | Frozen first-launch scope: 20 capabilities, safety boundaries and 15 post-MVP items |
+| [SPEC_READINESS_AUDIT.md](06-plans/SPEC_READINESS_AUDIT.md) | Audit 14 critical specs по 15 dimensions и targeted contradiction fixes |
+| [IMPLEMENTATION_ROADMAP.md](06-plans/IMPLEMENTATION_ROADMAP.md) | Phase 1A–1H with entry, deliverables, tests, risks, DoD, forbidden changes and rollback |
+| [PHASE_1A_TECHNOLOGY_EVALUATION.md](06-plans/PHASE_1A_TECHNOLOGY_EVALUATION.md) | Stack comparison, migration/secrets baseline and official evidence |
+| [PHASE_1A_FOUNDATION_PLAN.md](06-plans/active/PHASE_1A_FOUNDATION_PLAN.md) | Detailed non-executed Foundation plan; status `NOT_STARTED` |
+
+## 9. Architecture decisions
 
 | ADR | Зафиксированная граница |
 |---|---|
@@ -105,8 +116,12 @@
 | [ADR-0004](adr/ADR-0004-standard-preview-renderer.md) | Детерминированный standard preview, независимый от AI |
 | [ADR-0005](adr/ADR-0005-ai-visualization-pipeline.md) | Geometry-first base и optional constrained refinement |
 | [ADR-0006](adr/ADR-0006-media-storage.md) | Local immutable media, derivatives и public/private zones |
+| [ADR-0007](adr/ADR-0007-foundation-application-stack.md) | **Proposed:** Node/TypeScript/pnpm/Next.js modular Foundation topology |
+| [ADR-0008](adr/ADR-0008-postgresql-and-migration-safety.md) | **Proposed:** PostgreSQL, reviewed migrations and expand/contract rollback safety |
+| [ADR-0009](adr/ADR-0009-object-storage-and-background-jobs.md) | **Proposed:** S3-compatible object port and Postgres-backed durable jobs |
+| [ADR-0010](adr/ADR-0010-identity-secrets-and-observability-boundary.md) | **Proposed:** identity/secrets/OTLP boundary; public providers deferred |
 
-## 9. Research evidence
+## 10. Research evidence
 
 | Документ | Назначение |
 |---|---|
@@ -114,7 +129,7 @@
 
 Research snapshot не является вечным catalog/price fact. Нормативное поведение задают global/profile specs, а динамические значения требуют authorized source snapshot и verification.
 
-## 10. Repository documents
+## 11. Repository documents
 
 | Документ | Назначение |
 |---|---|
@@ -123,9 +138,9 @@ Research snapshot не является вечным catalog/price fact. Нор�
 | [CHANGELOG.md](../CHANGELOG.md) | Keep a Changelog record |
 | [reference/README.md](../reference/README.md) | Provenance/rights/usage rules для будущих локальных референсов |
 
-## 11. Как находить ответ
+## 12. Как находить ответ
 
-- Поведение продукта — `GLOBAL_SPEC`, затем профильная спека.
+- Поведение продукта — `GLOBAL_SPEC`, затем accepted ADR в его границах, затем профильная спека; proposed ADR не является принятым решением.
 - Что именно подтверждено владельцем/AMIGO — `GLOBAL_SPEC`, `EXTERNAL_SOURCES`, `ASSET_RIGHTS_REGISTER`.
 - Можно ли публиковать изображение — asset-level state в `ASSET_RIGHTS_REGISTER` и media specs.
 - Почему цена недоступна или как воспроизводится — `PRICING_SOURCE_POLICY` и `PRICING_CALCULATOR_SPEC`.
@@ -134,8 +149,8 @@ Research snapshot не является вечным catalog/price fact. Нор�
 - Кто может выполнить действие — `ROLES_PERMISSIONS` и relevant domain spec.
 - Каких данных не хватает — `OPEN_QUESTIONS` по уникальному `TBD-*`.
 - Как требование проверяется — `TRACEABILITY_MATRIX`, AC и `TEST_STRATEGY`.
-- Можно ли начинать код — только итог `SPEC_QUALITY_GATE` плюс отдельное письменное решение владельца.
+- Можно ли начинать код — только выполненные QG-147/148, accepted/superseding ADR и отдельное письменное решение владельца; текущий ответ — нет.
 
-## 12. Правило навигации
+## 13. Правило навигации
 
 Локальные ссылки MUST вести только к существующим файлам. Не созданный будущий artifact упоминается как концепция/TBD без ложной ссылки. Содержательное изменение синхронизирует каноническую spec, затронутые governance/profile docs, traceability и `CHANGELOG.md`.

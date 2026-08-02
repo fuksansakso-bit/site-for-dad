@@ -4,7 +4,7 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Draft 0B — target coverage определён; factual inventory частично `BLOCKED_BY_TBD` |
+| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD` for Foundation; factual inventory/feature activation waits for authorized AMIGO data |
 | Версия | 0.1.0 |
 | Дата | 2026-08-02 |
 | Source evidence | [AMIGO public parity snapshot](../../research/AMIGO_PUBLIC_PARITY_SNAPSHOT_2026-08-02.md) |

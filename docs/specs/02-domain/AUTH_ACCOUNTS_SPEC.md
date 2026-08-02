@@ -4,7 +4,7 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Draft / `BLOCKED_BY_TBD-ACCOUNT-*` for identity method; authorization/account boundaries defined |
+| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD`; basic saved-calculation account scope resolved, public identity method/recovery awaits Phase 1F gate |
 | Версия | 0.1.0 |
 | Дата | 2026-08-02 |
 | Permissions | [ROLES_PERMISSIONS.md](../01-product/ROLES_PERMISSIONS.md) |
@@ -44,6 +44,7 @@ Guest uses public catalog and scoped project/cart/visualization tokens. Customer
 - **ACCOUNT-SPEC-018 — MUST:** identity secrets/tokens/codes never appear in source control, logs, analytics, support payloads or URL query strings.
 - **ACCOUNT-SPEC-019 — MUST:** account export/DSAR applies ownership and redaction and excludes other users, secrets and internal security metadata.
 - **ACCOUNT-SPEC-020 — MUST:** product remains usable through guest/manual fallback when identity provider is unavailable, except private account resources and high-risk actions fail safely.
+- **ACCOUNT-SPEC-021 — MUST:** MVP account scope guarantees only ownership-scoped saved calculations and their immutable quote history; repeat orders, address book, favorites, full order-status CRM and other extended account functions remain post-MVP until separate scope approval.
 
 ## 4. Conceptual data model
 
@@ -140,11 +141,11 @@ Tests: guest full funnel; optional account; valid/invalid/expired/replayed ident
 
 ## 12. Dependencies, risks and open questions
 
-Dependencies: RBAC, cart/orders, AI, admin, security/privacy, API/data, observability/deployment. Open: `TBD-ACCOUNT-*`, staff identity/MFA, recovery/support, session/guest TTL, account deletion/legal retention, auth provider/region and notification channel. Risks: account forcing hurts conversion, token leakage, enumeration, broken object authorization, weak recovery, shared staff accounts and deletion race.
+Dependencies: RBAC, cart/orders, AI, admin, security/privacy, API/data, observability/deployment. Open: `TBD-ACCOUNT-002`–`006`, staff identity/MFA, recovery/support, session/guest TTL, account deletion/legal retention, auth provider/region and notification channel. `TBD-ACCOUNT-001` is resolved by the MVP freeze. Risks: account forcing hurts conversion, token leakage, enumeration, broken object authorization, weak recovery, shared staff accounts and deletion race.
 
 ## 13. Связанные требования and history
 
-Links: `FR-AUTH-*`, `NFR-SEC-*`, `NFR-PRIV-*`, `RBAC-*`, `ACCOUNT-SPEC-001`–`020`.
+Links: `FR-AUTH-*`, `NFR-SEC-*`, `NFR-PRIV-*`, `RBAC-*`, `ACCOUNT-SPEC-001`–`021`.
 
 | Версия | Дата | Изменение |
 |---|---|---|

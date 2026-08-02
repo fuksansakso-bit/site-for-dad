@@ -4,14 +4,15 @@
 
 | Поле | Значение |
 |---|---|
-| Состояние | Phase 0B завершена; transition hold до нового письменного решения владельца |
-| Версия roadmap | 1.0.0 |
+| Состояние | Phase 0C documentation complete; gate `READY_FOR_OWNER_AUTHORIZATION`, Phase 1A awaits separate owner decision |
+| Версия roadmap | 1.1.0 |
 | Дата | 2026-08-02 |
 | Entry gate | `PASSED`, [QG-088–QG-111](SPEC_QUALITY_GATE.md) |
 | Обязательный комплект 0B | `PASSED`, [QG-112–QG-130](SPEC_QUALITY_GATE.md) |
-| Production implementation | Запрещена до отдельного письменного решения после completion gate |
+| Phase 0C readiness | `READY_FOR_OWNER_AUTHORIZATION`, [QG-131–QG-148](SPEC_QUALITY_GATE.md) |
+| Production implementation | Запрещена; Phase 1A не начата и требует отдельного письменного решения |
 
-Глобальная база: [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md), [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md), [ASSET_RIGHTS_REGISTER.md](ASSET_RIGHTS_REGISTER.md) и [PRICING_SOURCE_POLICY.md](PRICING_SOURCE_POLICY.md). Поручение владельца начать 0B является письменным решением о документации, но не разрешением писать код, импортировать каталог или выбирать поставщиков без evaluations/ADR.
+Глобальная база: [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.6.0, [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md), [ASSET_RIGHTS_REGISTER.md](ASSET_RIGHTS_REGISTER.md) и [PRICING_SOURCE_POLICY.md](PRICING_SOURCE_POLICY.md). Поручение выполнить 0C разрешает только readiness-документацию и не разрешает писать код, импортировать каталог или начинать Phase 1A.
 
 Нормативные спецификации находятся только в `docs/specs/`. Gate, реестры, policies, quality strategy, evaluations и ADR остаются в профильных каталогах.
 
@@ -101,7 +102,7 @@ flowchart TD
 | [TEST_STRATEGY.md](../quality/TEST_STRATEGY.md) | 40 named critical scenarios + unit/property/contract/E2E/visual/a11y/security/privacy/performance/recovery | `CREATED_WITH_TBD` |
 | [AI_EVALUATION_SPEC.md](../evaluations/AI_EVALUATION_SPEC.md) | Rights-cleared benchmark, metrics, hard gates, human/privacy/performance evaluation | `CREATED_WITH_TBD` |
 | [TRACEABILITY_MATRIX.md](TRACEABILITY_MATRIX.md) | 18/18 critical chains и 40/40 story→AC→test mappings | `CREATED` |
-| [SPEC_QUALITY_GATE.md](SPEC_QUALITY_GATE.md) | Entry и completion evidence | `PASSED` |
+| [SPEC_QUALITY_GATE.md](SPEC_QUALITY_GATE.md) | Entry/completion 0B and Phase 0C readiness evidence | `READY_FOR_OWNER_AUTHORIZATION` for 1A transition |
 
 ## 7. Принятые ADR фазы 0B
 
@@ -116,27 +117,44 @@ flowchart TD
 
 ADR принимают устойчивую границу, а не неподтверждённый vendor. Замена решения оформляется новым ADR со статусом `Supersedes`.
 
-## 8. Незакрытые зависимости перед реализацией
+### 7.1. Phase 0C readiness artifacts
 
-- Реальный полный AMIGO inventory, разрешённый transport/export, cadence и freshness SLA.
-- Active price snapshot, точная формула/округление/overrides/minimum и owner-approved parity tolerance/cases.
-- Compatibility, dimension constraints и отдельные сложные family profiles.
-- Customer/admin authentication model, session/recovery и public/internal order-state mapping.
-- Legal/privacy basis, consent, retention/delete periods, subprocessors и contracts.
-- Rights-cleared AI benchmark, metrics/thresholds, provider/model/region/cost and failure policy.
-- Hosting/database/storage/queue/network topology, performance budgets, SLO, RPO/RTO и backup retention.
-- Юридические условия рассрочки, договорная цена, warranty exclusions и operational workflow.
+| Артефакт | Результат | Статус |
+|---|---|---|
+| [MVP_SCOPE.md](../06-plans/MVP_SCOPE.md) | 20 обязательных возможностей, cross-cutting gates и 15 post-MVP направлений | `FROZEN_FOR_PLANNING` |
+| [SPEC_READINESS_AUDIT.md](../06-plans/SPEC_READINESS_AUDIT.md) | 14 critical specs × 15 dimensions; 0 blocked/contradictory after fixes | `PASS_FOR_1A_REVIEW` |
+| [IMPLEMENTATION_ROADMAP.md](../06-plans/IMPLEMENTATION_ROADMAP.md) | Phase 1A–1H с entry/deliverables/tests/risks/DoD/rollback | `APPROVED_SEQUENCE` |
+| [PHASE_1A_TECHNOLOGY_EVALUATION.md](../06-plans/PHASE_1A_TECHNOLOGY_EVALUATION.md) | Recommended vendor-neutral Foundation stack and alternatives | `OWNER_ADR_ACCEPTANCE_REQUIRED` |
+| [PHASE_1A_FOUNDATION_PLAN.md](../06-plans/active/PHASE_1A_FOUNDATION_PLAN.md) | Detailed non-executed Foundation plan and commit sequence | `NOT_STARTED` |
+
+### 7.2. Proposed Phase 1A ADR
+
+| ADR | Предлагаемое решение | Gate |
+|---|---|---|
+| [ADR-0007](../adr/ADR-0007-foundation-application-stack.md) | Node/TypeScript/pnpm/Next.js modular web/BFF + worker/test baseline | Accept or supersede before first Phase 1A commit |
+| [ADR-0008](../adr/ADR-0008-postgresql-and-migration-safety.md) | PostgreSQL, reviewed versioned migrations, expand/contract and compensation/restore | Accept before schema/migration |
+| [ADR-0009](../adr/ADR-0009-object-storage-and-background-jobs.md) | S3-compatible object port and PostgreSQL-backed durable jobs | Accept interfaces before 1A; providers later |
+| [ADR-0010](../adr/ADR-0010-identity-secrets-and-observability-boundary.md) | Identity port/library shortlist, managed secrets and OTLP | Accept Foundation boundary; public identity/provider later |
+
+## 8. Незакрытые зависимости по implementation gate
+
+- **До Phase 1A:** блокирующих P0 нет; нужны owner authorization и acceptance/supersede ADR-0007–0010. Foundation использует только synthetic/local data.
+- **До Phase 1B:** разрешённый AMIGO transport/file, pilot inventory/mapping and owners; полный ассортимент не требуется.
+- **До Phase 1C:** active price snapshot, formula/rounding/compatibility/dimensions, approver and parity tolerance; minimum 1500 не используется до `TBD-MIN-PRICE-001`.
+- **До Phase 1D:** approved `SceneProfile`, renderer profiles/assets and visual baselines (`TBD-PREVIEW-001`).
+- **До Phase 1E/1F:** legal/privacy/retention, business state mapping, identity/recovery and operational roles.
+- **До Phase 1G:** rights-cleared AI benchmark, provider/model/region/contract, upload limits, TTL, thresholds and cost caps.
+- **До Phase 1H:** production topology/regions, network evidence, performance/SLO, RPO/RTO, backup/restore and launch legal review.
 
 Все вопросы имеют `TBD-*` в [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md); новый факт сначала закрывает канонический TBD и обновляет specs/changelog/tests.
 
-## 9. Порядок после completion gate
+## 9. Implementation sequence after Phase 0C
 
-1. Владелец письменно решает, начинать ли следующую фазу; автоматического перехода нет.
-2. Закрываются P0/P1 business/data/privacy вопросы, от которых зависит выбранный implementation slice.
-3. Выполняются необходимые source/hosting/AI evaluations на разрешённых данных.
-4. Конкретные технологические решения оформляются отдельными ADR.
-5. Составляется ограниченный implementation plan с migration/rollback/test links.
-6. Только после отдельного разрешения создаются package, application code, schema, importer, storage, auth или AI integration.
+1. Владелец принимает/supersedes proposed ADR и отдельно письменно решает, начинать ли Phase 1A; автоматического перехода нет.
+2. Phase 1A выполняется только по [активному плану](../06-plans/active/PHASE_1A_FOUNDATION_PLAN.md), без AMIGO import и business features.
+3. Дальнейшие Phase 1B–1H идут строго по [IMPLEMENTATION_ROADMAP](../06-plans/IMPLEMENTATION_ROADMAP.md) и своим entry gates.
+4. Закрываются только те P0/P1 business/data/privacy вопросы, от которых зависит выбранный slice; safe fallback не выдаётся за решение.
+5. Source/hosting/AI evaluations используют только разрешённые данные и завершаются ADR до provider commitment.
 
 ## 10. Правило изменения roadmap
 
@@ -149,3 +167,4 @@ ADR принимают устойчивую границу, а не неподт
 | 0.1.0 | 2026-08-02 | Определён первоначальный порядок будущих специализированных спецификаций. |
 | 0.2.0 | 2026-08-02 | Добавлен обязательный owner-requested модульный комплект 0B. |
 | 1.0.0 | 2026-08-02 | Roadmap синхронизирован с фактически созданными 33 specs, quality/evaluation, traceability и 6 ADR; следующий кодовый этап не разрешён. |
+| 1.1.0 | 2026-08-02 | Добавлены Phase 0C MVP/readiness artifacts, proposed ADR-0007–0010, P0 gates и обязательная sequence Phase 1A–1H без автоматического старта. |

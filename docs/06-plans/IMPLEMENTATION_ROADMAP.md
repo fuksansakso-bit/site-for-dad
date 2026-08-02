@@ -1,0 +1,157 @@
+# Implementation roadmap PROJECT_NAME
+
+## 0. Статус и правила
+
+| Поле | Значение |
+|---|---|
+| Фаза документа | 0C |
+| Статус roadmap | **APPROVED SEQUENCE / IMPLEMENTATION NOT AUTHORIZED** |
+| Scope | [MVP_SCOPE](MVP_SCOPE.md) |
+| Активный будущий план | [PHASE_1A_FOUNDATION_PLAN](active/PHASE_1A_FOUNDATION_PLAN.md) |
+
+- **ROADMAP-001 — MUST:** фазы выполняются по порядку 1A–1H; параллельный research MAY идти, но dependent implementation не обходит entry gate.
+- **ROADMAP-002 — MUST:** каждая возможность включается feature flag только после собственных acceptance/security/data gates; наличие кода не равно production activation.
+- **ROADMAP-003 — MUST:** незакрытый TBD использует fallback из `OPEN_QUESTIONS` или блокирует только зависимую функцию.
+- **ROADMAP-004 — MUST:** change of business behavior сначала синхронизирует canonical spec, traceability и changelog.
+- **ROADMAP-005 — MUST:** завершение фазы требует clean tree, reviewed migrations/artifacts, test evidence и rollback rehearsal, но не даёт автоматического разрешения на следующую фазу.
+
+## 1. PHASE 1A — FOUNDATION
+
+| Поле | Содержание |
+|---|---|
+| ID / цель | **ROADMAP-1A-001:** создать проверяемую локальную и CI foundation для modular monorepo, web/BFF, database, object storage, worker, auth boundary и operations, не реализуя бизнес-функции MVP. |
+| Зависимости | Baseline commit `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`; `GLOBAL_SPEC`; ADR-0001/0006; acceptance ADR-0007–0010. |
+| Входные условия | Phase 0C readiness gate `READY_FOR_OWNER_AUTHORIZATION`; clean documentation tree; 0 critical specs `BLOCKED/CONTRADICTORY`; P0 fully classified; explicit written owner authorization; exact supported dependency versions reverified. |
+| Deliverables | Monorepo skeleton; `apps/web` and `apps/worker`; domain/application/db/contracts/config/observability/testing/UI packages; local PostgreSQL/object emulator; migration baseline; environment schema; CI gates; lint/typecheck/tests; structured logging; liveness/readiness; synthetic auth/RBAC boundary; runbooks. |
+| Acceptance criteria | One documented bootstrap path works from clean machine; locked install/build/test deterministic; web and worker health proven; dependency boundaries enforced; synthetic DB migration replay/recovery and storage/job contracts pass; no secret/PII in repo/logs; no catalog/import/price/preview/lead implementation. |
+| Тесты | Toolchain smoke; architecture boundary; environment positive/negative; DB migration empty/upgrade/recovery; job retry/idempotency; object public/private denial; auth capability denial; health degradation; log redaction; CI reproducibility. |
+| Риски | Tool/version incompatibility, oversized scaffold, secret exposure, migration lock/data loss, framework coupling. |
+| Definition of Done | All Phase 1A acceptance evidence linked to requirements; ADRs accepted; local and CI green; security/recovery runbooks reviewed; tree clean; Phase 1B remains disabled. |
+| Запрещённые изменения | AMIGO import/media ingestion, production data, pricing rules, catalog UI, configurator, preview, lead forms, AI, provider commitments beyond accepted ADR scope. |
+| Rollback | Revert commits in documented sequence while data is synthetic; preserve migration history once shared; use ADR-0008 compensation/rebuild rehearsal; revoke any issued test credentials and remove disposable local resources. |
+
+Подробный порядок: [PHASE_1A_FOUNDATION_PLAN](active/PHASE_1A_FOUNDATION_PLAN.md).
+
+## 2. PHASE 1B — AMIGO CATALOG PILOT
+
+| Поле | Содержание |
+|---|---|
+| ID / цель | **ROADMAP-1B-001:** доказать authorized snapshot pipeline и публичный каталог на 20–50 материалах без требования полного AMIGO assortment. |
+| Зависимости | 1A; ADR-0002/0006/0009; AMIGO parity, catalog, sync, media specs; rights/source registers. |
+| Входные условия | Доказан разрешённый transport или проверенный ручной файл (`TBD-SOURCE-AMIGO-002`); import owner; schema/mapping version; pilot allowlist; rights/publication evidence; local media zone operational. |
+| Deliverables | Dynamic catalog model; authorized import interface; immutable source snapshot; staging/normalize/validate/diff; manual approval/activation; provenance; local licensed media; 20–50 pilot materials across allowed initial families; public catalog/search/filter; admin catalog screen. |
+| Acceptance criteria | Re-import idempotent; source identity preserved; unknown fields/categories quarantined; activation atomic and reversible; only `PUBLICATION_APPROVED` material/media public; binary availability explicit; full assortment not required. |
+| Тесты | Parser/mapping fixtures; property/contract import tests; duplicate/stale/missing field; diff/review/rollback; rights revocation; public/private object access; catalog empty/filter/search/a11y/mobile; source outage fallback. |
+| Риски | Undocumented export schema, wrong mapping, mass publish, stale availability, rights mismatch, media leakage. |
+| Definition of Done | Approved pilot snapshot and audit record; 20–50 verified materials visible; rollback to previous snapshot rehearsed; unresolved items quarantined; no numeric pricing implied. |
+| Запрещённые изменения | Scraping/access bypass, hotlink, watermarks removal, bulk unmanaged download, auto-publication, assumptions about full assortment or AMIGO API/cadence. |
+| Rollback | Deactivate snapshot, restore previous active version, revoke derivative URLs, preserve immutable evidence/audit; migration compensation only through ADR-0008. |
+
+## 3. PHASE 1C — CONFIGURATOR AND PRICING
+
+| Поле | Содержание |
+|---|---|
+| ID / цель | **ROADMAP-1C-001:** валидировать конфигурацию и воспроизводимо вычислять preliminary price только для доказанных systems/rules. |
+| Зависимости | 1B; ADR-0003/0008; configurator/pricing specs; pricing policy; approved PriceVersion and compatibility/size evidence. |
+| Входные условия | Закрыты rule-specific `TBD-PRICE-*`, `TBD-SIZE-001`, relevant dimension/install/mechanism TBD; approver/tolerance defined; minimum 1500 scope resolved before use. Unclosed family remains manual quote, not global blocker. |
+| Deliverables | System/material/options/quantity selection; millimetre inputs; compatibility validation; price snapshot/provider; local override; immutable breakdown; preliminary price; manual quote fallback; parity fixtures/tests. |
+| Acceptance criteria | Exact kopeck arithmetic; active version only; old quote reproduces; unknown/incompatible/stale data never yields numeric certainty; local override provenance/audit; several items keep own inputs/version. |
+| Тесты | Unit/table/property money and dimensions; boundaries/rounding; compatibility; provider contract; stale/missing/zero prohibition; override precedence; saved snapshot replay; AMIGO parity tolerance and failure; concurrency/idempotency. |
+| Риски | Wrong formula, unit/rounding error, false precision, silent repricing, minimum-price misapplication. |
+| Definition of Done | Every active pricing path has approved rule, examples and parity evidence; manual fallback covers all other paths; audit and rollback to previous PriceVersion rehearsed. |
+| Запрещённые изменения | Guessed formulas, implicit 1500 minimum, float money, modifying historical quote, activating price without approver/parity, presenting estimate as final offer. |
+| Rollback | Deactivate bad PriceVersion/override; reactivate last approved version; preserve historical quotes; disable affected family to `PRICE_ON_REQUEST`; compensate schema forward. |
+
+## 4. PHASE 1D — STANDARD PREVIEW
+
+| Поле | Содержание |
+|---|---|
+| ID / цель | **ROADMAP-1D-001:** дать детерминированный `STANDARD_INTERIOR_PREVIEW` на подготовленной сцене для доказанных family profiles без AI/user upload. |
+| Зависимости | 1C; ADR-0004/0006; standard preview, catalog, configurator, media, performance/a11y specs. |
+| Входные условия | Approved scene/assets; material-color binding; family geometry profile; supported configuration mapping; rights and visual acceptance baseline. |
+| Deliverables | Prepared scene; layered renderer; perspective/scale controls; roller cloth, Zebra bands, horizontal lamellae and supported vertical behavior; deterministic output/cache; accessible/static fallback. |
+| Acceptance criteria | Same inputs/profile/version produce same result; correct material/config binding; unsupported family/profile fails visibly; no user photo or generative call; reduced-motion/keyboard/text alternative works. |
+| Тесты | Golden/visual regression; determinism; Zebra/roller/horizontal/vertical tables; missing/stale/revoked asset; perspective boundaries; browser/mobile/performance/a11y; cache invalidation. |
+| Риски | Misleading scale/color, generic wrong geometry, heavy canvas, asset revocation. |
+| Definition of Done | Four MVP family profiles are either accepted or explicitly manual/static fallback; visual baselines and renderer/profile versions recorded; AI boundary remains separate. |
+| Запрещённые изменения | Treating standard preview as AI or client-photo preview, generative substitution, unlicensed asset, promise of measurement accuracy, silent generic shape. |
+| Rollback | Disable affected renderer profile, serve static/product-image fallback, restore previous profile/assets/cache version. |
+
+## 5. PHASE 1E — CART, WHATSAPP AND ORDERS
+
+| Поле | Содержание |
+|---|---|
+| ID / цель | **ROADMAP-1E-001:** собрать несколько конфигураций в корзину и безопасно передать guest lead/measurement request/WhatsApp without claiming confirmed order. |
+| Зависимости | 1C; optional 1D display; cart/order/API/security specs; confirmed business/legal/privacy fields. |
+| Входные условия | Lead fields/consents/legal notice approved; retention/DSR/incident owner for PII; WhatsApp template and funnel status boundary approved; rate limit/anti-abuse enabled. |
+| Deliverables | Multi-item cart; price revalidation; guest lead; free measurement request; WhatsApp message preview/deep link; saved calculation; basic lead status; neutral installment flag. |
+| Acceptance criteria | Registration never required; duplicated submission idempotent; price changes explicit; phone/message sanitized; consent version captured; manager handoff does not imply order/payment/installment approval. |
+| Тесты | Cart math/snapshot; stale price; multi-item; guest happy/negative; duplicate/rate limit; consent/retention; WhatsApp encoding; unavailable client fallback; authorization/IDOR; notification outage. |
+| Риски | PII leak, spam/duplicate lead, misleading status, message truncation, stale price. |
+| Definition of Done | Guest and measurement paths pass privacy/security/a11y/E2E; runbooks and manual fallback proven; no automated supplier/installment/payment behavior. |
+| Запрещённые изменения | Auto-send without confirmation, final-price/order claim, collecting excess PII, automated installment application, online payment, supplier order. |
+| Rollback | Feature flags disable forms/deep link; retain/delete already collected PII by approved policy; queue retries stopped safely; cart remains local/read-only where allowed. |
+
+## 6. PHASE 1F — ADMIN AND ACCOUNTS
+
+| Поле | Содержание |
+|---|---|
+| ID / цель | **ROADMAP-1F-001:** обеспечить RBAC operations для каталога/наличия/цен/заявок/портфолио/клиентов и базовый account saved calculations. |
+| Зависимости | 1B/1C/1E; ADR-0010 accepted for public identity; auth/admin/account/content specs; legal/recovery/notification readiness. |
+| Входные условия | Named roles/capabilities; bootstrap and recovery process; session policy; audit/retention; customer signup method; admin operational owners. |
+| Deliverables | Admin navigation/actions for catalog, availability, prices, leads, portfolio, clients; approval separation where required; basic account and ownership-scoped saved calculations; session/recovery controls. |
+| Acceptance criteria | Server-side capability checks on every action; account sees own data only; audit includes actor/time/reason/before-after; dangerous action confirms/requires permission; guest still complete. |
+| Тесты | RBAC matrix/negative/IDOR; session expiry/revocation; account ownership; admin concurrency; audit immutability/redaction; portfolio rights; recovery/rate limiting; E2E/a11y. |
+| Риски | Privilege escalation, bootstrap credential leak, cross-customer data, harmful admin action, weak recovery. |
+| Definition of Done | Role matrix and negative tests pass; admin runbooks and access review exist; basic saved-calculation account works; no forced registration or extended CRM. |
+| Запрещённые изменения | Client data export without policy, shared admin account, client-side-only auth, silently deleting audit, forcing guest registration, post-MVP account scope. |
+| Rollback | Revoke sessions/roles, disable account/admin modules separately, preserve audit and immutable versions, restore prior catalog/price/content state. |
+
+## 7. PHASE 1G — AI WINDOW VISUALIZER PILOT
+
+| Поле | Содержание |
+|---|---|
+| ID / цель | **ROADMAP-1G-001:** выпустить ограниченный private geometry-first AI pilot для рулонных и Zebra с ручной коррекцией и deterministic fallback. |
+| Зависимости | 1A storage/jobs, 1B catalog/media, 1C config, 1F identity where saved result; ADR-0005/0006/0009/0010; AI specs/evaluation/security/privacy. |
+| Входные условия | Legal basis/consent/notice; TTL/delete/backup policy; data residency and processor contract; provider/region/model/version/cost caps; rights-cleared evaluation dataset; quality thresholds and kill switch. |
+| Deliverables | Private upload; validation/quarantine; window/sash detection; manual correction; mask; `GEOMETRIC_PREVIEW`; optional `AI_REFINED_PREVIEW`; before/after; deletion; fallback; evaluation/cost dashboard. |
+| Acceptance criteria | Only roller/Zebra; private short-lived access; no protected-region change beyond tolerance; manual correction always available; AI failure returns geometric result; delete covers originals/derivatives/provider; budget/quality hard gates enforced. |
+| Тесты | Malicious/oversize/orientation upload; auth/IDOR/signed URL; geometry/mask/property; provider timeout/refusal/unsafe output; retry/idempotency; protected pixels; deletion/backup; rights dataset; device/a11y; cost/latency thresholds. |
+| Риски | Privacy/biometric-like inference, provider retention, hallucinated geometry, cost spike, abusive uploads, misleading output. |
+| Definition of Done | Evaluation and privacy gates pass with recorded versions; kill switch/fallback/deletion/incident runbooks rehearsed; pilot scope and usage caps visible. |
+| Запрещённые изменения | Public bucket/logging image URLs, training use, all-family activation, automatic every-sash recognition claim, removal of manual correction, AI-only result. |
+| Rollback | Disable upload/refinement independently; stop/cancel jobs; revoke grants; execute retention deletion; keep standard/geometric fallback; revoke provider keys and preserve non-sensitive audit evidence. |
+
+## 8. PHASE 1H — HARDENING AND RELEASE
+
+| Поле | Содержание |
+|---|---|
+| ID / цель | **ROADMAP-1H-001:** доказать production safety, accessibility, performance, recovery and operability, затем выполнить контролируемый launch. |
+| Зависимости | 1A–1G MVP features; accepted production hosting/storage/identity/telemetry/AI decisions; all launch-blocking TBD and legal obligations closed. |
+| Входные условия | Release candidate feature inventory; production data map; threat model; approved budgets/SLOs; backups/PITR; monitoring/on-call/incident owners; rollback candidate. |
+| Deliverables | Security audit; WCAG checks; performance/regional/browser/mobile tests; backup/restore rehearsal; monitoring/alerts/runbooks; privacy/analytics validation; production deployment plan; launch checklist and go/no-go record. |
+| Acceptance criteria | No open critical defect or critical spec blocker; restore/rollback RTO/RPO evidence; no secrets/PII leak; supported browser/mobile/a11y/performance thresholds pass; analytics consent/minimization; owner signs go-live. |
+| Тесты | SAST/dependency/secret, penetration/auth/upload/rate-limit; keyboard/screen reader/reduced motion; load/soak/failure; cross-browser/device/network; backup/restore/region/provider outage; migration/app rollback; smoke/canary. |
+| Риски | Last-minute scope creep, production-only config drift, regional latency, restore failure, privacy incident, alert gaps. |
+| Definition of Done | Signed launch checklist; monitored canary and rollback window; backups and incident contacts active; public docs/legal notices accurate; post-launch review scheduled. |
+| Запрещённые изменения | Untested feature/vendor migration, direct production schema change, bypassed gate, real-user launch without privacy/legal/restore evidence, hidden post-MVP scope. |
+| Rollback | Stop rollout/traffic, revert compatible app version or disable flags, restore previous catalog/price/assets, execute migration compensation/restore only by runbook, notify/escalate per incident plan. |
+
+## 9. Sequence gates
+
+| Переход | Минимальный gate |
+|---|---|
+| 0C → 1A | Explicit owner authorization + accepted ADR-0007–0010 + all Phase 0C stop conditions satisfied |
+| 1A → 1B | Foundation DoD + authorized pilot source/rights/mapping owner |
+| 1B → 1C | Approved pilot catalog + rule-specific compatibility/price evidence |
+| 1C → 1D | Stable published configuration/material/profile inputs |
+| 1D → 1E | Price/cart contracts stable + PII/legal lead gate |
+| 1E → 1F | Lead/admin operations and identity/recovery gate |
+| 1F → 1G | Private media/provider/privacy/evaluation/cost gate |
+| 1G → 1H | MVP feature freeze and complete release candidate |
+
+## 10. История
+
+| Версия | Дата | Изменение |
+|---|---|---|
+| 1.0.0 | 2026-08-02 | Зафиксированы последовательные Phase 1A–1H с entry, deliverables, tests, risks, DoD, forbidden changes and rollback. |

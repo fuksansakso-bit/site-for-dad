@@ -1,0 +1,64 @@
+# ADR-0007: Foundation application stack and repository topology
+
+## Метаданные
+
+| Поле | Значение |
+|---|---|
+| Статус | **Proposed** |
+| Дата | 2026-08-02 |
+| Решение требуется | До первого implementation commit Phase 1A |
+| Supersedes | — |
+
+## Контекст и драйверы
+
+Accepted [ADR-0001](ADR-0001-application-architecture.md) задаёт modular application и отдельный worker boundary, но не выбирает runtime, web framework, workspace или test tooling. MVP требует SEO/public UI, admin/account surfaces, API boundary, shared domain rules и контролируемую локальную разработку без преждевременных микросервисов.
+
+Драйверы: малый состав команды, один product boundary, strict types, repeatable CI, vendor-neutral deployment и возможность позднего extraction по измеренной нагрузке.
+
+## Варианты
+
+1. TypeScript/Node modular monolith, Next.js BFF и отдельный worker в pnpm workspace.
+2. Раздельные frontend/API services с первого коммита.
+3. Микросервисы по domain modules.
+
+## Предлагаемое решение
+
+При acceptance:
+
+1. Foundation MUST использовать Node.js Active LTS exact patch, TypeScript strict ESM, `pnpm` workspace и единый lockfile.
+2. `apps/web` MUST использовать current stable Next.js 16 App Router для public/account/admin surfaces и same-origin Route Handler BFF.
+3. Долгие, retryable и resource-heavy операции MUST исполняться в `apps/worker`, а не в HTTP lifecycle.
+4. Domain/application modules MUST находиться в framework-independent packages; web и worker зависят внутрь, domain не зависит от них.
+5. Внутренние packages MUST использовать `workspace:` ranges и не публиковаться без отдельного решения.
+6. CI MUST выполнять clean locked install, formatting, lint, typecheck, unit/integration/contract tests, build и E2E smoke через provider-neutral commands.
+7. Baseline tests MUST использовать Vitest и Playwright; runtime input contracts MUST иметь единственный schema source, конкретная совместимая library фиксируется в acceptance record/lockfile.
+8. Exact dependency versions, licenses и security advisories MUST быть перепроверены непосредственно перед bootstrap.
+
+## Последствия
+
+Положительные: простой deployable boundary, общие contracts, быстрый local loop, SEO и ясный путь к worker/extraction. Отрицательные: нужны автоматические dependency rules; Next BFF нельзя использовать как скрытый long-running backend; framework upgrades требуют планового контроля.
+
+## Риски и меры
+
+| Риск | Мера |
+|---|---|
+| Framework code проникает в domain | Import-boundary tests и package dependency graph |
+| Web deploy runtime не подходит jobs | Отдельный worker process и durable queue |
+| Monorepo tasks расходятся локально/CI | Единственные root commands и locked toolchain |
+| Supply-chain compromise | Frozen lockfile, provenance/license/advisory review, secret scan |
+
+## Откат / supersede
+
+До production data решение обратимо удалением scaffold в отдельном change. После начала функций замена оформляется новым ADR, сохраняет API/domain contracts и миграционный план. Extraction module в service допускается только после measurement и отдельного ADR.
+
+## Связи
+
+- [Technology evaluation](../06-plans/PHASE_1A_TECHNOLOGY_EVALUATION.md)
+- [Phase 1A plan](../06-plans/active/PHASE_1A_FOUNDATION_PLAN.md)
+- `NFR-ARCH-001`–`NFR-ARCH-012`, `DOR-008`, `ROADMAP-1A-001`
+
+## История
+
+| Дата | Изменение |
+|---|---|
+| 2026-08-02 | Proposed stack и topology подготовлены для owner acceptance; implementation не разрешена. |

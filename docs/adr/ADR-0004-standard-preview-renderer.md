@@ -40,7 +40,7 @@
 
 ## Решение
 
-1. `GEOMETRIC_PREVIEW` MUST быть отдельным от `AI_REFINED_PREVIEW` типом результата и доступен без AI.
+1. `STANDARD_INTERIOR_PREVIEW` MUST быть отдельным от client-photo `GEOMETRIC_PREVIEW` и `AI_REFINED_PREVIEW`, доступен без user upload и без AI.
 2. Renderer MUST использовать только rights-cleared local scene assets и published catalog/material assets.
 3. Input MUST содержать stable configuration/material IDs, renderer profile/version, scene ID, dimensions/state and source asset versions.
 4. Output MUST быть детерминирован для одинаковых input/profile/assets и трассироваться к выбранному MaterialVariant.
@@ -81,7 +81,7 @@ Renderer profile version может быть отключена с возвра�
 - [DESIGN_SYSTEM.md](../specs/03-ux/DESIGN_SYSTEM.md)
 - [ASSET_MEDIA_PIPELINE.md](../specs/04-technical/ASSET_MEDIA_PIPELINE.md)
 - `FR-STANDARD-PREVIEW-001`–`008`, `FR-CONFIG-001`–`008`, `ASSET-014`
-- Open: `TBD-DESIGN-003`, `TBD-ASSET-001`, renderer prototype/coverage matrix
+- Open: `TBD-PREVIEW-001`, `TBD-ASSET-AMIGO-003`, `TBD-ASSET-RETENTION-001`
 
 ## История
 

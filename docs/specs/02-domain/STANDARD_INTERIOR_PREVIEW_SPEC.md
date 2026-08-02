@@ -4,7 +4,7 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Draft 0B — deterministic renderer contract defined; scene/asset inventory pending |
+| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD`; deterministic contract is ready, Phase 1D activation requires approved `SceneProfile`/renderer coverage and assets |
 | Версия | 0.1.0 |
 | Дата | 2026-08-02 |
 | Configuration | [PRODUCT_CONFIGURATOR_SPEC.md](PRODUCT_CONFIGURATOR_SPEC.md) |
@@ -148,7 +148,7 @@ Tests: exact variant mapping; deterministic snapshots; family profiles; control 
 
 ## 14. Dependencies, risks and open questions
 
-Dependencies: catalog/configurator/media/storage/data/API/UX/performance/testing. Open: scene list/assets, exact product geometry profiles, color management, export formats/sizes/retention, advanced family readiness and rights/attribution details (`TBD-ASSET-AMIGO-003`). Risks: wrong material, misleading scale/color, generic shape for unsupported family, protected-layer overwrite, stale revoked asset, inaccessible canvas and heavy initial load.
+Dependencies: catalog/configurator/media/storage/data/API/UX/performance/testing. Open: initial scene/profile/family coverage (`TBD-PREVIEW-001`), color/export/retention details and rights/attribution (`TBD-ASSET-AMIGO-003`, `TBD-ASSET-RETENTION-001`). Risks: wrong material, misleading scale/color, generic shape for unsupported family, protected-layer overwrite, stale revoked asset, inaccessible canvas and heavy initial load.
 
 ## 15. Связанные требования и история
 

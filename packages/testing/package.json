@@ -1,5 +1,5 @@
 {
-  "name": "@project-name/contracts",
+  "name": "@project-name/testing",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -7,14 +7,6 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
-    },
-    "./error": {
-      "types": "./dist/error.d.ts",
-      "import": "./dist/error.js"
-    },
-    "./health": {
-      "types": "./dist/health.d.ts",
-      "import": "./dist/health.js"
     }
   },
   "scripts": {
@@ -25,7 +17,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "zod": "catalog:"
+    "@project-name/config": "workspace:*"
   },
   "devDependencies": {
     "@project-name/tooling": "workspace:*",
@@ -34,12 +26,10 @@
     "vitest": "catalog:"
   },
   "projectName": {
-    "layer": "contracts",
-    "responsibility": "Versioned runtime-safe HTTP, error, and health contracts.",
+    "layer": "testing",
+    "responsibility": "Synthetic, rights-free Foundation environment factories and bounded asynchronous test harness utilities.",
     "publicInterface": [
-      ".",
-      "./error",
-      "./health"
+      "."
     ]
   }
 }

@@ -23,6 +23,7 @@
     "db:validate": "prisma validate --config prisma.config.ts",
     "lint": "eslint . --max-warnings=0",
     "test": "prisma generate --config prisma.config.ts && vitest run --config vitest.config.ts",
+    "test:coverage": "prisma generate --config prisma.config.ts && vitest run --coverage --config vitest.config.ts",
     "test:integration": "prisma generate --config prisma.config.ts && vitest run --config vitest.integration.config.ts",
     "typecheck": "prisma generate --config prisma.config.ts && tsc --noEmit -p tsconfig.json"
   },

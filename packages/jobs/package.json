@@ -14,6 +14,7 @@
     "jobs:migrate": "tsx src/migrate.ts",
     "lint": "eslint . --max-warnings=0",
     "test": "vitest run --config vitest.config.ts",
+    "test:coverage": "vitest run --coverage --config vitest.config.ts",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },

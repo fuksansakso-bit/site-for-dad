@@ -9,6 +9,7 @@
     "lint": "eslint . --max-warnings=0",
     "start": "next start --hostname 127.0.0.1 --port 3000",
     "test": "vitest run --config vitest.config.ts",
+    "test:coverage": "vitest run --coverage --config vitest.config.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {

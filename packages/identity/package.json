@@ -11,12 +11,17 @@
     "./synthetic": {
       "types": "./dist/synthetic.d.ts",
       "import": "./dist/synthetic.js"
+    },
+    "./request-security": {
+      "types": "./dist/request-security.d.ts",
+      "import": "./dist/request-security.js"
     }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "lint": "eslint . --max-warnings=0",
     "test": "vitest run --config vitest.config.ts",
+    "test:coverage": "vitest run --coverage --config vitest.config.ts",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
@@ -38,6 +43,7 @@
     "responsibility": "Provider-neutral identity port, deny-by-default capability policy, audit context, and explicit synthetic local/test adapter.",
     "publicInterface": [
       ".",
+      "./request-security",
       "./synthetic"
     ]
   }

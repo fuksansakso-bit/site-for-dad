@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 import { createLivenessHandler } from '../app/api/v1/health/live/route';
 import { createReadinessHandler } from '../app/api/v1/health/ready/route';
-import { proxy } from '../proxy';
+import { createContentSecurityPolicy, proxy } from '../proxy';
 
 function testTelemetry() {
   return {
@@ -78,5 +78,19 @@ describe('web health route contracts', () => {
 
     expect(response.headers.get('x-correlation-id')).toBe('correlation-proxy-1234');
     expect(response.headers.get('x-request-id')).toBe('request-proxy-1234');
+    expect(response.headers.get('content-security-policy')).toMatch(
+      /script-src 'self' 'nonce-[^']+' 'strict-dynamic'/,
+    );
+  });
+
+  it('keeps production CSP strict while allowing only development diagnostics', () => {
+    const production = createContentSecurityPolicy('synthetic-nonce', false);
+    const development = createContentSecurityPolicy('synthetic-nonce', true);
+
+    expect(production).toContain("object-src 'none'");
+    expect(production).toContain("frame-ancestors 'none'");
+    expect(production).not.toContain("'unsafe-inline'");
+    expect(production).not.toContain("'unsafe-eval'");
+    expect(development).toContain("'unsafe-eval'");
   });
 });

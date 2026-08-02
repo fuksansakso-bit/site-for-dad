@@ -10,7 +10,12 @@ export function ErrorProbe(): React.JSX.Element {
   }
 
   return (
-    <button className="secondary-button" onClick={() => setShouldFail(true)} type="button">
+    <button
+      className="secondary-button"
+      data-testid="error-probe"
+      onClick={() => setShouldFail(true)}
+      type="button"
+    >
       Проверить безопасную обработку ошибки
     </button>
   );

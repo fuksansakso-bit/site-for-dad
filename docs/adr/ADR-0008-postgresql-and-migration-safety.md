@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | **Proposed** |
+| Статус | **Accepted** |
 | Дата | 2026-08-02 |
-| Решение требуется | До создания schema/migration в Phase 1A |
+| Решение принято | Product Owner, 2026-08-02; только для Phase 1A foundation schema |
 | Supersedes | — |
 
 ## Контекст и драйверы
@@ -19,10 +19,10 @@ PROJECT_NAME хранит связанные catalog entities, immutable source/
 2. PostgreSQL + hand-written migrations/query builder.
 3. Document database и application-only integrity.
 
-## Предлагаемое решение
+## Решение
 
 1. Primary relational datastore MUST быть PostgreSQL supported release; provider/region остаются `TBD-INFRA-004`.
-2. Prisma ORM/Migrate current stable major SHOULD стать typed data/migration tool после Phase 1A compatibility spike; если spike не проходит, fallback — PostgreSQL с Kysely/explicit SQL и новым acceptance note без изменения invariants.
+2. Prisma ORM/Migrate current stable major MUST стать typed data/migration tool после Phase 1A compatibility verification. Если verification не проходит, schema work останавливается; замена toolkit требует superseding ADR и отдельного решения владельца, а не самостоятельного fallback.
 3. Money MUST храниться целым количеством копеек, dimensions — целым количеством миллиметров; floating-point persistence для них запрещён.
 4. Migration SQL and history MUST храниться в Git, проходить review и никогда не редактироваться после shared application.
 5. `db push`/schema auto-sync MUST NOT применяться к shared, staging или production databases.
@@ -60,3 +60,4 @@ Relational invariants и reproducible schema получают единый contr
 | Дата | Изменение |
 |---|---|
 | 2026-08-02 | Proposed persistence, migration и rollback boundary создан; SQL не создавался. |
+| 2026-08-02 | Accepted Product Owner для Phase 1A; Prisma/Migrate сделаны обязательным выбранным toolkit, а смена требует superseding ADR. |

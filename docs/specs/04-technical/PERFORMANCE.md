@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Статус | Draft / numeric budgets `BLOCKED_BY_TBD-INFRA-003/005`; measurement and degradation contract defined |
-| Версия | 0.1.0 |
+| Версия | 0.2.0 |
 | Дата | 2026-08-02 |
 | Architecture | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | Responsive UX | [RESPONSIVE_SPEC.md](../03-ux/RESPONSIVE_SPEC.md) |
@@ -29,6 +29,7 @@ Performance preserves the primary catalog/configuration/contact task on target C
 - **PERF-SPEC-013 — MUST:** monitoring separates frontend, API, DB/search/cache, storage/media, queue/worker, provider and regional network latency/error/saturation.
 - **PERF-SPEC-014 — MUST:** optimization cannot weaken privacy/security/rights/version correctness or serve wrong/stale material/price.
 - **PERF-SPEC-015 — MUST:** budgets, tests and capacity model update when category/media/model/traffic behavior changes.
+- **PERF-SPEC-016 — MUST:** regional production verification covers Grozny, Urus-Martan, Argun and Gudermes without VPN, mobile plus home/office Wi-Fi, at least two different routes, mobile Chrome and desktop Chrome.
 
 ## 2. Performance budget template
 
@@ -54,7 +55,7 @@ Numeric cells stay `TBD` until `TBD-INFRA-003/005` closes with field measurement
 Must define before implementation approval:
 
 - representative Android/iOS/desktop device classes, browser/versions and memory/CPU;
-- mobile operator/network types and locations across Chechen Republic without VPN (`TBD-INFRA-002/005`);
+- the four cities, connection classes, route diversity and Chrome form factors from `OWNER-DECISION-007`; exact device/browser versions and network budgets remain `TBD-INFRA-005`;
 - viewport/zoom/reduced-motion/save-data/background conditions;
 - cold/warm cache and first/return visit;
 - catalog/material/option/card counts and growth scenarios;
@@ -118,10 +119,11 @@ Release evidence includes budget table, build/data/provider versions, baseline d
 
 ## 11. Dependencies, risks and open questions
 
-Dependencies: UX, architecture/data/API/media/AI/storage/observability/deployment/test strategy. Open: `TBD-INFRA-002/003/005/008`, hosting/network/provider choices, concrete budgets/traffic/quotas and performance ownership. Risks: heavy starfield/AI blocks funnel, originals over-delivered, cache serves wrong version, retry storm, provider cost/latency and optimizing desktop while target mobile networks fail.
+Dependencies: UX, architecture/data/API/media/AI/storage/observability/deployment/test strategy. `TBD-INFRA-002` is resolved by `OWNER-DECISION-007`; open: `TBD-INFRA-003/005/008`, hosting/network/provider choices, concrete budgets/traffic/quotas and performance ownership. Risks: heavy starfield/AI blocks funnel, originals over-delivered, cache serves wrong version, retry storm, provider cost/latency and optimizing desktop while target mobile networks fail.
 
 ## 12. History
 
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Defined task budgets template, target matrix, frontend/data/media/AI strategies, capacity and regression without invented numbers. |
+| 0.2.0 | 2026-08-02 | Региональная матрица без VPN закреплена `OWNER-DECISION-007`; numeric performance budgets остаются TBD. |

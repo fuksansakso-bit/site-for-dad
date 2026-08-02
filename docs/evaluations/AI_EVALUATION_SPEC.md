@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Статус | Evaluation plan — no provider/model selected; execution `BLOCKED_BY_TBD-AI-*` and rights-cleared benchmark |
-| Версия | 0.1.0 |
+| Версия | 0.2.0 |
 | Дата | 2026-08-02 |
 | Product contract | [AI_WINDOW_VISUALIZER_SPEC.md](../specs/02-domain/AI_WINDOW_VISUALIZER_SPEC.md) |
 | Technical pipeline | [AI_PIPELINE.md](../specs/04-technical/AI_PIPELINE.md) |
@@ -112,7 +112,7 @@ Missing critical evidence is a blocker, not a low weighted score.
 
 Measure from approved target networks/hosting region: request/upload/queue/stage/end-to-end percentiles, error/throttle/timeout, concurrency limits, cold start, outage/circuit recovery and delete/cancel. Cost model includes compute/request/image/egress/storage/queue/retry/support, failed/corrected vs usable result and forecast volumes from `TBD-INFRA-003`.
 
-No numeric target until `TBD-INFRA-002/003/005` closes. Compare base-only and refinement-on-demand to avoid making optional cost critical.
+No numeric target until `TBD-INFRA-003/005` closes. Regional runs use the four-city/two-route/mobile+Wi-Fi/mobile+desktop Chrome matrix from resolved `TBD-INFRA-002` without real client media.
 
 ## 10. Experiment procedure
 
@@ -152,10 +152,11 @@ After implementation authorization, every model/provider/profile/prompt/threshol
 
 Evaluation completion requires rights-cleared representative benchmark, approved metrics/thresholds, identical candidate runs, per-cohort/hard-gate results, provider contract/security/privacy evidence, regional performance/cost/fault tests, accessibility/user review and documented recommendation/ADR/fallback/exit.
 
-Open: `TBD-AI-001`–`009`, `TBD-PRIV-003/005`, `TBD-INFRA-002`–`005`, complex family scope and benchmark reviewers. Risks: biased/synthetic benchmark, rights gap, threshold tuned to test, average hides rare failure, subjective realism hides SKU drift, provider marketing substituted for contract and cost without target volume.
+Open: `TBD-AI-001`–`009`, `TBD-PRIV-003/005`, `TBD-INFRA-003`–`005`, complex family scope and benchmark reviewers. `TBD-INFRA-002` is resolved by `OWNER-DECISION-007`. Risks: biased/synthetic benchmark, rights gap, threshold tuned to test, average hides rare failure, subjective realism hides SKU drift, provider marketing substituted for contract and cost without target volume.
 
 ## 14. History
 
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Defined provider-neutral dataset, metrics, hard gates, human/privacy/performance evaluation and decision/rollout process. |
+| 0.2.0 | 2026-08-02 | Regional evaluation matrix synchronized with `OWNER-DECISION-007`; AI remains outside Phase 1A. |

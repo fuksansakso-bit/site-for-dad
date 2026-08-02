@@ -6,9 +6,9 @@
 
 ## Текущая фаза
 
-Фаза **0C — IMPLEMENTATION READINESS, MVP FREEZE AND P0 TBD TRIAGE** документально завершена 2026-08-02 поверх baseline commit `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`: `GLOBAL_SPEC.md` обновлён до 0.6.0, 61/61 P0 классифицированы, MVP и post-MVP заморожены, 14 critical specs audited, а Phase 1A–1H и detailed Foundation plan определены.
+Фаза **0C — IMPLEMENTATION READINESS, MVP FREEZE AND P0 TBD TRIAGE** документально завершена 2026-08-02; исходный commit Phase 1A — `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`. `GLOBAL_SPEC.md` обновлён до 0.7.0, семь owner-decision P0 закрыты, ADR-0007–0010 приняты, а Product Owner разрешил только **Phase 1A — FOUNDATION**.
 
-В репозитории намеренно отсутствуют frontend, backend, база данных, миграции, зависимости, import/scraping scripts и production-код. В 0C импорт файлов AMIGO не выполнялся. [Implementation Readiness Gate](docs/00-global/SPEC_QUALITY_GATE.md#6-implementation-readiness-gate-phase-0c) имеет статус `READY_FOR_OWNER_AUTHORIZATION`, а не разрешение реализации: proposed ADR-0007–0010 и отдельный письменный запуск Phase 1A ещё не приняты.
+На входе Phase 1A frontend/backend foundation, база, миграции и зависимости ещё отсутствовали; import/scraping и AMIGO data не создавались. [Implementation Readiness Gate](docs/00-global/SPEC_QUALITY_GATE.md#6-implementation-readiness-gate-phase-0c) имеет статус `AUTHORIZED_FOR_PHASE_1A_FOUNDATION`. Phase 1B, бизнес-функции и production deployment не разрешены.
 
 ## С чего начать
 
@@ -30,8 +30,8 @@
 
 - `docs/specs/` содержит глобальную и 33 нормативные профильные спецификации product/domain/UX/technical.
 - `docs/00-global/` содержит управляющие и справочные документы: реестры, политики, roadmap, quality gate, допущения и открытые вопросы.
-- `docs/quality/` и `docs/evaluations/` содержат test/evaluation artifacts, а `docs/adr/` — шесть реальных решений об устойчивых архитектурных границах.
-- `docs/06-plans/` содержит frozen MVP, critical-spec audit, implementation roadmap, technology evaluation и неисполненный Phase 1A plan; в `docs/adr/` также находятся четыре `Proposed` Foundation ADR.
+- `docs/quality/` и `docs/evaluations/` содержат test/evaluation artifacts, а `docs/adr/` — десять принятых решений об устойчивых архитектурных границах.
+- `docs/06-plans/` содержит frozen MVP, critical-spec audit, implementation roadmap, technology evaluation и активный Phase 1A plan.
 
 ## Референсы
 
@@ -45,11 +45,11 @@
 - Подтверждены срок изготовления 2–7 календарных дней, гарантия 12 месяцев с условиями, бесплатные услуги, регион, WhatsApp и начальный baseline четырёх семейств/систем.
 - Подтверждены официальный партнёрский статус AMIGO, `AUTHORIZED_PARTNER_SOURCE`, permission scope каталога/цен/медиа/калькуляторной логики/бейджа и `PARTNER_LICENSE`; конкретные файлы по-прежнему проходят provenance, mapping и `PUBLICATION_APPROVED`.
 - Каталожная модель динамически поддерживает все текущие и будущие source categories AMIGO; импорт не означает автоматические публикацию, наличие, расчётную готовность или возможность заказа.
-- Базовая цена имеет provenance AMIGO, но активная price version, формулы, синхронизация, parity tolerance и область minimum 1500 рублей ещё не подтверждены и не должны угадываться.
+- Базовая цена имеет provenance AMIGO. Owner утвердил activation roles, daily/manual cadence, staleness thresholds, parity tolerance ≤1 рубля и minimum 1500 рублей на каждую единицу изделия; реальные PriceVersion/formulas/source data по-прежнему отсутствуют и не реализуются в Phase 1A.
 - Рассрочка входит в scope только как нейтральный ручной WhatsApp-сценарий; подробные условия, eligibility, порядок заявки и география остаются `TBD-INSTALLMENT-001`–`013`.
 - Изображения AMIGO разрешены в партнёрском scope; hotlink, снятие водяных знаков, смена авторства и training use запрещены, а локальная публикация требует asset-level `PUBLICATION_APPROVED`.
 - Окончательный бренд, хостинг и AI-провайдер не выбраны.
 
-## Следующий разрешённый шаг
+## Текущая разрешённая работа
 
-Проект находится в transition hold. Разрешены review/correction Phase 0C, принятие либо замена proposed ADR-0007–0010 и отдельное решение владельца о Phase 1A. Нерешённые pricing, export, inventory, privacy и legal TBD блокируют только указанные feature gates и не подменяются догадками. Разработка, dependency installation, import и media ingestion не начинаются автоматически.
+Разрешена только Phase 1A Foundation по активному плану: workspace, shells, PostgreSQL/migrations, отдельный worker, storage/identity ports, observability, tests, CI и локальные инструкции. Нерешённые pricing, export, privacy и legal TBD блокируют указанные feature gates и не подменяются догадками. Import, media ingestion, бизнес-функции и Phase 1B не начинаются автоматически.

@@ -4,15 +4,15 @@
 
 | Поле | Значение |
 |---|---|
-| Версия gate | 1.1.0 |
-| Проверяемая входная база | baseline commit `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`; `GLOBAL_SPEC.md` 0.6.0; полный комплект 0B и Phase 0C plans/audit |
+| Версия gate | 1.2.0 |
+| Проверяемая входная база | Phase 0B baseline `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`; Phase 0C baseline `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; `GLOBAL_SPEC.md` 0.7.0 |
 | Дата entry self-audit | 2026-08-02, Europe/Moscow |
 | Решение по входу в 0B | **PASSED** |
 | Основание письменного решения | Приложенное владельцем задание «AUTHORIZED AMIGO FUNCTIONAL PARITY AND SPECIALIZED SPECS» и повторное указание «так приступай к работе» |
-| Утверждающая роль | Владелец бизнеса / Product Owner; персональное имя остаётся `TBD-BIZ-001` для будущего audit record |
+| Утверждающие роли | Product Owner — владелец проекта; Business Owner — отец владельца проекта (`OWNER-DECISION-001`) |
 | Текущий gate завершения 0B | **PASSED** — документационная фаза завершена |
-| Phase 0C Implementation Readiness Gate | **READY_FOR_OWNER_AUTHORIZATION** — artifacts ready, Phase 1A не разрешена |
-| Production-реализация | **ЗАПРЕЩЕНА** до отдельного решения и выполнения Phase 1A entry conditions |
+| Phase 0C Implementation Readiness Gate | **AUTHORIZED_FOR_PHASE_1A_FOUNDATION** — QG-147/148 закрыты 2026-08-02 |
+| Разрешённая реализация | Только Phase 1A Foundation; Phase 1B+, AMIGO data и production deployment запрещены |
 
 Entry gate подтверждает, что исправления 0A.1 внесены и письменное решение начать документную фазу 0B получено. Он не означает готовность ценовой формулы, импорта, приложения или запуска. Открытые TBD блокируют утверждение зависимой спецификации или функции, но не отменяют разрешение создавать документацию 0B с безопасным поведением.
 
@@ -142,7 +142,7 @@ Evidence получен read-only PowerShell/`rg` проверками рабо�
 
 ## 6. Implementation Readiness Gate Phase 0C
 
-Phase 0C проверяет готовность к контролируемому решению о Foundation, а не готовность продукта к launch. Технологические предложения остаются `Proposed`; явное разрешение Phase 1A отсутствует по замыслу текущего поручения.
+Phase 0C проверяет готовность к контролируемому решению о Foundation, а не готовность продукта к launch. Product Owner 2026-08-02 принял ADR-0007–0010 и отдельно разрешил только Phase 1A Foundation.
 
 ### 6.1. Baseline, scope and P0 triage
 
@@ -150,7 +150,7 @@ Phase 0C проверяет готовность к контролируемом
 - [x] **QG-132 — MUST:** до baseline проверены `.gitignore`, filenames/content и binary signatures; secrets, customer photos, temp/cache/system files and unnecessary binaries не обнаружены.
 - [x] **QG-133 — MUST:** все 61 исторических P0 ID получили одну из девяти Phase 0C classifications; до triage было 50 открытых/unclassified и 11 historical resolved, после — 0 unclassified.
 - [x] **QG-134 — MUST:** `MVP_SCOPE.md` фиксирует 20 обязательных first-launch capabilities, dynamic catalog boundary and 15 explicit post-MVP items; full AMIGO assortment не является launch dependency.
-- [x] **QG-135 — MUST:** подтверждённые owner facts не возвращены в TBD; `TBD-ACCOUNT-001` закрыт, `TBD-MIN-PRICE-001` остаётся открытым и minimum 1500 не применяется.
+- [x] **QG-135 — MUST:** подтверждённые owner facts не возвращены в TBD; после `OWNER-DECISION-001`–`007` семь owner-decision P0 закрыты, а их IDs сохранены для истории.
 
 ### 6.2. Critical specifications and consistency
 
@@ -171,22 +171,35 @@ Phase 0C проверяет готовность к контролируемом
 
 - [x] **QG-145 — MUST:** Phase 0C changed only Markdown/governance/reference files; no package, dependency, application, SQL, migration, import/media or production configuration was created.
 - [x] **QG-146 — MUST:** final mechanical verification covers links, unique IDs, tables, whitespace, prohibited artifacts and committed clean worktree; evidence is recorded in final Phase 0C report.
-- [ ] **QG-147 — MUST BEFORE PHASE 1A:** owner accepts or supersedes proposed ADR-0007–0010.
-- [ ] **QG-148 — MUST BEFORE PHASE 1A:** owner separately and explicitly authorizes Phase 1A after reading the final Phase 0C report.
+- [x] **QG-147 — MUST BEFORE PHASE 1A:** Product Owner принял ADR-0007–0010 после проверки условий ниже.
+- [x] **QG-148 — MUST BEFORE PHASE 1A:** Product Owner отдельно и явно разрешил Phase 1A Foundation 2026-08-02 после Phase 0C report.
+
+#### QG-147 acceptance review
+
+1. ADR-0007–0010 не противоречат `GLOBAL_SPEC.md` 0.7.0.
+2. ADR не противоречат `PHASE_1A_FOUNDATION_PLAN.md` и ограничивают решения Foundation.
+3. Next.js/BFF, PostgreSQL/Prisma, отдельный Graphile Worker, S3 port, identity boundary и OpenTelemetry имеют отдельную ответственность.
+4. Модульный monolith и один PostgreSQL control plane исключают преждевременные microservices/extra broker/provider commitments.
+5. ADR-0007/0009 явно закрепляют Windows 11, PowerShell-safe root commands и disposable local dependencies.
+6. ADR-0008 закрепляет reviewed migrations, drift, empty/upgrade replay, expand/contract, failed recovery и forward compensation.
+7. ADR-0007/0009/0010 сохраняют ports, S3/OTLP contracts и superseding migration path для смены infrastructure provider.
+8. Secrets поступают через ignored local/OS либо managed CI/runtime injection и не зависят от hosting vendor.
+9. ADR-0001/0007/0009 требуют отдельный worker process; durable jobs не выполняются внутри обычного HTTP request.
+10. Structured logs, tracing, metrics и liveness/readiness входят в первый Foundation этап по ADR-0010.
 
 ### 6.5. Decision record
 
 | Поле | Значение |
 |---|---|
-| Gate result | **READY_FOR_OWNER_AUTHORIZATION** |
+| Gate result | **AUTHORIZED_FOR_PHASE_1A_FOUNDATION** |
 | Documentation readiness | **PASS** |
 | Critical spec blockers before Foundation | **0** |
-| Feature-specific P0 gates retained | 20 `BLOCKER_BEFORE_FEATURE`, 10 `EXTERNAL_AMIGO_DATA_REQUIRED`, 7 `OWNER_DECISION_REQUIRED` |
-| Unmet transition decisions | QG-147 and QG-148 |
-| Allowed now | Review/correct Phase 0C documentation and decide ADR/authorization |
-| Forbidden now | Any Phase 1A work, dependency installation, application/schema/import/media/provider activation |
+| Feature-specific P0 gates retained | 20 `BLOCKER_BEFORE_FEATURE`, 10 `EXTERNAL_AMIGO_DATA_REQUIRED`, 0 `OWNER_DECISION_REQUIRED` |
+| Unmet transition decisions | Нет для входа в Phase 1A |
+| Allowed now | Только Phase 1A Foundation по active plan |
+| Forbidden now | Phase 1B+, AMIGO catalog pilot/import, pricing/configurator/preview/cart/order/admin business UI/account/photo/AI и production deployment |
 
-`READY_FOR_OWNER_AUTHORIZATION` is intentionally not `PASSED_TO_IMPLEMENTATION`. Satisfying QG-147/148 requires a future recorded owner decision and does not happen implicitly from this document.
+Разрешение ограничено Phase 1A. Completion Phase 1A не разрешает автоматически начинать Phase 1B; нужен отдельный письменный transition decision.
 
 ## 7. История изменений
 
@@ -194,5 +207,6 @@ Phase 0C проверяет готовность к контролируемом
 |---|---|---|
 | 1.0.0 | 2026-08-02 | Completion checks `QG-112`–`130` пройдены на полном комплекте 0B; зафиксированы counts, unique IDs, links/tables/no-code evidence и запрет автоматического старта реализации. |
 | 1.1.0 | 2026-08-02 | Добавлены QG-131–148 для Phase 0C baseline/P0/MVP/audit/roadmap/Foundation safety; результат `READY_FOR_OWNER_AUTHORIZATION`, QG-147/148 намеренно открыты. |
+| 1.2.0 | 2026-08-02 | `OWNER-DECISION-001`–`007` закрыли owner P0; ADR-0007–0010 приняты после десяти проверок, QG-147/148 закрыты и разрешена только Phase 1A Foundation. |
 | 0.2.0 | 2026-08-02 | Entry gate обновлён для `GLOBAL_SPEC` 0.4.0 и partner-authorized scope; письменное поручение владельца зафиксировано как разрешение начать 0B; добавлен отдельный completion gate 0B. |
 | 0.1.0 | 2026-08-02 | Предыдущий self-audit 0A.1 для версии 0.3.1; проверки `QG-001`–`087` впоследствии зарезервированы. |

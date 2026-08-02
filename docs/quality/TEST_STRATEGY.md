@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD`; strategy and 40 critical scenarios defined, execution/feature fixtures await their implementation gates |
-| Версия | 0.1.0 |
+| Версия | 0.2.0 |
 | Дата | 2026-08-02 |
 | Requirements | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) and profile specs |
 | Acceptance | [ACCEPTANCE_CRITERIA.md](../specs/01-product/ACCEPTANCE_CRITERIA.md) |
@@ -86,7 +86,7 @@ Each row is a full test design seed; profile suites expand permutations without 
 | **TS-PRICE-001** / unit+property+contract | Valid config with active version; missing rule/version/category/conflict | Exact reproducible amount/version/breakdown or typed unavailable; never zero/guess | `AC-PRICE-001`; `BLOCKED_TBD` formula/data |
 | **TS-CART-001** / unit+E2E | Multi-item valid/stale/unavailable; edit/duplicate/remove/retry | Target-only revision, honest totals/statuses, no unintended duplicate | `AC-CART-001`; `DESIGNED` |
 | **TS-QUOTE-HISTORY-001** / integration | Saved quote; activate/rollback/new source version; reopen/recalculate | Original immutable/replayable; new linked revision; retired source retained | `AC-QUOTE-HISTORY-001`; `BLOCKED_TBD` price fixture |
-| **TS-PRICE-ACTIVATE-001** / integration+security | Staged version validation/parity/approvals; conflict/failure/concurrency | Atomic one active version, old quotes pinned, rollback; failed candidate no cutover | `AC-PRICE-ACTIVATE-001`; `BLOCKED_TBD` |
+| **TS-PRICE-ACTIVATE-001** / integration+security | `OWNER`/`ADMIN` versus denied roles; exact diff review/confirmation; validation/parity/conflict/failure/concurrency | Only allowed role confirms; every attempt audited; atomic one active version, old quotes pinned, rollback; failed candidate no cutover | `AC-PRICE-ACTIVATE-001`; source/formula fixture `BLOCKED_TBD` |
 | **TS-QUOTE-CONFIRM-001** / domain+E2E | Manager verified inputs/allowed and disallowed adjustment | New confirmed revision with reason/explanation; disallowed remains draft | `AC-QUOTE-CONFIRM-001`; `BLOCKED_TBD` workflow |
 | **TS-STANDARD-PREVIEW-001** / visual+unit | Supported families/materials/controls plus missing/wrong/revoked asset | Deterministic exact mapping/protected layers/text; unsupported honest fallback | `AC-STANDARD-PREVIEW-001`; `DESIGNED` profiles pending |
 | **TS-AI-UPLOAD-001** / security+integration | Valid, spoofed, polyglot, bomb, malware, EXIF, too large/low quality | Only safe normalized private input; rejection/cleanup; no URL/content log | `AC-AI-UPLOAD-001`; `BLOCKED_TBD` limits |
@@ -111,15 +111,15 @@ Each row is a full test design seed; profile suites expand permutations without 
 | **TS-AMIGO-SYNC-001** / adapter+integration | Authorized fixture capture; auth/source/format/truncation failure | Immutable staged capture/run; active untouched; failure/freshness audit | `AC-AMIGO-SYNC-001`; `BLOCKED_TBD` transport |
 | **TS-SYNC-DIFF-001** / unit+property | Add/change/rename/move/remove/split/merge/conflict/new schema/category | Complete field/relation severity/impact; ambiguous blocks activation | `AC-SYNC-DIFF-001`; `DESIGNED` fixtures |
 | **TS-SYNC-ROLLBACK-001** / integration+fault | Approved activation, cache/search failure, repeat/out-of-order command | Atomic previous pointers, consistent cache/read model, idempotent run state | `AC-SYNC-ROLLBACK-001`; `DESIGNED` |
-| **TS-PERF-001** / lab+regional+load | Target device/network/region cold/warm/save-data/reduced + load/fault | Critical funnel meets approved budgets or documented usable degradation | `AC-PERF-001`; `BLOCKED_TBD-INFRA-002/003/005` |
+| **TS-PERF-001** / lab+regional+load | Four approved cities, mobile + home/office Wi-Fi, ≥2 routes, mobile/desktop Chrome; cold/warm/save-data/reduced + load/fault | Critical funnel meets approved budgets or documented usable degradation | `AC-PERF-001`; regional matrix resolved, budgets `BLOCKED_TBD-INFRA-003/005` |
 | **TS-PRIV-001** / privacy+security | Notice/consent/upload/access/log/analytics/delete/provider/backup across owner/attacker | Purpose/minimum/private/no-training/retention/delete with no unauthorized content | `AC-PRIV-001`; `BLOCKED_TBD-PRIV-*` |
 | **TS-ACCESS-001** / automated+manual AT | Keyboard, screen reader, 200/400%, 320/375, touch, forced colors, reduced motion full journey | Equivalent operable/perceivable task, focus/errors/live states and no motion/timing trap | `AC-ACCESS-001`; `DESIGNED`, AT matrix TBD |
 
 ## 5. Pricing parity test protocol
 
-Parity suite follows `PRICING-TEST-001`–`005` and stores case ID, exact normalized configuration, source context/version/timestamp/result, local version/result, exact absolute difference, percentage difference when valid, component diff, expected tolerance/status, evidence and reviewer. Cases cover each active family/system/model/material category/options, boundaries, quantities, overrides, services, rounding, future minimum, activation/rollback and missing/conflict/outage.
+Parity suite follows `PRICING-TEST-001`–`005` and stores case ID, identical source version/system/material/dimensions/hardware/options/quantity, source result, local version/result, exact absolute difference, percentage difference when valid, component diff, expected tolerance/status, evidence and reviewer. Cases cover each active family/system/model/material category/options, boundaries, quantities, overrides, services, rounding, per-item minimum, activation/rollback and missing/conflict/outage.
 
-Until `TBD-PRICE-PARITY-001` closes, any nonzero difference is `REVIEW_REQUIRED`; lack of authorized source result means test is `BLOCKED_TBD`, not pass. Tests do not automate around access controls/CAPTCHA or treat volatile UI text as stable oracle.
+Absolute difference up to 1 ruble inclusive passes parity only when all approved inputs are identical; a larger difference is a parity error. Lack of authorized source result means test is `BLOCKED_TBD`, not pass. Tests do not automate around access controls/CAPTCHA or treat volatile UI text as stable oracle.
 
 ## 6. AI evaluation and visual test boundary
 
@@ -160,3 +160,4 @@ Dependencies: all specs/ADRs/evaluations, implementation stack/environments, app
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Defined risk-based multi-layer strategy and 40 critical scenarios mapped one-to-one to current acceptance criteria. |
+| 0.2.0 | 2026-08-02 | Updated parity tolerance/input contract and regional production matrix from `OWNER-DECISION-006/007`; Foundation execution evidence will be added at Phase 1A completion. |

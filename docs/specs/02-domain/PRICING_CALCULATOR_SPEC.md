@@ -5,16 +5,16 @@
 | Поле | Значение |
 |---|---|
 | Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD` for Foundation; numeric pricing activation is blocked before Phase 1C until formula, PriceVersion and parity approval exist |
-| Версия | 0.1.0 |
+| Версия | 0.2.0 |
 | Дата | 2026-08-02 |
-| Policy | [PRICING_SOURCE_POLICY.md](../../00-global/PRICING_SOURCE_POLICY.md) 1.1.0 |
+| Policy | [PRICING_SOURCE_POLICY.md](../../00-global/PRICING_SOURCE_POLICY.md) 1.2.0 |
 | Inputs | [PRODUCT_CONFIGURATOR_SPEC.md](PRODUCT_CONFIGURATOR_SPEC.md) |
 
 ## 1. Назначение, границы и запрещённые выводы
 
 Документ определяет versioned, deterministic, auditable preliminary pricing without inventing AMIGO formulas. It covers provider contract, source/local layers, exact arithmetic, status, breakdown, history, activation, fallback and parity testing.
 
-Out of scope until confirmed: actual price tables, area rounding, minimum billable area, system formulas, option surcharges, tax display, discount rules, price validity period and 1500-ruble minimum scope. No sample number in this spec is a business price.
+Out of scope until confirmed: actual price tables, area rounding, minimum billable area, system formulas, option surcharges, tax display, discount rules and price validity period. The 1500-ruble per-item scope is confirmed by `OWNER-DECISION-003`, but its engine is out of Phase 1A. No other sample number in this spec is a business price.
 
 ## 2. Термины, акторы и roles
 
@@ -46,15 +46,15 @@ Actors: guest/customer requester, manager draft/confirmation role, price editor,
 - **PRICE-SPEC-006 — MUST:** allowed conceptual overrides are absolute replacement, additive amount, multiplicative/percentage adjustment or explicit rule replacement; exact permitted set/precedence remains owner-approved.
 - **PRICE-SPEC-007 — MUST:** `sourcePriceCategory` accepts dynamic source strings; unknown category stores safely but blocks price unless an applicable rule exists.
 - **PRICE-SPEC-008 — MUST:** service lines for confirmed free measurement/delivery/installation are shown separately as zero only within approved region/scope and never alter mechanism formula.
-- **PRICE-SPEC-009 — MUST:** minimum 1500 rubles is not evaluated anywhere until `TBD-MIN-PRICE-001` defines per-item/order scope and precedence.
+- **PRICE-SPEC-009 — MUST:** minimum 1500 rubles applies to each separately manufactured item before order aggregation; formula result 1100 becomes 1500 and two such items total 3000. It is documented only and MUST NOT be implemented in Phase 1A.
 - **PRICE-SPEC-010 — MUST:** missing input/rule/version/currency/context returns `UNAVAILABLE` or `MANUAL_REQUIRED`, never zero/guess/partial total.
 - **PRICE-SPEC-011 — MUST:** historical quote and its inputs/version/breakdown are immutable after creation; recalculation creates a new revision.
-- **PRICE-SPEC-012 — MUST:** price activation is atomic, audited and preserves previous active version for history/rollback.
+- **PRICE-SPEC-012 — MUST:** price activation is atomic, preserves previous active version and is allowed only to `OWNER` or `ADMIN` after exact diff review and explicit confirmation; every attempt/outcome is audited.
 - **PRICE-SPEC-013 — MUST:** scheduled activation uses one authoritative clock and non-overlapping effective intervals.
 - **PRICE-SPEC-014 — MUST:** public output is labelled preliminary and distinct from manager-confirmed final quote.
 - **PRICE-SPEC-015 — MUST:** fallback uses only approved active local snapshot, manual quote or explicit price unavailable; live source runtime is not required.
 - **PRICE-SPEC-016 — MUST:** parity comparison records identical normalized inputs, local result, authorized source result, absolute/percent difference, versions/context and explanation.
-- **PRICE-SPEC-017 — MUST:** until tolerance is approved, any difference is review-required rather than silently accepted.
+- **PRICE-SPEC-017 — MUST:** with identical source version, system, material, dimensions, hardware, options and quantity, absolute local/source difference up to 1 ruble inclusive passes tolerance; a larger difference is parity error.
 - **PRICE-SPEC-018 — MUST:** rule errors/conflicts/overflow/non-finite values fail closed and generate no amount.
 - **PRICE-SPEC-019 — MUST:** manager adjustment does not overwrite preliminary quote and needs authorization/reason/client-visible explanation.
 - **PRICE-SPEC-020 — MUST:** client/API payload excludes proprietary internal expression/source credentials while retaining an understandable breakdown and version reference.
@@ -85,7 +85,7 @@ No business coefficient is assigned here. A rule set MAY conceptually compute:
 4. calculate base product component;
 5. calculate approved mechanism/hardware/control/option components;
 6. apply approved local override precedence;
-7. apply minimum only if later approved at defined scope;
+7. apply the approved 1500-ruble minimum independently to each manufactured item only after other pricing gates are approved;
 8. add separate service lines (confirmed zero where applicable);
 9. apply tax/display/rounding policy at defined stages;
 10. validate invariants and store breakdown/checksum.
@@ -162,7 +162,7 @@ If exact line-level transparency is unresolved (`TBD-PRICE-009`), safe minimum i
 | `SOURCE_STALE` | Freshness threshold exceeded | Approved stale disclosure or unavailable, policy TBD |
 | `OVERRIDE_EXPIRED` | Override inactive | Use source layer if valid; audit |
 
-Edge cases: quantity >1 and minimum scope; mixed cart versions; daylight/timezone activation; retroactive correction; source category string casing; missing option price; zero/free service; negative adjustment; customer reopens old quote; source removal; rollback after new quotes. Each requires table/property tests.
+Edge cases: quantity >1 with per-item minimum; mixed cart versions; daylight/timezone activation; retroactive correction; source category string casing; missing option price; zero/free service; negative adjustment; customer reopens old quote; source removal; rollback after new quotes. Each requires table/property tests.
 
 ## 12. Failure and degradation
 
@@ -186,7 +186,7 @@ Required case classes:
 - quantities 1 and multiple;
 - no override and every approved override type;
 - free services within region and out-of-scope region behavior;
-- future minimum per-item vs per-order once resolved;
+- per-item minimum cases including 1100→1500 and two units→3000 once the pricing engine phase is authorized;
 - rounding thresholds, currency scale and exact replay;
 - stale/version activation/rollback/historical quote;
 - unknown category/missing rule/conflict/outage.
@@ -199,7 +199,7 @@ AC: `AC-PRICE-001`, `AC-PRICE-ACTIVATE-001`, `AC-QUOTE-HISTORY-001`, `AC-QUOTE-C
 
 Tests: unit rule components, table/property dimension/rounding, provider contracts, version activation concurrency, override precedence/conflict, exact arithmetic, replay checksum, parity fixtures, cart mixed states, security/RBAC, source/engine/audit/cache failures and historical reproducibility.
 
-Dependencies: catalog/configurator/cart/admin/sync/data/API/security/test strategy. Open blockers: `TBD-PRICE-001`–`010`, `TBD-PRICE-SOURCE-001/002`, `TBD-PRICE-PARITY-001`, `TBD-MIN-PRICE-001`, `TBD-MECHANISM-001`, `TBD-DIM-*`, `TBD-SIZE-001`, `TBD-PRICE-006` legal/tax display. Risks: invented formulas, mixed versions, floating-point errors, hidden overrides, false zero, wrong minimum scope, source/runtime coupling and unverifiable parity.
+Dependencies: catalog/configurator/cart/admin/sync/data/API/security/test strategy. Open blockers: `TBD-PRICE-001`–`006`, `TBD-PRICE-008`–`010`, `TBD-PRICE-SOURCE-001`, `TBD-MECHANISM-001`, `TBD-DIM-*`, `TBD-SIZE-001` and legal/tax display. Resolved IDs `TBD-PRICE-007`, `TBD-PRICE-SOURCE-002`, `TBD-PRICE-PARITY-001`, `TBD-MIN-PRICE-001` remain traceable. Risks: invented formulas, mixed versions, floating-point errors, hidden overrides, false zero, wrong minimum application, source/runtime coupling and unverifiable parity.
 
 ## 16. Связанные требования и история
 
@@ -208,3 +208,4 @@ Links: `PRICING-SOURCE-*`, `PRICING-SNAPSHOT-*`, `PRICING-VERSION-*`, `PRICING-L
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Определены provider contract, symbolic pipeline, versions/overrides, exact arithmetic, breakdown, failures and parity matrix without invented business values. |
+| 0.2.0 | 2026-08-02 | Зафиксированы per-item minimum, `OWNER`/`ADMIN` activation с diff/audit и parity tolerance ≤1 рубля; pricing implementation остаётся вне Phase 1A. |

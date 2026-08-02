@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD` for Foundation; Phase 1B data capture is blocked until `TBD-SOURCE-AMIGO-002` has authorized transport/evidence |
-| Версия | 0.1.0 |
+| Версия | 0.2.0 |
 | Дата | 2026-08-02 |
 | Source registry | [EXTERNAL_SOURCES.md](../../00-global/EXTERNAL_SOURCES.md) |
 | Pricing policy | [PRICING_SOURCE_POLICY.md](../../00-global/PRICING_SOURCE_POLICY.md) |
@@ -46,9 +46,10 @@ Public browser research and volatile customizer DOM/iframe are not a production 
 - **SYNC-ARCH-015 — MUST:** source outage/failure leaves current active local version untouched and updates freshness/run status.
 - **SYNC-ARCH-016 — MUST:** removals retire/hide new selection by approved policy and never physically remove data needed by historical quote/order.
 - **SYNC-ARCH-017 — MUST:** retries/resume are idempotent by run/stage/artifact hashes and cannot duplicate versions/activation.
-- **SYNC-ARCH-018 — MUST:** schedule/cadence/staleness/alert owner are configured after `TBD-PRICE-SOURCE-002`; no period is invented.
+- **SYNC-ARCH-018 — MUST:** future sync checks run automatically once daily and manually on admin request; data older than 7 days receives `STALE_WARNING`, and data older than 30 days requires admin verification before publishing a changed price or new product.
 - **SYNC-ARCH-019 — MUST:** adapter/parser runs least privilege, bounded resource/egress/rate and does not bypass authorization/CAPTCHA/closed interfaces.
 - **SYNC-ARCH-020 — MUST:** telemetry/audit excludes credentials/raw confidential files/media contents and records safe run/version/count/error metadata.
+- **SYNC-ARCH-021 — MUST:** an AMIGO availability value is a proposal only; activation never overwrites confirmed local availability automatically.
 
 ## 4. Pipeline stages
 
@@ -138,7 +139,7 @@ Sync may discover asset identifiers/URLs/metadata within permission. It creates 
 
 Only one activation per target context/pointer set at a time. Multiple captures may run, but candidate base version recorded; stale-base approval/activation conflicts and requires re-diff. Run/stage artifact IDs/checksums enable resume. Scheduled vs manual trigger and priority do not skip same validation.
 
-Exact cadence, retry limits, staleness and concurrency budgets remain TBD/evaluation. Backoff honors source terms/rate. Manual emergency run uses same pipeline/audit.
+Cadence and staleness are fixed by `OWNER-DECISION-005`: daily + manual, 7-day warning, 30-day verification gate. Retry limits, concurrency budgets and exact scheduler remain implementation evaluation. Backoff honors source terms/rate. Manual run uses the same pipeline/audit.
 
 ## 13. Failures and edge cases
 
@@ -169,10 +170,11 @@ Tests: every transport via authorized fixture; integrity/schema/encoding/locale;
 
 ## 16. Dependencies, risks and open questions
 
-Dependencies: catalog/pricing/media/admin/data/API/security/observability/deployment and ADR-0002. Open: transport/export/schema/sample, permission details, cadence/staleness/owners, source region/context, rate limits, change markers, media acquisition and activation grouping. Risks: volatile DOM, secret exposure, auto-publication, destructive removal, price mismatch, parser drift, approval of moving candidate and rollback inconsistency.
+Dependencies: catalog/pricing/media/admin/data/API/security/observability/deployment and ADR-0002. Open: transport/export/schema/sample, permission details, source region/context, rate limits, retry/concurrency, change markers, media acquisition and activation grouping. Cadence/staleness and local availability authority are resolved by `OWNER-DECISION-004/005`. Risks: volatile DOM, secret exposure, auto-publication, destructive removal, price mismatch, parser drift, approval of moving candidate and rollback inconsistency.
 
 ## 17. History
 
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Defined transport priority, immutable capture, normalization/validation/diff, approval/activation/rollback, price/media boundaries and tests. |
+| 0.2.0 | 2026-08-02 | Зафиксированы daily/manual cadence, `STALE_WARNING`, 30-day verification gate и запрет auto-overwrite локального наличия; реализация sync остаётся Phase 1B+. |

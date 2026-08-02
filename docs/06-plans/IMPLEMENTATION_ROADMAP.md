@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Фаза документа | 0C |
-| Статус roadmap | **APPROVED SEQUENCE / IMPLEMENTATION NOT AUTHORIZED** |
+| Фаза документа | 1A |
+| Статус roadmap | **APPROVED SEQUENCE / PHASE 1A ONLY AUTHORIZED** |
 | Scope | [MVP_SCOPE](MVP_SCOPE.md) |
 | Активный будущий план | [PHASE_1A_FOUNDATION_PLAN](active/PHASE_1A_FOUNDATION_PLAN.md) |
 
@@ -21,7 +21,7 @@
 |---|---|
 | ID / цель | **ROADMAP-1A-001:** создать проверяемую локальную и CI foundation для modular monorepo, web/BFF, database, object storage, worker, auth boundary и operations, не реализуя бизнес-функции MVP. |
 | Зависимости | Baseline commit `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`; `GLOBAL_SPEC`; ADR-0001/0006; acceptance ADR-0007–0010. |
-| Входные условия | Phase 0C readiness gate `READY_FOR_OWNER_AUTHORIZATION`; clean documentation tree; 0 critical specs `BLOCKED/CONTRADICTORY`; P0 fully classified; explicit written owner authorization; exact supported dependency versions reverified. |
+| Входные условия | `QG-147/148` closed; Phase 0C baseline `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; 0 critical specs `BLOCKED/CONTRADICTORY`; P0 fully classified; exact supported dependency versions reverified before bootstrap. |
 | Deliverables | Monorepo skeleton; `apps/web` and `apps/worker`; domain/application/db/contracts/config/observability/testing/UI packages; local PostgreSQL/object emulator; migration baseline; environment schema; CI gates; lint/typecheck/tests; structured logging; liveness/readiness; synthetic auth/RBAC boundary; runbooks. |
 | Acceptance criteria | One documented bootstrap path works from clean machine; locked install/build/test deterministic; web and worker health proven; dependency boundaries enforced; synthetic DB migration replay/recovery and storage/job contracts pass; no secret/PII in repo/logs; no catalog/import/price/preview/lead implementation. |
 | Тесты | Toolchain smoke; architecture boundary; environment positive/negative; DB migration empty/upgrade/recovery; job retry/idempotency; object public/private denial; auth capability denial; health degradation; log redaction; CI reproducibility. |
@@ -30,7 +30,7 @@
 | Запрещённые изменения | AMIGO import/media ingestion, production data, pricing rules, catalog UI, configurator, preview, lead forms, AI, provider commitments beyond accepted ADR scope. |
 | Rollback | Revert commits in documented sequence while data is synthetic; preserve migration history once shared; use ADR-0008 compensation/rebuild rehearsal; revoke any issued test credentials and remove disposable local resources. |
 
-Подробный порядок: [PHASE_1A_FOUNDATION_PLAN](active/PHASE_1A_FOUNDATION_PLAN.md).
+Подробный активный порядок: [PHASE_1A_FOUNDATION_PLAN](active/PHASE_1A_FOUNDATION_PLAN.md). Начало Phase 1B требует нового письменного решения.
 
 ## 2. PHASE 1B — AMIGO CATALOG PILOT
 

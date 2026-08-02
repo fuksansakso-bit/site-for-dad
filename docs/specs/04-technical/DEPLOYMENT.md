@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Статус | Draft 0B — vendor-neutral release contract; hosting/CI/CD/runtime not selected |
-| Версия | 0.1.0 |
+| Версия | 0.2.0 |
 | Дата | 2026-08-02 |
 | Architecture | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | Quality gate | [SPEC_QUALITY_GATE.md](../../00-global/SPEC_QUALITY_GATE.md) |
@@ -35,7 +35,8 @@ This document defines environment isolation, build artifact, configuration/secre
 - **DEPLOY-SPEC-017 — MUST:** release owner, approvers, change window, support/on-call, communication and rollback authority are recorded.
 - **DEPLOY-SPEC-018 — MUST:** emergency/hotfix follows review/test/audit/rollback with expedited scope, never bypasses security/data/privacy permanently.
 - **DEPLOY-SPEC-019 — MUST:** hosting/network/data residency/availability/cost/exit is selected by evaluation and ADR, not this spec.
-- **DEPLOY-SPEC-020 — MUST:** no deployment begins automatically after 0B; separate implementation and release authorization is required.
+- **DEPLOY-SPEC-020 — MUST:** Phase 1A authorization does not permit production deployment or Phase 1B; each requires a separate written transition/release decision.
+- **DEPLOY-SPEC-021 — MUST:** production release evidence includes no-VPN checks in Grozny, Urus-Martan, Argun and Gudermes, mobile and home/office Wi-Fi, at least two network routes, mobile Chrome and desktop Chrome.
 
 ## 3. Environment model
 
@@ -135,10 +136,11 @@ Tests: artifact traceability/reproducibility, environment isolation/no prod data
 
 ## 14. Dependencies, risks and open questions
 
-Dependencies: architecture/data/API/sync/media/AI/storage/security/performance/observability/test strategy/evaluations/ADRs. Open: hosting/CI/CD/runtime, environments/domains, `TBD-INFRA-001`–`009`, RPO/RTO, owners/change windows, release cadence, artifact/signing/flag platforms and regional probes. Risks: environment leak, irreversible migration, incompatible rollback, unobserved canary, provider prod call from test and data/version coupling.
+Dependencies: architecture/data/API/sync/media/AI/storage/security/performance/observability/test strategy/evaluations/ADRs. `TBD-INFRA-002` regional matrix is resolved; open: hosting/CI/CD/runtime, environments/domains, other applicable `TBD-INFRA-*`, RPO/RTO, owners/change windows, release cadence and artifact/signing/flag platforms. Risks: environment leak, irreversible migration, incompatible rollback, unobserved canary, provider prod call from test and data/version coupling.
 
 ## 15. History
 
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Defined vendor-neutral environments, artifact/config/migration/data release, progressive rollout/rollback and release evidence. |
+| 0.2.0 | 2026-08-02 | Phase 1A-only authorization and exact future regional production evidence matrix recorded; no production deployment authorized. |

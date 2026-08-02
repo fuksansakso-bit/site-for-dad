@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Статус | Draft 0B — 40 проверяемых критериев |
-| Версия | 0.1.0 |
+| Версия | 0.2.0 |
 | Дата | 2026-08-02 |
 | Stories | [USER_STORIES.md](USER_STORIES.md) |
 | Test source | [TEST_STRATEGY.md](../../quality/TEST_STRATEGY.md) |
@@ -122,10 +122,10 @@
 ### AC-PRICE-ACTIVATE-001
 
 - **Given:** staged PriceVersion has provenance, validation, parity results, effective time and approvals.
-- **When:** authorized separate capability activates it.
-- **Then:** new calculations atomically use it; existing quotes retain previous versions; audit and rollback pointer exist.
-- **Negative:** failed validation/parity/permission keeps current version active.
-- **Status:** `BLOCKED_TBD` until source version/rules/tolerance approved.
+- **When:** actor with role `OWNER` or `ADMIN` reviews the exact diff and explicitly confirms activation.
+- **Then:** attempt/outcome are audited; new calculations atomically use it; existing quotes retain previous versions; rollback pointer exists.
+- **Negative:** any other role, missing diff confirmation, failed validation/parity or conflict keeps current version active and records a safe audit outcome.
+- **Status:** `BLOCKED_TBD` until source version/rules exist; roles and tolerance are approved.
 - **Links:** `PRICING-VERSION-*`, `US-ADMIN-004`; `TS-PRICE-ACTIVATE-001`.
 
 ### AC-QUOTE-CONFIRM-001
@@ -376,3 +376,4 @@
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Определены 40 Given/When/Then criteria с negative clauses, stories, requirements и reserved test IDs. |
+| 0.2.0 | 2026-08-02 | `AC-PRICE-ACTIVATE-001` закрепил OWNER/ADMIN, exact diff, confirmation и audit; source/rule gate сохранён. |

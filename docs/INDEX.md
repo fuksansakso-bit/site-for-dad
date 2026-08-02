@@ -2,7 +2,7 @@
 
 ## 0. Статус
 
-Фаза **0C — IMPLEMENTATION READINESS, MVP FREEZE AND P0 TBD TRIAGE** документально завершена 2026-08-02 на baseline commit `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`. `GLOBAL_SPEC` обновлён до 0.6.0, MVP заморожен, 61/61 P0 классифицированы, 14 critical specs audited без Foundation blockers, а Phase 1A–1H и detailed Foundation plan определены. Gate имеет статус `READY_FOR_OWNER_AUTHORIZATION`, не `PASSED_TO_IMPLEMENTATION`: код, dependencies, import и Phase 1A не разрешены.
+Phase 0C завершена; исходный commit Phase 1A — `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`. `GLOBAL_SPEC` 0.7.0 фиксирует `OWNER-DECISION-001`–`007`, ADR-0007–0010 приняты, QG-147/148 закрыты. Gate `AUTHORIZED_FOR_PHASE_1A_FOUNDATION` разрешает только Foundation; Phase 1B, import, business features и production запрещены.
 
 ## 1. Порядок обязательного чтения
 
@@ -32,9 +32,9 @@
 | [PRICING_SOURCE_POLICY.md](00-global/PRICING_SOURCE_POLICY.md) | Authorized price source, immutable versions, local rules, fallback и parity |
 | [ASSUMPTIONS.md](00-global/ASSUMPTIONS.md) | Версионируемые гипотезы, которые не становятся фактом без решения |
 | [OPEN_QUESTIONS.md](00-global/OPEN_QUESTIONS.md) | Канонический реестр `TBD-*`, владельцев, влияния и критериев закрытия |
-| [SPEC_ROADMAP.md](00-global/SPEC_ROADMAP.md) | Фактический комплект 0B/0C, proposed Foundation ADR, gates и последовательность 1A–1H |
+| [SPEC_ROADMAP.md](00-global/SPEC_ROADMAP.md) | Фактический комплект 0B/0C, accepted Foundation ADR, gates и последовательность 1A–1H |
 | [TRACEABILITY_MATRIX.md](00-global/TRACEABILITY_MATRIX.md) | 18 critical chains и полная 40-story связь со спеками, AC и tests |
-| [SPEC_QUALITY_GATE.md](00-global/SPEC_QUALITY_GATE.md) | Passed gates 0B и Phase 0C readiness `READY_FOR_OWNER_AUTHORIZATION` |
+| [SPEC_QUALITY_GATE.md](00-global/SPEC_QUALITY_GATE.md) | Passed gates 0B и ограниченное разрешение `AUTHORIZED_FOR_PHASE_1A_FOUNDATION` |
 
 ## 3. Product specifications
 
@@ -104,7 +104,7 @@
 | [SPEC_READINESS_AUDIT.md](06-plans/SPEC_READINESS_AUDIT.md) | Audit 14 critical specs по 15 dimensions и targeted contradiction fixes |
 | [IMPLEMENTATION_ROADMAP.md](06-plans/IMPLEMENTATION_ROADMAP.md) | Phase 1A–1H with entry, deliverables, tests, risks, DoD, forbidden changes and rollback |
 | [PHASE_1A_TECHNOLOGY_EVALUATION.md](06-plans/PHASE_1A_TECHNOLOGY_EVALUATION.md) | Stack comparison, migration/secrets baseline and official evidence |
-| [PHASE_1A_FOUNDATION_PLAN.md](06-plans/active/PHASE_1A_FOUNDATION_PLAN.md) | Detailed non-executed Foundation plan; status `NOT_STARTED` |
+| [PHASE_1A_FOUNDATION_PLAN.md](06-plans/active/PHASE_1A_FOUNDATION_PLAN.md) | Active authorized Foundation execution plan; Phase 1B excluded |
 
 ## 9. Architecture decisions
 
@@ -116,10 +116,10 @@
 | [ADR-0004](adr/ADR-0004-standard-preview-renderer.md) | Детерминированный standard preview, независимый от AI |
 | [ADR-0005](adr/ADR-0005-ai-visualization-pipeline.md) | Geometry-first base и optional constrained refinement |
 | [ADR-0006](adr/ADR-0006-media-storage.md) | Local immutable media, derivatives и public/private zones |
-| [ADR-0007](adr/ADR-0007-foundation-application-stack.md) | **Proposed:** Node/TypeScript/pnpm/Next.js modular Foundation topology |
-| [ADR-0008](adr/ADR-0008-postgresql-and-migration-safety.md) | **Proposed:** PostgreSQL, reviewed migrations and expand/contract rollback safety |
-| [ADR-0009](adr/ADR-0009-object-storage-and-background-jobs.md) | **Proposed:** S3-compatible object port and Postgres-backed durable jobs |
-| [ADR-0010](adr/ADR-0010-identity-secrets-and-observability-boundary.md) | **Proposed:** identity/secrets/OTLP boundary; public providers deferred |
+| [ADR-0007](adr/ADR-0007-foundation-application-stack.md) | **Accepted:** Node/TypeScript/pnpm/Next.js modular Foundation topology and Windows 11 support |
+| [ADR-0008](adr/ADR-0008-postgresql-and-migration-safety.md) | **Accepted:** PostgreSQL/Prisma, reviewed migrations and expand/contract recovery |
+| [ADR-0009](adr/ADR-0009-object-storage-and-background-jobs.md) | **Accepted:** S3-compatible object port and separate Graphile Worker |
+| [ADR-0010](adr/ADR-0010-identity-secrets-and-observability-boundary.md) | **Accepted:** identity/secrets/OTLP boundary; production providers deferred |
 
 ## 10. Research evidence
 
@@ -140,7 +140,7 @@ Research snapshot не является вечным catalog/price fact. Нор�
 
 ## 12. Как находить ответ
 
-- Поведение продукта — `GLOBAL_SPEC`, затем accepted ADR в его границах, затем профильная спека; proposed ADR не является принятым решением.
+- Поведение продукта — `GLOBAL_SPEC`, затем accepted ADR в его границах, затем профильная спека.
 - Что именно подтверждено владельцем/AMIGO — `GLOBAL_SPEC`, `EXTERNAL_SOURCES`, `ASSET_RIGHTS_REGISTER`.
 - Можно ли публиковать изображение — asset-level state в `ASSET_RIGHTS_REGISTER` и media specs.
 - Почему цена недоступна или как воспроизводится — `PRICING_SOURCE_POLICY` и `PRICING_CALCULATOR_SPEC`.
@@ -149,7 +149,7 @@ Research snapshot не является вечным catalog/price fact. Нор�
 - Кто может выполнить действие — `ROLES_PERMISSIONS` и relevant domain spec.
 - Каких данных не хватает — `OPEN_QUESTIONS` по уникальному `TBD-*`.
 - Как требование проверяется — `TRACEABILITY_MATRIX`, AC и `TEST_STRATEGY`.
-- Можно ли начинать код — только выполненные QG-147/148, accepted/superseding ADR и отдельное письменное решение владельца; текущий ответ — нет.
+- Можно ли начинать код — да, только Phase 1A Foundation: QG-147/148 выполнены; Phase 1B+, AMIGO import, business features и production по-прежнему запрещены.
 
 ## 13. Правило навигации
 

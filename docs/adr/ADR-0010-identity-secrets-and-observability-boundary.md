@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | **Proposed** |
+| Статус | **Accepted** |
 | Дата | 2026-08-02 |
-| Решение требуется | Foundation interfaces — до Phase 1A; public identity/provider activation — до PII feature gate |
+| Решение принято | Product Owner, 2026-08-02; synthetic identity only in Phase 1A |
 | Supersedes | — |
 
 ## Контекст и драйверы
@@ -19,7 +19,7 @@ Foundation включает базовую authorization boundary, environment v
 2. Managed identity/observability provider selected now.
 3. Custom auth/session layer and local env files in deploy artifact.
 
-## Предлагаемое решение
+## Решение
 
 1. Foundation MUST define `IdentityPort`, session verification, RBAC/capability checks and centralized data access authorization; route/proxy checks alone are insufficient.
 2. Better Auth SHOULD be accepted as self-hosted session library after pinned-version security/compatibility spike. Public signup/login method remains disabled until legal, recovery, notification and provider decisions close.
@@ -59,3 +59,4 @@ Identity provider MAY be replaced behind `IdentityPort` with session invalidatio
 | Дата | Изменение |
 |---|---|
 | 2026-08-02 | Proposed identity/secrets/telemetry boundary; production provider не выбран. |
+| 2026-08-02 | Accepted Product Owner для Phase 1A; synthetic identity, vendor-neutral secret injection и OTLP закреплены, production providers не выбраны. |

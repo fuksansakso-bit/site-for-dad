@@ -4,11 +4,11 @@
 
 | Поле | Значение |
 |---|---|
-| Фаза | 0C — MVP/readiness freeze; implementation gate `READY_FOR_OWNER_AUTHORIZATION` |
-| Версия | 1.1.0 |
+| Фаза | 1A — Foundation authorized; Phase 1B+ forbidden |
+| Версия | 1.2.0 |
 | Дата | 2026-08-02, Europe/Moscow |
 | Состояние покрытия | `COVERED_WITH_VISIBLE_TBD` |
-| Главный источник требований | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.6.0 |
+| Главный источник требований | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.7.0 |
 | Feature contract | [FEATURE_SPEC.md](../specs/01-product/FEATURE_SPEC.md) |
 | Stories | [USER_STORIES.md](../specs/01-product/USER_STORIES.md) |
 | Acceptance | [ACCEPTANCE_CRITERIA.md](../specs/01-product/ACCEPTANCE_CRITERIA.md) |
@@ -43,13 +43,13 @@
 
 | Requirement | Каноническая feature/profile спека | User story | Acceptance criterion | Test scenario | Статус / блокер |
 |---|---|---|---|---|---|
-| `PARTNER-001` | [GLOBAL_SPEC](../specs/GLOBAL_SPEC.md), [CONTENT_PORTFOLIO_SPEC](../specs/02-domain/CONTENT_PORTFOLIO_SPEC.md) | [US-OWNER-001](../specs/01-product/USER_STORIES.md) | [AC-PARTNER-001](../specs/01-product/ACCEPTANCE_CRITERIA.md) | [TS-PARTNER-001](../quality/TEST_STRATEGY.md) | `COVERED`; персональный approver остаётся `TBD-BIZ-001` |
+| `PARTNER-001` | [GLOBAL_SPEC](../specs/GLOBAL_SPEC.md), [CONTENT_PORTFOLIO_SPEC](../specs/02-domain/CONTENT_PORTFOLIO_SPEC.md) | [US-OWNER-001](../specs/01-product/USER_STORIES.md) | [AC-PARTNER-001](../specs/01-product/ACCEPTANCE_CRITERIA.md) | [TS-PARTNER-001](../quality/TEST_STRATEGY.md) | `COVERED`; governance owners resolved by `OWNER-DECISION-001` |
 | `AMIGO-PARITY-001` | [AMIGO_CATALOG_PARITY_SPEC](../specs/02-domain/AMIGO_CATALOG_PARITY_SPEC.md) | [US-GUEST-001](../specs/01-product/USER_STORIES.md) | [AC-AMIGO-PARITY-001](../specs/01-product/ACCEPTANCE_CRITERIA.md) | [TS-AMIGO-PARITY-001](../quality/TEST_STRATEGY.md) | `COVERED_WITH_VISIBLE_TBD`: полный inventory `TBD-ASSORT-002` |
-| `AMIGO-SYNC-001` | [AMIGO_SYNC_ARCHITECTURE](../specs/04-technical/AMIGO_SYNC_ARCHITECTURE.md) | [US-SYNC-001](../specs/01-product/USER_STORIES.md) | [AC-AMIGO-SYNC-001](../specs/01-product/ACCEPTANCE_CRITERIA.md) | [TS-AMIGO-SYNC-001](../quality/TEST_STRATEGY.md) | `COVERED_WITH_VISIBLE_TBD`: transport/cadence |
+| `AMIGO-SYNC-001` | [AMIGO_SYNC_ARCHITECTURE](../specs/04-technical/AMIGO_SYNC_ARCHITECTURE.md) | [US-SYNC-001](../specs/01-product/USER_STORIES.md) | [AC-AMIGO-SYNC-001](../specs/01-product/ACCEPTANCE_CRITERIA.md) | [TS-AMIGO-SYNC-001](../quality/TEST_STRATEGY.md) | `COVERED_WITH_VISIBLE_TBD`: transport; cadence resolved |
 | `FR-CATALOG-001` | [CATALOG_INVENTORY_SPEC](../specs/02-domain/CATALOG_INVENTORY_SPEC.md) | [US-GUEST-002](../specs/01-product/USER_STORIES.md) | [AC-CATALOG-001](../specs/01-product/ACCEPTANCE_CRITERIA.md) | [TS-CATALOG-001](../quality/TEST_STRATEGY.md) | `COVERED` |
 | `FR-CATALOG-016` | [CATALOG_INVENTORY_SPEC](../specs/02-domain/CATALOG_INVENTORY_SPEC.md) | [US-ADMIN-001](../specs/01-product/USER_STORIES.md) | [AC-CATALOG-DYNAMIC-001](../specs/01-product/ACCEPTANCE_CRITERIA.md) | [TS-CATALOG-DYNAMIC-001](../quality/TEST_STRATEGY.md) | `COVERED` |
 | `FR-CONFIG-001` | [PRODUCT_CONFIGURATOR_SPEC](../specs/02-domain/PRODUCT_CONFIGURATOR_SPEC.md) | [US-GUEST-003](../specs/01-product/USER_STORIES.md) | [AC-CONFIG-001](../specs/01-product/ACCEPTANCE_CRITERIA.md) | [TS-CONFIG-001](../quality/TEST_STRATEGY.md) | `COVERED_WITH_VISIBLE_TBD`: размеры/compatibility |
-| `FR-PRICE-001` | [PRICING_CALCULATOR_SPEC](../specs/02-domain/PRICING_CALCULATOR_SPEC.md) | [US-GUEST-004](../specs/01-product/USER_STORIES.md) | [AC-PRICE-001](../specs/01-product/ACCEPTANCE_CRITERIA.md) | [TS-PRICE-001](../quality/TEST_STRATEGY.md) | `COVERED_WITH_VISIBLE_TBD`: active PriceVersion/formula/parity |
+| `FR-PRICE-001` | [PRICING_CALCULATOR_SPEC](../specs/02-domain/PRICING_CALCULATOR_SPEC.md) | [US-GUEST-004](../specs/01-product/USER_STORIES.md) | [AC-PRICE-001](../specs/01-product/ACCEPTANCE_CRITERIA.md) | [TS-PRICE-001](../quality/TEST_STRATEGY.md) | `COVERED_WITH_VISIBLE_TBD`: active PriceVersion/formula/source fixtures; parity tolerance resolved |
 | `FR-STANDARD-PREVIEW-001` | [STANDARD_INTERIOR_PREVIEW_SPEC](../specs/02-domain/STANDARD_INTERIOR_PREVIEW_SPEC.md) | [US-GUEST-005](../specs/01-product/USER_STORIES.md) | [AC-STANDARD-PREVIEW-001](../specs/01-product/ACCEPTANCE_CRITERIA.md) | [TS-STANDARD-PREVIEW-001](../quality/TEST_STRATEGY.md) | `COVERED_WITH_VISIBLE_TBD`: `TBD-PREVIEW-001` profiles/assets |
 | `FR-AI-VIS-001` | [AI_WINDOW_VISUALIZER_SPEC](../specs/02-domain/AI_WINDOW_VISUALIZER_SPEC.md) | [US-GUEST-006](../specs/01-product/USER_STORIES.md) | [AC-AI-VIS-001](../specs/01-product/ACCEPTANCE_CRITERIA.md) | [TS-AI-VIS-001](../quality/TEST_STRATEGY.md) | `COVERED_WITH_VISIBLE_TBD`: benchmark/privacy/provider |
 | `FR-CART-001` | [CART_CHECKOUT_ORDERS_SPEC](../specs/02-domain/CART_CHECKOUT_ORDERS_SPEC.md) | [US-GUEST-007](../specs/01-product/USER_STORIES.md) | [AC-CART-001](../specs/01-product/ACCEPTANCE_CRITERIA.md) | [TS-CART-001](../quality/TEST_STRATEGY.md) | `COVERED` |
@@ -118,11 +118,23 @@
 |---|---|---|
 | Partner permission | `PARTNER-001` → `AMIGO-PERMISSION-2026-08-02-001` → asset-level rights/publication → audit | Source scope подтверждён; конкретные assets проходят mapping |
 | Dynamic catalog | source snapshot → normalized UUID/source identity → compatibility/property mapping → local readiness/publication | Model complete; real full inventory ожидает transport/data |
-| Price | `PricingProvider` → immutable source/price version → exact input/breakdown → quote history → parity suite | Boundary complete; formula/data/tolerance TBD |
+| Price | `PricingProvider` → immutable source/price version → exact input/breakdown → quote history → parity suite | Boundary complete; formula/data TBD, tolerance/minimum scope/activator resolved |
 | Standard preview | published configuration/material → renderer profile/assets → deterministic `STANDARD_INTERIOR_PREVIEW` → fallback | Отдельный от client-photo geometry/AI обязательный путь |
 | AI preview | private upload → user-confirmed geometry → base render → optional constrained refinement → validation/delete | Provider/benchmark/TTL TBD; base/manual fallback обязателен |
 | Media | source/right evidence → immutable original → derivatives → asset-level approval → public/private delivery → revoke/delete | Hotlink запрещён; client/AI всегда private |
-| Sync | authorized capture → immutable snapshot → normalize/validate → diff → approval → activation/rollback | Live dependency запрещена; transport/cadence TBD |
+| Sync | authorized capture → immutable snapshot → normalize/validate → diff → approval → activation/rollback | Live dependency запрещена; transport TBD, daily/manual cadence defined |
+
+### 6.1. Owner decision chains
+
+| Decision | Closed TBD | Canonical/profile propagation | Verification / phase |
+|---|---|---|---|
+| `OWNER-DECISION-001` | `TBD-BIZ-001` | `GLOBAL_SPEC`, glossary, roles, quality gate | Governance review; QG-147/148 |
+| `OWNER-DECISION-002` | `TBD-PRICE-007` | pricing policy/spec, admin, RBAC, audit | `TS-PRICE-ACTIVATE-001`; Phase 1C |
+| `OWNER-DECISION-003` | `TBD-MIN-PRICE-001` | `FR-CALC-009`, pricing policy/spec, MVP | pricing table/property cases; Phase 1C, not 1A |
+| `OWNER-DECISION-004` | `TBD-INVENTORY-002` | catalog/admin/sync specs | availability conflict/overwrite tests; Phase 1B+ |
+| `OWNER-DECISION-005` | `TBD-PRICE-SOURCE-002` | external/pricing/sync/admin/observability | freshness boundary tests; Phase 1B/1C |
+| `OWNER-DECISION-006` | `TBD-PRICE-PARITY-001` | global/pricing/test strategy | pricing parity suite; Phase 1C |
+| `OWNER-DECISION-007` | `TBD-INFRA-002` | performance/observability/deployment/tests | `TS-PERF-001`; Phase 1H |
 
 ## 7. Phase 0C MVP and implementation traceability
 
@@ -131,13 +143,13 @@
 | `MVP-001/002` | `SCOPE-001`, `NFR-MOTION-001`–`005`, landing/UX specs | `US-GUEST-009/011` → `AC-PERF/ACCESS-001` → `TS-PERF/ACCESS-001` | 1A shell; release in 1H | Brand/assets/performance evidence |
 | `MVP-003`–`007`, `MVP-021/022` | `SCOPE-002/003/039/040`, catalog/parity/sync specs | `US-GUEST-001/002`, `US-ADMIN-001`, `US-SYNC-001` and linked AC/tests | 1B | Authorized source/pilot/rights |
 | `MVP-008/009` | `FR-CONFIG-*`, configurator spec | `US-GUEST-003` → `AC-CONFIG-001` → `TS-CONFIG-001` | 1C | Compatibility/size/dimension evidence |
-| `MVP-010/024` | `FR-PRICE-*`, pricing policy/spec | `US-GUEST-004`, `US-ADMIN-004` and linked AC/tests | 1C | Formula/PriceVersion/parity; `TBD-MIN-PRICE-001` before minimum |
+| `MVP-010/024` | `FR-PRICE-*`, pricing policy/spec | `US-GUEST-004`, `US-ADMIN-004` and linked AC/tests | 1C | Formula/PriceVersion/source fixtures; per-item minimum/parity/activator resolved |
 | `MVP-011/023` | `SCOPE-034/042`, standard preview spec | `US-GUEST-005` → `AC-STANDARD-PREVIEW-001` → `TS-STANDARD-PREVIEW-001` | 1D | `TBD-PREVIEW-001` |
 | `MVP-012`–`016` | `SCOPE-031/035`, cart/order/installment specs | `US-GUEST-007/008/012`, manager stories and linked AC/tests | 1E | PII/legal/business-state gates |
 | `MVP-017` | content/portfolio and asset rights specs | `US-CONTENT-002` → `AC-PORTFOLIO-001` → `TS-PORTFOLIO-001` | 1F | Own-work rights/consent |
 | `MVP-018/019` | `SCOPE-010/012`, `FR-AUTH-007/008`, admin/auth specs | `US-ADMIN-002`, `US-CUSTOMER-001/002` and linked AC/tests | 1F | Identity/recovery/role gates; `TBD-ACCOUNT-001` resolved |
 | `MVP-020/026` | `SCOPE-007/041/042`, AI visualizer/pipeline/evaluation | `US-GUEST-006`, `US-AI-001`–`003` and linked AC/tests | 1G | Provider/privacy/TTL/evaluation/cost gates |
-| `ROADMAP-1A-001`, `PLAN-1A-001` | Architecture + proposed ADR-0007–0010 | `PLAN-1A-AC-001`–`010` planned evidence | 1A | Owner accepts/supersedes ADR and explicitly authorizes 1A |
+| `ROADMAP-1A-001`, `PLAN-1A-001` | Architecture + accepted ADR-0007–0010 | `PLAN-1A-AC-001`–`010` execution evidence | 1A | QG-147/148 closed; only Foundation authorized |
 | `ROADMAP-1H-001` | deployment/security/performance/a11y/test specs | NFR stories/AC/tests + recovery/admin chains | 1H | Full launch checklist and go/no-go |
 
 Post-MVP IDs `POST-MVP-001`–`015` have no Phase 1 delivery commitment and MUST NOT be inferred from existing general feature stories without a future scope/traceability update.
@@ -153,7 +165,7 @@ Post-MVP IDs `POST-MVP-001`–`015` have no Phase 1 delivery commitment and MUST
 | Акторы stories | 8 / 8 |
 | Нормативные специализированные specs | 33 |
 | Quality/evaluation artifacts | 2 |
-| ADR | 10: 6 accepted, 4 proposed for Phase 1A |
+| ADR | 10 accepted |
 | Непокрытые критические chains | 0 |
 | Phase 0C critical spec audit | 14 / 14 reviewed; 0 blocked/contradictory after fixes |
 | P0 classification | 61 / 61 classified; 0 unclassified |
@@ -162,7 +174,7 @@ Post-MVP IDs `POST-MVP-001`–`015` have no Phase 1 delivery commitment and MUST
 
 Покрытие считается валидным, если автоматическая проверка подтверждает существование всех linked files и каждого ID, stories сохраняют полный шаблон, acceptance содержит позитивное и негативное проверяемое поведение, test strategy содержит level/preconditions/input/expected result/status, а открытые TBD не обозначены как выполненные tests.
 
-Эта матрица не разрешает implementation. Phase 1A требует acceptance/supersede proposed ADR и отдельного письменного решения владельца после [Phase 0C gate](SPEC_QUALITY_GATE.md#6-implementation-readiness-gate-phase-0c).
+Матрица отражает письменное разрешение только Phase 1A после [Phase 0C gate](SPEC_QUALITY_GATE.md#6-implementation-readiness-gate-phase-0c). Она не разрешает Phase 1B+, AMIGO import или production deployment.
 
 ## 10. История изменений
 
@@ -171,3 +183,4 @@ Post-MVP IDs `POST-MVP-001`–`015` have no Phase 1 delivery commitment and MUST
 | 0.1.0 | 2026-08-02 | Создана плановая global-to-0B матрица с 18 reserved chains. |
 | 1.0.0 | 2026-08-02 | Все 18 critical chains и все 40 stories связаны с существующими feature/profile specs, AC и test scenarios; TBD сохранены видимыми. |
 | 1.1.0 | 2026-08-02 | Добавлены MVP/Phase 1A–1H chains, P0/audit metrics и исправлен тип standard preview; implementation остаётся не разрешена. |
+| 1.2.0 | 2026-08-02 | Добавлены chains `OWNER-DECISION-001`–`007`, accepted ADR/QG status и Phase 1A-only authorization boundaries. |

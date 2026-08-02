@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD` for Foundation; actual pilot inventory requires `TBD-ASSORT-002`/authorized source before Phase 1B activation |
-| Версия | 0.1.0 |
+| Версия | 0.2.0 |
 | Дата | 2026-08-02 |
 | Sources | [EXTERNAL_SOURCES.md](../../00-global/EXTERNAL_SOURCES.md) |
 | Rights | [ASSET_RIGHTS_REGISTER.md](../../00-global/ASSET_RIGHTS_REGISTER.md) |
@@ -104,12 +104,14 @@ Dimension constraints use millimetres and square metres conceptually but exact n
 
 ## 8. Availability and physical inventory boundary
 
-`AvailabilityRecord` fields: target entity/component, status, optional quantity, unit, location, lot/batch, captured/verified/effective/expires timestamps, source, actor, evidence and version. Quantitative stock, units, reserves and lots remain inactive until `TBD-INVENTORY-*` closes.
+`AvailabilityRecord` fields: target entity/component, authoritative local status, optional source-proposed status, optional quantity, unit, location, lot/batch, captured/verified/effective/expires timestamps, source, actor, evidence and version. Quantitative stock, units, reserves and lots remain inactive until their open `TBD-INVENTORY-*` close.
 
 - **CAT-INV-019 — MUST:** availability cannot be inferred from AMIGO page presence, price or image.
 - **CAT-INV-020 — MUST:** stale/expired evidence becomes `UNKNOWN/STALE` under approved policy, not permanently available.
 - **CAT-INV-021 — MUST:** negative quantity and unbalanced movements are invalid if quantitative inventory is introduced.
 - **CAT-INV-022 — MUST:** reserved/order quantities are separate from on-hand and need auditable movements; no model is assumed before approval.
+- **CAT-INV-023 — MUST:** local admin-confirmed status is the availability source of truth; an AMIGO-proposed status is stored separately and never auto-overwrites it.
+- **CAT-INV-024 — MUST:** source age over 7 days carries `STALE_WARNING`; age over 30 days requires admin verification before a new product is published.
 
 ## 9. Core flows and state transitions
 
@@ -165,14 +167,15 @@ Tests: unique IDs/aliases; parent cycle; new price category `X`; unknown propert
 
 ## 14. Dependencies, risks and open questions
 
-Dependencies: parity, configurator, pricing, media, sync, admin, data model. Open: `TBD-ASSORT-002`–`007`, `TBD-SYSTEM-*`, `TBD-SIZE-001`, `TBD-INVENTORY-*`, `TBD-SOURCE-AMIGO-002`, `TBD-ASSET-AMIGO-003`, `TBD-PRICE-*`.
+Dependencies: parity, configurator, pricing, media, sync, admin, data model. Open: `TBD-ASSORT-002`–`007`, applicable `TBD-SYSTEM-*`, `TBD-SIZE-001`, `TBD-INVENTORY-001/004-007`, `TBD-SOURCE-AMIGO-002`, `TBD-ASSET-AMIGO-003`, applicable `TBD-PRICE-*`. `TBD-INVENTORY-002` is resolved by `OWNER-DECISION-004/005`.
 
 Risks: text-key merges, auto-publication, unknown-as-positive, mismapped images, stale availability, fixed price-category enum and history loss. Mitigations are stable identities, independent states, explicit mappings, approvals and immutable revisions.
 
 ## 15. Связанные требования и история
 
-Links: `FR-CATALOG-*`, `FR-MATERIAL-*`, `FR-VARIANT-*`, `AMIGO-SYNC-*`, `ASSET-*`, `PRICING-*`, `CAT-INV-001`–`022`.
+Links: `FR-CATALOG-*`, `FR-MATERIAL-*`, `FR-VARIANT-*`, `AMIGO-SYNC-*`, `ASSET-*`, `PRICING-*`, `CAT-INV-001`–`024`.
 
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Определены normalized entity model, identifiers, four readiness dimensions, material properties, compatibility, availability boundary and lifecycle. |
+| 0.2.0 | 2026-08-02 | Локальная admin availability закреплена как source of truth; AMIGO proposal и 7/30-day freshness gates разделены. |

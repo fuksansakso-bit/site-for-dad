@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | **Proposed** |
+| Статус | **Accepted** |
 | Дата | 2026-08-02 |
-| Решение требуется | До первого implementation commit Phase 1A |
+| Решение принято | Product Owner, 2026-08-02; только для Phase 1A |
 | Supersedes | — |
 
 ## Контекст и драйверы
@@ -21,9 +21,7 @@ Accepted [ADR-0001](ADR-0001-application-architecture.md) задаёт modular a
 2. Раздельные frontend/API services с первого коммита.
 3. Микросервисы по domain modules.
 
-## Предлагаемое решение
-
-При acceptance:
+## Решение
 
 1. Foundation MUST использовать Node.js Active LTS exact patch, TypeScript strict ESM, `pnpm` workspace и единый lockfile.
 2. `apps/web` MUST использовать current stable Next.js 16 App Router для public/account/admin surfaces и same-origin Route Handler BFF.
@@ -33,6 +31,7 @@ Accepted [ADR-0001](ADR-0001-application-architecture.md) задаёт modular a
 6. CI MUST выполнять clean locked install, formatting, lint, typecheck, unit/integration/contract tests, build и E2E smoke через provider-neutral commands.
 7. Baseline tests MUST использовать Vitest и Playwright; runtime input contracts MUST иметь единственный schema source, конкретная совместимая library фиксируется в acceptance record/lockfile.
 8. Exact dependency versions, licenses и security advisories MUST быть перепроверены непосредственно перед bootstrap.
+9. Windows 11 MUST быть first-class local development environment: root commands, path handling, service bootstrap/shutdown and tests MUST работать из PowerShell без обязательного Bash/WSL. Provider-neutral команды также MUST оставаться переносимыми в Linux CI.
 
 ## Последствия
 
@@ -45,6 +44,7 @@ Accepted [ADR-0001](ADR-0001-application-architecture.md) задаёт modular a
 | Framework code проникает в domain | Import-boundary tests и package dependency graph |
 | Web deploy runtime не подходит jobs | Отдельный worker process и durable queue |
 | Monorepo tasks расходятся локально/CI | Единственные root commands и locked toolchain |
+| Bash-only tooling блокирует Windows 11 | PowerShell-safe root commands, cross-platform Node tooling и Windows smoke evidence |
 | Supply-chain compromise | Frozen lockfile, provenance/license/advisory review, secret scan |
 
 ## Откат / supersede
@@ -62,3 +62,4 @@ Accepted [ADR-0001](ADR-0001-application-architecture.md) задаёт modular a
 | Дата | Изменение |
 |---|---|
 | 2026-08-02 | Proposed stack и topology подготовлены для owner acceptance; implementation не разрешена. |
+| 2026-08-02 | Accepted Product Owner для Phase 1A после проверки с `GLOBAL_SPEC` и Foundation plan; Windows 11 закреплена явно. |

@@ -5,10 +5,10 @@
 | Поле | Значение |
 |---|---|
 | Статус | Draft 0B — продуктовый scope зафиксирован; профильные функции могут быть `BLOCKED_BY_TBD` |
-| Версия | 0.1.0 |
+| Версия | 0.2.0 |
 | Дата | 2026-08-02, Europe/Moscow |
-| Владелец | Владелец бизнеса / Product Owner; имя `TBD-BIZ-001` |
-| Главный источник | [GLOBAL_SPEC.md](../GLOBAL_SPEC.md) 0.6.0 |
+| Владельцы решений | Product Owner — владелец проекта; Business Owner — отец владельца проекта (`OWNER-DECISION-001`) |
+| Главный источник | [GLOBAL_SPEC.md](../GLOBAL_SPEC.md) 0.7.0 |
 | Связанные документы | [USER_STORIES.md](USER_STORIES.md), [USER_FLOWS.md](USER_FLOWS.md), [ROLES_PERMISSIONS.md](ROLES_PERMISSIONS.md), [ACCEPTANCE_CRITERIA.md](ACCEPTANCE_CRITERIA.md) |
 
 ## 1. Назначение и границы ответственности
@@ -202,3 +202,4 @@ Security: deny-by-default RBAC, ownership checks, short-lived private access, up
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Создан полный feature portfolio 0B, boundaries, requirements, states, failure modes и ссылки на AC/tests. |
+| 0.2.0 | 2026-08-02 | Governance authority разделена между Product Owner и Business Owner по `OWNER-DECISION-001`. |

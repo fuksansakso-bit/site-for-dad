@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | **Proposed** |
+| Статус | **Accepted** |
 | Дата | 2026-08-02 |
-| Решение требуется | Storage/job interfaces — до Phase 1A; production providers — до соответствующей feature activation |
+| Решение принято | Product Owner, 2026-08-02; local interfaces only, production providers остаются gated |
 | Supersedes | — |
 
 ## Контекст и драйверы
@@ -19,10 +19,10 @@ Accepted ADR-0006 разделяет public/private/quarantine media. AMIGO sync
 2. Provider-specific storage SDK + Redis queue.
 3. Local filesystem + in-process timers.
 
-## Предлагаемое решение
+## Решение
 
 1. Object access MUST идти через S3-compatible application port с раздельными public, private и quarantine namespaces, immutable keys, checksum, metadata и scoped grants.
-2. Local development MUST использовать synthetic objects в disposable local emulator; repository files, production buckets и real customer media запрещены.
+2. Local development MUST использовать synthetic objects в disposable S3-compatible emulator, запускаемом на Windows 11 без production credentials; repository files, production buckets и real customer media запрещены.
 3. Production storage vendor, region, encryption/key custody, retention and restore parameters remain gated by `TBD-INFRA-004` and `TBD-PRIV-*`.
 4. Durable background work MUST использовать Graphile Worker в отдельном process и том же PostgreSQL control plane в MVP.
 5. Job handlers MUST быть idempotent, versioned, retry-safe, observable and at-least-once aware; payload MUST contain references/minimal metadata, not image bytes, secrets or raw PII.
@@ -58,3 +58,4 @@ Job runner MAY be stopped and pending jobs preserved/replayed. Storage provider 
 | Дата | Изменение |
 |---|---|
 | 2026-08-02 | Proposed local/provider-neutral storage and durable job strategy. |
+| 2026-08-02 | Accepted Product Owner для Phase 1A; подтверждены отдельный Graphile worker, Windows-compatible disposable emulator и provider replacement boundary. |

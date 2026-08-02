@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Статус | Draft 0B — 40 содержательных stories определены |
-| Версия | 0.1.0 |
+| Версия | 0.2.0 |
 | Дата | 2026-08-02, Europe/Moscow |
 | Scope | Гость, клиент, менеджер, администратор, владелец, контент-менеджер, sync system, AI worker |
 | Acceptance source | [ACCEPTANCE_CRITERIA.md](ACCEPTANCE_CRITERIA.md) |
@@ -350,10 +350,10 @@ Story описывает ценность и наблюдаемое поведе
 
 | Поле | Значение |
 |---|---|
-| Роль / цель | Как price administrator, я хочу проверить и активировать новую версию с эффективной датой. |
+| Роль / цель | Как `OWNER` или `ADMIN` с `price.activate`, я хочу проверить и активировать новую версию с эффективной датой. |
 | Ценность | Управляемая актуальность без изменения истории. |
-| Preconditions | Staged version, source evidence, validation and parity results; approval permission. |
-| Основной сценарий | Review diff/tests → approve → schedule/activate atomically → retain previous version for history/rollback. |
+| Preconditions | Staged version, source evidence, validation and parity results; role `OWNER`/`ADMIN`; activation permission. |
+| Основной сценарий | Review exact diff/tests → explicitly confirm → schedule/activate atomically → audit attempt/outcome → retain previous version for history/rollback. |
 | Альтернатива | Validation/parity/TBD fails: reject and keep current active version. |
 | Acceptance | `AC-PRICE-ACTIVATE-001` |
 | Связи | `PRICING-VERSION-*`, `FTR-008`–`011` |
@@ -397,7 +397,7 @@ Story описывает ценность и наблюдаемое поведе
 | Основной сценарий | Open dashboard → filter stale/blocked/pending → inspect evidence → delegate/approve where authorized. |
 | Альтернатива | Metric incomplete: mark data-quality gap, not zero/healthy. |
 | Acceptance | `AC-OWNER-DASHBOARD-001` |
-| Связи | `FTR-024/029/030`, `TBD-BIZ-001` |
+| Связи | `FTR-024/029/030`, `OWNER-DECISION-001` |
 | Priority / scope | P1 / MVP admin |
 
 ### US-OWNER-003 — утвердить бизнес-правило
@@ -565,8 +565,9 @@ Story описывает ценность и наблюдаемое поведе
 
 ## 10. Риски, TBD и история
 
-Stories не закрывают `TBD-ASSORT-*`, `TBD-SOURCE-AMIGO-*`, `TBD-PRICE-*`, `TBD-SIZE-*`, `TBD-AI-*`, `TBD-PRIV-*`, `TBD-ACCOUNT-*`, `TBD-INSTALLMENT-*`, `TBD-BIZ-004/005`. До их решения соответствующие AC используют safe fallback.
+Stories не закрывают оставшиеся открытыми `TBD-ASSORT-*`, `TBD-SOURCE-AMIGO-*`, `TBD-PRICE-*`, `TBD-SIZE-*`, `TBD-AI-*`, `TBD-PRIV-*`, `TBD-ACCOUNT-*`, `TBD-INSTALLMENT-*`, `TBD-BIZ-004/005`. Решённые IDs сохраняются исторически; до остальных решений соответствующие AC используют safe fallback.
 
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Определены 40 stories для восьми обязательных ролей с preconditions, primary/alternative flows, AC, requirement links, priority и scope. |
+| 0.2.0 | 2026-08-02 | `US-ADMIN-004` синхронизирована с `OWNER-DECISION-002`: только OWNER/ADMIN, exact diff, confirmation и audit. |

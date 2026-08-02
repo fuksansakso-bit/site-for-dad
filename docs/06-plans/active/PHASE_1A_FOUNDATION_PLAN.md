@@ -5,27 +5,27 @@
 | Поле | Значение |
 |---|---|
 | Plan ID | `PLAN-1A-001` |
-| Статус | **READY FOR OWNER REVIEW; NOT AUTHORIZED / NOT STARTED** |
+| Статус | **AUTHORIZED / IN PROGRESS — STEP 1A-01** |
 | Проверяемый результат | На чистой машине локально и в CI воспроизводится secure modular foundation с web/BFF, PostgreSQL, object adapter, durable worker, auth boundary, tests and operations; бизнес-функции отсутствуют. |
 | Scope source | [Implementation roadmap §1](../IMPLEMENTATION_ROADMAP.md#1-phase-1a--foundation) |
 | Technology evaluation | [PHASE_1A_TECHNOLOGY_EVALUATION](../PHASE_1A_TECHNOLOGY_EVALUATION.md) |
 | Required decisions | Accepted [ADR-0007](../../adr/ADR-0007-foundation-application-stack.md), [ADR-0008](../../adr/ADR-0008-postgresql-and-migration-safety.md), [ADR-0009](../../adr/ADR-0009-object-storage-and-background-jobs.md), [ADR-0010](../../adr/ADR-0010-identity-secrets-and-observability-boundary.md) |
 
-На Phase 0C этот файл является только планом. Он не разрешает создавать `package.json`, приложения, SQL, migrations, containers или credentials.
+Product Owner 2026-08-02 разрешил только Phase 1A Foundation. AMIGO Catalog Pilot, import, business features, user media, AI и production deployment остаются запрещены; Phase 1B не начинается автоматически.
 
 ## 1. Entry gate and stop conditions
 
 Phase 1A MUST NOT start until all conditions are evidenced:
 
-- [ ] владелец отдельно письменно разрешил Phase 1A после Phase 0C report;
-- [ ] documentation baseline commit exists and Phase 0C documentation tree is clean;
-- [ ] `MVP_SCOPE`, `IMPLEMENTATION_ROADMAP`, this plan and P0 triage are current;
-- [ ] critical spec audit has zero `BLOCKED` and `CONTRADICTORY` results;
-- [ ] ADR-0007–0010 accepted or superseded by accepted alternatives;
+- [x] владелец отдельно письменно разрешил только Phase 1A после Phase 0C report (`QG-148`);
+- [x] Phase 0C baseline commit `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990` существует, исходное дерево было clean;
+- [x] `MVP_SCOPE`, `IMPLEMENTATION_ROADMAP`, this plan and P0 triage current;
+- [x] critical spec audit имеет zero `BLOCKED` and `CONTRADICTORY` results;
+- [x] ADR-0007–0010 приняты (`QG-147`);
 - [ ] exact Node/package-manager/framework/database-tool versions, licenses and current advisories reverified;
-- [ ] secret storage method and migration rollback policy remain known and assigned;
-- [ ] no production AMIGO data, user media, customer PII or shared credentials are needed for Foundation;
-- [ ] one implementation step is marked active in the execution copy of this plan.
+- [x] secret storage method and migration rollback policy remain known and assigned;
+- [x] production AMIGO data, user media, customer PII and shared credentials не нужны Foundation;
+- [x] `1A-01` is marked active in this execution plan.
 
 If any condition fails, work stops at documentation/research; no partial scaffold is justified.
 
@@ -100,6 +100,7 @@ Acceptance: missing/invalid/publicly misclassified values fail safely; a seeded 
 ## 6. Local development contract
 
 - One documented bootstrap command group installs the pinned toolchain and starts web, worker, PostgreSQL and object emulator after explicit permission.
+- Windows 11 with PowerShell is a first-class supported local environment; Bash/WSL is not a mandatory prerequisite.
 - Dependencies are disposable and isolated by project-specific names/ports; no global/shared production database.
 - Schema creation uses committed migrations, not auto-sync; synthetic seed is deterministic, rights-free and contains no AMIGO/customer data.
 - Web/worker support graceful shutdown and dependency-ready health; worker concurrency defaults low.
@@ -202,7 +203,7 @@ Only one item may be `in_progress` in the future execution copy:
 
 | Step | Result | Dependency | Status now |
 |---|---|---|---|
-| 1A-01 | Record owner authorization, accept ADRs, pin verified toolchain | Phase 0C gate | `pending` |
+| 1A-01 | Record owner authorization, accept ADRs, pin verified toolchain | Phase 0C gate | `in_progress` |
 | 1A-02 | Bootstrap workspace/task graph and root quality commands | 1A-01 | `pending` |
 | 1A-03 | Add tooling configs and enforce dependency boundaries | 1A-02 | `pending` |
 | 1A-04 | Create minimal web/BFF and worker shells with liveness/readiness | 1A-03 | `pending` |
@@ -267,3 +268,4 @@ Before shared data, commits/resources are reversible in reverse dependency order
 | Версия | Дата | Изменение |
 |---|---|---|
 | 1.0.0 | 2026-08-02 | Подготовлен детальный, неисполняемый в 0C Foundation plan со stack, boundaries, CI, data/storage/jobs/auth/observability/security/testing, commits and rollback. |
+| 1.1.0 | 2026-08-02 | Product Owner разрешил только Phase 1A; QG-147/148 закрыты, ADR-0007–0010 accepted, Windows 11 закреплена; 1A-01 начат до pinning зависимостей. |

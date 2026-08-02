@@ -7,6 +7,9 @@
 
 ### Added
 
+- Зафиксированы `OWNER-DECISION-001`–`007`: разделение Product Owner/Business Owner, PriceVersion activation, per-item minimum 1500 рублей, authoritative local availability, AMIGO cadence/staleness, parity tolerance и regional production matrix.
+- ADR-0007–0010 приняты Product Owner для Phase 1A после проверки совместимости, Windows 11, migration safety, provider replacement, vendor-neutral secrets, separate worker и observability-from-start.
+- Создана рабочая ветка `phase/1a-foundation` от Phase 0C commit `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; remote не добавлялся и push не выполнялся.
 - Создан baseline commit Phase 0B `7105ef03c1fb1cb726161fcbc02cbb0c340e212e` с сообщением `docs: establish Phase 0B specification baseline` после проверки `.gitignore`, secrets, media, binaries, cache/temp и ссылок; remote/push не создавались.
 - Добавлены Phase 0C plans: `MVP_SCOPE.md`, `SPEC_READINESS_AUDIT.md`, `IMPLEMENTATION_ROADMAP.md`, `PHASE_1A_TECHNOLOGY_EVALUATION.md` и `active/PHASE_1A_FOUNDATION_PLAN.md` без приложения, schema, dependencies или production configuration.
 - Зафиксирован first-launch MVP из 20 возможностей, 8 cross-cutting safety boundaries и 15 явных post-MVP направлений; полный ассортимент AMIGO не является launch dependency, pilot ограничен 20–50 проверенными материалами.
@@ -36,6 +39,9 @@
 
 ### Changed
 
+- `QG-147/148` закрыты; gate переведён в `AUTHORIZED_FOR_PHASE_1A_FOUNDATION`. Разрешена только Phase 1A, а Phase 1B+, AMIGO import, business features и production deployment явно остаются запрещены.
+- Семь P0 `TBD-BIZ-001`, `TBD-PRICE-007`, `TBD-MIN-PRICE-001`, `TBD-PRICE-SOURCE-002`, `TBD-PRICE-PARITY-001`, `TBD-INVENTORY-002`, `TBD-INFRA-002` переведены в `RESOLVED` без удаления исторических IDs; P0 counts стали 19 resolved и 0 owner-decision-required.
+- `GLOBAL_SPEC.md` обновлён до 0.7.0; pricing/catalog/admin/RBAC/sync/performance/observability/deployment/test документы синхронизированы с owner decisions, а pricing/import/business implementation сохранены за пределами Phase 1A.
 - Все 61 исторических P0 ID классифицированы для Phase 0C: 12 `RESOLVED`, 7 `OWNER_DECISION_REQUIRED`, 10 `EXTERNAL_AMIGO_DATA_REQUIRED`, 0 `BLOCKER_BEFORE_FOUNDATION`, 20 `BLOCKER_BEFORE_FEATURE`, 7 `SAFE_DEFAULT_AVAILABLE`, 5 `DEFERRED_POST_MVP`, 0 `DUPLICATE`, 0 `INVALIDATED`; unclassified стало 0.
 - `GLOBAL_SPEC.md` обновлён до 0.6.0: frozen MVP/basic saved-calculation account/roller+Zebra AI pilot/online-payment deferral и Phase 1A–1H synchronized; `ASM-004/021` перенесены в подтверждённые, `TBD-ACCOUNT-001` закрыт, `TBD-MIN-PRICE-001` оставлен открытым.
 - Critical-spec audit проверил 14 документов по 15 dimensions: итог 14 `READY_WITH_NON_BLOCKING_TBD`, 0 `BLOCKED`, 0 `NEEDS_EXPANSION`, 0 `CONTRADICTORY` после focused fixes; feature-specific TBD продолжают fail closed.

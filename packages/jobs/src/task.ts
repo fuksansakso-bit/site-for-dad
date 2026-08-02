@@ -1,4 +1,10 @@
 import type { JobHelpers, TaskList } from 'graphile-worker';
+import {
+  createFoundationTelemetryContext,
+  runWithFoundationTelemetryContext,
+} from '@project-name/observability/context';
+import { foundationMetrics } from '@project-name/observability/metrics';
+import { runInFoundationSpan } from '@project-name/observability/tracing';
 
 import {
   foundationProbePayloadSchema,
@@ -53,41 +59,70 @@ export function createFoundationTaskList(
         throw new FoundationJobError('FOUNDATION_JOB_VALIDATION');
       }
       const payload = parsed.data;
-      lifecycle({
-        attempt: helpers.job.attempts,
+      const telemetryContext = createFoundationTelemetryContext({
         correlationId: payload.correlationId,
-        event: 'started',
       });
-      try {
-        const preparation = await prepareIdempotentExecution(payload, helpers, timeoutMilliseconds);
-        if (preparation === 'already-completed') {
-          lifecycle({
-            attempt: helpers.job.attempts,
-            correlationId: payload.correlationId,
-            event: 'deduplicated',
-          });
-          return;
-        }
-        await executeSyntheticProbe(payload, helpers, timeoutMilliseconds);
-        await completeIdempotentExecution(payload, helpers);
-        lifecycle({
-          attempt: helpers.job.attempts,
-          correlationId: payload.correlationId,
-          event: 'succeeded',
-        });
-      } catch (error) {
-        const jobError = toFoundationJobError(error);
-        if (helpers.job.attempts >= helpers.job.max_attempts) {
-          await failIdempotentExecution(payload, helpers, jobError.code);
-        }
-        lifecycle({
-          attempt: helpers.job.attempts,
-          correlationId: payload.correlationId,
-          errorCode: jobError.code,
-          event: 'failed',
-        });
-        throw jobError;
-      }
+      return runWithFoundationTelemetryContext(telemetryContext, () =>
+        runInFoundationSpan(
+          'queue.foundation_probe.execute',
+          {
+            'foundation.job.attempt': helpers.job.attempts,
+            'foundation.job.template': foundationProbeTaskIdentifier,
+          },
+          async () => {
+            const startedAt = performance.now();
+            let outcome: 'failure' | 'success' = 'failure';
+            lifecycle({
+              attempt: helpers.job.attempts,
+              correlationId: payload.correlationId,
+              event: 'started',
+            });
+            try {
+              const preparation = await prepareIdempotentExecution(
+                payload,
+                helpers,
+                timeoutMilliseconds,
+              );
+              if (preparation === 'already-completed') {
+                outcome = 'success';
+                lifecycle({
+                  attempt: helpers.job.attempts,
+                  correlationId: payload.correlationId,
+                  event: 'deduplicated',
+                });
+                return;
+              }
+              await executeSyntheticProbe(payload, helpers, timeoutMilliseconds);
+              await completeIdempotentExecution(payload, helpers);
+              outcome = 'success';
+              lifecycle({
+                attempt: helpers.job.attempts,
+                correlationId: payload.correlationId,
+                event: 'succeeded',
+              });
+            } catch (error) {
+              const jobError = toFoundationJobError(error);
+              if (helpers.job.attempts >= helpers.job.max_attempts) {
+                await failIdempotentExecution(payload, helpers, jobError.code);
+              }
+              lifecycle({
+                attempt: helpers.job.attempts,
+                correlationId: payload.correlationId,
+                errorCode: jobError.code,
+                event: 'failed',
+              });
+              throw jobError;
+            } finally {
+              foundationMetrics.record({
+                component: 'queue',
+                durationMs: performance.now() - startedAt,
+                operation: 'queue.foundation_probe.execute',
+                outcome,
+              });
+            }
+          },
+        ),
+      );
     },
   };
 }

@@ -1,42 +1,89 @@
-import { parseDatabaseEnvironment, parseWorkerEnvironment } from '@project-name/config/server';
+import {
+  parseDatabaseEnvironment,
+  parseObservabilityEnvironment,
+  parseWorkerEnvironment,
+} from '@project-name/config/server';
+import { createFoundationLogger } from '@project-name/observability/logger';
+import { foundationMetrics } from '@project-name/observability/metrics';
+import { initializeNodeTelemetry } from '@project-name/observability/telemetry';
 
-import { startWorkerProcess, writeWorkerEvent } from './runtime.js';
+import { createWorkerEventSink, startWorkerProcess } from './runtime.js';
 
-const workerEnvironment = parseWorkerEnvironment(process.env);
-const databaseEnvironment = parseDatabaseEnvironment(process.env);
-
-let workerProcess: Awaited<ReturnType<typeof startWorkerProcess>> | undefined;
-try {
-  workerProcess = await startWorkerProcess(
-    databaseEnvironment,
-    workerEnvironment,
-    writeWorkerEvent,
+function writeBootstrapFailure(): void {
+  process.stderr.write(
+    `${JSON.stringify({
+      buildId: 'unknown',
+      correlationId: 'worker-bootstrap-failure',
+      environment: 'unknown',
+      errorCode: 'INTERNAL_ERROR',
+      event: 'worker.bootstrap.failed',
+      schemaVersion: 1,
+      service: 'worker',
+      severity: 'error',
+      timestamp: new Date().toISOString(),
+      traceId: '00000000000000000000000000000000',
+    })}\n`,
   );
-} catch {
-  writeWorkerEvent({
-    errorCode: 'DEPENDENCY_UNAVAILABLE',
-    event: 'worker.start.failed',
-    level: 'error',
-    service: 'worker',
-  });
-  process.exitCode = 1;
 }
 
-for (const signal of ['SIGINT', 'SIGTERM'] as const) {
-  process.once(signal, () => {
-    void workerProcess?.shutdown(signal).catch(() => {
-      process.exitCode = 1;
+try {
+  const workerEnvironment = parseWorkerEnvironment(process.env);
+  const databaseEnvironment = parseDatabaseEnvironment(process.env);
+  const observabilityEnvironment = parseObservabilityEnvironment(process.env);
+  const telemetryRuntime = initializeNodeTelemetry(observabilityEnvironment, 'project-name-worker');
+  const logger = createFoundationLogger({
+    buildId: observabilityEnvironment.BUILD_ID,
+    environment: observabilityEnvironment.APP_ENV,
+    minimumSeverity: observabilityEnvironment.LOG_LEVEL,
+    service: 'worker',
+  });
+  const eventSink = createWorkerEventSink(logger);
+  let telemetryShutdown: Promise<void> | undefined;
+  const shutdownTelemetry = (): Promise<void> => {
+    telemetryShutdown ??= telemetryRuntime.shutdown();
+    return telemetryShutdown;
+  };
+
+  let workerProcess: Awaited<ReturnType<typeof startWorkerProcess>> | undefined;
+  try {
+    workerProcess = await startWorkerProcess(databaseEnvironment, workerEnvironment, eventSink, {
+      logger,
+      metrics: foundationMetrics,
     });
-  });
-}
+  } catch (error) {
+    logger.log({
+      error,
+      event: 'worker.start.failed',
+      outcome: 'failure',
+      severity: 'error',
+    });
+    await shutdownTelemetry().catch(() => undefined);
+    process.exitCode = 1;
+  }
 
-void workerProcess?.completion.catch(() => {
-  writeWorkerEvent({
-    errorCode: 'DEPENDENCY_UNAVAILABLE',
-    event: 'worker.runtime.failed',
-    level: 'error',
-    service: 'worker',
+  for (const signal of ['SIGINT', 'SIGTERM'] as const) {
+    process.once(signal, () => {
+      void workerProcess
+        ?.shutdown(signal)
+        .then(shutdownTelemetry)
+        .catch(() => {
+          process.exitCode = 1;
+        });
+    });
+  }
+
+  void workerProcess?.completion.catch(async (error) => {
+    logger.log({
+      error,
+      event: 'worker.runtime.failed',
+      outcome: 'failure',
+      severity: 'error',
+    });
+    process.exitCode = 1;
+    await workerProcess?.shutdown('WORKER_RUNTIME_FAILURE');
+    await shutdownTelemetry().catch(() => undefined);
   });
+} catch {
+  writeBootstrapFailure();
   process.exitCode = 1;
-  return workerProcess?.shutdown('WORKER_RUNTIME_FAILURE');
-});
+}

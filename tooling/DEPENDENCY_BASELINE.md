@@ -14,18 +14,18 @@ Verification date: **2026-08-02**. This file records exact implementation inputs
 
 ## Application and quality toolchain
 
-| Responsibility       | Exact selection                                                                                |
-| -------------------- | ---------------------------------------------------------------------------------------------- |
-| Workspace/task graph | Turborepo 2.10.8                                                                               |
-| Language             | TypeScript 6.0.3, `@types/node` 24.13.3                                                        |
-| Web/BFF              | Next.js 16.2.12, React/React DOM 19.2.8                                                        |
-| Runtime validation   | Zod 4.4.3                                                                                      |
-| PostgreSQL           | Prisma/Prisma Client/adapter-pg 7.9.1, pg 8.22.0                                               |
-| Durable jobs         | Graphile Worker 0.17.3                                                                         |
-| Object storage       | AWS SDK S3 client/presigner 3.1101.0; disposable RustFS 1.0.0-beta.11 emulator                 |
-| Telemetry            | OpenTelemetry API 1.9.1, SDK/exporter 0.221.0                                                  |
-| Tests                | Vitest/coverage 4.1.10, Playwright 1.62.1                                                      |
-| Static quality       | ESLint/@eslint-js 9.39.5, typescript-eslint 8.65.0, eslint-config-next 16.2.12, Prettier 3.9.6 |
+| Responsibility       | Exact selection                                                                                         |
+| -------------------- | ------------------------------------------------------------------------------------------------------- |
+| Workspace/task graph | Turborepo 2.10.8                                                                                        |
+| Language             | TypeScript 6.0.3, `@types/node` 24.13.3                                                                 |
+| Web/BFF              | Next.js 16.2.12, React/React DOM 19.2.8                                                                 |
+| Runtime validation   | Zod 4.4.3                                                                                               |
+| PostgreSQL           | Prisma/Prisma Client/adapter-pg 7.9.1, pg 8.22.0                                                        |
+| Durable jobs         | Graphile Worker 0.17.3                                                                                  |
+| Object storage       | AWS SDK S3 client/presigner 3.1101.0; disposable RustFS 1.0.0-beta.11 emulator                          |
+| Telemetry            | OpenTelemetry API 1.9.1, Node SDK 0.221.0, OTLP HTTP trace/metric exporters 0.221.0, metrics SDK 2.10.0 |
+| Tests                | Vitest/coverage 4.1.10, Playwright 1.62.1                                                               |
+| Static quality       | ESLint/@eslint-js 9.39.5, typescript-eslint 8.65.0, eslint-config-next 16.2.12, Prettier 3.9.6          |
 
 All direct dependencies are exact catalog entries. New dependencies require an explicit Phase 1A
 responsibility, current license/engine review, lockfile update, and advisory scan. The locked graph is
@@ -33,7 +33,7 @@ checked with `pnpm audit --audit-level critical`; the locked bootstrap graph rep
 vulnerabilities on 2026-08-02. The audit is repeated against the complete Phase 1A graph in the final
 report.
 
-The npm registry bulk advisory endpoint also reported zero advisory-bearing packages for all 27
+The npm registry bulk advisory endpoint also reported zero advisory-bearing packages for all 32
 direct catalog selections on 2026-08-02. This direct-version check supplements, but does not replace,
 the repeated transitive lockfile audit.
 
@@ -53,6 +53,13 @@ Installing Next.js exposed advisories in its exact transitive `postcss@8.4.31` a
 the unused optional Sharp dependency because Phase 1A has no image pipeline. The production build
 and audit are required to pass with these controls; image processing may add a reviewed Sharp release
 only in its authorized phase.
+
+OpenTelemetry's selected Node SDK transitively installs `protobufjs@7.6.5`. Its BSD-3-Clause
+package and postinstall source were inspected on 2026-08-02: the script only checks dependency
+version-scheme compatibility and does not download, compile or modify project sources. That exact
+lifecycle script is therefore explicitly allowed; no other newly introduced lifecycle script is
+approved. OTLP export remains optional in local/test/CI, uses separate trace and metric signal paths,
+and has no production collector or vendor selection.
 
 After applying those controls, `pnpm audit --audit-level moderate` reported no known vulnerabilities
 and the Next.js production build passed on 2026-08-02.

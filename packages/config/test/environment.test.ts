@@ -6,6 +6,7 @@ import {
   parseDatabaseEnvironment,
   parseIdentityEnvironment,
   parseMigrationEnvironment,
+  parseObservabilityEnvironment,
   parseStorageEnvironment,
   parseWebServerEnvironment,
   parseWorkerEnvironment,
@@ -152,6 +153,22 @@ describe('typed environment validation', () => {
         ...baseEnvironment,
         MIGRATION_DATABASE_URL: migrationDatabaseUrl,
         WORKER_RUNTIME_DATABASE_ROLE: 'foundation_runtime; DROP ROLE foundation_runtime',
+      }),
+    ).toThrowError(EnvironmentValidationError);
+  });
+
+  it('requires a safe build identifier and rejects credentials in OTLP endpoints', () => {
+    expect(
+      parseObservabilityEnvironment({
+        ...baseEnvironment,
+        BUILD_ID: 'phase-1a.test-1',
+      }),
+    ).toMatchObject({ BUILD_ID: 'phase-1a.test-1' });
+    expect(() =>
+      parseObservabilityEnvironment({
+        ...baseEnvironment,
+        BUILD_ID: 'phase-1a.test-1',
+        OTEL_EXPORTER_OTLP_ENDPOINT: 'https://user:secret@collector.example',
       }),
     ).toThrowError(EnvironmentValidationError);
   });

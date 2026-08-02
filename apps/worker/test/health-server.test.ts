@@ -37,6 +37,7 @@ describe('worker health server', () => {
     const readyResponse = await fetch(`${baseUrl}/health/ready`);
 
     expect(liveResponse.status).toBe(200);
+    expect(liveResponse.headers.get('x-request-id')).toMatch(/^[A-Za-z0-9._:-]+$/);
     expect(livenessResponseSchema.parse(await liveResponse.json()).status).toBe('ok');
     expect(readyResponse.status).toBe(503);
     expect(readinessResponseSchema.parse(await readyResponse.json())).toMatchObject({

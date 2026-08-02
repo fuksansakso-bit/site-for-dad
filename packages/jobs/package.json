@@ -20,6 +20,7 @@
   "dependencies": {
     "@project-name/config": "workspace:*",
     "@project-name/contracts": "workspace:*",
+    "@project-name/observability": "workspace:*",
     "graphile-worker": "catalog:",
     "pg": "catalog:",
     "zod": "catalog:"

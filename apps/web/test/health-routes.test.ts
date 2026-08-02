@@ -1,13 +1,29 @@
 import { livenessResponseSchema, readinessResponseSchema } from '@project-name/contracts/health';
+import { createFoundationLogger } from '@project-name/observability/logger';
+import { FoundationMetrics } from '@project-name/observability/metrics';
 import { NextRequest } from 'next/server';
 import { describe, expect, it } from 'vitest';
 
-import { GET as live } from '../app/api/v1/health/live/route';
-import { GET as ready } from '../app/api/v1/health/ready/route';
+import { createLivenessHandler } from '../app/api/v1/health/live/route';
+import { createReadinessHandler } from '../app/api/v1/health/ready/route';
+import { proxy } from '../proxy';
+
+function testTelemetry() {
+  return {
+    logger: createFoundationLogger({
+      buildId: 'test-build',
+      environment: 'test' as const,
+      minimumSeverity: 'error' as const,
+      service: 'web',
+      sink: () => undefined,
+    }),
+    metrics: new FoundationMetrics(),
+  };
+}
 
 describe('web health route contracts', () => {
   it('returns a safe liveness response and preserves a valid correlation ID', async () => {
-    const response = live(
+    const response = await createLivenessHandler(testTelemetry)(
       new NextRequest('http://localhost/api/v1/health/live', {
         headers: { 'x-correlation-id': 'test-correlation-1234' },
       }),
@@ -22,11 +38,45 @@ describe('web health route contracts', () => {
   });
 
   it('returns only generic readiness checks', async () => {
-    const response = ready(new NextRequest('http://localhost/api/v1/health/ready'));
+    const response = await createReadinessHandler(
+      async () => ({ database: 'ok', process: 'ok', storage: 'ok' }),
+      testTelemetry,
+    )(new NextRequest('http://localhost/api/v1/health/ready'));
     const payload = readinessResponseSchema.parse(await response.json());
 
     expect(response.status).toBe(200);
-    expect(payload).toMatchObject({ checks: { process: 'ok' }, status: 'ok' });
+    expect(payload).toMatchObject({
+      checks: { database: 'ok', process: 'ok', storage: 'ok' },
+      status: 'ok',
+    });
     expect(JSON.stringify(payload)).not.toMatch(/postgres|password|version|https?:\/\//i);
+  });
+
+  it('returns generic 503 readiness without dependency error details', async () => {
+    const response = await createReadinessHandler(async () => {
+      throw new Error('private connection and endpoint details');
+    }, testTelemetry)(new NextRequest('http://localhost/api/v1/health/ready'));
+    const text = await response.text();
+
+    expect(response.status).toBe(503);
+    expect(readinessResponseSchema.parse(JSON.parse(text))).toMatchObject({
+      checks: { database: 'unavailable', process: 'ok', storage: 'unavailable' },
+      status: 'unavailable',
+    });
+    expect(text).not.toContain('private connection');
+  });
+
+  it('propagates safe correlation and request IDs through the web proxy', () => {
+    const response = proxy(
+      new NextRequest('http://localhost/foundation-path', {
+        headers: {
+          'x-correlation-id': 'correlation-proxy-1234',
+          'x-request-id': 'request-proxy-1234',
+        },
+      }),
+    );
+
+    expect(response.headers.get('x-correlation-id')).toBe('correlation-proxy-1234');
+    expect(response.headers.get('x-request-id')).toBe('request-proxy-1234');
   });
 });

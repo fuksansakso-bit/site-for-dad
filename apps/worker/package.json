@@ -15,7 +15,8 @@
   "dependencies": {
     "@project-name/config": "workspace:*",
     "@project-name/contracts": "workspace:*",
-    "@project-name/jobs": "workspace:*"
+    "@project-name/jobs": "workspace:*",
+    "@project-name/observability": "workspace:*"
   },
   "devDependencies": {
     "@project-name/tooling": "workspace:*",

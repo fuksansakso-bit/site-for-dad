@@ -30,6 +30,7 @@
     "@prisma/adapter-pg": "catalog:",
     "@prisma/client": "catalog:",
     "@project-name/config": "workspace:*",
+    "@project-name/observability": "workspace:*",
     "pg": "catalog:"
   },
   "devDependencies": {

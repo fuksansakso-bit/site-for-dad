@@ -14,6 +14,9 @@
   "dependencies": {
     "@project-name/config": "workspace:*",
     "@project-name/contracts": "workspace:*",
+    "@project-name/db": "workspace:*",
+    "@project-name/observability": "workspace:*",
+    "@project-name/storage": "workspace:*",
     "next": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:"

@@ -9,6 +9,8 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import type { StorageEnvironment } from '@project-name/config/server';
+import { foundationMetrics } from '@project-name/observability/metrics';
+import { runInFoundationSpan } from '@project-name/observability/tracing';
 import { createHash } from 'node:crypto';
 
 import { isStorageError, StorageError } from './errors.js';
@@ -84,12 +86,36 @@ export class S3ObjectStorage implements ObjectStorage {
     });
   }
 
-  async #runWithTimeout<T>(operation: (signal: AbortSignal) => Promise<T>): Promise<T> {
+  async #observe<T>(operationName: string, operation: () => Promise<T>): Promise<T> {
+    const startedAt = performance.now();
+    let outcome: 'failure' | 'success' = 'failure';
+    try {
+      const result = await runInFoundationSpan(
+        `storage.${operationName}`,
+        { 'storage.operation.name': operationName },
+        operation,
+      );
+      outcome = 'success';
+      return result;
+    } finally {
+      foundationMetrics.record({
+        component: 'storage',
+        durationMs: performance.now() - startedAt,
+        operation: `storage.${operationName}`,
+        outcome,
+      });
+    }
+  }
+
+  async #runWithTimeout<T>(
+    operationName: string,
+    operation: (signal: AbortSignal) => Promise<T>,
+  ): Promise<T> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.#environment.S3_REQUEST_TIMEOUT_MS);
     timeout.unref();
     try {
-      return await operation(controller.signal);
+      return await this.#observe(operationName, () => operation(controller.signal));
     } catch (error) {
       throw mapProviderError(error);
     } finally {
@@ -106,7 +132,7 @@ export class S3ObjectStorage implements ObjectStorage {
     try {
       await Promise.all(
         Object.values(this.#buckets).map((bucket) =>
-          this.#runWithTimeout((abortSignal) =>
+          this.#runWithTimeout('readiness', (abortSignal) =>
             this.#client.send(new HeadBucketCommand({ Bucket: bucket }), { abortSignal }),
           ),
         ),
@@ -123,7 +149,7 @@ export class S3ObjectStorage implements ObjectStorage {
     assertContentLength(input.body.byteLength, this.#environment.S3_MAX_OBJECT_BYTES);
     const checksumSha256 = sha256Hex(input.body);
 
-    await this.#runWithTimeout((abortSignal) =>
+    await this.#runWithTimeout('put', (abortSignal) =>
       this.#client.send(
         new PutObjectCommand({
           Body: input.body,
@@ -147,7 +173,7 @@ export class S3ObjectStorage implements ObjectStorage {
 
   async head(locator: ObjectLocator): Promise<StorageObjectMetadata> {
     const bucket = this.#bucket(locator);
-    const response = await this.#runWithTimeout((abortSignal) =>
+    const response = await this.#runWithTimeout('head', (abortSignal) =>
       this.#client.send(new HeadObjectCommand({ Bucket: bucket, Key: locator.key }), {
         abortSignal,
       }),
@@ -157,7 +183,7 @@ export class S3ObjectStorage implements ObjectStorage {
 
   async get(locator: ObjectLocator): Promise<StoredObject> {
     const bucket = this.#bucket(locator);
-    const response = await this.#runWithTimeout((abortSignal) =>
+    const response = await this.#runWithTimeout('get', (abortSignal) =>
       this.#client.send(new GetObjectCommand({ Bucket: bucket, Key: locator.key }), {
         abortSignal,
       }),
@@ -175,7 +201,7 @@ export class S3ObjectStorage implements ObjectStorage {
 
   async delete(locator: ObjectLocator): Promise<void> {
     const bucket = this.#bucket(locator);
-    await this.#runWithTimeout((abortSignal) =>
+    await this.#runWithTimeout('delete', (abortSignal) =>
       this.#client.send(new DeleteObjectCommand({ Bucket: bucket, Key: locator.key }), {
         abortSignal,
       }),
@@ -188,12 +214,19 @@ export class S3ObjectStorage implements ObjectStorage {
   ): Promise<SignedObjectGrant> {
     const bucket = this.#bucket(locator);
     assertGrantTtl(ttlSeconds, this.#environment.SIGNED_URL_TTL_SECONDS);
-    await this.head(locator);
-    const url = await getSignedUrl(
-      this.#client,
-      new GetObjectCommand({ Bucket: bucket, Key: locator.key }),
-      { expiresIn: ttlSeconds },
-    );
+    let url: string;
+    try {
+      url = await this.#observe('signed_read', async () => {
+        await this.head(locator);
+        return getSignedUrl(
+          this.#client,
+          new GetObjectCommand({ Bucket: bucket, Key: locator.key }),
+          { expiresIn: ttlSeconds },
+        );
+      });
+    } catch (error) {
+      throw mapProviderError(error);
+    }
     return {
       expiresAt: new Date(Date.now() + ttlSeconds * 1_000),
       method: 'GET',
@@ -224,7 +257,14 @@ export class S3ObjectStorage implements ObjectStorage {
       Key: input.locator.key,
       Metadata: providerMetadata,
     });
-    const url = await getSignedUrl(this.#client, command, { expiresIn: ttlSeconds });
+    let url: string;
+    try {
+      url = await this.#observe('signed_write', () =>
+        getSignedUrl(this.#client, command, { expiresIn: ttlSeconds }),
+      );
+    } catch (error) {
+      throw mapProviderError(error);
+    }
     return {
       expiresAt: new Date(Date.now() + ttlSeconds * 1_000),
       method: 'PUT',

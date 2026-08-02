@@ -28,11 +28,22 @@ describe('telemetry redaction', () => {
     const cyclic: { self?: unknown } = {};
     cyclic.self = cyclic;
 
-    expect(redactUnknown(new Error('safe client message'))).toEqual({
+    expect(redactUnknown(new Error('provider message must never be emitted'))).toEqual({
       errorClass: 'Error',
-      message: 'safe client message',
     });
     expect(redactUnknown(cyclic)).toEqual({ self: '[CIRCULAR]' });
+  });
+
+  it('redacts contact values, URLs, and internal Windows paths even under safe keys', () => {
+    const result = JSON.stringify(
+      redactUnknown({
+        note: 'reach synthetic.user@example.test at +7 (900) 000-00-00',
+        provider: 'https://storage.example/private-object?signature=synthetic',
+        source: 'C:\\project\\private\\source.ts',
+      }),
+    );
+
+    expect(result).not.toMatch(/synthetic\.user|900|storage\.example|private\\source/i);
   });
 
   it('keeps the explicit denylist conservative', () => {

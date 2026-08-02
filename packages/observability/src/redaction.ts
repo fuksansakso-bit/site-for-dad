@@ -6,6 +6,10 @@ const sensitiveKeyPattern =
   /(?:address|authorization|body|connection(?:string)?|cookie|database[_-]?url|e-?mail|image|object[_-]?(?:key|url)|password|phone|provider[_-]?payload|secret|session|token)/i;
 const connectionStringPattern = /\b(?:postgres(?:ql)?|mysql|redis):\/\/[^\s"']+/gi;
 const credentialHeaderPattern = /\b(?:basic|bearer)\s+[A-Za-z0-9._~+/=-]+/gi;
+const emailPattern = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
+const phonePattern = /(?<![A-Za-z0-9])\+?\d[\d ()-]{7,}\d(?![A-Za-z0-9])/g;
+const urlPattern = /\bhttps?:\/\/[^\s"']+/gi;
+const windowsPathPattern = /\b[A-Za-z]:\\[^\s"']+/g;
 
 export interface RedactionOptions {
   readonly maxDepth?: number;
@@ -15,7 +19,11 @@ export interface RedactionOptions {
 function redactString(value: string, secretValues: readonly string[]): string {
   let result = value
     .replace(connectionStringPattern, redacted)
-    .replace(credentialHeaderPattern, redacted);
+    .replace(credentialHeaderPattern, redacted)
+    .replace(emailPattern, redacted)
+    .replace(phonePattern, redacted)
+    .replace(urlPattern, redacted)
+    .replace(windowsPathPattern, redacted);
   for (const secretValue of secretValues) {
     if (secretValue.length >= 8) {
       result = result.replaceAll(secretValue, redacted);
@@ -60,8 +68,9 @@ export function redactUnknown(value: unknown, options: RedactionOptions = {}): u
 
     if (candidate instanceof Error) {
       return {
-        errorClass: candidate.name,
-        message: redactString(candidate.message, secretValues),
+        errorClass: /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/.test(candidate.name)
+          ? candidate.name
+          : 'UnknownError',
       };
     }
     if (Array.isArray(candidate)) {

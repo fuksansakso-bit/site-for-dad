@@ -2,6 +2,9 @@ import { once } from 'node:events';
 import type { AddressInfo } from 'node:net';
 
 import type { DatabaseEnvironment, WorkerEnvironment } from '@project-name/config/server';
+import { runFoundationReadinessChecks } from '@project-name/observability/health';
+import type { FoundationLogSeverity, FoundationLogger } from '@project-name/observability/logger';
+import type { FoundationMetrics } from '@project-name/observability/metrics';
 import {
   startFoundationJobRuntime,
   type FoundationQueueLogEvent,
@@ -13,10 +16,15 @@ import { createWorkerHealthServer } from './health-server.js';
 export type WorkerShutdownReason = NodeJS.Signals | 'WORKER_RUNTIME_FAILURE';
 export type WorkerEvent = Readonly<Record<string, unknown>> & {
   readonly event: string;
-  readonly level: string;
+  readonly level: FoundationLogSeverity;
   readonly service: 'worker';
 };
 export type WorkerEventSink = (event: WorkerEvent) => void;
+
+export interface WorkerRuntimeTelemetry {
+  readonly logger: FoundationLogger;
+  readonly metrics: FoundationMetrics;
+}
 
 export interface RunningWorkerProcess {
   readonly baseUrl: string;
@@ -29,10 +37,39 @@ export function writeWorkerEvent(event: WorkerEvent): void {
   stream.write(`${JSON.stringify(event)}\n`);
 }
 
+export function createWorkerEventSink(logger: FoundationLogger): WorkerEventSink {
+  return (workerEvent) => {
+    const {
+      attempt,
+      correlationId,
+      errorCode,
+      event,
+      level,
+      service: _service,
+      taskIdentifier,
+      ...metadata
+    } = workerEvent;
+    const failed = /(?:failed|timeout)/.test(event);
+    logger.log({
+      ...(typeof attempt === 'number' ? { attempt } : {}),
+      component: 'worker',
+      ...(typeof correlationId === 'string' ? { correlationId } : {}),
+      ...(typeof errorCode === 'string' ? { errorCode } : {}),
+      event,
+      ...(typeof taskIdentifier === 'string' ? { jobTemplate: taskIdentifier } : {}),
+      metadata,
+      outcome: failed ? 'failure' : 'success',
+      retryable: failed,
+      severity: level,
+    });
+  };
+}
+
 export async function startWorkerProcess(
   databaseEnvironment: DatabaseEnvironment,
   workerEnvironment: WorkerEnvironment,
   eventSink: WorkerEventSink = writeWorkerEvent,
+  telemetry?: WorkerRuntimeTelemetry,
 ): Promise<RunningWorkerProcess> {
   let stopping = false;
   let stopped = false;
@@ -45,8 +82,19 @@ export async function startWorkerProcess(
         return { database: 'unavailable', queue: 'unavailable', worker: 'unavailable' };
       }
       const queue = await jobRuntime.checkReadiness();
-      return { database: queue, queue, worker: queue };
+      return runFoundationReadinessChecks(
+        [
+          { check: async () => queue, name: 'database' },
+          { check: async () => queue, name: 'queue' },
+          { check: async () => queue, name: 'worker' },
+        ],
+        {
+          ...(telemetry === undefined ? {} : { metrics: telemetry.metrics }),
+          timeoutMs: databaseEnvironment.DATABASE_STATEMENT_TIMEOUT_MS,
+        },
+      );
     },
+    ...(telemetry === undefined ? {} : { telemetry }),
   });
   server.listen(workerEnvironment.WORKER_HEALTH_PORT, workerEnvironment.WORKER_HEALTH_HOST);
   await once(server, 'listening');

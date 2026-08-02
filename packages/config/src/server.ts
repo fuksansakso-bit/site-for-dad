@@ -147,7 +147,25 @@ export type IdentityEnvironment = z.infer<typeof identityEnvironmentSchema>;
 
 const observabilityEnvironmentSchema = phase1ABaseSchema
   .extend({
-    OTEL_EXPORTER_OTLP_ENDPOINT: z.string().url().optional(),
+    BUILD_ID: z
+      .string()
+      .min(1)
+      .max(128)
+      .regex(/^[A-Za-z0-9._-]+$/),
+    OTEL_EXPORTER_OTLP_ENDPOINT: z
+      .string()
+      .url()
+      .refine((value) => {
+        const endpoint = new URL(value);
+        return (
+          ['http:', 'https:'].includes(endpoint.protocol) &&
+          endpoint.username === '' &&
+          endpoint.password === '' &&
+          endpoint.search === '' &&
+          endpoint.hash === ''
+        );
+      }, 'OTLP endpoint must be an uncredentialed HTTP(S) base URL.')
+      .optional(),
     OTEL_EXPORTER_OTLP_HEADERS: z.string().min(1).max(2_048).optional(),
   })
   .strict();
@@ -214,6 +232,7 @@ export function parseIdentityEnvironment(source: EnvironmentSource): IdentityEnv
 export function parseObservabilityEnvironment(source: EnvironmentSource): ObservabilityEnvironment {
   return parseEnvironment('observability', observabilityEnvironmentSchema, source, [
     ...baseKeys,
+    'BUILD_ID',
     'OTEL_EXPORTER_OTLP_ENDPOINT',
     'OTEL_EXPORTER_OTLP_HEADERS',
   ]);

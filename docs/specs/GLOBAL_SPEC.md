@@ -4,10 +4,10 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 0C MVP/readiness baseline; implementation не разрешена без отдельного письменного решения и entry gate Phase 1A |
-| Версия | 0.6.0 |
+| Статус | Phase 1A Foundation письменно разрешена; Phase 1B и production activation не разрешены |
+| Версия | 0.9.0 |
 | Дата | 2026-08-02, Europe/Moscow |
-| Владелец документа | Владелец бизнеса / Product Owner; именованный утверждающий — `TBD-BIZ-001` |
+| Владелец документа | Product Owner — владелец проекта; Business Owner — отец владельца проекта (`OWNER-DECISION-001`) |
 | Продукт | `PROJECT_NAME` до отдельного решения о бренде |
 | Язык | Русский; английские идентификаторы и технические термины допустимы |
 | Главный источник правды | Этот документ |
@@ -45,6 +45,9 @@
 | 0.4.0 | 2026-08-02 | Подтверждены официальный партнёрский статус AMIGO, разрешённый scope каталога, медиа, цен, калькуляторной логики и бейджа; каталог и source price categories сделаны динамическими; разделены стандартный интерьерный preview и примерка на фото клиента; добавлены parity, sync и cart boundaries. |
 | 0.5.0 | 2026-08-02 | Глобальная база связана с фактически созданным комплектом 0B, 40 stories/AC/tests, quality/evaluation documents и ADR; неизвестные формулы, providers и business transitions сохранены как TBD. |
 | 0.6.0 | 2026-08-02 | Phase 0C: заморожен MVP первого запуска, P0 TBD классифицированы, введён roadmap 1A–1H и readiness gate; базовый кабинет и ограниченный AI pilot включены в MVP, online payment и расширенный ассортимент явно перенесены post-MVP. |
+| 0.7.0 | 2026-08-02 | Зафиксированы `OWNER-DECISION-001`–`007`, закрыты семь owner-decision P0 и QG-147/148; письменно разрешена только Phase 1A Foundation без перехода к Phase 1B или production. |
+| 0.8.0 | 2026-08-02 | Зафиксировано `OWNER-DECISION-008`: AMIGO и Business Owner разделены как authority для source-backed и локальных полей; PostgreSQL определён как локальная операционная проекция, а не новый upstream-источник. Фактический импорт и Phase 1B этим решением не объявлены завершёнными или разрешёнными. |
+| 0.9.0 | 2026-08-02 | Зафиксировано `OWNER-DECISION-009` «LOCAL CATALOG AS PUBLIC SOURCE OF TRUTH»: публичный runtime использует только активную одобренную локальную версию в PostgreSQL, а AMIGO остаётся upstream authority. Добавлены обязательные diff/approval/override/audit/version/rollback границы без разрешения Phase 1B. |
 
 ## 1. Нормативный язык и приоритет источников
 
@@ -81,7 +84,7 @@
 
 ### 2.1. Подтверждённое партнёрство AMIGO
 
-Источник требований `PARTNER-*` — письменное сообщение владельца задачи от 2026-08-02, передающее окончательно подтверждённые владельцем бизнеса факты. Копия договора или бейджа является необязательной evidence reference и не блокирует документирование фазы 0B; имя формального утверждающего всего пакета остаётся `TBD-BIZ-001`.
+Источник требований `PARTNER-*` — письменное сообщение владельца задачи от 2026-08-02, передающее окончательно подтверждённые Business Owner факты. Копия договора или бейджа является необязательной evidence reference и не блокирует документирование; governance-роли определены `OWNER-DECISION-001`.
 
 - **PARTNER-001 — MUST:** бизнес является официальным партнёром AMIGO; AMIGO имеет relationship status `AUTHORIZED_PARTNER_SOURCE`.
 - **PARTNER-002 — MUST:** permission scope охватывает каталог AMIGO; названия, артикулы и технические сведения; цены; фотографии товаров, тканей, материалов и примеров изделий; самостоятельное воспроизведение логики калькулятора; партнёрский бейдж и разрешённые логотипы.
@@ -91,7 +94,75 @@
 - **PARTNER-006 — MUST:** permission scope не включает копирование программного кода, DOM, дизайна, закрытых API, обход доступа, удаление водяных знаков или training use, если для такой отдельной цели нет явного разрешения.
 - **PARTNER-007 — MUST:** партнёрский бейдж MAY публиковаться только как идентификация реального партнёрства, без изменения авторства и вне формулировок, создающих неутверждённые гарантии от имени AMIGO.
 
+### 2.2. Решения владельца для implementation governance и будущих feature gates
+
+Источник `OWNER-DECISION-*` — письменные решения Product Owner от 2026-08-02. Они задают бизнес- и архитектурные границы; ни одно из них не расширяет implementation scope без отдельного transition decision. Единственное ранее выданное implementation-разрешение относилось к завершённой Phase 1A Foundation.
+
+- **OWNER-DECISION-001 — MUST:** Product Owner — владелец проекта; Business Owner — отец владельца проекта. Product Owner утверждает продуктовые решения, UX, технические этапы, приоритеты и MVP. Business Owner утверждает цены, ассортимент, наличие, правила изготовления, гарантийные решения и коммерческие условия.
+- **OWNER-DECISION-002 — MUST:** новую `PriceVersion` может активировать только actor с ролью `OWNER` или `ADMIN`, после просмотра точного diff и явного подтверждения; каждая попытка и успешная активация MUST попадать в audit log.
+- **OWNER-DECISION-003 — MUST:** минимальная стоимость 1500 рублей применяется к каждому отдельно изготавливаемому изделию, а не ко всему заказу: изделие с результатом формулы 1100 рублей оценивается в 1500 рублей, два таких изделия — в 3000 рублей. Реализация ценового правила запрещена в Phase 1A и остаётся зависимой от остальных pricing gates.
+- **OWNER-DECISION-004 — MUST:** локальная админ-панель является главным источником статуса наличия. AMIGO MAY предоставить предлагаемый статус, но синхронизация MUST NOT автоматически перезаписывать подтверждённое локальное наличие.
+- **OWNER-DECISION-005 — MUST:** проверка обновлений AMIGO планируется автоматически один раз в сутки и вручную по запросу администратора. Данные старше 7 дней получают `STALE_WARNING`; данные старше 30 дней требуют обязательной административной проверки перед публикацией изменённой цены или нового товара.
+- **OWNER-DECISION-006 — MUST:** при одинаковых source version, системе, материале, размерах, фурнитуре, опциях и количестве абсолютное отклонение локального результата от результата AMIGO MUST быть не более 1 рубля; большее отклонение является parity error.
+- **OWNER-DECISION-007 — MUST:** production-доступность без VPN проверяется в Грозном, Урус-Мартане, Аргуне и Гудермесе через мобильное подключение и домашний или офисный Wi-Fi, минимум по двум разным сетевым маршрутам, в mobile Chrome и desktop Chrome. Production infrastructure выбирается позднее отдельным решением.
+- **OWNER-DECISION-008 — MUST:** для AMIGO-origin записей AMIGO является upstream authority для продуктов, материалов, технических данных, catalog images и базовых цен; Business Owner является decision authority для локального наличия, локальной видимости/публикации, локальных ценовых override, локального портфолио и коммерческих условий. PostgreSQL хранит версионированные source snapshots, нормализованную локальную проекцию и решения Business Owner как operational system of record, но импорт не переносит authority между слоями и не разрешает редактировать source-поля как локальные факты. Бинарные изображения хранятся в управляемом object storage, а PostgreSQL хранит их provenance, mapping, rights/publication metadata и object references. Решение задаёт ownership данных, но само по себе не доказывает завершённый импорт и не разрешает Phase 1B.
+- **OWNER-DECISION-009 — MUST:** «LOCAL CATALOG AS PUBLIC SOURCE OF TRUTH». AMIGO остаётся upstream source of truth для импортируемых product/material metadata, технических спецификаций, identity/provenance изображений поставщика и базовых цен, но публичная часть приложения MUST NOT читать AMIGO напрямую. Активная одобренная `CatalogVersion` и связанные транзакционные записи в PostgreSQL являются единственным каноническим runtime-источником для клиентского каталога, поиска, фильтров, конфигуратора, расчётов, заявок и аналитики. Полный pipeline, правила публикации, приоритета overrides, аудита и версионирования в §2.2.1 являются частью решения. Object storage доставляет только approved image binaries по ссылкам из активной версии и не становится отдельным источником каталожной истины. Решение не доказывает существование business schema/imported data, не закрывает source/price/asset TBD и не разрешает Phase 1B.
+
 Гарантийная политика MUST NOT уменьшать обязательные права потребителя, предусмотренные применимым законодательством. Порядок обращения, доказательства, сроки проверки и способы удовлетворения требования остаются в `TBD-WARRANTY-001` и не придумываются.
+
+### 2.2.1. OWNER-DECISION-009 — public-serving catalog pipeline
+
+Канонический поток данных:
+
+```text
+AMIGO Source
+        ↓
+Import/Synchronization Layer
+        ↓
+PostgreSQL Local Catalog (immutable capture + staged candidate)
+        ↓
+Validation/Diff
+        ↓
+Business Owner Approval
+        ↓
+Public Catalog (explicit administrator activation)
+```
+
+Обязательные правила решения:
+
+1. Импорт AMIGO MUST NOT автоматически удалять локальные сущности, local-only данные, Business Owner overlays или исторические ссылки. Исчезновение у источника создаёт source-removal candidate и diff; скрытие, архивирование или иное локальное действие требует явного решения и сохраняет историю.
+2. Любое source-изменение сначала создаёт immutable capture, staged candidate и проверяемый field/relationship/price/media diff. Candidate, raw capture и непроверенная версия MUST NOT читаться публичными flows.
+3. Business Owner утверждает локальный состав и видимость публичного каталога в пределах `OWNER-DECISION-008`; уполномоченный администратор фиксирует явное подтверждение публикации и атомарно активирует точную одобренную `CatalogVersion`. Наличие обеих полномочий у одного человека не предполагается только из системной роли.
+4. Применимый локальный override MUST иметь приоритет в опубликованной локальной проекции, но MUST NOT изменять AMIGO source snapshot. Override хранит scope, причину, автора, approval, effective interval и версию.
+5. Capture/import, validation, diff resolution, local edit/override, approval, activation, rejection, hide/archive, rollback и rebuild производных read models MUST оставлять audit trail с actor, временем, причиной, before/after reference и correlation ID.
+6. Каждая `CatalogVersion` MUST иметь уникальный ID, `createdAt`, nullable `publishedAt`, source/source-version manifest, ссылки на sync run/captures/diff, Business Owner approval, administrator activation, предыдущую версию и rollback target. Опубликованная версия неизменяема; исправление создаёт новую версию.
+7. Search index, cache, filter facets и analytics/read projections MAY использоваться только как rebuildable производные точной активной `CatalogVersion` из PostgreSQL. Они MUST быть version-pinned, MUST NOT принимать AMIGO/staging напрямую и MUST NOT становиться независимым mutation source.
+
+Причины решения:
+
+1. Независимость от доступности AMIGO.
+2. Возможность локальных изменений без повреждения source facts.
+3. История версий и воспроизводимость публичного состояния.
+4. Контроль владельца бизнеса над публикацией и локальными решениями.
+5. Быстрый публичный runtime без live-запросов к поставщику.
+6. Возможность атомарного отката на ранее подтверждённую версию.
+7. Поддержка нескольких поставщиков в будущем через тот же source/version/approval contract.
+
+### 2.3. Каноническая матрица authority
+
+| Данные | Authority | Локальная запись и допустимое изменение |
+|---|---|---|
+| AMIGO products и materials | AMIGO | Версионированный snapshot и нормализованная проекция в PostgreSQL; локально меняются только mapping/readiness/override-поля, не исходный факт. |
+| AMIGO technical data | AMIGO | Значение хранится с source version/provenance; неизвестное не дополняется догадкой Business Owner или импортёра. |
+| AMIGO catalog images | AMIGO в пределах `PARTNER_LICENSE` | PostgreSQL хранит metadata/provenance/mapping/status; разрешённый binary хранится в object storage и публикуется только после asset-level gate. |
+| AMIGO base prices | AMIGO | Source snapshot неизменяем; Business Owner MAY утвердить отдельный local override, не переписывая базовую цену. |
+| Local availability | Business Owner | Подтверждённое локальное решение записывается в PostgreSQL; AMIGO status MAY храниться только как proposal. |
+| Local visibility/publication | Business Owner | Отдельное локальное состояние в PostgreSQL; импорт никогда не публикует запись автоматически. |
+| Local price overrides | Business Owner | Отдельная versioned/audited запись с областью и сроком; source price сохраняется без изменения. |
+| Local portfolio | Business Owner при наличии прав/согласий на конкретный актив | AMIGO examples остаются partner examples и не становятся `LOCAL_PORTFOLIO`. |
+| Commercial conditions | Business Owner с требуемой legal/financial проверкой | Версионируются отдельно от AMIGO; неполные условия остаются соответствующими `TBD-*`. |
+
+Термин `authority` в этой матрице означает полномочие определять бизнес-смысл поля. PostgreSQL является локальным operational system of record для активной версии и аудита, но не заменяет ни upstream AMIGO, ни decision authority Business Owner. Формулировка `LOCAL CATALOG AS PUBLIC SOURCE OF TRUTH` в `OWNER-DECISION-009` означает единственный public-serving/runtime source после approval, а не перенос upstream authority на базу данных.
 
 Прежние идентификаторы сохранены и не переиспользуются:
 
@@ -104,7 +175,7 @@
 
 ## 3. Краткое описание продукта
 
-`PROJECT_NAME` — публичное веб-приложение и внутренний рабочий контур локального официального партнёра AMIGO, который изготавливает и устанавливает солнцезащитные изделия по индивидуальным размерам.
+`PROJECT_NAME` — публичное веб-приложение и внутренний рабочий контур локального официального партнёра AMIGO, который изготавливает и устанавливает солнцезащитные изделия по индивидуальным размерам. AMIGO-origin каталог обслуживается только из активной одобренной локальной PostgreSQL-версии после import/diff/approval/activation gate, сохраняя authority-разделение `OWNER-DECISION-008`, public-serving boundary `OWNER-DECISION-009` и независимость storefront от live AMIGO.
 
 Клиент сможет увидеть реальный ассортимент и наличие, собрать конфигурацию для одного или нескольких окон, получить предварительную стоимость, примерить выбранный материал на фотографии, сравнить результат и передать расчёт в WhatsApp или заявку на замер/звонок.
 
@@ -235,8 +306,8 @@
 - **ROLE-001 — Гость:** MAY просматривать каталог, наличие и портфолио; MUST иметь доступ к калькулятору и базовому визуализатору; MAY создать заявку; MUST видеть только свои гостевые данные по непредсказуемому токену/сессии; MUST NOT видеть чужие проекты.
 - **ROLE-002 — Зарегистрированный клиент:** имеет права гостя; MAY сохранять проекты, историю и видеть связанные заказы; MUST иметь доступ только к подтверждённо принадлежащим ему данным; не управляет коммерческими правилами.
 - **ROLE-003 — Менеджер:** обрабатывает заявки, замеры и заказы, связывается с клиентом и обновляет разрешённые статусы; MUST NOT публиковать прайс-лист или менять роли без отдельного права.
-- **ROLE-004 — Администратор:** управляет каталогом, вариантами, наличием, прайс-листами, контентом, настройками и разрешёнными аккаунтами; опасные действия подлежат audit log и, где требуется, approval.
-- **ROLE-005 — Владелец:** утверждает ассортимент, коммерческие правила, публикацию прайс-листа, доступы и продуктовые решения; видит сводную аналитику и журнал критических изменений.
+- **ROLE-004 — Администратор:** управляет каталогом, вариантами, локальным наличием, прайс-листами, контентом, настройками и разрешёнными аккаунтами; опасные действия подлежат audit log и, где требуется, approval. Активация `PriceVersion` разрешена только при выполнении `OWNER-DECISION-002`.
+- **ROLE-005 — OWNER:** высокопривилегированная системная роль для разрешённых approvals и сводной аналитики; она не объединяет автоматически governance-полномочия Product Owner и Business Owner, разделённые `OWNER-DECISION-001`.
 - **ROLE-006 — Контент-менеджер:** управляет разрешёнными описаниями, media mapping, alt-text, portfolio labels и drafts в пределах выданного permission; MUST NOT самостоятельно менять price rules, права или owner approvals.
 - **ROLE-007 — Система синхронизации:** технический actor создаёт source snapshots/diffs и validation results от имени конкретного run; MUST NOT самостоятельно активировать публикацию или local override.
 - **ROLE-008 — AI/CV worker:** технический actor выполняет разрешённые detection/render/refinement jobs с минимальным payload; MUST NOT принимать решения о товаре, цене, правах или публикации.
@@ -272,9 +343,9 @@
 - **AMIGO-PARITY-004 — MUST:** каждое parity-наблюдение фиксирует source URL/version, дату, выбранный контекст, состояние загрузки, ошибки и применимость к локальному бизнесу.
 - **AMIGO-PARITY-005 — MUST:** отсутствие функции или данных в разрешённом source channel приводит к документированному gap, Manual Review или локальному процессу, но не к выдуманному поведению.
 
-- **AMIGO-SYNC-001 — MUST:** сайт обслуживает клиента из локального опубликованного catalog snapshot и object storage, а не обращается к AMIGO при каждом открытии страницы.
+- **AMIGO-SYNC-001 — MUST:** сайт обслуживает клиента только из активной одобренной `CatalogVersion` в PostgreSQL и approved binaries в object storage; ни один публичный catalog/search/filter/configurator/calculation/lead/analytics flow не читает AMIGO, raw capture или staged candidate напрямую.
 - **AMIGO-SYNC-002 — MUST:** [AMIGO_SYNC_ARCHITECTURE](04-technical/AMIGO_SYNC_ARCHITECTURE.md) поддерживает manual run, scheduled run после утверждения cadence, dry-run, diff preview, административное принятие/отклонение, публикацию и rollback.
-- **AMIGO-SYNC-003 — MUST:** sync diff обнаруживает новые, изменённые и удалённые source entities, цену, свойства и media hash; удаление у источника не удаляет локальную историю физически.
+- **AMIGO-SYNC-003 — MUST:** sync diff обнаруживает новые, изменённые и удалённые source entities, цену, свойства и media hash; удаление у источника не удаляет автоматически локальные сущности, local-only данные, Business Owner overlays или историю и требует явного локального решения.
 - **AMIGO-SYNC-004 — MUST:** source lifecycle поддерживает `SOURCE_ACTIVE`, `SOURCE_CHANGED`, `SOURCE_REMOVED`; local lifecycle — `LOCAL_REVIEW_REQUIRED`, `LOCAL_ACTIVE`, `LOCAL_HIDDEN`, `LOCAL_ARCHIVED`.
 - **AMIGO-SYNC-005 — MUST:** каждый run имеет ID, source/version, acquisition method, started/finished timestamps, counters, validation errors, actor, decision и audit reference.
 - **AMIGO-SYNC-006 — MUST:** способ получения выбирается по разрешённому приоритету: официальный партнёрский канал/API при доказанном существовании → партнёрский кабинет → официальная выгрузка → разрешённый файл → разрешённая фиксация публичных страниц → ручной ввод.
@@ -346,6 +417,7 @@
 - **FR-INVENTORY-006 — MUST:** каждое изменение наличия фиксирует автора, время, основание и предыдущий/новый статус.
 - **FR-INVENTORY-007 — SHOULD:** при устаревшем или неизвестном источнике система не показывает `IN_STOCK` по умолчанию.
 - **FR-INVENTORY-008 — MUST:** расчёт сохраняет snapshot статуса наличия, но перед заявкой система повторно показывает актуальный статус.
+- **FR-INVENTORY-009 — MUST:** подтверждённое Business Owner локальное наличие, записанное через авторизованный admin/PostgreSQL workflow, является authoritative local status; предложенное AMIGO значение хранится отдельно и не перезаписывает его автоматически.
 
 ### 10.3.1. Собственный конфигуратор
 
@@ -368,7 +440,7 @@
 - **FR-CALC-006 — MUST:** расчёт поддерживает добавление, копирование, переименование, изменение и удаление нескольких окон/позиций.
 - **FR-CALC-007 — MUST:** каждая позиция имеет собственные размеры, систему, материал, фурнитуру, количество и price breakdown.
 - **FR-CALC-008 — MUST:** общий итог не включает позицию без подтверждённого правила и явно показывает её как требующую проверки.
-- **FR-CALC-009 — MUST:** минимальная заявленная стоимость 1500 рублей не применяется автоматической формулой до решения области `TBD-MIN-PRICE-001`; факт MAY показываться только с пояснением об уточнении уровня у менеджера.
+- **FR-CALC-009 — MUST:** минимальная стоимость 1500 рублей применяется отдельно к каждой изготавливаемой единице изделия до умножения/суммирования заказа по `OWNER-DECISION-003`; правило не реализуется в Phase 1A и не активируется до закрытия остальных pricing gates.
 - **FR-CALC-010 — MUST:** тарифы, округление, Billable Area, формулы горизонтальных/вертикальных систем и надбавки не активируются до закрытия соответствующих `TBD-PRICE-*`.
 - **FR-CALC-011 — MUST:** если размер выходит за подтверждённые ограничения или ограничения отсутствуют, позиция получает `REQUIRES_MANUAL_REVIEW` вместо выдуманной точной цены.
 - **FR-CALC-012 — MUST:** при Manual Review показывается: «Размер требует проверки мастером. Отправьте данные в WhatsApp, и мы рассчитаем стоимость вручную».
@@ -489,7 +561,7 @@
 
 ### 10.10. Портфолио
 
-- **FR-PORTFOLIO-001 — MUST:** предоставленные владельцем фотографии работ разрешены для публикации в портфолио.
+- **FR-PORTFOLIO-001 — MUST:** Business Owner определяет состав локального портфолио из подтверждённых работ бизнеса; конкретная фотография публикуется только после проверки provenance, прав/согласий, PII и asset-level `PUBLICATION_APPROVED`.
 - **FR-PORTFOLIO-002 — MUST:** исходные файлы работ не удаляются в рамках подготовки публикационной версии.
 - **FR-PORTFOLIO-003 — MUST:** обработанные версии хранятся отдельно и имеют связь с исходником.
 - **FR-PORTFOLIO-004 — MUST:** отсутствие подтверждённых оригиналов без водяных знаков не компенсируется удалением водяных знаков или вымышленным исходником.
@@ -503,7 +575,7 @@
 - **FR-ADMIN-002 — MUST:** управлять совместимостью систем, материалов и Hardware Color.
 - **FR-ADMIN-003 — MUST:** назначать Price Category варианту без массового автоматического вывода из свойств.
 - **FR-ADMIN-004 — MUST:** изменять бинарное наличие с причиной и audit log.
-- **FR-ADMIN-005 — MUST:** создавать draft версии прайс-листа, валидировать и публиковать их отдельным действием.
+- **FR-ADMIN-005 — MUST:** создавать draft версии прайс-листа, валидировать и активировать их отдельным действием; активация доступна только `OWNER` или `ADMIN` после просмотра diff и подтверждения.
 - **FR-ADMIN-006 — MUST:** опубликованная версия цены неизменяема; исправление создаёт новую версию.
 - **FR-ADMIN-007 — MUST:** управлять заявками в минимальном lifecycle и видеть связанную конфигурацию.
 - **FR-ADMIN-008 — SHOULD:** после профильной спеки управлять замерами и заказами в пределах роли.
@@ -519,6 +591,7 @@
 - **FR-ADMIN-018 — MUST:** администратор управляет `PartnerRelationship`, permission scope, badge asset, brand usage notes и evidence reference в пределах отдельного permission; изменение не переписывает историческую запись подтверждения.
 - **FR-ADMIN-019 — MUST:** права на активы, publication approval, наличие, pricing и orderability имеют независимые административные controls и фильтры.
 - **FR-ADMIN-020 — MUST:** администратор может перевести категорию или позицию в manual calculation/order blocked без удаления source data или исторических ссылок.
+- **FR-ADMIN-021 — MUST:** все попытки и успешные активации `PriceVersion` фиксируются в audit log с actor, diff/version, confirmation, outcome и correlation ID.
 - **FR-SETTINGS-001 — MUST:** сайт хранит версионируемые контакты, регион обслуживания, срок изготовления и гарантийный срок.
 - **FR-SETTINGS-002 — MUST:** настройки бесплатных услуг разделены по услуге, но их подтверждённое значение для всей обслуживаемой территории равно `0` рублей; изменение бизнес-смысла требует нового решения владельца.
 - **FR-SETTINGS-003 — MUST:** privacy/consent тексты версионируются с датой вступления в силу.
@@ -593,6 +666,7 @@
 - **FR-PRICE-005 — MUST:** изменение текущей версии не влияет на прошлый snapshot.
 - **FR-PRICE-006 — MUST:** предложение не пересчитывается молча после изменения цены или истечения будущего утверждённого срока; создаётся новая явная ревизия.
 - **FR-PRICE-007 — MUST:** ручная корректировка подтверждённой цены хранит исходную сумму, новую сумму, причину и автора.
+- **FR-PRICE-012 — MUST:** active pointer `PriceVersion` может изменить только actor `OWNER` или `ADMIN` после просмотра exact diff и явного подтверждения; операция атомарна и аудируется.
 
 ### 11.4. Предварительная и подтверждённая цена
 
@@ -720,7 +794,7 @@
 ### 15.3. Доступность для целевой аудитории
 
 - **NFR-AVAIL-001 — MUST:** публичный сайт, его критические assets, API и CAPTCHA/consent зависимости работают из Чеченской Республики без VPN.
-- **NFR-AVAIL-002 — MUST:** окончательный hosting выбирается только после сравнительной оценки и ADR, включая сетевые измерения `TBD-INFRA-002`.
+- **NFR-AVAIL-002 — MUST:** окончательный hosting выбирается только после сравнительной оценки и ADR с проверкой матрицы регионов, подключений, маршрутов и Chrome из `OWNER-DECISION-007`.
 - **NFR-AVAIL-003 — MUST:** отказ AI, аналитики или необязательной анимации не делает каталог, калькулятор и контакт недоступными.
 - **NFR-AVAIL-004 — SHOULD:** критические внешние зависимости имеют timeout, circuit breaker/fallback и наблюдаемый статус.
 
@@ -779,7 +853,7 @@
 
 - **NFR-ARCH-001 — Web application:** публичный responsive UI, клиентский кабинет при включении и отдельная административная поверхность.
 - **NFR-ARCH-002 — API:** единая серверная граница авторизации, каталога, расчёта, проектов, заявок и orchestrated jobs.
-- **NFR-ARCH-003 — Database:** транзакционный источник правды для каталога, версий цены, расчётов, статусов, consent и audit references; технология не выбрана.
+- **NFR-ARCH-003 — Database:** PostgreSQL является локальным транзакционным operational system of record для source snapshots, нормализованных каталоговых проекций, локальных решений, версий цены, расчётов, заявок, статусов, consent и audit references. По `OWNER-DECISION-009` его активная одобренная версия является единственным каноническим runtime-источником публичных catalog/search/filter/configurator/calculation/lead/analytics данных; это MUST NOT подменять upstream/decision authority из `OWNER-DECISION-008`, а object storage и rebuildable projections остаются delivery/derived layers.
 - **NFR-ARCH-004 — Object storage:** private хранилище оригиналов и производных с lifecycle controls; провайдер не выбран.
 - **NFR-ARCH-005 — Background jobs:** идемпотентные задачи upload processing, detection, render, refinement, уведомлений и удаления.
 - **NFR-ARCH-006 — AI/CV worker:** изолированная вычислительная граница для detection/segmentation/rendering без коммерческих правил.
@@ -825,9 +899,9 @@
 
 ### 19.1. Будущая проверка ценового соответствия
 
-- **NFR-TEST-001 — MUST:** [TEST_STRATEGY.md](../quality/TEST_STRATEGY.md) содержит pricing parity matrix с одинаковыми системой, материалом, шириной, высотой, креплением, опциями, регионом и датой.
+- **NFR-TEST-001 — MUST:** [TEST_STRATEGY.md](../quality/TEST_STRATEGY.md) содержит pricing parity matrix с одинаковыми source version, системой, материалом, размерами, фурнитурой, опциями и количеством.
 - **NFR-TEST-002 — MUST:** для каждого случая сохраняются результат AMIGO, результат локального калькулятора, абсолютная и процентная разница и source version.
-- **NFR-TEST-003 — MUST:** допустимое отклонение не устанавливается без явного решения владельца `TBD-PRICE-PARITY-001`; тест не обходит авторизацию, CAPTCHA или ограничения доступа.
+- **NFR-TEST-003 — MUST:** абсолютное отклонение до 1 рубля включительно допустимо только при полностью одинаковых входах `NFR-TEST-001`; большее отклонение является parity error. Тест не обходит авторизацию, CAPTCHA или ограничения доступа.
 
 ## 20. Основные риски и снижение
 
@@ -852,6 +926,7 @@
 | RISK-017 | Изображение AMIGO будет опубликовано вне партнёрского scope, с неверной связью или через hotlink. | `PARTNER_LICENSE`, локальный asset, asset-level mapping, `PUBLICATION_APPROVED`, provenance, отзыв и запреты `ASSET-*`. |
 | RISK-018 | Нейтральная рассрочка превратится в ложное обещание кредита. | Единственный утверждённый текст, запрещённые claims, manual WhatsApp и `TBD-INSTALLMENT-001`–`013`. |
 | RISK-019 | Локальный калькулятор разойдётся с контрольным результатом AMIGO. | Pricing parity matrix, source version, diff, owner-approved tolerance и остановка автоматической публикации при необъяснённом расхождении. |
+| RISK-020 | Публичный flow, search/cache/analytics projection или импорт обойдёт активную PostgreSQL `CatalogVersion`, покажет staged AMIGO data либо автоматически удалит локальное решение. | Запрет direct AMIGO/staging reads, version-pinned rebuildable projections, обязательные diff/Business Owner approval/admin activation, no-auto-delete, audit и rollback по `OWNER-DECISION-009`. |
 
 ## 21. Поэтапный roadmap без календарных обещаний
 
@@ -895,7 +970,7 @@
 - **DOD-009:** reference rules отражают права, исходники/производные и отсутствие локальных файлов при инвентаризации.
 - **DOD-010:** ссылки, Markdown-структура и line-count проверены автоматически/вручную.
 - **DOD-011:** `SPEC_QUALITY_GATE.md` содержит доказательства self-check и нерешённые approval-блокеры.
-- **DOD-012:** 0A завершена по прямому сообщению владельца, а entry gate версии 0.4.0 после 0A.1 пройден 2026-08-02 по письменному поручению начать 0B; персональное имя утверждающего остаётся `TBD-BIZ-001` для audit trail.
+- **DOD-012:** 0A завершена по прямому сообщению владельца, а entry gate версии 0.4.0 после 0A.1 пройден 2026-08-02 по письменному поручению начать 0B; исторический `TBD-BIZ-001` впоследствии закрыт `OWNER-DECISION-001` без выдумывания персональных имён.
 - **DOD-013:** `EXTERNAL_SOURCES.md` регистрирует 14 заданных публичных страниц AMIGO и volatile customizer, partner/access distinction, изменяемость, legal/asset status, update и fallback.
 - **DOD-014:** `ASSET_RIGHTS_REGISTER.md` покрывает категории активов, подтверждённый `PARTNER_LICENSE` AMIGO и блокирует публикацию конкретного файла без корректной связи и `PUBLICATION_APPROVED`.
 - **DOD-015:** `PRICING_SOURCE_POLICY.md` фиксирует authorized source, dynamic source price categories, snapshots, `PricingProvider`, локальные бесплатные услуги, minimum-price TBD, fallback, audit и parity testing без копирования AMIGO.
@@ -909,7 +984,7 @@
 
 - бизнес/гарантия: `TBD-BIZ-*`, `TBD-WARRANTY-001`;
 - ассортимент и совместимость: `TBD-ASSORT-*`, `TBD-SIZE-001`, `TBD-ASSET-*`;
-- цена и источник: открытые `TBD-PRICE-*`, `TBD-PRICE-SOURCE-*`, `TBD-PRICE-PARITY-001`, `TBD-SOURCE-AMIGO-002`, `TBD-MIN-PRICE-001`, `TBD-MECHANISM-001`; решённые `TBD-SOURCE-AMIGO-001` и `TBD-PRICE-CATEGORY-001` сохраняются исторически;
+- цена и источник: открытые `TBD-PRICE-001`–`006`, `TBD-PRICE-008`–`010`, `TBD-PRICE-SOURCE-001`, `TBD-SOURCE-AMIGO-002`, `TBD-MECHANISM-001`; решённые `TBD-PRICE-007`, `TBD-PRICE-SOURCE-002`, `TBD-PRICE-PARITY-001`, `TBD-MIN-PRICE-001`, `TBD-SOURCE-AMIGO-001` и `TBD-PRICE-CATEGORY-001` сохраняются исторически;
 - рассрочка: `TBD-INSTALLMENT-001`–`013`;
 - наличие/размеры: `TBD-INVENTORY-*`, `TBD-DIM-*`;
 - монтаж/доставка/аккаунты: `TBD-INSTALL-*`, `TBD-DELIVERY-*`, `TBD-ACCOUNT-*`;

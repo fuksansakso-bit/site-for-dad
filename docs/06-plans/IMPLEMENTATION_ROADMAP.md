@@ -4,10 +4,10 @@
 
 | Поле | Значение |
 |---|---|
-| Фаза документа | 0C |
-| Статус roadmap | **APPROVED SEQUENCE / IMPLEMENTATION NOT AUTHORIZED** |
+| Фаза документа | Phase 1A completed; transition paused before 1B |
+| Статус roadmap | **PHASE 1A PASSED / PHASE 1B NOT AUTHORIZED** |
 | Scope | [MVP_SCOPE](MVP_SCOPE.md) |
-| Активный будущий план | [PHASE_1A_FOUNDATION_PLAN](active/PHASE_1A_FOUNDATION_PLAN.md) |
+| Завершённый план / evidence | [PHASE_1A_FOUNDATION_PLAN](active/PHASE_1A_FOUNDATION_PLAN.md), [PHASE_1A_FOUNDATION_REPORT](completed/PHASE_1A_FOUNDATION_REPORT.md) |
 
 - **ROADMAP-001 — MUST:** фазы выполняются по порядку 1A–1H; параллельный research MAY идти, но dependent implementation не обходит entry gate.
 - **ROADMAP-002 — MUST:** каждая возможность включается feature flag только после собственных acceptance/security/data gates; наличие кода не равно production activation.
@@ -21,7 +21,7 @@
 |---|---|
 | ID / цель | **ROADMAP-1A-001:** создать проверяемую локальную и CI foundation для modular monorepo, web/BFF, database, object storage, worker, auth boundary и operations, не реализуя бизнес-функции MVP. |
 | Зависимости | Baseline commit `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`; `GLOBAL_SPEC`; ADR-0001/0006; acceptance ADR-0007–0010. |
-| Входные условия | Phase 0C readiness gate `READY_FOR_OWNER_AUTHORIZATION`; clean documentation tree; 0 critical specs `BLOCKED/CONTRADICTORY`; P0 fully classified; explicit written owner authorization; exact supported dependency versions reverified. |
+| Входные условия | `QG-147/148` closed; Phase 0C baseline `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; 0 critical specs `BLOCKED/CONTRADICTORY`; P0 fully classified; exact supported dependency versions reverified before bootstrap. |
 | Deliverables | Monorepo skeleton; `apps/web` and `apps/worker`; domain/application/db/contracts/config/observability/testing/UI packages; local PostgreSQL/object emulator; migration baseline; environment schema; CI gates; lint/typecheck/tests; structured logging; liveness/readiness; synthetic auth/RBAC boundary; runbooks. |
 | Acceptance criteria | One documented bootstrap path works from clean machine; locked install/build/test deterministic; web and worker health proven; dependency boundaries enforced; synthetic DB migration replay/recovery and storage/job contracts pass; no secret/PII in repo/logs; no catalog/import/price/preview/lead implementation. |
 | Тесты | Toolchain smoke; architecture boundary; environment positive/negative; DB migration empty/upgrade/recovery; job retry/idempotency; object public/private denial; auth capability denial; health degradation; log redaction; CI reproducibility. |
@@ -30,7 +30,7 @@
 | Запрещённые изменения | AMIGO import/media ingestion, production data, pricing rules, catalog UI, configurator, preview, lead forms, AI, provider commitments beyond accepted ADR scope. |
 | Rollback | Revert commits in documented sequence while data is synthetic; preserve migration history once shared; use ADR-0008 compensation/rebuild rehearsal; revoke any issued test credentials and remove disposable local resources. |
 
-Подробный порядок: [PHASE_1A_FOUNDATION_PLAN](active/PHASE_1A_FOUNDATION_PLAN.md).
+Подробный execution record: [PHASE_1A_FOUNDATION_PLAN](active/PHASE_1A_FOUNDATION_PLAN.md); acceptance evidence: [PHASE_1A_FOUNDATION_REPORT](completed/PHASE_1A_FOUNDATION_REPORT.md). Phase 1A имеет статус `PASSED_PHASE_1A_FOUNDATION`; начало Phase 1B требует нового письменного решения.
 
 ## 2. PHASE 1B — AMIGO CATALOG PILOT
 
@@ -38,14 +38,14 @@
 |---|---|
 | ID / цель | **ROADMAP-1B-001:** доказать authorized snapshot pipeline и публичный каталог на 20–50 материалах без требования полного AMIGO assortment. |
 | Зависимости | 1A; ADR-0002/0006/0009; AMIGO parity, catalog, sync, media specs; rights/source registers. |
-| Входные условия | Доказан разрешённый transport или проверенный ручной файл (`TBD-SOURCE-AMIGO-002`); import owner; schema/mapping version; pilot allowlist; rights/publication evidence; local media zone operational. |
-| Deliverables | Dynamic catalog model; authorized import interface; immutable source snapshot; staging/normalize/validate/diff; manual approval/activation; provenance; local licensed media; 20–50 pilot materials across allowed initial families; public catalog/search/filter; admin catalog screen. |
-| Acceptance criteria | Re-import idempotent; source identity preserved; unknown fields/categories quarantined; activation atomic and reversible; only `PUBLICATION_APPROVED` material/media public; binary availability explicit; full assortment not required. |
-| Тесты | Parser/mapping fixtures; property/contract import tests; duplicate/stale/missing field; diff/review/rollback; rights revocation; public/private object access; catalog empty/filter/search/a11y/mobile; source outage fallback. |
-| Риски | Undocumented export schema, wrong mapping, mass publish, stale availability, rights mismatch, media leakage. |
-| Definition of Done | Approved pilot snapshot and audit record; 20–50 verified materials visible; rollback to previous snapshot rehearsed; unresolved items quarantined; no numeric pricing implied. |
-| Запрещённые изменения | Scraping/access bypass, hotlink, watermarks removal, bulk unmanaged download, auto-publication, assumptions about full assortment or AMIGO API/cadence. |
-| Rollback | Deactivate snapshot, restore previous active version, revoke derivative URLs, preserve immutable evidence/audit; migration compensation only through ADR-0008. |
+| Входные условия | `OWNER-DECISION-008/009` authority и public-serving contracts приняты, но дополнительно доказаны разрешённый transport или проверенный ручной файл (`TBD-SOURCE-AMIGO-002`), import owner, manifest/schema/mapping version, pilot allowlist, rights/publication evidence и operational local media zone; получено отдельное Phase 1B transition decision. |
+| Deliverables | Dynamic catalog model и immutable AMIGO snapshots/normalized projection в PostgreSQL; authority-aware import interface; staged candidate/validation/exact diff; Business Owner approval и explicit administrator activation точной `CatalogVersion`; local overlays с declared precedence; provenance/audit/source timestamps/rollback; local licensed media binaries in object storage; 20–50 pilot materials across allowed initial families; public catalog/search/filter и version-pinned rebuildable projections; admin catalog screen. |
+| Acceptance criteria | Re-import idempotent; source identity preserved; unknown fields/categories quarantined; source removal никогда автоматически не удаляет/скрывает local data или overlays; activation atomic and reversible; public reads use only the active approved PostgreSQL `CatalogVersion`; only `PUBLICATION_APPROVED` material/media public; binary availability explicit; full assortment not required. |
+| Тесты | Parser/mapping fixtures; property/contract import tests; duplicate/stale/missing field; exact diff/Business Owner approval/admin activation; direct AMIGO/staging read denial; no-auto-delete on source removal; override precedence without source mutation; source/timestamp/audit completeness; projection pinning; rollback; rights revocation; public/private object access; catalog empty/filter/search/a11y/mobile; source outage fallback. |
+| Риски | Undocumented export schema, wrong mapping, staged/direct-source exposure, destructive sync, override loss, mass publish, projection drift, stale availability, rights mismatch, media leakage. |
+| Definition of Done | Active approved pilot `CatalogVersion` and complete audit/source/timestamp record; 20–50 verified materials visible only through PostgreSQL public-serving path; rollback to previous version rehearsed; unresolved items quarantined; no numeric pricing implied. |
+| Запрещённые изменения | Scraping/access bypass, hotlink, watermarks removal, bulk unmanaged download, auto-publication, auto-delete/hide of local data, direct public reads from AMIGO/staging, assumptions about full assortment or AMIGO API/cadence. |
+| Rollback | Atomically restore the previous active `CatalogVersion`, rebuild version-pinned projections, revoke affected derivative URLs and preserve immutable evidence/audit; migration compensation only through ADR-0008. |
 
 ## 3. PHASE 1C — CONFIGURATOR AND PRICING
 
@@ -142,7 +142,7 @@
 | Переход | Минимальный gate |
 |---|---|
 | 0C → 1A | Explicit owner authorization + accepted ADR-0007–0010 + all Phase 0C stop conditions satisfied |
-| 1A → 1B | Foundation DoD + authorized pilot source/rights/mapping owner |
+| 1A → 1B | Foundation DoD + authorized pilot source/rights/mapping owner + separate explicit Product Owner transition decision |
 | 1B → 1C | Approved pilot catalog + rule-specific compatibility/price evidence |
 | 1C → 1D | Stable published configuration/material/profile inputs |
 | 1D → 1E | Price/cart contracts stable + PII/legal lead gate |
@@ -155,3 +155,6 @@
 | Версия | Дата | Изменение |
 |---|---|---|
 | 1.0.0 | 2026-08-02 | Зафиксированы последовательные Phase 1A–1H с entry, deliverables, tests, risks, DoD, forbidden changes and rollback. |
+| 1.1.0 | 2026-08-02 | Phase 1A отмечена `PASSED`; добавлены completion report и обязательное отдельное письменное решение для перехода к Phase 1B. |
+| 1.2.0 | 2026-08-02 | Phase 1B уточнена `OWNER-DECISION-008`: PostgreSQL хранит source/local revisions, object storage — media binaries; transport/manifest/evidence и отдельное transition decision остаются обязательными. |
+| 1.3.0 | 2026-08-02 | Phase 1B синхронизирована с `OWNER-DECISION-009`: active PostgreSQL `CatalogVersion` обслуживает public runtime после staged diff/Business Owner approval/admin activation; добавлены no-auto-delete, override/audit/version/projection/rollback gates без разрешения реализации. |

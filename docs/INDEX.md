@@ -2,7 +2,7 @@
 
 ## 0. Статус
 
-Фаза **0C — IMPLEMENTATION READINESS, MVP FREEZE AND P0 TBD TRIAGE** документально завершена 2026-08-02 на baseline commit `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`. `GLOBAL_SPEC` обновлён до 0.6.0, MVP заморожен, 61/61 P0 классифицированы, 14 critical specs audited без Foundation blockers, а Phase 1A–1H и detailed Foundation plan определены. Gate имеет статус `READY_FOR_OWNER_AUTHORIZATION`, не `PASSED_TO_IMPLEMENTATION`: код, dependencies, import и Phase 1A не разрешены.
+Phase 1A Foundation завершена 2026-08-02 от исходного commit `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`. `GLOBAL_SPEC` 0.9.0 фиксирует `OWNER-DECISION-001`–`009`: AMIGO source authority, Business Owner local authority и единственный PostgreSQL public-serving runtime source разделены; staged import/diff/approval/activation contract не является Phase 1B transition или evidence завершённого import. ADR-0007–0010 приняты и проверены реализацией, QG-149–158 пройдены; последующие docs-only audits QG-159–168 подтвердили authority/serving sync и отсутствие catalog/import implementation. Gate `PASSED_PHASE_1A_FOUNDATION` не разрешает Phase 1B, import, business features или production deployment.
 
 ## 1. Порядок обязательного чтения
 
@@ -26,15 +26,15 @@
 | Документ | Назначение |
 |---|---|
 | [GLOBAL_SPEC.md](specs/GLOBAL_SPEC.md) | Scope, роли, flows, глобальные FR/NFR, модели, риски и phase boundaries |
-| [GLOSSARY.md](00-global/GLOSSARY.md) | Единые значения catalog, price, preview, media, sync и state терминов |
+| [GLOSSARY.md](00-global/GLOSSARY.md) | Единые значения catalog, price, preview, media, sync, source authority и operational system of record |
 | [EXTERNAL_SOURCES.md](00-global/EXTERNAL_SOURCES.md) | 15 source records: 14 публичных AMIGO страниц и volatile customizer |
 | [ASSET_RIGHTS_REGISTER.md](00-global/ASSET_RIGHTS_REGISTER.md) | Partner license, asset-level publication, provenance, AI/training/delete границы |
 | [PRICING_SOURCE_POLICY.md](00-global/PRICING_SOURCE_POLICY.md) | Authorized price source, immutable versions, local rules, fallback и parity |
 | [ASSUMPTIONS.md](00-global/ASSUMPTIONS.md) | Версионируемые гипотезы, которые не становятся фактом без решения |
 | [OPEN_QUESTIONS.md](00-global/OPEN_QUESTIONS.md) | Канонический реестр `TBD-*`, владельцев, влияния и критериев закрытия |
-| [SPEC_ROADMAP.md](00-global/SPEC_ROADMAP.md) | Фактический комплект 0B/0C, proposed Foundation ADR, gates и последовательность 1A–1H |
+| [SPEC_ROADMAP.md](00-global/SPEC_ROADMAP.md) | Фактический комплект 0B/0C, accepted Foundation ADR, gates и последовательность 1A–1H |
 | [TRACEABILITY_MATRIX.md](00-global/TRACEABILITY_MATRIX.md) | 18 critical chains и полная 40-story связь со спеками, AC и tests |
-| [SPEC_QUALITY_GATE.md](00-global/SPEC_QUALITY_GATE.md) | Passed gates 0B и Phase 0C readiness `READY_FOR_OWNER_AUTHORIZATION` |
+| [SPEC_QUALITY_GATE.md](00-global/SPEC_QUALITY_GATE.md) | Passed gates 0B/0C и Phase 1A acceptance `PASSED_PHASE_1A_FOUNDATION` |
 
 ## 3. Product specifications
 
@@ -96,7 +96,7 @@
 | [TEST_STRATEGY.md](quality/TEST_STRATEGY.md) | 40 critical scenarios и общий unit/property/contract/integration/E2E/visual/a11y/security/privacy/performance/recovery plan |
 | [AI_EVALUATION_SPEC.md](evaluations/AI_EVALUATION_SPEC.md) | Rights-cleared benchmark, stage metrics, hard gates, human/privacy/performance/cost evaluation |
 
-## 8. Phase 0C implementation-readiness plans
+## 8. Implementation-readiness and Phase 1A artifacts
 
 | Документ | Назначение |
 |---|---|
@@ -104,7 +104,8 @@
 | [SPEC_READINESS_AUDIT.md](06-plans/SPEC_READINESS_AUDIT.md) | Audit 14 critical specs по 15 dimensions и targeted contradiction fixes |
 | [IMPLEMENTATION_ROADMAP.md](06-plans/IMPLEMENTATION_ROADMAP.md) | Phase 1A–1H with entry, deliverables, tests, risks, DoD, forbidden changes and rollback |
 | [PHASE_1A_TECHNOLOGY_EVALUATION.md](06-plans/PHASE_1A_TECHNOLOGY_EVALUATION.md) | Stack comparison, migration/secrets baseline and official evidence |
-| [PHASE_1A_FOUNDATION_PLAN.md](06-plans/active/PHASE_1A_FOUNDATION_PLAN.md) | Detailed non-executed Foundation plan; status `NOT_STARTED` |
+| [PHASE_1A_FOUNDATION_PLAN.md](06-plans/active/PHASE_1A_FOUNDATION_PLAN.md) | Completed Foundation execution record; Phase 1B excluded |
+| [PHASE_1A_FOUNDATION_REPORT.md](06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md) | Actual applications/packages, commits, migrations, tests, CI evidence, skipped scope and acceptance result |
 
 ## 9. Architecture decisions
 
@@ -116,10 +117,10 @@
 | [ADR-0004](adr/ADR-0004-standard-preview-renderer.md) | Детерминированный standard preview, независимый от AI |
 | [ADR-0005](adr/ADR-0005-ai-visualization-pipeline.md) | Geometry-first base и optional constrained refinement |
 | [ADR-0006](adr/ADR-0006-media-storage.md) | Local immutable media, derivatives и public/private zones |
-| [ADR-0007](adr/ADR-0007-foundation-application-stack.md) | **Proposed:** Node/TypeScript/pnpm/Next.js modular Foundation topology |
-| [ADR-0008](adr/ADR-0008-postgresql-and-migration-safety.md) | **Proposed:** PostgreSQL, reviewed migrations and expand/contract rollback safety |
-| [ADR-0009](adr/ADR-0009-object-storage-and-background-jobs.md) | **Proposed:** S3-compatible object port and Postgres-backed durable jobs |
-| [ADR-0010](adr/ADR-0010-identity-secrets-and-observability-boundary.md) | **Proposed:** identity/secrets/OTLP boundary; public providers deferred |
+| [ADR-0007](adr/ADR-0007-foundation-application-stack.md) | **Accepted:** Node/TypeScript/pnpm/Next.js modular Foundation topology and Windows 11 support |
+| [ADR-0008](adr/ADR-0008-postgresql-and-migration-safety.md) | **Accepted:** PostgreSQL/Prisma, reviewed migrations and expand/contract recovery |
+| [ADR-0009](adr/ADR-0009-object-storage-and-background-jobs.md) | **Accepted:** S3-compatible object port and separate Graphile Worker |
+| [ADR-0010](adr/ADR-0010-identity-secrets-and-observability-boundary.md) | **Accepted:** identity/secrets/OTLP boundary; production providers deferred |
 
 ## 10. Research evidence
 
@@ -140,8 +141,10 @@ Research snapshot не является вечным catalog/price fact. Нор�
 
 ## 12. Как находить ответ
 
-- Поведение продукта — `GLOBAL_SPEC`, затем accepted ADR в его границах, затем профильная спека; proposed ADR не является принятым решением.
+- Поведение продукта — `GLOBAL_SPEC`, затем accepted ADR в его границах, затем профильная спека.
 - Что именно подтверждено владельцем/AMIGO — `GLOBAL_SPEC`, `EXTERNAL_SOURCES`, `ASSET_RIGHTS_REGISTER`.
+- Кто определяет конкретное поле — authority matrix `OWNER-DECISION-008`: AMIGO для source-backed catalog/image/base-price данных; Business Owner для local availability/visibility/override/portfolio/commercial условий.
+- Откуда публичное приложение читает данные — `OWNER-DECISION-009`: только активная одобренная PostgreSQL `CatalogVersion`/transactional state; AMIGO и staging не являются runtime read path, а cache/search/analytics projections остаются rebuildable и version-pinned.
 - Можно ли публиковать изображение — asset-level state в `ASSET_RIGHTS_REGISTER` и media specs.
 - Почему цена недоступна или как воспроизводится — `PRICING_SOURCE_POLICY` и `PRICING_CALCULATOR_SPEC`.
 - Как работает AMIGO parity/sync — parity spec, sync architecture и ADR-0002.
@@ -149,7 +152,7 @@ Research snapshot не является вечным catalog/price fact. Нор�
 - Кто может выполнить действие — `ROLES_PERMISSIONS` и relevant domain spec.
 - Каких данных не хватает — `OPEN_QUESTIONS` по уникальному `TBD-*`.
 - Как требование проверяется — `TRACEABILITY_MATRIX`, AC и `TEST_STRATEGY`.
-- Можно ли начинать код — только выполненные QG-147/148, accepted/superseding ADR и отдельное письменное решение владельца; текущий ответ — нет.
+- Можно ли начинать следующий код — нет: Phase 1A Foundation завершена и QG-149–158 пройдены; Phase 1B+, AMIGO import, business features и production требуют нового письменного разрешения.
 
 ## 13. Правило навигации
 

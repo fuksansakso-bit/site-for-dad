@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD`; conceptual contracts ready, concrete versioned routes/events are frozen per implementation phase |
-| Версия | 0.1.0 |
+| Статус | Phase 1A safe error and health contracts implemented; business routes remain conceptual and gated |
+| Версия | 0.3.0 |
 | Дата | 2026-08-02 |
 | Architecture/data | [ARCHITECTURE.md](ARCHITECTURE.md), [DATA_MODEL.md](DATA_MODEL.md) |
 | Security | [SECURITY_PRIVACY.md](SECURITY_PRIVACY.md) |
@@ -38,6 +38,8 @@ Out of scope: live implementation, provider-specific AMIGO/auth/AI/WhatsApp APIs
 - **API-SPEC-018 — MUST:** deprecated fields/states remain interpretable for supported clients/history; removal needs impact/migration plan.
 - **API-SPEC-019 — MUST:** public caches vary by locale/catalog/content/version and never cache personalized/private/authorization responses.
 - **API-SPEC-020 — MUST:** request/response/event logs apply schema allowlist/redaction and never record credentials, full contact, private image or free-text payload by default.
+- **API-SPEC-021 — MUST:** Phase 1A error envelope contains machine-readable `code`, safe `message`, `correlationId`, HTTP status and optional validation details; server mapping also assigns logging severity.
+- **API-SPEC-022 — MUST:** no client error contains stack trace, SQL, secret, internal filesystem path or another actor's data.
 
 ## 3. Common envelopes
 
@@ -148,16 +150,16 @@ Provider callback additionally validates signature/key ID/timestamp/nonce/enviro
 
 | Class/code examples | Semantic response |
 |---|---|
-| `VALIDATION_*` | Client-correctable fields, no mutation |
-| `AUTH_REQUIRED`, `ACCESS_DENIED`, `RESOURCE_NOT_FOUND` | Neutral anti-enumeration policy |
-| `VERSION_CONFLICT`, `STATE_TRANSITION_INVALID` | Conflict + safe current version/actions |
+| `VALIDATION_ERROR` / 400 | Client-correctable fields in optional details, no mutation |
+| `AUTHENTICATION_REQUIRED` / 401, `PERMISSION_DENIED` / 403, `NOT_FOUND` / 404 | Neutral anti-enumeration policy |
+| `CONFLICT` / 409 | Version/state conflict + safe current actions where authorized |
 | `DOMAIN_DATA_MISSING`, `PRICE_UNAVAILABLE`, `MANUAL_REVIEW` | Successful domain status or typed conflict, no fake value |
-| `RATE_LIMITED`, `PAYLOAD_TOO_LARGE` | Retry guidance bounded |
-| `DEPENDENCY_UNAVAILABLE`, `TIMEOUT` | Retryable flag/fallback; no provider details |
+| `RATE_LIMITED` / 429 | Retry guidance bounded |
+| `DEPENDENCY_UNAVAILABLE` / 503 | Retryable flag/fallback; no provider details |
 | `INTEGRITY/SECURITY_REJECTED` | Fail closed, correlation, audit |
-| `INTERNAL_ERROR` | Generic safe response; detailed redacted telemetry only |
+| `INTERNAL_ERROR` / 500 | Generic safe response; detailed redacted telemetry only |
 
-Status code mapping is implementation contract after protocol selection, but semantics above are fixed. Domain unavailability is not always server failure; response must remain machine-readable.
+The eight Phase 1A foundation codes and mappings above are fixed. More specific future domain codes MAY extend them without exposing internals. Domain unavailability is not always server failure; response must remain machine-readable.
 
 ## 11. Pagination, filtering and concurrency
 
@@ -171,12 +173,18 @@ TLS, secure session/CSRF/CORS/CSP, object authorization, rate/abuse, schema vali
 
 Contract tests cover schemas/unknown fields as policy, auth/object matrix, idempotency, version conflicts, errors, exact money, pagination/cursors, upload spoof/completion, late callback/delete, public/private caching, redaction, event compatibility/dedup/order, provider outages and old/new client rolling compatibility. Domain AC/TS map to endpoints but API tests do not replace business tests.
 
-## 14. Dependencies, risks and open questions
+## 14. Phase 1A implementation record
 
-Dependencies: all domain/technical specs, auth/provider/hosting ADRs. Open: protocol/framework, public API exposure, exact status codes, browser upload flow, event broker/webhook provider, rate limits, API lifecycle/support window and WhatsApp integration mode. Risks: CRUD bypass of invariants, IDOR, non-idempotent retry, private URL leak, mixed version, error data exposure and contract overcoupling to vendor.
+Concrete routes are limited to `GET /api/v1/health/live` and `GET /api/v1/health/ready`. They use the shared eight-code safe error/health contracts, request/correlation identifiers and bounded dependency details; no business mutation endpoint exists. Origin/CSRF/body-size/rate-limit interfaces are implemented as server-side Foundation boundaries for future mutation handlers, not exposed as fake business APIs. Evidence: [Phase 1A report](../../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
 
-## 15. History
+## 15. Dependencies, risks and open questions
+
+Dependencies: all domain/technical specs, auth/provider/hosting ADRs. Next.js same-origin BFF and Foundation error status mapping are accepted; open: public API exposure, browser upload flow, future webhook transport, concrete rate limits, API lifecycle/support window and WhatsApp mode. Risks: CRUD bypass of invariants, IDOR, non-idempotent retry, private URL leak, mixed version, error data exposure and contract overcoupling to vendor.
+
+## 16. History
 
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Defined versioned resource/command/query, public/admin/visualization contracts, errors, events, idempotency and privacy boundaries. |
+| 0.2.0 | 2026-08-02 | Fixed the eight Phase 1A safe error codes, HTTP mapping, correlation/validation envelope and prohibited disclosures. |
+| 0.3.0 | 2026-08-02 | Recorded the two implemented health routes and verified that no business API or mutation route entered Phase 1A. |

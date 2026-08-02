@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD`; logical model/invariants ready, physical schema requires accepted ADR-0008 and feature-specific data |
-| Версия | 0.1.0 |
+| Статус | Phase 1A infrastructure schema implemented; all business aggregates remain logical and gated |
+| Версия | 0.4.0 |
 | Дата | 2026-08-02 |
 | Architecture | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | Glossary | [GLOSSARY.md](../../00-global/GLOSSARY.md) |
@@ -26,13 +26,23 @@ This specification defines aggregate ownership, entities, keys/revisions, relati
 - **DATA-SPEC-010 — MUST:** physical delete is prohibited for immutable quote/version/audit evidence while retention applies; public access and identity may be revoked/pseudonymized.
 - **DATA-SPEC-011 — MUST:** all enums/states are versioned contract values; dynamic source categories/labels are not database enums.
 - **DATA-SPEC-012 — MUST:** every externally derived record has provenance/capture/verification/version/admin status.
+- **DATA-SPEC-013 — MUST:** every catalog/price/media/business field declares an authority class and provenance. AMIGO-origin products/materials/technical data/catalog-image identity/base prices use `AMIGO_SOURCE`; availability/visibility/price override/portfolio/commercial conditions use `BUSINESS_OWNER_LOCAL`.
+- **DATA-SPEC-014 — MUST:** PostgreSQL is the operational system of record for immutable source captures, normalized projections, local overlays, active pointers and audit, but persistence location MUST NOT be used to infer or change authority.
+- **DATA-SPEC-015 — MUST:** sync/import cannot update a `BUSINESS_OWNER_LOCAL` field, and local mutation cannot alter an immutable `AMIGO_SOURCE` value; correction creates the appropriate new source capture, mapping revision or local overlay.
+- **DATA-SPEC-016 — MUST:** catalog-image binary originals/derivatives live in managed object storage; PostgreSQL stores source/asset metadata, hash, mapping, rights/publication states and opaque object references, never a public source URL as the delivered binary.
+- **DATA-SPEC-017 — MUST:** immutable `CatalogVersion` is the public-serving catalog unit. Only one approved version per declared business/context may be active; public catalog/search/filter/configurator/calculation/lead/analytics records reference that version or transactional state derived from it.
+- **DATA-SPEC-018 — MUST:** `CatalogVersion` stores unique ID, `createdAt`, nullable `publishedAt`, source/source-version manifest, capture/sync/diff checksums, Business Owner approval, administrator activation, predecessor and rollback target. Published content is never edited in place.
+- **DATA-SPEC-019 — MUST:** cache, search index, filter facet and analytics/read projection records carry exact `catalogVersionId`/projection version and are rebuildable from PostgreSQL. They cannot be an independent import or mutation source.
+- **DATA-SPEC-020 — MUST:** source removal records a source tombstone/difference and MUST NOT cascade-delete, clear, hide or retire local entities, local-only records, `BUSINESS_OWNER_LOCAL` overlays or historical references; a later local transition is separate, authorized and audited.
+- **DATA-SPEC-021 — MUST:** the composed public value resolves an applicable approved local override before the source-backed default while preserving both records. Precedence uses explicit type/scope/effective interval, never column overwrite or latest-write-wins.
+- **DATA-SPEC-022 — MUST:** every catalog capture/import/validation/diff/local edit/override/approval/activation/rejection/hide/archive/rollback/projection rebuild has an append-only audit reference with actor/workload, time, reason, before/after version references and correlation ID.
 
 ## 2. Aggregate boundaries
 
 | Aggregate | Root / owned entities | External references |
 |---|---|---|
 | Partner/Source | PartnerRelationship, SourceCatalog, SourceCapture, SourceEntity | Supplier, MediaAsset, SyncRun |
-| Catalog | ProductFamily/Type/System/Model, option/property definitions, mappings/readiness | Source, Media, Price, Rules |
+| Catalog | CatalogVersion/active pointer, ProductFamily/Type/System/Model, option/property definitions, mappings/readiness, local overlays | Source, Media, Price, Rules, derived projections |
 | Material | Material, MaterialVariant, properties/values | Catalog systems, MediaAsset, price category |
 | Configuration | Configuration + immutable revisions/selections/validation | Catalog/schema/rules/material |
 | Pricing | PriceVersion, PriceRule, Override, Quote/revisions/breakdown/parity case | Configuration, source context, actor |
@@ -49,13 +59,13 @@ Aggregates reference others by stable ID/revision and use application orchestrat
 
 ## 3. Common fields
 
-Common versioned entity fields: `id`, `revision`, `status`, `createdAt/by`, `updatedAt/by`, optional effective/expiry/retired/deleted timestamps, `version`, `checksum`, `reason`, `correlationId`. Not every public DTO exposes these.
+Common versioned entity fields: `id`, `revision`, `status`, `createdAt/by`, `updatedAt/by`, optional effective/expiry/retired/deleted timestamps, `version`, `checksum`, `reason`, `correlationId`. Published catalog versions additionally require `publishedAt`, source manifest, approval/activation references, predecessor and rollback target. Not every public DTO exposes these.
 
 External provenance fields: `supplierId`, `sourceRecordId`, `sourceCatalogId/context`, `sourceEntityId/slug/urlOrAuthorizedRef`, `sourceVersion`, `capturedAt`, `lastVerifiedAt`, `verificationStatus`, `administrativeStatus/comment`, `evidenceReference`.
 
 ## 4. Partner and source model
 
-`Supplier 1—N SourceCatalog`; `Supplier 1—N PartnerRelationshipRevision`; `SourceCatalog 1—N SourceCapture`; capture has source entities/raw metadata/hash; mappings connect source entity revision to one/more local entities and record mapping type/confidence/reviewer.
+`Supplier 1—N SourceCatalog`; `Supplier 1—N PartnerRelationshipRevision`; `SourceCatalog 1—N SourceCapture`; capture has source entities/raw metadata/hash; mappings connect source entity revision to one/more local entities and record mapping type/confidence/reviewer. Source capture values carry `authority = AMIGO_SOURCE`; normalization does not transfer ownership to the local mapper. A source removal creates a versioned source tombstone/difference and has no cascade path to local overlays, local-only entities or historical facts.
 
 PartnerRelationship fields mandated by owner: `partnerStatus`, `partnerName`, `partnerRegion`, `partnerBadgeAssetId`, `permissionScope`, `permissionConfirmedByOwner`, `permissionRecordedAt`, `optionalEvidenceReference`, `brandUsageNotes`, effective/revoked state. Permission scope revision is referenced by relevant source/media publication records.
 
@@ -63,7 +73,9 @@ PartnerRelationship fields mandated by owner: `partnerStatus`, `partnerName`, `p
 
 Canonical chain: Supplier → PartnerRelationship → SourceCatalog → ProductFamily → ProductType → ProductSystem → ProductModel → ProductConfiguration. ProductType optional; family and price categories dynamic.
 
-Supporting entities: MountingType, ControlType, OptionGroup/Value, CompatibilityRule, DimensionConstraint, Material/Variant/PropertyDefinition/Value, Color/Pattern/Texture/Composition/Transparency semantics, AvailabilityRecord, PriceCategory, MediaPlacement, LocalOverride and four readiness dimensions.
+`CatalogVersion` is an immutable manifest of exact normalized catalog entity revisions, source capture/source-version references, applicable Business Owner overlays/readiness/publication decisions, compatible price/media references, validation/diff evidence and approval/activation metadata. `ActiveCatalogPointer` selects one approved version per business/context atomically and retains the previous/rollback target. Search, filter, configurator, calculation, lead and analytics/read records pin `catalogVersionId`; public request handling never resolves catalog facts from AMIGO or staging.
+
+Supporting entities: MountingType, ControlType, OptionGroup/Value, CompatibilityRule, DimensionConstraint, Material/Variant/PropertyDefinition/Value, Color/Pattern/Texture/Composition/Transparency semantics, AvailabilityRecord, PriceCategory, MediaPlacement, LocalOverride and four readiness dimensions. Availability/publication/override/portfolio/commercial records carry `authority = BUSINESS_OWNER_LOCAL`, decision evidence and actor/audit references. The resolved public projection records both selected source revision and selected local override revision; precedence never destroys either layer.
 
 Relationships:
 
@@ -107,11 +119,11 @@ Account, Identity, Session, RoleAssignment, GuestOwnership and WorkloadIdentity 
 
 ## 11. Content/media model
 
-ContentRecord → ContentRevision → Placement(s). Placement references exact MediaAsset revision and domain/content role. MediaAsset has original hash/provenance/rightsholder/basis/scope/rights/publication/attribution/retention/delete; MediaDerivative links parent, transform spec/version and hash. Usage graph supports revoke/invalidation. SourceAsset is a provenance reference and cannot be treated as delivered local object until import later phase.
+ContentRecord → ContentRevision → Placement(s). Placement references exact MediaAsset revision and domain/content role. MediaAsset has original hash/provenance/rightsholder/basis/scope/rights/publication/attribution/retention/delete and opaque object reference; MediaDerivative links parent, transform spec/version and hash. Usage graph supports revoke/invalidation. SourceAsset is an AMIGO-authoritative provenance reference and cannot be treated as delivered local object until controlled import to object storage in a later phase. PostgreSQL stores metadata/relationships, not the binary as a catalog column.
 
 ## 12. Sync, audit and job model
 
-SyncRun links source capture, previous active and candidate versions, stage timestamps/states, summary/checksum. Difference contains entity/field/relationship type, before/after refs, classification/severity, mapping/conflict/resolution/approver. ActivationCommand switches typed active pointers atomically and records rollback target.
+SyncRun links source capture, previous active and candidate `CatalogVersion`, stage timestamps/states, summary/checksum. Difference contains entity/field/relationship type, before/after refs, classification/severity, mapping/conflict/resolution/approver. BusinessOwnerApproval binds the exact candidate/diff checksum. ActivationCommand requires that approval plus an actor with publication activation capability, switches the `ActiveCatalogPointer` atomically and records predecessor/rollback target. RebuildProjectionCommand carries the activated catalog version and cannot read source/staging independently.
 
 AuditEvent: immutable ID/time/actor/capability/aggregate ID/type/from-to version/state/reason/result/correlation/causation plus redacted metadata schema. OutboxEvent: event type/schema/payload safe refs/status/attempt. Job stores safe refs/stage/attempt/cancel/delete flags; detailed private content stays object/domain store.
 
@@ -131,6 +143,9 @@ AuditEvent: immutable ID/time/actor/capability/aggregate ID/type/from-to version
 
 - source/price/content/media revisions checksum-verified;
 - active pointer references approved compatible revision;
+- public/derived catalog record references the exact active `catalogVersionId`; no AMIGO/staging reference is a public serving source;
+- source removal has no automatic local delete/hide/archive cascade;
+- override resolution preserves source and overlay revisions and follows declared precedence;
 - no orphan derivative/placement/cart item/quote rule ref;
 - no public asset without valid rights/publication/usage mapping;
 - no private access after deletion/revoke even if object physical cleanup pending;
@@ -145,14 +160,21 @@ Schema changes use additive/read-old-write-new/dual-compatible evolution, backfi
 
 ## 16. Validation, errors and tests
 
-Tests: ID uniqueness, optimistic concurrency, effective interval overlap, hierarchy cycles, reference integrity, readiness matrix, exact money, historical replay, source rename/split/merge, dynamic category, ownership/IDOR, private graph deletion/late job, rights revoke, active pointer rollback, event/job deduplication, audit schema redaction, backup restore revocation and migration compatibility.
+Tests: ID uniqueness, optimistic concurrency, effective interval overlap, hierarchy cycles, reference integrity, readiness matrix, exact money, historical replay, source rename/split/merge/removal, preservation of local data/overlays on removal, dynamic category, catalog-version source/timestamp/approval completeness, single active pointer, public/derived version pinning, override precedence without source mutation, ownership/IDOR, private graph deletion/late job, rights revoke, active pointer rollback, event/job deduplication, catalog-change audit coverage, audit schema redaction, backup restore revocation and migration compatibility.
 
-## 17. Dependencies, risks and open questions
+## 17. Phase 1A physical schema record
 
-Dependencies: all domain specs, API/storage/security/deployment and ADRs. Open: physical database/storage/index/search, ID format, encryption/key strategy, PII/retention/legal schema, quantitative inventory and detailed order state. Risks: over-normalization vs opaque blobs, revision explosion, accidental cascade deletion, mutable history, enum lock-in and private data in generic metadata.
+The only physical Phase 1A tables are `actor_identity`, `role_grant`, `synthetic_session`, `audit_event`, `outbox_event`, `idempotency_record` and `service_heartbeat`, plus Prisma/Graphile migration metadata. Three reviewed migrations implement identity/audit, delivery/health and workload audit context. No product, material, price, quote, order, visualization or customer-photo table exists. Evidence: [schema and report](../../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
 
-## 18. History
+## 18. Dependencies, risks and open questions
+
+Dependencies: all domain specs, API/storage/security/deployment, ADRs and `OWNER-DECISION-008/009`. PostgreSQL/Prisma is fixed for Foundation; open: future business schema, production storage/index/search, ID evolution, encryption/key strategy, PII/retention/legal schema, quantitative inventory and detailed order state. The serving/version model does not assert that these logical tables already exist or authorize Phase 1B. Risks: over-normalization vs opaque blobs, revision explosion, accidental cascade deletion, mutable history, projection drift, enum lock-in and private data in generic metadata.
+
+## 19. History
 
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Defined aggregate/entity model, version/provenance, classifications, private media graph, integrity/deletion and evolution rules. |
+| 0.2.0 | 2026-08-02 | Recorded the seven-table Phase 1A infrastructure schema and confirmed that logical business aggregates were not implemented. |
+| 0.3.0 | 2026-08-02 | Added field authority classes, PostgreSQL operational-system semantics and object-storage image binary boundary from `OWNER-DECISION-008`; physical business schema remains unimplemented. |
+| 0.4.0 | 2026-08-02 | Added `OWNER-DECISION-009` immutable `CatalogVersion`, active pointer, source/timestamp/approval/audit metadata, no-auto-delete, local-override precedence and version-pinned public/derived read semantics without creating business tables. |

@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Статус | Draft 0B — logical RBAC/ownership contract |
-| Версия | 0.1.0 |
+| Версия | 0.3.0 |
 | Дата | 2026-08-02 |
 | Scope | Public, client, staff, service identities and approvals |
 | Security detail | [SECURITY_PRIVACY.md](../04-technical/SECURITY_PRIVACY.md) |
@@ -20,7 +20,8 @@ Actors:
 - `CUSTOMER` — authenticated person with ownership-limited access;
 - `MANAGER` — staff actor handling leads, measurements, quotes and communications;
 - `ADMIN` — operational catalog/system administrator, not automatically owner of every approval;
-- `OWNER` — business decision and high-risk approval role;
+- `OWNER` — high-risk system approval role; governance Product Owner/Business Owner powers remain separate under `OWNER-DECISION-001`;
+- `SYSTEM_WORKER` — non-human Phase 1A base identity with explicit task capability and no user browsing rights;
 - `CONTENT_MANAGER` — content/media lifecycle role;
 - `SYNC_SYSTEM` — non-human identity limited to ingest/staging/diff/activation commands granted by policy;
 - `AI_WORKER` — non-human identity limited to private visualization jobs;
@@ -48,6 +49,9 @@ Actors:
 - **RBAC-018 — MUST:** exports exclude secrets/private media and apply the same row/object permissions as interactive access.
 - **RBAC-019 — MUST:** support impersonation is prohibited unless separately designed, approved and visibly audited; it is not an implicit admin feature.
 - **RBAC-020 — MUST:** service credentials and user sessions are separate identities with minimum scopes, rotation/revocation and no shared secret in logs/docs.
+- **RBAC-021 — MUST:** `price.activate/rollback` is granted only to `OWNER` or `ADMIN`; the actor must review the exact diff, explicitly confirm and produce immutable audit evidence.
+- **RBAC-022 — MUST:** Phase 1A implements only `GUEST`, `CUSTOMER`, `MANAGER`, `ADMIN`, `OWNER` and `SYSTEM_WORKER`; later specialized service roles narrow `SYSTEM_WORKER` and never inherit human capabilities.
+- **RBAC-023 — MUST:** data authority from `OWNER-DECISION-008` is not inferred from an RBAC label. `ADMIN`/staff MAY record or execute Business Owner decisions only through explicitly delegated capability and evidence; they cannot redefine AMIGO source fields or silently become Business Owner.
 
 ## 3. Capability catalog
 
@@ -66,7 +70,7 @@ Actors:
 | `catalog.stage/edit` | Edit local/staged catalog mapping | High data |
 | `catalog.publish` | Activate/publicize catalog records | High public |
 | `price.stage/edit` | Prepare rules/snapshot version | Critical money |
-| `price.activate/rollback` | Change active version pointer | Critical money |
+| `price.activate/rollback` | `OWNER`/`ADMIN` changes active pointer after diff/confirmation; always audited | Critical money |
 | `asset.register/map` | Register provenance and mappings | High rights |
 | `asset.publish/revoke` | Change public delivery status | Critical rights |
 | `partner.scope_approve` | Confirm/modify permission scope | Critical legal/brand |
@@ -128,6 +132,7 @@ The conceptual response is `ALLOW`, `DENY`, `REAUTH_REQUIRED`, `APPROVAL_REQUIRE
 Examples:
 
 - manager may move assigned `CREATED → IN_REVIEW`, but not activate a PriceVersion;
+- only `OWNER` or `ADMIN` with `price.activate/rollback` may activate after exact diff review and confirmation;
 - content manager may stage/mapping assets, but rights scope change routes owner review;
 - sync worker may create `STAGED`, but cannot invent approval identity;
 - customer may request cancellation, but operational state changes only through approved workflow;
@@ -175,10 +180,12 @@ Core AC: `AC-AUTH-001`, `AC-ADMIN-001`, `AC-SEC-001`, `AC-PARTNER-001`, `AC-ASSE
 
 ## 12. Dependencies, risks and open questions
 
-Dependencies: `AUTH_ACCOUNTS_SPEC`, `ADMIN_PANEL_SPEC`, `SECURITY_PRIVACY`, domain state machines and ADR for auth. Open: `TBD-BIZ-001`, `TBD-ACCOUNT-*`, `TBD-INFRA-*`, staff/team model, emergency access and approval thresholds. Main risks are role explosion, broad admin bypass, broken object-level authorization, leaked guest tokens and unaudited service identities.
+Dependencies: `AUTH_ACCOUNTS_SPEC`, `ADMIN_PANEL_SPEC`, `SECURITY_PRIVACY`, domain state machines and ADR-0010. `TBD-BIZ-001` is resolved by `OWNER-DECISION-001`; open items remain `TBD-ACCOUNT-*`, applicable `TBD-INFRA-*`, staff/team model, emergency access and separation thresholds. Main risks are role explosion, broad admin bypass, broken object-level authorization, leaked guest tokens and unaudited service identities.
 
 ## 13. История изменений
 
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Определены восемь actors, 22 capabilities, object ownership, separation of duties, state authorization и failure behavior. |
+| 0.2.0 | 2026-08-02 | Разделены governance owners и RBAC `OWNER`, добавлен Phase 1A `SYSTEM_WORKER`, а PriceVersion activation ограничена `OWNER`/`ADMIN` с diff, confirmation и audit. |
+| 0.3.0 | 2026-08-02 | Уточнено, что RBAC-права лишь исполняют решения authority из `OWNER-DECISION-008` и не позволяют менять AMIGO source fields или подменять Business Owner. |

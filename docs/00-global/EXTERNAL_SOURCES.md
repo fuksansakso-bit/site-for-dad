@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Нормативный глобальный документ фазы 0A.1 |
-| Версия | 1.1.0 |
+| Статус | Нормативный глобальный реестр; acquisition implementation не разрешена в Phase 1A |
+| Версия | 1.4.0 |
 | Дата проверки источников | 2026-08-02, Europe/Moscow |
 | Главный источник правды | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) |
 | Связанные политики | [PRICING_SOURCE_POLICY.md](PRICING_SOURCE_POLICY.md), [ASSET_RIGHTS_REGISTER.md](ASSET_RIGHTS_REGISTER.md) |
@@ -21,11 +21,18 @@
 - **EXTSRC-005 — MUST:** AMIGO считается `AUTHORIZED_PARTNER_SOURCE` для разрешённых каталоговых данных, систем, материалов, тканей, артикулов, названий, опубликованных характеристик, изображений, примеров изделий, предварительных цен и наблюдаемой логики пользовательского сценария калькулятора.
 - **EXTSRC-006 — MUST NOT:** наличие публичной страницы трактуется как лицензия на коммерческое использование текста, фотографии, дизайна, программного кода, закрытого алгоритма или товарного знака.
 - **EXTSRC-007 — MUST NOT:** запрещены обход авторизации, CAPTCHA, rate limit, ограничений доступа и обращение к закрытым интерфейсам без полномочий.
-- **EXTSRC-008 — MUST:** официальный партнёрский статус подтверждён `PARTNER-001`; конкретный transport партнёрского кабинета/API/export, schema и cadence не предполагаются и остаются `TBD-SOURCE-AMIGO-002`/`TBD-PRICE-SOURCE-002`.
+- **EXTSRC-008 — MUST:** официальный партнёрский статус подтверждён `PARTNER-001`; конкретный transport партнёрского кабинета/API/export и schema не предполагаются и остаются `TBD-SOURCE-AMIGO-002`, тогда как cadence/staleness заданы `OWNER-DECISION-005`.
 - **EXTSRC-009 — MUST:** отключение или изменение AMIGO не останавливает публичный сайт PROJECT_NAME; применяются подтверждённая локальная версия, ручной процесс либо безопасное сообщение об отсутствии подтверждённых данных.
 - **EXTSRC-010 — MUST:** получение, проверка, отклонение, локальная корректировка и публикация внешних данных оставляют audit trail.
 - **EXTSRC-011 — MUST:** permission scope AMIGO охватывает каталог, названия, артикулы, технические сведения, цены, фотографии товаров/материалов/примеров, самостоятельное воспроизведение калькуляторной логики и партнёрский бейдж; код, DOM, закрытые API, обход доступа и training use в scope не входят.
 - **EXTSRC-012 — MUST:** публичные страницы остаются изменяемыми research/acquisition endpoints даже при партнёрском статусе; `AUTHORIZED_PARTNER_SOURCE` не делает их URL, структуру или iframe постоянными.
+- **EXTSRC-013 — MUST:** будущая проверка обновлений выполняется автоматически раз в сутки и вручную администратором; после 7 дней показывается `STALE_WARNING`, а возраст более 30 дней требует admin verification до публикации изменённой цены или нового товара.
+- **EXTSRC-014 — MUST:** по `OWNER-DECISION-008` AMIGO является upstream authority для AMIGO-origin products, materials, technical data, catalog images и base prices; capture/normalization MAY менять представление, но MUST NOT менять их бизнес-смысл без новой source version/evidence.
+- **EXTSRC-015 — MUST:** локальная PostgreSQL-проекция хранит source snapshots и решения Business Owner, но AMIGO sync MUST NOT перезаписывать local availability, local visibility/publication, local price overrides, local portfolio или commercial conditions. Эти поля имеют отдельные provenance, версии и audit.
+- **EXTSRC-016 — MUST:** по `OWNER-DECISION-009` AMIGO является только upstream acquisition source, а не public-serving runtime source. Catalog/search/filter/configurator/calculation/lead/analytics flows MUST использовать активную одобренную PostgreSQL `CatalogVersion` и связанные транзакционные записи; raw/staging/rejected data публично не читаются.
+- **EXTSRC-017 — MUST:** AMIGO addition/change/removal сначала создаёт immutable capture, staged candidate и diff. Source removal MUST NOT автоматически удалять, скрывать или архивировать локальные сущности, local-only data, Business Owner overlays или историю.
+- **EXTSRC-018 — MUST:** опубликованная локальная версия требует Business Owner approval и явной administrator activation; applicable local overrides имеют приоритет только в composed public projection и не меняют source snapshot.
+- **EXTSRC-019 — MUST:** каждая `CatalogVersion` хранит timestamp и source/source-version manifest, а capture/import/validation/diff/override/approval/activation/rejection/rollback/projection rebuild оставляют audit trail.
 
 ## 2. Модель внешнего значения
 
@@ -63,6 +70,7 @@
 | Разрешение на изображения | `PARTNER_LICENSE`; локальный файл в подтверждённом scope публикуется при asset record `PUBLICATION_APPROVED` |
 | Базовый способ обновления | Партнёрский источник → выгрузка → проверенный ручной импорт → публичные страницы как временный исследовательский источник |
 | Базовый fallback | Последняя подтверждённая локальная версия, ручная проверка менеджера либо нейтральное сообщение без выдуманного значения |
+| Разделение authority и serving | AMIGO определяет AMIGO-origin source fields; Business Owner определяет локальные availability/visibility/override/portfolio/commercial fields; активная одобренная PostgreSQL `CatalogVersion` является единственным public-serving source, не новым upstream source |
 
 ## 4. Зарегистрированные страницы
 
@@ -355,11 +363,25 @@
 
 Импорт или ручная фиксация данных MAY регистрировать любую текущую или будущую категорию AMIGO без изменения программного кода ядра. Наличие сущности на странице AMIGO не активирует локальную публикацию, наличие, pricing readiness, visualizer support или orderability. Эти состояния управляются независимо; сложные категории MAY оставаться `POST_MVP_CANDIDATE` для отдельных функций.
 
+Для AMIGO-origin записи импортируемый набор полей делится до normalization: source-owned поля обновляются только новой доказуемой AMIGO-версией, local-owned поля — только решением Business Owner через локальный audited workflow. Конфликт source/local ownership блокирует affected activation; импорт не использует last-write-wins. Любое изменение сначала попадает в staged candidate и diff, затем получает Business Owner approval и explicit administrator activation точной immutable `CatalogVersion`. Applicable local override имеет приоритет в публичной проекции, не меняя source fact. Catalog/media metadata хранится в PostgreSQL, а разрешённые image binaries — в object storage по `ASSET_RIGHTS_REGISTER` и media specs.
+
+Удаление или исчезновение сущности у AMIGO создаёт source tombstone/removal difference. Оно не запускает автоматическое удаление, скрытие или архивирование локальной сущности, local-only записи, Business Owner overlay или исторической ссылки. Публичные search/filter/cache/analytics projections строятся только из активной `CatalogVersion`, содержат её ID и могут быть пересозданы; они не являются отдельным acquisition channel.
+
 ## 6. Решения, которых документ не принимает
 
 - Не утверждается наличие у AMIGO официального публичного API.
 - Подтверждён официальный партнёрский статус и permission scope из `PARTNER-001`–`007`; документ не расширяет его на code/DOM/closed API, training use или неразрешённые модификации.
-- Не утверждаются конкретный partner API/export format, его schema, credentials или cadence до отдельного доказательства.
-- Не задаётся частота синхронизации до `TBD-SOURCE-AMIGO-002` и `TBD-PRICE-SOURCE-002`.
+- Не утверждаются конкретный partner API/export format, его schema или credentials до отдельного доказательства.
+- Cadence/staleness зафиксированы `OWNER-DECISION-005`; конкретный transport и технический scheduler остаются будущей реализацией за пределами Phase 1A.
 - Не задаётся город AMIGO для базового price snapshot до `TBD-PRICE-SOURCE-001`.
-- Не создаются локальные материалы, изображения, импорт или scraping-процесс в фазе 0A.1.
+- В Phase 1A не создаются локальные материалы, изображения, импорт или scraping-процесс.
+- Сообщение владельца об authority и целевой локальной PostgreSQL-проекции не является import manifest/evidence, не закрывает `TBD-SOURCE-AMIGO-002`/`TBD-ASSORT-002` и не разрешает Phase 1B.
+- `OWNER-DECISION-009` определяет public-serving topology и governance версии, но не доказывает transport/schema, фактический import batch, полноту каталога, активную `PriceVersion` или готовые assets.
+
+## 7. История изменений
+
+| Версия | Дата | Изменение |
+|---|---|---|
+| 1.2.0 | 2026-08-02 | Зафиксированы authorized partner source, daily/manual cadence, staleness и Phase 1A acquisition boundary. |
+| 1.3.0 | 2026-08-02 | По `OWNER-DECISION-008` добавлено field-level authority и разделение PostgreSQL operational projection/object-storage media при сохранении import/transport TBD. |
+| 1.4.0 | 2026-08-02 | По `OWNER-DECISION-009` AMIGO отделён от единственного PostgreSQL public-serving source; добавлены staged diff, Business Owner/admin activation, no-auto-delete, override precedence, audit и source/timestamp `CatalogVersion`. |

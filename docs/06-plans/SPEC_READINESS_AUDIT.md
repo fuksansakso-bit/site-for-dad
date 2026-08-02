@@ -66,7 +66,7 @@
 | `STANDARD_INTERIOR_PREVIEW_SPEC.md` | Separate deterministic result, inputs/outputs, layer/family/state/error/security/test contract complete. | `TBD-PREVIEW-001` scene/profile coverage and rights-approved assets before 1D. |
 | `AI_WINDOW_VISUALIZER_SPEC.md` | Geometry-first flow, manual correction, protected regions, optional refinement, recovery/privacy/tests explicit. | Provider, legal/TTL, benchmark, limits and cost gates before 1G. |
 | `ADMIN_PANEL_SPEC.md` | Capabilities, workflows, form states, validation, audit/security and negative tests complete. | Identity method/final role assignments and dependent feature data before 1F. |
-| `ARCHITECTURE.md` | Logical modules, sync/async boundaries, adapters, degradation, security and acceptance defined. | Owner acceptance of proposed ADR-0007–0010 before first Phase 1A commit. |
+| `ARCHITECTURE.md` | Logical modules, sync/async boundaries, adapters, degradation, security and acceptance defined. | ADR-0007–0010 accepted 2026-08-02; no remaining Foundation architecture blocker. |
 | `DATA_MODEL.md` | Aggregates, keys, classification, deletion, compatibility/migration invariants and tests defined. | Physical schema/tool only after ADR-0008; feature fields use source data. |
 | `API_SPEC.md` | Versioning, envelopes, resource/command/event contracts, auth, errors, pagination/idempotency defined. | Concrete route freeze follows its implementation phase; no external API implied. |
 | `AMIGO_SYNC_ARCHITECTURE.md` | Capture→snapshot→staging→diff→approve→activate/rollback, concurrency and failures complete. | `TBD-SOURCE-AMIGO-002` before actual capture, not before synthetic ports. |
@@ -89,9 +89,9 @@ No document was expanded merely to repeat the 15 audit dimensions. Existing sect
 
 ## 5. Remaining blockers by implementation moment
 
-- **Before Foundation:** none among classified P0; proposed ADR-0007–0010 and explicit owner authorization are transition decisions, not missing spec contracts.
+- **Before Foundation:** none among classified P0; ADR-0007–0010 and explicit owner authorization were completed through QG-147/148 on 2026-08-02.
 - **Before catalog pilot:** authorized AMIGO transport/file, pilot inventory/mapping and activation ownership.
-- **Before numeric configurator/pricing:** exact compatibility, dimensions, price rules/version/tolerance/approver; `TBD-MIN-PRICE-001` before any 1500-ruble rule.
+- **Before numeric configurator/pricing:** exact compatibility, dimensions, price rules/version/source fixtures remain; tolerance, approver and per-item 1500-ruble scope are resolved but not implemented in Phase 1A.
 - **Before public PII/account/admin:** legal/privacy/retention, identity/recovery and named operational roles.
 - **Before AI pilot:** provider/data-processing/legal/TTL/evaluation/upload/cost gates.
 - **Before production release:** provider regions, regional network evidence, backup/PITR/restore targets, monitoring and legal launch review.
@@ -109,3 +109,4 @@ No document was expanded merely to repeat the 15 audit dimensions. Existing sect
 | Версия | Дата | Изменение |
 |---|---|---|
 | 1.0.0 | 2026-08-02 | Audited 14 critical documents, recorded targeted corrections and established zero-blocked Foundation result. |
+| 1.1.0 | 2026-08-02 | Post-audit disposition recorded: QG-147/148 closed and owner-decision P0 resolved without opening Phase 1B features. |

@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD` for Foundation; factual inventory/feature activation waits for authorized AMIGO data |
-| Версия | 0.1.0 |
+| Версия | 0.3.0 |
 | Дата | 2026-08-02 |
 | Source evidence | [AMIGO public parity snapshot](../../research/AMIGO_PUBLIC_PARITY_SNAPSHOT_2026-08-02.md) |
 | Governance | [EXTERNAL_SOURCES.md](../../00-global/EXTERNAL_SOURCES.md), [ASSET_RIGHTS_REGISTER.md](../../00-global/ASSET_RIGHTS_REGISTER.md) |
@@ -44,6 +44,8 @@ Actors: guest/customer, local manager/admin/content/owner, sync system and AI wo
 - **PARITY-SPEC-010 — MUST:** AMIGO examples маркируются как партнёрские примеры, не как выполненные PROJECT_NAME работы.
 - **PARITY-SPEC-011 — MUST:** public source price/category/availability observation не заменяет active local approval.
 - **PARITY-SPEC-012 — MUST:** расширения PROJECT_NAME не должны искажать identity выбранного AMIGO product/material.
+- **PARITY-SPEC-013 — MUST:** AMIGO is source authority for AMIGO-origin products, materials, technical data, catalog images and base prices; local parity maps/presents those values but does not redefine them.
+- **PARITY-SPEC-014 — MUST:** Business Owner is authority for local availability, visibility/publication, price overrides, portfolio and commercial conditions; parity with AMIGO MUST NOT copy AMIGO-local conditions into those fields or overwrite their PostgreSQL revisions.
 
 ## 4. Полная category target map
 
@@ -134,7 +136,7 @@ Activation still depends on stable IDs, source capture, local mapping and readin
 
 Every parity record contains `parityCapabilityId`, `sourceRecordId`, `sourceUrlOrAuthorizedReference`, `observedAt`, `sourceVersion/context`, `localFeatureId`, `status`, `evidenceSummary`, `gap`, `owner`, `reviewedAt`, `nextReviewTrigger`. Category/system/material parity additionally links stable domain IDs and readiness states.
 
-Source values enter staging, never directly public UI. PartnerRelationship stores fields mandated by `PARTNER-004`; asset records follow the rights register; price follows version policy.
+Source values enter PostgreSQL staging and an exact diff, never directly public UI. Only an active approved `CatalogVersion` after Business Owner approval and explicit administrator activation may serve parity capabilities; version-pinned derived projections are rebuildable from it. PartnerRelationship stores fields mandated by `PARTNER-004`; asset records follow the rights register; price follows version policy.
 
 ## 9. Validation, errors, compatibility and edge cases
 
@@ -142,7 +144,7 @@ Source values enter staging, never directly public UI. PartnerRelationship store
 - duplicate labels/slugs → disambiguate by source ID/context, never merge by text alone;
 - one material belongs to multiple compatible systems → shared material + explicit variant/compatibility edges;
 - observed UI option absent in export → conflict requiring evidence, not deletion;
-- source removal → locally retire/hide new selection but historical quote remains;
+- source removal → create tombstone/proposed diff; never auto-retire/hide/delete local data or Business Owner overlays; an explicit approved local transition may later stop new selection while historical quote remains;
 - asset and catalog revisions out of sync → publication blocked for mismatched variant;
 - source category appears but prices do not → catalog inquiry may exist, priced cart cannot;
 - category changes classification → versioned mapping and impact review.
@@ -174,3 +176,5 @@ Links: `PARTNER-*`, `AMIGO-PARITY-*`, `AMIGO-SYNC-*`, `FR-CATALOG-*`, `FR-CONFIG
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Созданы category target map, customizer hierarchy snapshot, capability/property parity matrices и readiness rules. |
+| 0.2.0 | 2026-08-02 | Added AMIGO-vs-Business Owner data authority boundary from `OWNER-DECISION-008`; local PostgreSQL projection remains distinct from parity/source truth. |
+| 0.3.0 | 2026-08-02 | Aligned parity with `OWNER-DECISION-009`: only active PostgreSQL `CatalogVersion` serves public capabilities; source removal becomes reviewed diff and never auto-deletes/hides local data. |

@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | **Proposed** |
+| Статус | **Accepted** |
 | Дата | 2026-08-02 |
-| Решение требуется | Foundation interfaces — до Phase 1A; public identity/provider activation — до PII feature gate |
+| Решение принято | Product Owner, 2026-08-02; synthetic identity only in Phase 1A |
 | Supersedes | — |
 
 ## Контекст и драйверы
@@ -19,7 +19,7 @@ Foundation включает базовую authorization boundary, environment v
 2. Managed identity/observability provider selected now.
 3. Custom auth/session layer and local env files in deploy artifact.
 
-## Предлагаемое решение
+## Решение
 
 1. Foundation MUST define `IdentityPort`, session verification, RBAC/capability checks and centralized data access authorization; route/proxy checks alone are insufficient.
 2. Better Auth SHOULD be accepted as self-hosted session library after pinned-version security/compatibility spike. Public signup/login method remains disabled until legal, recovery, notification and provider decisions close.
@@ -54,8 +54,14 @@ Identity provider MAY be replaced behind `IdentityPort` with session invalidatio
 - [OBSERVABILITY](../specs/04-technical/OBSERVABILITY.md)
 - `FR-AUTH-001`–`FR-AUTH-008`, `ACCOUNT-SPEC-001`–`ACCOUNT-SPEC-021`, `NFR-SEC-001`–`NFR-SEC-010`, `NFR-OBS-001`–`NFR-OBS-006`, `ROADMAP-1A-001`
 
+## Phase 1A implementation evidence
+
+[packages/identity](../../packages/identity/package.json) реализует synthetic provider-neutral IdentityPort, deny-by-default RBAC, expiring/revocable HMAC-hashed sessions, human/workload separation and audit context. Better Auth не устанавливался: пункт 2 остаётся `SHOULD` для будущего security/compatibility spike, а public login/signup запрещены текущим scope. [packages/config](../../packages/config/package.json) и [packages/observability](../../packages/observability/package.json) обеспечивают typed server/public environment split, redaction, structured context/logs/metrics, bounded health and optional OTLP export; secret, artifact and browser checks прошли без production providers. Evidence — в [Phase 1A report](../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
+
 ## История
 
 | Дата | Изменение |
 |---|---|
 | 2026-08-02 | Proposed identity/secrets/telemetry boundary; production provider не выбран. |
+| 2026-08-02 | Accepted Product Owner для Phase 1A; synthetic identity, vendor-neutral secret injection и OTLP закреплены, production providers не выбраны. |
+| 2026-08-02 | Phase 1A conformance verified; synthetic identity/OTLP ports implemented, Better Auth and all production identity/telemetry providers remain deferred. |

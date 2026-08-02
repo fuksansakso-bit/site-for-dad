@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Статус | Draft 0B — основные и альтернативные flows определены |
-| Версия | 0.1.0 |
+| Версия | 0.2.0 |
 | Дата | 2026-08-02 |
 | Stories | [USER_STORIES.md](USER_STORIES.md) |
 | Acceptance | [ACCEPTANCE_CRITERIA.md](ACCEPTANCE_CRITERIA.md) |
@@ -86,7 +86,7 @@ Alternatives:
 - missing version/rule → `UNAVAILABLE`, configuration stays usable;
 - version switches during request → one consistent version or retry, never mixed rules;
 - local override expired/unapproved → ignore it and use verified source price if applicable;
-- minimum 1500 scope unknown → do not apply; link `TBD-MIN-PRICE-001`;
+- minimum 1500 applies per separately manufactured item by `OWNER-DECISION-003`, but remains disabled until Phase 1C pricing gates;
 - source unavailable → active local snapshot may be used within approved staleness policy, otherwise manual quote.
 
 Связи: `US-GUEST-004`, `US-CUSTOMER-003`, `US-ADMIN-004`.
@@ -243,3 +243,4 @@ Risks: flow falsely implies purchase/availability, stale quote is submitted as c
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Определены 12 end-to-end flows, state/decision diagrams, safe fallbacks и failure recovery. |
+| 0.2.0 | 2026-08-02 | Pricing fallback flow синхронизирован с per-item minimum из `OWNER-DECISION-003`; engine остаётся вне Phase 1A. |

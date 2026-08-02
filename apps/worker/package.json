@@ -1,0 +1,37 @@
+{
+  "name": "@project-name/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsx watch src/index.ts",
+    "lint": "eslint . --max-warnings=0",
+    "start": "node dist/index.js",
+    "test": "vitest run --config vitest.config.ts",
+    "test:coverage": "vitest run --coverage --config vitest.config.ts",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@project-name/config": "workspace:*",
+    "@project-name/contracts": "workspace:*",
+    "@project-name/jobs": "workspace:*",
+    "@project-name/observability": "workspace:*"
+  },
+  "devDependencies": {
+    "@project-name/tooling": "workspace:*",
+    "@types/node": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "projectName": {
+    "layer": "app",
+    "responsibility": "Separate background worker process shell with safe health and graceful shutdown.",
+    "publicInterface": [
+      "worker process",
+      "HTTP health listener"
+    ]
+  }
+}

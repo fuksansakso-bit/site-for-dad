@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Draft / alert ownership and SLO numbers `BLOCKED_BY_TBD-INFRA-008` |
-| Версия | 0.1.0 |
+| Статус | Phase 1A instrumentation baseline implemented; launch alerts/SLO ownership remain `BLOCKED_BY_TBD-INFRA-008` |
+| Версия | 0.3.0 |
 | Дата | 2026-08-02 |
 | Privacy/security | [SECURITY_PRIVACY.md](SECURITY_PRIVACY.md) |
 | Performance | [PERFORMANCE.md](PERFORMANCE.md) |
@@ -29,6 +29,7 @@ Observability makes customer tasks, data freshness/versions, jobs/providers, sec
 - **OBS-SPEC-013 — MUST:** retention/access/export/deletion of telemetry follow approved data policy; no indefinite default.
 - **OBS-SPEC-014 — MUST:** synthetic probes do not upload real client/partner data, place real orders or bypass external access.
 - **OBS-SPEC-015 — MUST:** SLO/error budget values are measured/approved after target support and ownership decisions; no numbers are invented.
+- **OBS-SPEC-016 — MUST:** production regional evidence distinguishes Grozny, Urus-Martan, Argun and Gudermes; mobile versus home/office Wi-Fi; at least two routes; mobile versus desktop Chrome, without collecting precise user location or PII.
 
 ## 2. Telemetry taxonomy
 
@@ -90,7 +91,7 @@ Health endpoints expose minimal status and no internal topology/versions to unau
 
 ## 6. SLO and error budget process
 
-For each critical journey define owner, user-visible SLI numerator/denominator, target conditions/regions, exclusions, target/window, data source/completeness and error-budget action. Candidate journeys: catalog availability, valid quote, cart/handoff acceptance, private media access/delete, admin price/catalog activation and sync freshness. `TBD-INFRA-002/005/008` and operations review must close values.
+For each critical journey define owner, user-visible SLI numerator/denominator, target conditions/regions, exclusions, target/window, data source/completeness and error-budget action. Candidate journeys: catalog availability, valid quote, cart/handoff acceptance, private media access/delete, admin price/catalog activation and sync freshness. Regional points are fixed by `OWNER-DECISION-007`; `TBD-INFRA-005/008` and operations review still must close numeric values/ownership.
 
 Planned maintenance, provider outage and safe fallback are not automatically excluded; measure what user experiences. Unknown/incomplete telemetry cannot claim SLO success.
 
@@ -136,12 +137,18 @@ Tests: correlation across request→command→event→job/provider; safe schemas
 
 Primary AC: `AC-PERF-001`, `AC-SEC-001`, `AC-PRIV-001`, `AC-AMIGO-SYNC-001`, `AC-PRICE-ACTIVATE-001`, `AC-VIS-DELETE-001`.
 
-## 12. Dependencies, risks and open questions
+## 12. Phase 1A implementation record
 
-Dependencies: all modules, security/performance/deployment/testing. Open: telemetry platform, `TBD-INFRA-002/008`, SLO targets/windows, on-call roles/hours, retention/sampling/cardinality/cost, incident comms and synthetic locations. Risks: PII leakage, unactionable alert noise, missing-data green, cost explosion, blind async/provider stages and no reachable owner.
+The Foundation provides allowlisted JSON logs, request/correlation/trace async context, safe error severity, deterministic redaction, low-cardinality in-memory metrics, optional OTLP HTTP export and separate web/worker liveness/readiness with bounded dependency states. PostgreSQL, queue and storage outages degrade safely without URL, credential, stack or component-version disclosure. No external telemetry provider was selected. Evidence: [Phase 1A report](../../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
 
-## 13. History
+## 13. Dependencies, risks and open questions
+
+Dependencies: all modules, security/performance/deployment/testing. Regional locations are resolved by `OWNER-DECISION-007`; open: telemetry platform, `TBD-INFRA-008`, SLO targets/windows, on-call roles/hours, retention/sampling/cardinality/cost and incident comms. Risks: PII leakage, unactionable alert noise, missing-data green, cost explosion, blind async/provider stages and no reachable owner.
+
+## 14. History
 
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Defined safe telemetry schemas, dashboard/health/SLO/alert/runbook process, privacy boundaries and verification. |
+| 0.2.0 | 2026-08-02 | Regional probe dimensions fixed by `OWNER-DECISION-007`; vendor/SLO/operations choices remain open. |
+| 0.3.0 | 2026-08-02 | Recorded Phase 1A logs/context/metrics/OTLP/health implementation and verified safe dependency degradation. |

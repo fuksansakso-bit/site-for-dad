@@ -5,8 +5,8 @@
 Этот файл обязателен для людей и автоматизированных агентов, работающих во всём репозитории.
 Более локальный `AGENTS.md` в будущем MAY уточнять правила только для своей директории, но не может ослаблять требования этого файла.
 
-Фаза **0C: IMPLEMENTATION READINESS, MVP FREEZE AND P0 TBD TRIAGE** документально завершена 2026-08-02 на базе baseline commit `7105ef03c1fb1cb726161fcbc02cbb0c340e212e` и `GLOBAL_SPEC.md` 0.6.0. Gate имеет статус `READY_FOR_OWNER_AUTHORIZATION`, не `PASSED_TO_IMPLEMENTATION`; Phase 1A не начата и не разрешена.
-До отдельного письменного решения владельца и выполнения `QG-147/148` разрешены только проверка/корректировка документации, research без обхода доступа, схемы, таблицы, псевдокод, контракты, acceptance criteria, test design, evaluations и обоснованные ADR. Переход к dependency installation, приложению, schema/migrations, импорту данных, media ingestion или реализации запрещён.
+Фаза **0C: IMPLEMENTATION READINESS, MVP FREEZE AND P0 TBD TRIAGE** документально завершена 2026-08-02 на baseline commit `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; `GLOBAL_SPEC.md` обновлён до 0.7.0. Product Owner принял ADR-0007–0010, закрыл `QG-147/148` и письменно разрешил только **Phase 1A — FOUNDATION**.
+В Phase 1A разрешён исключительно фундамент из `PHASE_1A_FOUNDATION_PLAN.md`. AMIGO Catalog Pilot/import, каталог, pricing/configurator/preview/cart/order/WhatsApp/business admin/account/photo/AI и production deployment запрещены. Завершение Phase 1A не разрешает автоматически начинать Phase 1B.
 
 ## 2. Обязательный порядок чтения
 
@@ -39,6 +39,8 @@
 - Окончательные технологии, хостинг и AI-провайдер MUST выбираться только через соответствующие сравнительные документы и ADR.
 
 Phase 1A MUST NOT начинаться, пока не выполнены все stop conditions Phase 0C: baseline commit и clean tree, 0 critical specs со статусом `BLOCKED`/`CONTRADICTORY`, frozen `MVP_SCOPE`, `IMPLEMENTATION_ROADMAP`, `PHASE_1A_FOUNDATION_PLAN`, полная P0-классификация, непротиворечивые price/catalog/rights/privacy boundaries, известные secrets/migration rollback strategies, accepted или superseding ADR-0007–0010 и отдельное письменное разрешение владельца.
+
+Эти entry conditions зафиксированы как выполненные в `QG-147/148` 2026-08-02. Исполнитель MUST остановиться на границе Phase 1A и запросить новое письменное решение для любого расширения scope.
 
 ## 4. Планирование работы
 
@@ -152,7 +154,7 @@ ADR создаётся в будущем в `docs/adr/ADR-NNNN-kebab-case-title.
 - AMIGO является `AUTHORIZED_PARTNER_SOURCE` для разрешённых данных каталога, цен, медиа, технических сведений, калькуляторной логики и партнёрского бейджа по `PARTNER-001`–`007`.
 - Данные AMIGO MUST храниться как source-backed snapshots, а не безвозвратно встраиваться в `GLOBAL_SPEC.md` как неизменные значения.
 - Каталожная модель MUST поддерживать все текущие и будущие категории AMIGO как данные; импорт новой категории MUST NOT автоматически активировать публикацию, наличие, pricing, visualizer или orderability.
-- Официальный партнёрский статус и общий permission scope подтверждены владельцем 2026-08-02; нельзя утверждать наличие конкретного публичного API, export format, schema, credentials или cadence без отдельного доказательства.
+- Официальный партнёрский статус и общий permission scope подтверждены владельцем 2026-08-02; нельзя утверждать наличие конкретного публичного API, export format, schema или credentials без отдельного доказательства. Cadence/staleness заданы `OWNER-DECISION-005`.
 - Предпочтение получения данных: официальный партнёрский/B2B-источник, выгрузка, проверенный ручной импорт, затем публичная страница как временный research source.
 - Отключение AMIGO MUST NOT останавливать PROJECT_NAME; применяются подтверждённая локальная версия, ручной процесс или нейтральный fallback.
 
@@ -160,7 +162,7 @@ ADR создаётся в будущем в `docs/adr/ADR-NNNN-kebab-case-title.
 
 - Исторический расчёт MUST сохранять source/price version и никогда не изменяться молча после обновления AMIGO.
 - Новый расчёт использует только активную подтверждённую price version; при отсутствии цены запрещено выдавать `0` или догадку.
-- Минимум 1500 рублей MUST NOT автоматически применяться до решения `TBD-MIN-PRICE-001`.
+- Минимум 1500 рублей применяется к каждой отдельно изготавливаемой единице по `OWNER-DECISION-003`, но ценовой движок и само правило MUST NOT реализовываться в Phase 1A.
 - Условия рассрочки до `TBD-INSTALLMENT-001`–`013` ограничены текстом «Доступна рассрочка. Уточните условия у менеджера»; обещания 0%, отсутствия переплаты/взноса, конкретного срока или всеобщего одобрения запрещены.
 - Разрешённые изображения AMIGO имеют основание `PARTNER_LICENSE`; запрещены неуправляемое массовое скачивание, hotlink, удаление водяных знаков, смена авторства и training use без отдельного разрешения.
 - Материал MUST NOT публиковаться без локального изображения с provenance, правильной связью с `MaterialVariant`, `rightsStatus = PARTNER_LICENSE` (или иным допустимым основанием) и `publicationStatus = PUBLICATION_APPROVED`.

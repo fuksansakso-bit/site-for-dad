@@ -5,10 +5,10 @@
 | Поле | Значение |
 |---|---|
 | Статус | Draft 0B — продуктовый scope зафиксирован; профильные функции могут быть `BLOCKED_BY_TBD` |
-| Версия | 0.1.0 |
+| Версия | 0.4.0 |
 | Дата | 2026-08-02, Europe/Moscow |
-| Владелец | Владелец бизнеса / Product Owner; имя `TBD-BIZ-001` |
-| Главный источник | [GLOBAL_SPEC.md](../GLOBAL_SPEC.md) 0.6.0 |
+| Владельцы решений | Product Owner — владелец проекта; Business Owner — отец владельца проекта (`OWNER-DECISION-001`) |
+| Главный источник | [GLOBAL_SPEC.md](../GLOBAL_SPEC.md) 0.9.0 |
 | Связанные документы | [USER_STORIES.md](USER_STORIES.md), [USER_FLOWS.md](USER_FLOWS.md), [ROLES_PERMISSIONS.md](ROLES_PERMISSIONS.md), [ACCEPTANCE_CRITERIA.md](ACCEPTANCE_CRITERIA.md) |
 
 ## 1. Назначение и границы ответственности
@@ -112,6 +112,8 @@ Out of scope фазы 0B:
 - **FTR-028 — MUST:** keyboard, screen reader semantics, focus, contrast и reduced motion входят в acceptance, а не считаются post-launch enhancement.
 - **FTR-029 — MUST:** аналитика использует минимальные events без фото, masks, object URLs, свободного private text и credentials.
 - **FTR-030 — MUST:** ни один `BLOCKED_BY_TBD` capability не может перейти в `APPROVED_FOR_IMPLEMENTATION` без закрытия указанного вопроса и повторной проверки зависимых AC/tests.
+- **FTR-031 — MUST:** AMIGO-origin products/materials/technical data/catalog-image identity/base prices обновляются только из versioned AMIGO source layer; Business Owner availability/visibility/price override/portfolio/commercial decisions хранятся отдельно в локальной PostgreSQL-проекции и не перезаписываются sync. Image binaries остаются в object storage. Это разделение не означает завершённый import или разрешение Phase 1B.
+- **FTR-032 — MUST:** public catalog/search/filter/configurator/calculation/lead/analytics behavior следует `OWNER-DECISION-009`: читает только активную одобренную PostgreSQL `CatalogVersion`/transactional state; source change проходит staged diff, Business Owner approval и explicit admin activation, не удаляет local data автоматически, применяет audited local override precedence и сохраняет source/timestamps/rollback. Это требование не разрешает Phase 1B.
 
 ## 5. Основные и альтернативные сценарии
 
@@ -195,10 +197,13 @@ Security: deny-by-default RBAC, ownership checks, short-lived private access, up
 
 ## 13. Связанные требования
 
-`PARTNER-*`, `AMIGO-PARITY-*`, `AMIGO-SYNC-*`, `FR-CATALOG-*`, `FR-CONFIG-*`, `FR-PRICE-*`, `FR-STANDARD-PREVIEW-*`, `FR-VIS-*`, `FR-AI-VIS-001`, `FR-CART-*`, `FR-ORDER-*`, `FR-INSTALLMENT-*`, `FR-AUTH-*`, `FR-ADMIN-*`, `NFR-*`, `FTR-001`–`030`.
+`PARTNER-*`, `AMIGO-PARITY-*`, `AMIGO-SYNC-*`, `FR-CATALOG-*`, `FR-CONFIG-*`, `FR-PRICE-*`, `FR-STANDARD-PREVIEW-*`, `FR-VIS-*`, `FR-AI-VIS-001`, `FR-CART-*`, `FR-ORDER-*`, `FR-INSTALLMENT-*`, `FR-AUTH-*`, `FR-ADMIN-*`, `NFR-*`, `FTR-001`–`032`.
 
 ## 14. История изменений
 
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Создан полный feature portfolio 0B, boundaries, requirements, states, failure modes и ссылки на AC/tests. |
+| 0.2.0 | 2026-08-02 | Governance authority разделена между Product Owner и Business Owner по `OWNER-DECISION-001`. |
+| 0.3.0 | 2026-08-02 | Добавлено authority-разделение `OWNER-DECISION-008`: AMIGO source layer, Business Owner local decisions, PostgreSQL operational projection и object-storage image binaries без изменения Phase 1B gate. |
+| 0.4.0 | 2026-08-02 | Добавлен public-serving PostgreSQL contract `OWNER-DECISION-009` для runtime reads, staged diff/owner/admin activation, no-auto-delete, override precedence, audit/version/rollback без разрешения Phase 1B. |

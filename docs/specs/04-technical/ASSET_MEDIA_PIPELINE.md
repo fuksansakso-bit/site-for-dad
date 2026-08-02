@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Статус | Draft 0B — future controlled pipeline defined; no media imported in 0B |
-| Версия | 0.1.0 |
+| Версия | 0.2.0 |
 | Дата | 2026-08-02 |
 | Rights | [ASSET_RIGHTS_REGISTER.md](../../00-global/ASSET_RIGHTS_REGISTER.md) |
 | Storage | [STORAGE_MEDIA.md](STORAGE_MEDIA.md) |
@@ -42,6 +42,9 @@ Content manager registers/maps; rights approver/owner confirms scope; publicatio
 - **MEDIA-PIPE-018 — MUST:** production client photos and partner media are not used for model training/evaluation fixtures without separate documented permission/basis.
 - **MEDIA-PIPE-019 — MUST:** pipeline jobs are bounded, idempotent and cannot publish directly; human/policy approval is separate.
 - **MEDIA-PIPE-020 — MUST:** telemetry stores asset/job/format/dimensions/duration/error codes, not image bytes/private URLs/secret source refs.
+- **MEDIA-PIPE-021 — MUST:** AMIGO is source authority for AMIGO catalog-image identity, provenance and product/material relationship; an imported local copy or derivative MUST NOT change that authority or become owner-created/local portfolio.
+- **MEDIA-PIPE-022 — MUST:** PostgreSQL stores MediaAsset/SourceAsset metadata, provenance, hashes, exact mappings, rights/publication states and opaque object references; binary originals/derivatives are stored in the managed object-storage zones, not product/material rows.
+- **MEDIA-PIPE-023 — MUST:** Business Owner determines local portfolio composition, but pipeline promotion still requires creator/rightsholder evidence, consent/PII review where applicable, exact asset mapping and independent `PUBLICATION_APPROVED`.
 
 ## 4. Asset lifecycle
 
@@ -62,7 +65,7 @@ Rights status and publication status are orthogonal. `PARTNER_LICENSE` does not 
 
 ## 6. Required asset record
 
-Fields: `assetId/revision`, category/classification, original object ref/hash/size/MIME/dimensions/color/alpha/animation, source record/entity/url/reference, rightsholder, permission basis/scope/relationship revision/date/evidence, restrictions/attribution/brand notes/training policy, rights/publication statuses, owner/actors/timestamps, domain mappings/assetRoles/placements, original/derivative graph, retention/delete policy, review/effective/expiry/revocation data, checksum.
+Fields: `assetId/revision`, authority class, category/classification, original object ref/hash/size/MIME/dimensions/color/alpha/animation, source record/entity/url/reference, rightsholder, permission basis/scope/relationship revision/date/evidence, restrictions/attribution/brand notes/training policy, rights/publication statuses, owner/actors/timestamps, domain mappings/assetRoles/placements, original/derivative graph, retention/delete policy, review/effective/expiry/revocation data, checksum.
 
 No card may store raw credentials or private signed URL. Public alt/caption is content/placement data, not embedded rights evidence.
 
@@ -149,3 +152,4 @@ Dependencies: rights/source/catalog/content/storage/admin/sync/AI/security/perfo
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Defined future controlled intake, provenance, quarantine, derivative profiles, mapping/publication, revoke/delete and tests without importing media. |
+| 0.2.0 | 2026-08-02 | Added AMIGO image authority, Business Owner portfolio authority and explicit PostgreSQL metadata/object-storage binary separation from `OWNER-DECISION-008`; no import was asserted. |

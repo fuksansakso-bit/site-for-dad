@@ -4,10 +4,10 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD`; logical architecture approved, Foundation stack awaits acceptance of ADR-0007–0010 |
-| Версия | 0.1.0 |
+| Статус | Phase 1A Foundation implemented and verified; feature/production topology remains gated |
+| Версия | 0.4.0 |
 | Дата | 2026-08-02 |
-| Global baseline | [GLOBAL_SPEC.md](../GLOBAL_SPEC.md) 0.6.0 |
+| Global baseline | [GLOBAL_SPEC.md](../GLOBAL_SPEC.md) 0.9.0 |
 | Decisions | [docs/adr](../../adr/) |
 
 ## 1. Назначение and boundaries
@@ -24,6 +24,8 @@ Architecture defines logical components, trust/data boundaries, synchronous/asyn
 6. Sync/diff/approval/rollback and media rights governance.
 7. Mobile/accessibility/performance and local WhatsApp/manual fallback.
 8. Provider/vendor replaceability until formal ADR.
+9. Field-level authority: AMIGO source data and Business Owner local decisions share one PostgreSQL operational plane without overwriting one another.
+10. One public-serving catalog truth: active approved PostgreSQL `CatalogVersion`, never live AMIGO or unapproved staging.
 
 ## 3. Нормативные requirements
 
@@ -45,6 +47,16 @@ Architecture defines logical components, trust/data boundaries, synchronous/asyn
 - **ARCH-SPEC-016 — MUST:** architecture remains single-business/simple by default but IDs/ownership prevent future data collision; speculative multi-tenancy is not implemented.
 - **ARCH-SPEC-017 — MUST:** production technology/hosting/provider choices require evaluation/ADR and may not be inferred from document examples.
 - **ARCH-SPEC-018 — MUST:** health/readiness checks distinguish process alive from dependencies/data versions ready; public catalog can degrade independently from AI/sync.
+- **ARCH-SPEC-019 — MUST:** PostgreSQL is the local transactional operational system of record for source captures, normalized catalog projections, local overlays, active pointers and audit; it is not authority to redefine AMIGO-origin or Business Owner-owned values.
+- **ARCH-SPEC-020 — MUST:** source-owned fields (AMIGO products, materials, technical data, catalog-image identity and base prices) and local-owned fields (availability, visibility/publication, price overrides, portfolio and commercial conditions) use separate version/provenance/mutation paths; cross-layer last-write-wins is prohibited.
+- **ARCH-SPEC-021 — MUST:** AMIGO image metadata, provenance, mapping, rights/publication state and object references MAY reside in PostgreSQL, while binary originals/derivatives MUST remain in managed object storage under ADR-0006/0009.
+- **ARCH-SPEC-022 — MUST:** documenting the PostgreSQL target and authority matrix does not assert an existing catalog schema/import or authorize Phase 1B; implementation still follows roadmap entry gates and reviewed migrations.
+- **ARCH-SPEC-023 — MUST:** by `OWNER-DECISION-009`, the public application MUST NOT read AMIGO, raw captures or staged candidates directly. Client catalog, search, filters, configurator, calculations, leads and analytics use PostgreSQL active approved catalog/transactional state as their only canonical runtime source.
+- **ARCH-SPEC-024 — MUST:** cache, search index, filter facets, analytics datasets and other read projections MAY serve requests only when derived from and pinned to an exact active `CatalogVersion`; they are rebuildable/disposable and cannot accept AMIGO directly or become a mutation authority.
+- **ARCH-SPEC-025 — MUST:** every AMIGO change follows `source capture → import/synchronization → PostgreSQL staged local catalog → validation/diff → Business Owner approval → explicit administrator activation → public catalog`. No adapter, worker, cache or admin shortcut may bypass a stage.
+- **ARCH-SPEC-026 — MUST:** import/source removal MUST NOT automatically delete, clear, hide or retire a local entity, local-only record, Business Owner overlay or historical reference. It creates a reviewed difference/proposal; any local lifecycle transition is an explicit audited command.
+- **ARCH-SPEC-027 — MUST:** applicable local overrides take precedence when composing the public projection, without mutating immutable AMIGO source values. Precedence is typed, scoped, versioned, effective-dated and conflict-checked rather than last-write-wins.
+- **ARCH-SPEC-028 — MUST:** every catalog version and lifecycle mutation records source/source-version manifest, timestamps, capture/sync/diff, approvals, activation actor, audit correlation, predecessor and rollback target; published versions are immutable.
 
 ## 4. Logical context
 
@@ -69,6 +81,24 @@ flowchart LR
 ```
 
 Names are logical roles, not deployment units. They MAY be one deployable modular application plus workers initially; service extraction requires measured need and ADR.
+
+### 4.1. Public catalog serving path
+
+```mermaid
+flowchart LR
+  AMIGO["AMIGO Source"] --> SYNC["Import / Synchronization Layer"]
+  SYNC --> STAGE["PostgreSQL Local Catalog<br/>immutable captures + staged candidate"]
+  STAGE --> DIFF["Validation / Diff"]
+  DIFF --> BO["Business Owner Approval"]
+  BO --> ACT["Explicit Admin Activation"]
+  ACT --> ACTIVE["PostgreSQL Active CatalogVersion"]
+  ACTIVE --> PUBLIC["Catalog / Search / Filters / Configurator / Calculations / Leads / Analytics"]
+  ACTIVE --> DERIVED["Version-pinned Cache / Search / Analytics Projections"]
+  DERIVED --> PUBLIC
+  OBJECTS["Managed Object Storage<br/>approved binaries only"] --> PUBLIC
+```
+
+Only `ACTIVE` is catalog truth for runtime decisions. `DERIVED` is rebuildable from that version; object storage delivers approved bytes referenced by it. Neither layer may ingest AMIGO independently.
 
 ## 5. Module boundaries
 
@@ -119,7 +149,7 @@ Workers lease jobs, heartbeat bounded tasks, commit outputs atomically/idempoten
 
 ## 10. Data and storage boundaries
 
-Transactional data stores domain revisions/relationships and minimal PII. Object storage holds originals/derivatives with metadata in transactional store. Search/read projections are rebuildable and never sole source of truth. Cache is disposable/version-keyed. Audit is immutable/tamper-evident by controls. Backups map data classes and deletion/restore procedures.
+PostgreSQL stores domain revisions/relationships, immutable AMIGO captures, staged candidates, immutable published `CatalogVersion` records, normalized local catalog projections, Business Owner overlays, active pointers and minimal PII. Object storage holds originals/derivatives with metadata and opaque object references in PostgreSQL. Search/filter/cache/analytics projections are rebuildable from an exact active catalog version and never the authority for mutations. Audit is immutable/tamper-evident by controls. Backups map data classes and deletion/restore procedures.
 
 No local file-system dependency is assumed for production. Storage/database vendors and topology are `TBD-INFRA-*`/ADR.
 
@@ -167,14 +197,21 @@ Every request/job/command carries correlation/causation and safe version identif
 
 ## 16. Acceptance criteria and tests
 
-Architecture acceptance is covered by domain AC plus contract/component/integration/failure/recovery/security tests in `TEST_STRATEGY`. Required architecture tests: adapter outage, no live AMIGO dependency, outbox atomicity, job idempotency/cancel/delete, mixed-version rejection, cache invalidation, role/object checks, secret/private telemetry scan, rolling compatibility and backup/restore.
+Architecture acceptance is covered by domain AC plus contract/component/integration/failure/recovery/security tests in `TEST_STRATEGY`. Required architecture tests: adapter outage, no live AMIGO/staging dependency, exact active-version pinning of public and derived reads, source-removal no-auto-delete, override precedence without source mutation, approval/activation authorization, version/audit completeness, rollback, outbox atomicity, job idempotency/cancel/delete, mixed-version rejection, cache invalidation, role/object checks, secret/private telemetry scan, rolling compatibility and backup/restore.
 
-## 17. Dependencies, risks and open questions
+## 17. Phase 1A implementation record
 
-Dependencies: all specs, ADR/evaluations, data/API/sync/media/AI/storage/security/performance/observability/deployment. Open: framework/language, DB, queue, object storage, search, auth, AI, hosting/region/network, worker topology and RPO/RTO. Risks: premature microservices, distributed inconsistency, provider lock-in, hidden live-source dependency, privacy boundary collapse and untestable recovery.
+Implemented topology matches ADR-0007–0010: Next.js same-origin web/BFF, separate Node worker, PostgreSQL/Prisma, Graphile Worker, S3-compatible and identity ports, shared contracts/config/observability/testing packages and automated acyclic dependency direction. Only technical shell and synthetic Foundation behavior exist; no feature module or production topology was added. Evidence: [Phase 1A report](../../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
 
-## 18. История изменений
+## 18. Dependencies, risks and open questions
+
+Dependencies: all specs, ADR/evaluations, data/API/sync/media/AI/storage/security/performance/observability/deployment and `OWNER-DECISION-008/009`. Foundation runtime/framework/database/queue boundaries are fixed by ADR-0007–0010; open: production object/auth/telemetry/hosting providers, search, AI, region/network and RPO/RTO. `OWNER-DECISION-009` composes the already accepted ADR-0002 local-active read path with ADR-0008 PostgreSQL persistence; it does not approve a transport, search product or business schema. Risks: premature microservices, distributed inconsistency, provider lock-in, hidden live-source/staging dependency, derived-projection drift, destructive import, privacy boundary collapse and untestable recovery.
+
+## 19. История изменений
 
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Defined vendor-neutral modular architecture, boundaries, commands/events/jobs, adapters, degradation and operational constraints. |
+| 0.2.0 | 2026-08-02 | Recorded Phase 1A implementation conformance and resolved Foundation stack/topology unknowns while retaining production provider gates. |
+| 0.3.0 | 2026-08-02 | Added `OWNER-DECISION-008` authority boundaries, PostgreSQL operational projection and object-storage image binary split without claiming Phase 1B implementation. |
+| 0.4.0 | 2026-08-02 | Applied `OWNER-DECISION-009`: active approved PostgreSQL `CatalogVersion` is the only public-serving runtime truth; added version-pinned derived projections, mandatory source→diff→owner/admin activation, no-auto-delete, override precedence, audit and rollback boundaries. |

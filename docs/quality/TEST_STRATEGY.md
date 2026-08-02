@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD`; strategy and 40 critical scenarios defined, execution/feature fixtures await their implementation gates |
-| Версия | 0.1.0 |
+| Статус | Phase 1A Foundation test baseline executed; business/production scenarios retain their feature gates and TBD statuses |
+| Версия | 0.3.0 |
 | Дата | 2026-08-02 |
 | Requirements | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) and profile specs |
 | Acceptance | [ACCEPTANCE_CRITERIA.md](../specs/01-product/ACCEPTANCE_CRITERIA.md) |
@@ -77,16 +77,16 @@ Each row is a full test design seed; profile suites expand permutations without 
 | **TS-PARTNER-001** / integration+content | Active partner scope; approved and revoked/missing badge/asset variants | Correct statement/asset only under scope; revoke removes all placements with text fallback/audit | `AC-PARTNER-001`, `PARTNER-*`; `DESIGNED` |
 | **TS-AMIGO-PARITY-001** / contract+E2E | Captured category/system locally ready vs source-only; AMIGO adapter off | Ready path own UI; source-only inquiry/deferred; local active works offline | `AC-AMIGO-PARITY-001`; `DESIGNED` |
 | **TS-CATALOG-001** / unit+E2E | Verified variants/properties plus unknown; combined search/facets | Exact compatible matches/counts; unknown not positive; stable IDs and approved media | `AC-CATALOG-001`; `DESIGNED` |
-| **TS-CATALOG-DYNAMIC-001** / integration | New unseen category/property/price string in staged fixture | Normalize/stage/map without code change; no auto readiness; schema conflict blocks | `AC-CATALOG-DYNAMIC-001`; `DESIGNED` |
+| **TS-CATALOG-DYNAMIC-001** / integration | New unseen category/property/price string plus source removal beside local-only data/overlay in staged fixture | Normalize/stage/map without code change; no auto readiness/delete; public read stays pinned to active `CatalogVersion`; schema/authority conflict blocks | `AC-CATALOG-DYNAMIC-001`; `DESIGNED` |
 | **TS-ASSET-MAP-001** / integration+security | Authorized original, duplicate, wrong variant and conflicting hash/source | Complete provenance/graph/mapping; duplicate/conflict quarantine; no public delivery | `AC-ASSET-MAP-001`; `DESIGNED` |
 | **TS-PORTFOLIO-001** / content+E2E | Owner-created local project vs AMIGO example and missing rights/PII | Local/partner labels never mix; missing review blocks; alt/attribution correct | `AC-PORTFOLIO-001`; `DESIGNED` |
 | **TS-BADGE-001** / visual+content | Approved badge/text fallback/revoke at all responsive surfaces | Correct proportions/label/placement; fallback truthful; cache invalidates | `AC-BADGE-001`; `DESIGNED` |
 | **TS-ASSET-REVOKE-001** / integration+recovery | Published original with derivatives/placements/cache/preview | Access blocked first; graph invalidated/deleted per policy; retry idempotent | `AC-ASSET-REVOKE-001`; `DESIGNED` |
 | **TS-CONFIG-001** / unit+property+E2E | Each step, valid/deny/require/limit/warn/missing/conflict/dimension boundary | Only verified valid revision quotes; dependencies invalidate; reason/recovery accessible | `AC-CONFIG-001`; `BLOCKED_TBD` limits |
-| **TS-PRICE-001** / unit+property+contract | Valid config with active version; missing rule/version/category/conflict | Exact reproducible amount/version/breakdown or typed unavailable; never zero/guess | `AC-PRICE-001`; `BLOCKED_TBD` formula/data |
+| **TS-PRICE-001** / unit+property+contract | Valid config with compatible active `CatalogVersion`/`PriceVersion`, scoped override, missing rule/version/category/conflict and attempted AMIGO/staging input | Exact reproducible amount/version/source+override breakdown from PostgreSQL active versions or typed unavailable; direct source/staging read denied; never zero/guess | `AC-PRICE-001`; `BLOCKED_TBD` formula/data |
 | **TS-CART-001** / unit+E2E | Multi-item valid/stale/unavailable; edit/duplicate/remove/retry | Target-only revision, honest totals/statuses, no unintended duplicate | `AC-CART-001`; `DESIGNED` |
 | **TS-QUOTE-HISTORY-001** / integration | Saved quote; activate/rollback/new source version; reopen/recalculate | Original immutable/replayable; new linked revision; retired source retained | `AC-QUOTE-HISTORY-001`; `BLOCKED_TBD` price fixture |
-| **TS-PRICE-ACTIVATE-001** / integration+security | Staged version validation/parity/approvals; conflict/failure/concurrency | Atomic one active version, old quotes pinned, rollback; failed candidate no cutover | `AC-PRICE-ACTIVATE-001`; `BLOCKED_TBD` |
+| **TS-PRICE-ACTIVATE-001** / integration+security | `OWNER`/`ADMIN` versus denied roles; exact diff review/confirmation; validation/parity/conflict/failure/concurrency | Only allowed role confirms; every attempt audited; atomic one active version, old quotes pinned, rollback; failed candidate no cutover | `AC-PRICE-ACTIVATE-001`; source/formula fixture `BLOCKED_TBD` |
 | **TS-QUOTE-CONFIRM-001** / domain+E2E | Manager verified inputs/allowed and disallowed adjustment | New confirmed revision with reason/explanation; disallowed remains draft | `AC-QUOTE-CONFIRM-001`; `BLOCKED_TBD` workflow |
 | **TS-STANDARD-PREVIEW-001** / visual+unit | Supported families/materials/controls plus missing/wrong/revoked asset | Deterministic exact mapping/protected layers/text; unsupported honest fallback | `AC-STANDARD-PREVIEW-001`; `DESIGNED` profiles pending |
 | **TS-AI-UPLOAD-001** / security+integration | Valid, spoofed, polyglot, bomb, malware, EXIF, too large/low quality | Only safe normalized private input; rejection/cleanup; no URL/content log | `AC-AI-UPLOAD-001`; `BLOCKED_TBD` limits |
@@ -108,18 +108,18 @@ Each row is a full test design seed; profile suites expand permutations without 
 | **TS-ROLLBACK-001** / integration+recovery | Catalog/price/media release then simulated health/purge failure and repeat rollback | Known prior pointers/cache/delivery restored or blocked; history/evidence retained | `AC-ROLLBACK-001`; `DESIGNED` |
 | **TS-OWNER-DASHBOARD-001** / integration+UX | Known zero vs missing/stale/blocked/pending telemetry | Dashboard differentiates states/completeness and links owner/evidence/action | `AC-OWNER-DASHBOARD-001`; `DESIGNED` |
 | **TS-BUSINESS-RULE-001** / documentation+gate | Complete vs ambiguous owner answer for open TBD | Canonical spec/changelog/status/gate updates only on clear answer; ambiguous stays open | `AC-BUSINESS-RULE-001`; `DESIGNED` |
-| **TS-AMIGO-SYNC-001** / adapter+integration | Authorized fixture capture; auth/source/format/truncation failure | Immutable staged capture/run; active untouched; failure/freshness audit | `AC-AMIGO-SYNC-001`; `BLOCKED_TBD` transport |
-| **TS-SYNC-DIFF-001** / unit+property | Add/change/rename/move/remove/split/merge/conflict/new schema/category | Complete field/relation severity/impact; ambiguous blocks activation | `AC-SYNC-DIFF-001`; `DESIGNED` fixtures |
-| **TS-SYNC-ROLLBACK-001** / integration+fault | Approved activation, cache/search failure, repeat/out-of-order command | Atomic previous pointers, consistent cache/read model, idempotent run state | `AC-SYNC-ROLLBACK-001`; `DESIGNED` |
-| **TS-PERF-001** / lab+regional+load | Target device/network/region cold/warm/save-data/reduced + load/fault | Critical funnel meets approved budgets or documented usable degradation | `AC-PERF-001`; `BLOCKED_TBD-INFRA-002/003/005` |
+| **TS-AMIGO-SYNC-001** / adapter+integration | Authorized fixture capture; auth/source/format/truncation failure; attempted public read from AMIGO/raw/staging | Immutable staged capture/run with authority metadata; active PostgreSQL version untouched; direct runtime read denied; failure/freshness audit complete | `AC-AMIGO-SYNC-001`; `BLOCKED_TBD` transport |
+| **TS-SYNC-DIFF-001** / unit+property | Add/change/rename/move/remove/split/merge/conflict/new schema/category with local-only records and Business Owner overlays | Complete field/relation severity/impact; removal creates proposal and never auto-deletes/hides local data; ambiguous authority/override blocks activation | `AC-SYNC-DIFF-001`; `DESIGNED` fixtures |
+| **TS-SYNC-ROLLBACK-001** / integration+fault | Exact-diff Business Owner approval + administrator activation, projection failure, repeat/out-of-order command and rollback | Atomic active `CatalogVersion` pointer, version-pinned cache/search/filter/analytics rebuild, complete audit/source timestamps, previous version restored idempotently | `AC-SYNC-ROLLBACK-001`; `DESIGNED` |
+| **TS-PERF-001** / lab+regional+load | Four approved cities, mobile + home/office Wi-Fi, ≥2 routes, mobile/desktop Chrome; cold/warm/save-data/reduced + load/fault | Critical funnel meets approved budgets or documented usable degradation | `AC-PERF-001`; regional matrix resolved, budgets `BLOCKED_TBD-INFRA-003/005` |
 | **TS-PRIV-001** / privacy+security | Notice/consent/upload/access/log/analytics/delete/provider/backup across owner/attacker | Purpose/minimum/private/no-training/retention/delete with no unauthorized content | `AC-PRIV-001`; `BLOCKED_TBD-PRIV-*` |
 | **TS-ACCESS-001** / automated+manual AT | Keyboard, screen reader, 200/400%, 320/375, touch, forced colors, reduced motion full journey | Equivalent operable/perceivable task, focus/errors/live states and no motion/timing trap | `AC-ACCESS-001`; `DESIGNED`, AT matrix TBD |
 
 ## 5. Pricing parity test protocol
 
-Parity suite follows `PRICING-TEST-001`–`005` and stores case ID, exact normalized configuration, source context/version/timestamp/result, local version/result, exact absolute difference, percentage difference when valid, component diff, expected tolerance/status, evidence and reviewer. Cases cover each active family/system/model/material category/options, boundaries, quantities, overrides, services, rounding, future minimum, activation/rollback and missing/conflict/outage.
+Parity suite follows `PRICING-TEST-001`–`005` and stores case ID, identical source version/system/material/dimensions/hardware/options/quantity, source result, local version/result, exact absolute difference, percentage difference when valid, component diff, expected tolerance/status, evidence and reviewer. Cases cover each active family/system/model/material category/options, boundaries, quantities, overrides, services, rounding, per-item minimum, activation/rollback and missing/conflict/outage.
 
-Until `TBD-PRICE-PARITY-001` closes, any nonzero difference is `REVIEW_REQUIRED`; lack of authorized source result means test is `BLOCKED_TBD`, not pass. Tests do not automate around access controls/CAPTCHA or treat volatile UI text as stable oracle.
+Absolute difference up to 1 ruble inclusive passes parity only when all approved inputs are identical; a larger difference is a parity error. Lack of authorized source result means test is `BLOCKED_TBD`, not pass. Tests do not automate around access controls/CAPTCHA or treat volatile UI text as stable oracle.
 
 ## 6. AI evaluation and visual test boundary
 
@@ -151,12 +151,18 @@ Per change: static/unit/property/contract/fast a11y/security schema. Per integra
 
 Report requirement/AC/test coverage, pass/fail/blocked/quarantined, P0/P1 defects, flake, runtime, regression, budget, parity/AI distributions, a11y/manual evidence, security/privacy/deletion/restore and data freshness. Coverage percentage never hides untested critical risk or `BLOCKED_TBD`.
 
-## 13. Dependencies, risks and open questions
+## 13. Phase 1A execution evidence
+
+The provider-neutral `ci:verify` pipeline passed 9/9 stages in the working tree and a clean clone. Executed Foundation baseline: 61 unit/contract tests with per-workspace coverage artifacts, 19 real PostgreSQL/RustFS/Graphile/identity integration/recovery tests and 20 browser scenarios across Chromium, Firefox, WebKit, narrow viewport and reduced motion. Empty/repeat/upgrade/failed migrations, retry/timeout/idempotency/graceful worker drain, storage denial/outage, identity revoke/outage, safe readiness/errors, secret/artifact canaries and scope boundaries passed. This evidence does not change `DESIGNED`/`BLOCKED_TBD` status of Phase 1B+ business tests. Full detail: [Phase 1A report](../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
+
+## 14. Dependencies, risks and open questions
 
 Dependencies: all specs/ADRs/evaluations, implementation stack/environments, approved fixtures/business data/support matrix. Open: numeric budgets/thresholds, real price/source fixtures, browser/AT matrix, provider sandboxes, test tooling/owners, UAT roles, security test scope and retention of artifacts. Risks: fake fixtures mistaken production truth, flaky E2E, unlicensed media, provider dependence, automated a11y/AI false confidence and unsafe production testing.
 
-## 14. History
+## 15. History
 
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Defined risk-based multi-layer strategy and 40 critical scenarios mapped one-to-one to current acceptance criteria. |
+| 0.2.0 | 2026-08-02 | Updated parity tolerance/input contract and regional production matrix from `OWNER-DECISION-006/007`; Foundation execution evidence will be added at Phase 1A completion. |
+| 0.3.0 | 2026-08-02 | Added executed Phase 1A counts and clean-clone CI evidence without claiming any gated business/production scenario passed. |

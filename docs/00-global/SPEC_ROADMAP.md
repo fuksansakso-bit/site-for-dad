@@ -4,15 +4,16 @@
 
 | Поле | Значение |
 |---|---|
-| Состояние | Phase 0C documentation complete; gate `READY_FOR_OWNER_AUTHORIZATION`, Phase 1A awaits separate owner decision |
-| Версия roadmap | 1.1.0 |
+| Состояние | Phase 1A Foundation complete and accepted; Phase 1B+ not authorized |
+| Версия roadmap | 1.5.0 |
 | Дата | 2026-08-02 |
 | Entry gate | `PASSED`, [QG-088–QG-111](SPEC_QUALITY_GATE.md) |
 | Обязательный комплект 0B | `PASSED`, [QG-112–QG-130](SPEC_QUALITY_GATE.md) |
-| Phase 0C readiness | `READY_FOR_OWNER_AUTHORIZATION`, [QG-131–QG-148](SPEC_QUALITY_GATE.md) |
-| Production implementation | Запрещена; Phase 1A не начата и требует отдельного письменного решения |
+| Phase 0C readiness | `AUTHORIZED_FOR_PHASE_1A_FOUNDATION`, [QG-131–QG-148](SPEC_QUALITY_GATE.md) |
+| Phase 1A acceptance | `PASSED_PHASE_1A_FOUNDATION`, [QG-149–QG-158](SPEC_QUALITY_GATE.md) |
+| Разрешённая implementation | Новая implementation не разрешена; Phase 1B+, AMIGO import и production запрещены |
 
-Глобальная база: [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.6.0, [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md), [ASSET_RIGHTS_REGISTER.md](ASSET_RIGHTS_REGISTER.md) и [PRICING_SOURCE_POLICY.md](PRICING_SOURCE_POLICY.md). Поручение выполнить 0C разрешает только readiness-документацию и не разрешает писать код, импортировать каталог или начинать Phase 1A.
+Глобальная база: [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.9.0, [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md), [ASSET_RIGHTS_REGISTER.md](ASSET_RIGHTS_REGISTER.md) и [PRICING_SOURCE_POLICY.md](PRICING_SOURCE_POLICY.md). `OWNER-DECISION-008` разделяет AMIGO source authority и Business Owner local authority; `OWNER-DECISION-009` делает активную одобренную PostgreSQL `CatalogVersion` единственным public-serving runtime source после staged diff/owner/admin activation. Оба решения сохраняют открытыми transport/import/data gates и не являются transition decision. Письменное решение Product Owner разрешило и ограничило выполненную Phase 1A Foundation; оно не разрешает каталог/import/Phase 1B или production.
 
 Нормативные спецификации находятся только в `docs/specs/`. Gate, реестры, policies, quality strategy, evaluations и ADR остаются в профильных каталогах.
 
@@ -102,15 +103,15 @@ flowchart TD
 | [TEST_STRATEGY.md](../quality/TEST_STRATEGY.md) | 40 named critical scenarios + unit/property/contract/E2E/visual/a11y/security/privacy/performance/recovery | `CREATED_WITH_TBD` |
 | [AI_EVALUATION_SPEC.md](../evaluations/AI_EVALUATION_SPEC.md) | Rights-cleared benchmark, metrics, hard gates, human/privacy/performance evaluation | `CREATED_WITH_TBD` |
 | [TRACEABILITY_MATRIX.md](TRACEABILITY_MATRIX.md) | 18/18 critical chains и 40/40 story→AC→test mappings | `CREATED` |
-| [SPEC_QUALITY_GATE.md](SPEC_QUALITY_GATE.md) | Entry/completion 0B and Phase 0C readiness evidence | `READY_FOR_OWNER_AUTHORIZATION` for 1A transition |
+| [SPEC_QUALITY_GATE.md](SPEC_QUALITY_GATE.md) | Entry/completion 0B, Phase 0C readiness and Phase 1A implementation evidence | `PASSED_PHASE_1A_FOUNDATION` |
 
 ## 7. Принятые ADR фазы 0B
 
 | ADR | Решение | Что намеренно отложено |
 |---|---|---|
 | [ADR-0001](../adr/ADR-0001-application-architecture.md) | Модульное приложение + отдельный worker execution boundary | Framework, database, queue, hosting |
-| [ADR-0002](../adr/ADR-0002-amigo-data-integration.md) | Authorized snapshot → staging → diff → approval → activation/rollback | Transport, API/export availability, cadence |
-| [ADR-0003](../adr/ADR-0003-pricing-engine.md) | Versioned `PricingProvider`, exact money, immutable quote | Формула, active price data, tolerance |
+| [ADR-0002](../adr/ADR-0002-amigo-data-integration.md) | Authorized snapshot → staging → diff → approval → activation/rollback | Transport and API/export availability; cadence resolved separately |
+| [ADR-0003](../adr/ADR-0003-pricing-engine.md) | Versioned `PricingProvider`, exact money, immutable quote | Формула and active price data; tolerance/minimum scope resolved separately |
 | [ADR-0004](../adr/ADR-0004-standard-preview-renderer.md) | Deterministic standard preview, отдельный от AI | Rendering technology и family profiles |
 | [ADR-0005](../adr/ADR-0005-ai-visualization-pipeline.md) | Geometry-first base + optional constrained refinement | Provider/model/benchmark/thresholds |
 | [ADR-0006](../adr/ADR-0006-media-storage.md) | Local object storage, immutable originals, public/private zones | Vendor, region, TTL, backup periods |
@@ -124,23 +125,24 @@ ADR принимают устойчивую границу, а не неподт
 | [MVP_SCOPE.md](../06-plans/MVP_SCOPE.md) | 20 обязательных возможностей, cross-cutting gates и 15 post-MVP направлений | `FROZEN_FOR_PLANNING` |
 | [SPEC_READINESS_AUDIT.md](../06-plans/SPEC_READINESS_AUDIT.md) | 14 critical specs × 15 dimensions; 0 blocked/contradictory after fixes | `PASS_FOR_1A_REVIEW` |
 | [IMPLEMENTATION_ROADMAP.md](../06-plans/IMPLEMENTATION_ROADMAP.md) | Phase 1A–1H с entry/deliverables/tests/risks/DoD/rollback | `APPROVED_SEQUENCE` |
-| [PHASE_1A_TECHNOLOGY_EVALUATION.md](../06-plans/PHASE_1A_TECHNOLOGY_EVALUATION.md) | Recommended vendor-neutral Foundation stack and alternatives | `OWNER_ADR_ACCEPTANCE_REQUIRED` |
-| [PHASE_1A_FOUNDATION_PLAN.md](../06-plans/active/PHASE_1A_FOUNDATION_PLAN.md) | Detailed non-executed Foundation plan and commit sequence | `NOT_STARTED` |
+| [PHASE_1A_TECHNOLOGY_EVALUATION.md](../06-plans/PHASE_1A_TECHNOLOGY_EVALUATION.md) | Vendor-neutral Foundation stack and alternatives | `ADR_ACCEPTED` |
+| [PHASE_1A_FOUNDATION_PLAN.md](../06-plans/active/PHASE_1A_FOUNDATION_PLAN.md) | Detailed Foundation execution plan and commit sequence | `COMPLETED` |
+| [PHASE_1A_FOUNDATION_REPORT.md](../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md) | Actual implementation, commits, verification, skipped scope and acceptance | `PASSED_PHASE_1A_FOUNDATION` |
 
-### 7.2. Proposed Phase 1A ADR
+### 7.2. Accepted Phase 1A ADR
 
-| ADR | Предлагаемое решение | Gate |
+| ADR | Принятое решение | Boundary |
 |---|---|---|
-| [ADR-0007](../adr/ADR-0007-foundation-application-stack.md) | Node/TypeScript/pnpm/Next.js modular web/BFF + worker/test baseline | Accept or supersede before first Phase 1A commit |
-| [ADR-0008](../adr/ADR-0008-postgresql-and-migration-safety.md) | PostgreSQL, reviewed versioned migrations, expand/contract and compensation/restore | Accept before schema/migration |
-| [ADR-0009](../adr/ADR-0009-object-storage-and-background-jobs.md) | S3-compatible object port and PostgreSQL-backed durable jobs | Accept interfaces before 1A; providers later |
-| [ADR-0010](../adr/ADR-0010-identity-secrets-and-observability-boundary.md) | Identity port/library shortlist, managed secrets and OTLP | Accept Foundation boundary; public identity/provider later |
+| [ADR-0007](../adr/ADR-0007-foundation-application-stack.md) | Node/TypeScript/pnpm/Next.js modular web/BFF + worker/test baseline | Phase 1A only; Windows 11 first-class |
+| [ADR-0008](../adr/ADR-0008-postgresql-and-migration-safety.md) | PostgreSQL/Prisma, reviewed versioned migrations, expand/contract and compensation/restore | Foundation schema only |
+| [ADR-0009](../adr/ADR-0009-object-storage-and-background-jobs.md) | S3-compatible object port and PostgreSQL-backed durable jobs | Local adapter/worker; production providers later |
+| [ADR-0010](../adr/ADR-0010-identity-secrets-and-observability-boundary.md) | Identity port, managed secret boundary and OTLP | Synthetic identity; public identity/provider later |
 
 ## 8. Незакрытые зависимости по implementation gate
 
-- **До Phase 1A:** блокирующих P0 нет; нужны owner authorization и acceptance/supersede ADR-0007–0010. Foundation использует только synthetic/local data.
+- **Phase 1A:** завершена и проверена; Foundation использует только synthetic/local data, а дальнейшая implementation остановлена.
 - **До Phase 1B:** разрешённый AMIGO transport/file, pilot inventory/mapping and owners; полный ассортимент не требуется.
-- **До Phase 1C:** active price snapshot, formula/rounding/compatibility/dimensions, approver and parity tolerance; minimum 1500 не используется до `TBD-MIN-PRICE-001`.
+- **До Phase 1C:** нужны active price snapshot, formula/rounding/compatibility/dimensions; activation roles, parity tolerance и per-item minimum уже решены, но не реализуются в Phase 1A.
 - **До Phase 1D:** approved `SceneProfile`, renderer profiles/assets and visual baselines (`TBD-PREVIEW-001`).
 - **До Phase 1E/1F:** legal/privacy/retention, business state mapping, identity/recovery and operational roles.
 - **До Phase 1G:** rights-cleared AI benchmark, provider/model/region/contract, upload limits, TTL, thresholds and cost caps.
@@ -150,9 +152,9 @@ ADR принимают устойчивую границу, а не неподт
 
 ## 9. Implementation sequence after Phase 0C
 
-1. Владелец принимает/supersedes proposed ADR и отдельно письменно решает, начинать ли Phase 1A; автоматического перехода нет.
-2. Phase 1A выполняется только по [активному плану](../06-plans/active/PHASE_1A_FOUNDATION_PLAN.md), без AMIGO import и business features.
-3. Дальнейшие Phase 1B–1H идут строго по [IMPLEMENTATION_ROADMAP](../06-plans/IMPLEMENTATION_ROADMAP.md) и своим entry gates.
+1. Product Owner принял ADR-0007–0010 и письменно разрешил только Phase 1A 2026-08-02.
+2. Phase 1A выполнена по [завершённому плану](../06-plans/active/PHASE_1A_FOUNDATION_PLAN.md) без AMIGO import и business features; результат зафиксирован в [completion report](../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
+3. Phase 1B не начинается до отдельного письменного transition decision; будущие Phase 1B–1H после разрешения идут строго по [IMPLEMENTATION_ROADMAP](../06-plans/IMPLEMENTATION_ROADMAP.md) и своим entry gates.
 4. Закрываются только те P0/P1 business/data/privacy вопросы, от которых зависит выбранный slice; safe fallback не выдаётся за решение.
 5. Source/hosting/AI evaluations используют только разрешённые данные и завершаются ADR до provider commitment.
 
@@ -168,3 +170,7 @@ ADR принимают устойчивую границу, а не неподт
 | 0.2.0 | 2026-08-02 | Добавлен обязательный owner-requested модульный комплект 0B. |
 | 1.0.0 | 2026-08-02 | Roadmap синхронизирован с фактически созданными 33 specs, quality/evaluation, traceability и 6 ADR; следующий кодовый этап не разрешён. |
 | 1.1.0 | 2026-08-02 | Добавлены Phase 0C MVP/readiness artifacts, proposed ADR-0007–0010, P0 gates и обязательная sequence Phase 1A–1H без автоматического старта. |
+| 1.2.0 | 2026-08-02 | QG-147/148 закрыты, ADR-0007–0010 accepted, семь owner P0 resolved; только Phase 1A переведена в authorized/in-progress. |
+| 1.3.0 | 2026-08-02 | Phase 1A plan и report получили completion evidence, QG-149–158 passed; roadmap остановлен перед Phase 1B до нового письменного решения. |
+| 1.4.0 | 2026-08-02 | Глобальная база обновлена до 0.8.0 с authority matrix `OWNER-DECISION-008`; Phase 1B entry/import evidence и transition hold не изменены. |
+| 1.5.0 | 2026-08-02 | Глобальная база обновлена до 0.9.0 с PostgreSQL public-serving contract `OWNER-DECISION-009`; Phase 1B entry/import evidence и transition hold не изменены. |

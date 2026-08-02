@@ -5,14 +5,14 @@
 | Поле | Значение |
 |---|---|
 | Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD` for Foundation; Phase 1B data capture is blocked until `TBD-SOURCE-AMIGO-002` has authorized transport/evidence |
-| Версия | 0.1.0 |
+| Версия | 0.4.0 |
 | Дата | 2026-08-02 |
 | Source registry | [EXTERNAL_SOURCES.md](../../00-global/EXTERNAL_SOURCES.md) |
 | Pricing policy | [PRICING_SOURCE_POLICY.md](../../00-global/PRICING_SOURCE_POLICY.md) |
 
 ## 1. Purpose and boundaries
 
-Sync architecture safely captures authorized AMIGO catalog/technical/price/media metadata into immutable staging, normalizes and diffs it, obtains approvals, atomically activates local versions and rolls back. It does not assume a public API or authorize scraping/import/media download in phase 0B.
+Sync architecture safely captures authorized AMIGO catalog/technical/price/media metadata into immutable PostgreSQL-backed staging, normalizes and diffs it, obtains Business Owner approval, records explicit administrator activation, atomically publishes local versions and rolls back. Public flows consume only the active approved local version. This specification does not assume a public API or authorize Phase 1B import/media acquisition.
 
 ## 2. Transport priority and evidence
 
@@ -46,11 +46,35 @@ Public browser research and volatile customizer DOM/iframe are not a production 
 - **SYNC-ARCH-015 — MUST:** source outage/failure leaves current active local version untouched and updates freshness/run status.
 - **SYNC-ARCH-016 — MUST:** removals retire/hide new selection by approved policy and never physically remove data needed by historical quote/order.
 - **SYNC-ARCH-017 — MUST:** retries/resume are idempotent by run/stage/artifact hashes and cannot duplicate versions/activation.
-- **SYNC-ARCH-018 — MUST:** schedule/cadence/staleness/alert owner are configured after `TBD-PRICE-SOURCE-002`; no period is invented.
+- **SYNC-ARCH-018 — MUST:** future sync checks run automatically once daily and manually on admin request; data older than 7 days receives `STALE_WARNING`, and data older than 30 days requires admin verification before publishing a changed price or new product.
 - **SYNC-ARCH-019 — MUST:** adapter/parser runs least privilege, bounded resource/egress/rate and does not bypass authorization/CAPTCHA/closed interfaces.
 - **SYNC-ARCH-020 — MUST:** telemetry/audit excludes credentials/raw confidential files/media contents and records safe run/version/count/error metadata.
+- **SYNC-ARCH-021 — MUST:** an AMIGO availability value is a proposal only; activation never overwrites confirmed local availability automatically.
+- **SYNC-ARCH-022 — MUST:** the import contract declares field authority before normalization: AMIGO owns product, material, technical-data, catalog-image identity and base-price fields; Business Owner owns availability, local visibility/publication, local price overrides, local portfolio and commercial conditions.
+- **SYNC-ARCH-023 — MUST:** acquisition/normalization/diff may create or revise only `AMIGO_SOURCE` values and proposals. It MUST NOT create, overwrite, clear or retire a `BUSINESS_OWNER_LOCAL` value; an attempted cross-authority change is a blocking conflict.
+- **SYNC-ARCH-024 — MUST:** candidate/active data and local overlays are stored in PostgreSQL as separate revisions/relations with provenance and audit; no last-write-wins column merge is permitted.
+- **SYNC-ARCH-025 — MUST:** image discovery/import writes source/asset metadata and object references to PostgreSQL while binary originals/derivatives go through managed object storage/media pipeline. Database persistence alone does not satisfy rights, mapping or publication gates.
+- **SYNC-ARCH-026 — MUST:** the canonical `OWNER-DECISION-009` pipeline is `AMIGO Source → Import/Synchronization Layer → PostgreSQL Local Catalog → Validation/Diff → Business Owner Approval → Public Catalog through explicit administrator activation`; a run cannot publish by writing staging rows, a cache or a search index.
+- **SYNC-ARCH-027 — MUST:** every source addition/change/removal is represented in a candidate and exact diff before any active pointer changes. Raw capture, incomplete candidate and rejected/unapproved diff MUST NOT be exposed to catalog, search, filters, configurator, calculations, leads or analytics.
+- **SYNC-ARCH-028 — MUST:** Business Owner approves local public composition/visibility; an actor with publication activation capability explicitly activates the exact approved checksum. Governance approval and system permission are both recorded and are not inferred from one role name.
+- **SYNC-ARCH-029 — MUST:** import MUST NOT automatically delete, clear, hide, archive or retire local entities, local-only data, Business Owner overlays or historical references. A source removal creates a source tombstone/proposal and reviewed diff; local lifecycle changes remain separate commands.
+- **SYNC-ARCH-030 — MUST:** applicable approved local overrides have declared precedence in the composed public projection while immutable AMIGO values remain unchanged. Override conflicts, expiry or ambiguous scope block affected activation.
+- **SYNC-ARCH-031 — MUST:** capture/import, validation, diff creation/resolution, override, approval, rejection, activation, hide/archive, rollback and derived-projection rebuild produce audit records with actor/workload, timestamp, reason, version references and correlation ID.
+- **SYNC-ARCH-032 — MUST:** every candidate and published `CatalogVersion` has a unique ID, `createdAt`, nullable `publishedAt`, source/source-version manifest, capture/sync/diff checksums, approval/activation references, predecessor and rollback target. Published content is immutable; corrections create a new version.
 
 ## 4. Pipeline stages
+
+```mermaid
+flowchart LR
+  SOURCE["AMIGO Source"] --> IMPORT["Import / Synchronization Layer"]
+  IMPORT --> LOCAL["PostgreSQL Local Catalog<br/>capture + staged candidate"]
+  LOCAL --> DIFF["Validation / Diff"]
+  DIFF --> OWNER["Business Owner Approval"]
+  OWNER --> ADMIN["Explicit Administrator Activation"]
+  ADMIN --> PUBLIC["Active CatalogVersion / Public Catalog"]
+```
+
+The state machine below governs one run inside this data flow. Only the final active version may feed public or derived read paths.
 
 ```mermaid
 stateDiagram-v2
@@ -83,13 +107,13 @@ Cancellation is allowed before activation subject to artifact retention. After a
 
 ## 5. Capture contract
 
-Capture manifest fields: `captureId`, source/transport adapter/version, permission relationship/scope, source catalog/context/region, initiated actor/schedule, started/completed, source version markers/ETag/checksum where available, raw artifact refs/hashes/counts, media metadata presence, parser version, warnings/errors and classification.
+Capture manifest fields: `captureId`, source/transport adapter/version, permission relationship/scope, source catalog/context/region, initiated actor/schedule, started/completed, source version markers/ETag/checksum where available, raw artifact refs/hashes/counts, media metadata presence, parser version, declared field-authority map, warnings/errors and classification.
 
 Manual import also records uploader, original authorized file/hash, declared source/effective context and dual review if required. Manual does not reduce provenance requirements.
 
 ## 6. Normalization and mapping
 
-Normalize into staged source model with explicit raw-to-normalized field mapping and transformation version. Preserve unknown fields/values safely for review; do not coerce unseen source price categories into 1–5. Units/locale/decimal/date conversion is explicit and loss-checked.
+Normalize into staged source model with explicit raw-to-normalized field mapping, authority class and transformation version. Preserve unknown fields/values safely for review; do not coerce unseen source price categories into 1–5. Units/locale/decimal/date conversion is explicit and loss-checked. Business Owner overlays are joined only in the local projection/readiness step and never copied into the AMIGO capture.
 
 Mapping resolution order: exact stored source ID mapping → versioned alias → human-reviewed candidate; title similarity can suggest only and never auto-merge. Parent/type change, split/merge and reused source ID are blocking conflicts.
 
@@ -124,11 +148,11 @@ Approval matrix:
 - partner scope → owner;
 - security/schema/transport changes → technical/security owner/ADR.
 
-Approval binds exact candidate/diff checksums; any change invalidates approval. Activation command lists pointers/entities/version/effective time/rollback target, actor/approvals and idempotency. It uses transaction or equivalent strongly consistent cutover and publishes cache/search/update events afterward.
+Business Owner approval determines local public composition/visibility. The administrator publication action records an actor with the exact activation capability; the same human MAY satisfy both only when both governance authority and system permission are independently present and audited. Approval binds exact candidate/diff checksums; any change invalidates approval. Activation command lists pointers/entities/version/effective time/rollback target, actor/approvals and idempotency. It uses transaction or equivalent strongly consistent cutover and publishes version-pinned cache/search/filter/analytics rebuild events afterward.
 
 ## 10. Price synchronization boundary
 
-Catalog run MAY carry source price metadata, but price candidate is independently staged/validated/parity-tested/approved. `sourcePriceCategory` dynamic strings are preserved. Active price version and catalog version compatibility is declared. No partial price table or unverified public `от` value becomes active calculator data.
+Catalog run MAY carry source price metadata, but price candidate is independently staged/validated/parity-tested/approved. `sourcePriceCategory` dynamic strings are preserved. Active price version and catalog version compatibility is declared. Approved Business Owner price overrides compose after the immutable AMIGO base-price layer and have priority only in their declared scope. No partial price table or unverified public `от` value becomes active calculator data.
 
 ## 11. Media synchronization boundary
 
@@ -138,7 +162,7 @@ Sync may discover asset identifiers/URLs/metadata within permission. It creates 
 
 Only one activation per target context/pointer set at a time. Multiple captures may run, but candidate base version recorded; stale-base approval/activation conflicts and requires re-diff. Run/stage artifact IDs/checksums enable resume. Scheduled vs manual trigger and priority do not skip same validation.
 
-Exact cadence, retry limits, staleness and concurrency budgets remain TBD/evaluation. Backoff honors source terms/rate. Manual emergency run uses same pipeline/audit.
+Cadence and staleness are fixed by `OWNER-DECISION-005`: daily + manual, 7-day warning, 30-day verification gate. Retry limits, concurrency budgets and exact scheduler remain implementation evaluation. Backoff honors source terms/rate. Manual run uses the same pipeline/audit.
 
 ## 13. Failures and edge cases
 
@@ -150,7 +174,7 @@ Exact cadence, retry limits, staleness and concurrency budgets remain TBD/evalua
 | Encoding/locale/decimal change | Blocking conversion/schema drift |
 | Duplicate/reused source ID | Quarantine conflict |
 | Rename/move | Alias/mapping revision; stable local ID |
-| Mass removal | High-impact review; never automatic hard delete |
+| Source or mass removal | Source tombstone + high-impact diff; never automatic local hide/archive/delete and never hard-delete history/overlays |
 | New category/property/price category | Preserve dynamically; schema/mapping/readiness review |
 | Active base changed during review | Approval invalid/stale, re-diff |
 | Cache/search update failure | Active source of truth remains; retry/health/rollback policy |
@@ -165,14 +189,17 @@ Adapter credentials in secret store, egress allowlist, safe parser isolation, fi
 
 Primary: `AC-AMIGO-SYNC-001`, `AC-SYNC-DIFF-001`, `AC-SYNC-ROLLBACK-001`, `AC-CATALOG-DYNAMIC-001`, `AC-PRICE-ACTIVATE-001`, `AC-ASSET-MAP-001`.
 
-Tests: every transport via authorized fixture; integrity/schema/encoding/locale; dynamic category/property/category string; rename/move/split/merge/reused ID; field/relationship/price/media diff; approval checksum invalidation; stale-base concurrency; dry run/no pointer change; atomic activation/cache/search; post-health/rollback; retry/resume/idempotency; source/auth/rate outage; telemetry/secret scan; historical retention.
+Tests: every transport via authorized fixture; integrity/schema/encoding/locale; dynamic category/property/category string; rename/move/split/merge/reused ID; field/relationship/price/media diff; direct AMIGO/staging public-read denial; source-removal preservation of local data/overlays/history; override precedence without source mutation; Business Owner + activation-capability evidence; catalog-version source/timestamp/audit completeness; approval checksum invalidation; stale-base concurrency; dry run/no pointer change; atomic activation/version-pinned cache/search/filter/analytics rebuild; post-health/rollback; retry/resume/idempotency; source/auth/rate outage; telemetry/secret scan; historical retention.
 
 ## 16. Dependencies, risks and open questions
 
-Dependencies: catalog/pricing/media/admin/data/API/security/observability/deployment and ADR-0002. Open: transport/export/schema/sample, permission details, cadence/staleness/owners, source region/context, rate limits, change markers, media acquisition and activation grouping. Risks: volatile DOM, secret exposure, auto-publication, destructive removal, price mismatch, parser drift, approval of moving candidate and rollback inconsistency.
+Dependencies: catalog/pricing/media/admin/data/API/security/observability/deployment, ADR-0002 and `OWNER-DECISION-008/009`. Open: transport/export/schema/sample, permission details, source region/context, rate limits, retry/concurrency, change markers, media acquisition and activation grouping. Cadence/staleness, local availability authority and public-serving topology are resolved by `OWNER-DECISION-004/005/009`; actual transport/data/import remain gated. Risks: volatile DOM, secret exposure, direct staging exposure, auto-publication, destructive removal, override loss, price mismatch, parser drift, approval of moving candidate, derived-projection drift and rollback inconsistency.
 
 ## 17. History
 
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Defined transport priority, immutable capture, normalization/validation/diff, approval/activation/rollback, price/media boundaries and tests. |
+| 0.2.0 | 2026-08-02 | Зафиксированы daily/manual cadence, `STALE_WARNING`, 30-day verification gate и запрет auto-overwrite локального наличия; реализация sync остаётся Phase 1B+. |
+| 0.3.0 | 2026-08-02 | Added field-level authority, PostgreSQL source/local revision separation and object-storage image import boundary from `OWNER-DECISION-008`; transport/import evidence remains gated. |
+| 0.4.0 | 2026-08-02 | Applied `OWNER-DECISION-009`: PostgreSQL active `CatalogVersion` is the only public-serving source; added exact owner/admin pipeline, no-auto-delete, override precedence, full audit/version metadata and version-pinned derived rebuilds. |

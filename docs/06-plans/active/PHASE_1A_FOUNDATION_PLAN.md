@@ -5,27 +5,27 @@
 | Поле | Значение |
 |---|---|
 | Plan ID | `PLAN-1A-001` |
-| Статус | **READY FOR OWNER REVIEW; NOT AUTHORIZED / NOT STARTED** |
+| Статус | **COMPLETED — `PASSED_PHASE_1A_FOUNDATION`** |
 | Проверяемый результат | На чистой машине локально и в CI воспроизводится secure modular foundation с web/BFF, PostgreSQL, object adapter, durable worker, auth boundary, tests and operations; бизнес-функции отсутствуют. |
 | Scope source | [Implementation roadmap §1](../IMPLEMENTATION_ROADMAP.md#1-phase-1a--foundation) |
 | Technology evaluation | [PHASE_1A_TECHNOLOGY_EVALUATION](../PHASE_1A_TECHNOLOGY_EVALUATION.md) |
 | Required decisions | Accepted [ADR-0007](../../adr/ADR-0007-foundation-application-stack.md), [ADR-0008](../../adr/ADR-0008-postgresql-and-migration-safety.md), [ADR-0009](../../adr/ADR-0009-object-storage-and-background-jobs.md), [ADR-0010](../../adr/ADR-0010-identity-secrets-and-observability-boundary.md) |
 
-На Phase 0C этот файл является только планом. Он не разрешает создавать `package.json`, приложения, SQL, migrations, containers или credentials.
+Product Owner 2026-08-02 разрешил только Phase 1A Foundation. План выполнен и сохранён в `active/` как неизменённый адрес execution record; итоговое evidence находится в [PHASE_1A_FOUNDATION_REPORT](../completed/PHASE_1A_FOUNDATION_REPORT.md). AMIGO Catalog Pilot, import, business features, user media, AI и production deployment остаются запрещены; Phase 1B не начинается автоматически.
 
 ## 1. Entry gate and stop conditions
 
 Phase 1A MUST NOT start until all conditions are evidenced:
 
-- [ ] владелец отдельно письменно разрешил Phase 1A после Phase 0C report;
-- [ ] documentation baseline commit exists and Phase 0C documentation tree is clean;
-- [ ] `MVP_SCOPE`, `IMPLEMENTATION_ROADMAP`, this plan and P0 triage are current;
-- [ ] critical spec audit has zero `BLOCKED` and `CONTRADICTORY` results;
-- [ ] ADR-0007–0010 accepted or superseded by accepted alternatives;
-- [ ] exact Node/package-manager/framework/database-tool versions, licenses and current advisories reverified;
-- [ ] secret storage method and migration rollback policy remain known and assigned;
-- [ ] no production AMIGO data, user media, customer PII or shared credentials are needed for Foundation;
-- [ ] one implementation step is marked active in the execution copy of this plan.
+- [x] владелец отдельно письменно разрешил только Phase 1A после Phase 0C report (`QG-148`);
+- [x] Phase 0C baseline commit `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990` существует, исходное дерево было clean;
+- [x] `MVP_SCOPE`, `IMPLEMENTATION_ROADMAP`, this plan and P0 triage current;
+- [x] critical spec audit имеет zero `BLOCKED` and `CONTRADICTORY` results;
+- [x] ADR-0007–0010 приняты (`QG-147`);
+- [x] exact Node/package-manager/framework/database-tool versions, licenses and current advisories reverified in `tooling/DEPENDENCY_BASELINE.md`;
+- [x] secret storage method and migration rollback policy remain known and assigned;
+- [x] production AMIGO data, user media, customer PII and shared credentials не нужны Foundation;
+- [x] exactly one execution step is marked `in_progress` in §15.
 
 If any condition fails, work stops at documentation/research; no partial scaffold is justified.
 
@@ -100,6 +100,7 @@ Acceptance: missing/invalid/publicly misclassified values fail safely; a seeded 
 ## 6. Local development contract
 
 - One documented bootstrap command group installs the pinned toolchain and starts web, worker, PostgreSQL and object emulator after explicit permission.
+- Windows 11 with PowerShell is a first-class supported local environment; Bash/WSL is not a mandatory prerequisite.
 - Dependencies are disposable and isolated by project-specific names/ports; no global/shared production database.
 - Schema creation uses committed migrations, not auto-sync; synthetic seed is deterministic, rights-free and contains no AMIGO/customer data.
 - Web/worker support graceful shutdown and dependency-ready health; worker concurrency defaults low.
@@ -202,18 +203,18 @@ Only one item may be `in_progress` in the future execution copy:
 
 | Step | Result | Dependency | Status now |
 |---|---|---|---|
-| 1A-01 | Record owner authorization, accept ADRs, pin verified toolchain | Phase 0C gate | `pending` |
-| 1A-02 | Bootstrap workspace/task graph and root quality commands | 1A-01 | `pending` |
-| 1A-03 | Add tooling configs and enforce dependency boundaries | 1A-02 | `pending` |
-| 1A-04 | Create minimal web/BFF and worker shells with liveness/readiness | 1A-03 | `pending` |
-| 1A-05 | Add typed environment and secrets/redaction protections | 1A-04 | `pending` |
-| 1A-06 | Add PostgreSQL adapter and reviewed baseline migration/recovery tests | 1A-05 | `pending` |
-| 1A-07 | Add S3-compatible local adapter and trust-zone contract tests | 1A-06 | `pending` |
-| 1A-08 | Add durable job adapter/worker retry-idempotency tests | 1A-06 | `pending` |
-| 1A-09 | Add synthetic identity/RBAC/session boundary | 1A-06 | `pending` |
-| 1A-10 | Add OTel/logging/health integration and denylist tests | 1A-07–09 | `pending` |
-| 1A-11 | Complete CI, browser/recovery/security gates and clean-machine runbook | 1A-10 | `pending` |
-| 1A-12 | Audit against acceptance/traceability, update docs and request phase sign-off | 1A-11 | `pending` |
+| 1A-01 | Record owner authorization, accept ADRs, pin verified toolchain | Phase 0C gate | `completed` |
+| 1A-02 | Bootstrap workspace/task graph and root quality commands | 1A-01 | `completed` |
+| 1A-03 | Add tooling configs and enforce dependency boundaries | 1A-02 | `completed` |
+| 1A-04 | Create minimal web/BFF and worker shells with liveness/readiness | 1A-03 | `completed` |
+| 1A-05 | Add typed environment and secrets/redaction protections | 1A-04 | `completed` |
+| 1A-06 | Add PostgreSQL adapter and reviewed baseline migration/recovery tests | 1A-05 | `completed` |
+| 1A-07 | Add S3-compatible local adapter and trust-zone contract tests | 1A-06 | `completed` |
+| 1A-08 | Add durable job adapter/worker retry-idempotency tests | 1A-06 | `completed` |
+| 1A-09 | Add synthetic identity/RBAC/session boundary | 1A-06 | `completed` |
+| 1A-10 | Add OTel/logging/health integration and denylist tests | 1A-07–09 | `completed` |
+| 1A-11 | Complete CI, browser/recovery/security gates and clean-machine runbook | 1A-10 | `completed` |
+| 1A-12 | Audit against acceptance/traceability, update docs and request phase sign-off | 1A-11 | `completed` |
 
 ## 16. Planned commit sequence
 
@@ -248,7 +249,7 @@ No commit combines schema migration with unrelated framework changes. Failed rev
 
 ## 18. Definition of Done and handoff
 
-Phase 1A is done only when all `PLAN-1A-AC-001`–`010` have linked evidence; ADRs are accepted; documentation/traceability/changelog updated; dependency/advisory review current; migrations and runbooks reviewed; worktree clean; and owner records Phase 1A acceptance. Completion MAY authorize planning/entry review for Phase 1B, never automatic import.
+Все `PLAN-1A-AC-001`–`010` имеют linked evidence в [completion report](../completed/PHASE_1A_FOUNDATION_REPORT.md); ADR приняты и проверены, documentation/traceability/changelog синхронизированы, dependency/advisory review актуален, migrations/runbooks проверены, final worktree clean. Gate имеет статус `PASSED_PHASE_1A_FOUNDATION`. Это не разрешает planning/implementation Phase 1B без нового письменного решения Product Owner.
 
 ## 19. Rollback plan
 
@@ -267,3 +268,14 @@ Before shared data, commits/resources are reversible in reverse dependency order
 | Версия | Дата | Изменение |
 |---|---|---|
 | 1.0.0 | 2026-08-02 | Подготовлен детальный, неисполняемый в 0C Foundation plan со stack, boundaries, CI, data/storage/jobs/auth/observability/security/testing, commits and rollback. |
+| 1.1.0 | 2026-08-02 | Product Owner разрешил только Phase 1A; QG-147/148 закрыты, ADR-0007–0010 accepted, Windows 11 закреплена; 1A-01 начат до pinning зависимостей. |
+| 1.2.0 | 2026-08-02 | Закреплены exact Node/pnpm/toolchain versions, проверены compatibility и advisory feeds, создан workspace/task graph и включены strict tooling/package-boundary gates; активирован 1A-04. |
+| 1.3.0 | 2026-08-02 | Созданы минимальные web/BFF и отдельный worker shells, безопасные error/health contracts, 404/error boundary и Windows runtime smoke; после transitive dependency controls audit/build прошли, активирован 1A-05. |
+| 1.4.0 | 2026-08-02 | Добавлены typed environment schemas, public/server allowlist, fail-fast startup, redaction и repository secret scan; synthetic server canary не попал в build artifacts, активирован 1A-06. |
+| 1.5.0 | 2026-08-02 | Добавлены Prisma/PostgreSQL adapter, три инфраструктурные миграции без бизнес-таблиц, отдельные migrator/runtime roles и реальные проверки empty/repeat/upgrade/drift/append-only audit/forward-recovery на одноразовом PostgreSQL 18.4; активирован 1A-07. |
+| 1.6.0 | 2026-08-02 | Добавлены provider-neutral object port, три trust-zone bucket namespaces, checksum/metadata/immutable semantics и scoped grants; RustFS 1.0.0-beta.11 на loopback прошёл signed/anonymous-deny/cross-zone/dependency-failure contracts, активирован 1A-08. |
+| 1.7.0 | 2026-08-02 | Добавлены operator-only Graphile migrations с RLS runtime hardening, versioned synthetic task, bounded retry/timeout, durable idempotency/permanent failure и отдельный worker lifecycle; реальный PostgreSQL прогон подтвердил replay, graceful drain и отсутствие остаточного queue lock, активирован 1A-09. |
+| 1.8.0 | 2026-08-02 | Добавлены provider-neutral IdentityPort, шесть Phase 1A ролей, deny-by-default capability/object policy, synthetic human/workload separation, HMAC-hashed revocable sessions и audit context; forward migration разрешила атрибуцию workload identity, реальные session/RBAC/revocation/outage contracts прошли, активирован 1A-10. |
+| 1.9.0 | 2026-08-02 | Добавлены allowlisted JSON logs, async request/correlation/trace context, safe error classification/redaction, low-cardinality metrics, optional OTLP HTTP export и dependency readiness web/worker; forced Next build без Edge warnings и реальные PostgreSQL/RustFS/worker regressions прошли, активирован 1A-11. |
+| 1.10.0 | 2026-08-02 | Добавлены CSP nonce, CSRF/origin/rate-limit/request-size boundary, coverage, provider-neutral CI, artifact/secret/scope/docs gates, Playwright Chromium/Firefox/WebKit и единый Windows lifecycle PostgreSQL/RustFS/web/worker; полный CI-equivalent прошёл 9/9 стадий, активирован итоговый аудит 1A-12. |
+| 1.11.0 | 2026-08-02 | Clean clone на commit `0a4379c` прошёл frozen install и 9/9 CI stages; `PLAN-1A-AC-001`–`010` и QG-149–158 закрыты evidence, plan отмечен completed, Phase 1B не разрешена. |

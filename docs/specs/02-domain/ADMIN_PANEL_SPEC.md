@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD`; operational contract ready, Phase 1F activation waits for final roles/identity and dependent feature data |
-| Версия | 0.1.0 |
+| Версия | 0.3.0 |
 | Дата | 2026-08-02 |
 | Permissions | [ROLES_PERMISSIONS.md](../01-product/ROLES_PERMISSIONS.md) |
 | Source flows | Catalog, pricing, media, sync and order specs |
@@ -27,7 +27,7 @@ Out of scope: unrestricted database editor, arbitrary code/expression execution,
 | Rights approver/owner | Partner scope, publication/revocation decisions |
 | Manager | Assigned leads, measurements, quotes, orders, warranty |
 | Identity admin | Staff roles/scopes/session revocation |
-| Owner | High-risk approvals, business decisions, dashboards |
+| Business Owner decision-giver / `OWNER` executor | Business Owner decides local availability, visibility/publication, price overrides, portfolio and commercial conditions; an explicitly delegated `OWNER` actor records high-risk approvals and accesses dashboards without inheriting governance authority |
 | Auditor/read-only | Evidence/history without mutation |
 
 ## 3. Нормативные требования
@@ -56,6 +56,12 @@ Out of scope: unrestricted database editor, arbitrary code/expression execution,
 - **ADMIN-SPEC-022 — MUST:** support access to customer/private visualization content is denied by default and never enabled by broad admin role.
 - **ADMIN-SPEC-023 — MUST:** secrets/credentials are configured through approved secret workflow and displayed only as metadata/status, never plaintext.
 - **ADMIN-SPEC-024 — MUST:** environment (development/staging/production) is prominent and dangerous production actions cannot be confused with preview.
+- **ADMIN-SPEC-025 — MUST:** Business Owner-confirmed local availability recorded in PostgreSQL is authoritative for local operations; an AMIGO-proposed status is displayed separately and cannot overwrite it automatically.
+- **ADMIN-SPEC-026 — MUST:** only `OWNER` or `ADMIN` may activate a `PriceVersion`, after exact diff review and explicit confirmation; attempt and result are immutable audit events.
+- **ADMIN-SPEC-027 — MUST:** source freshness displays daily/manual check context, `STALE_WARNING` after 7 days and a blocking verification gate after 30 days before publishing changed price/new product.
+- **ADMIN-SPEC-028 — MUST:** AMIGO-owned product/material/technical/image/base-price source fields are displayed as immutable source revisions; an operator MAY correct mapping or reject a capture but MUST NOT edit the source value in place.
+- **ADMIN-SPEC-029 — MUST:** Business Owner-owned availability, local visibility/publication, local price overrides, local portfolio and commercial conditions are separate commands/records with actor authority, reason, revision and audit; source sync cannot mutate them.
+- **ADMIN-SPEC-030 — MUST:** image screens distinguish AMIGO source identity, PostgreSQL metadata/provenance/mapping/status and object-storage binary/derivatives; a database record or source URL alone never enables publication.
 
 ## 4. Information architecture
 
@@ -64,7 +70,7 @@ Out of scope: unrestricted database editor, arbitrary code/expression execution,
 | Overview | P0 blocked items, freshness, sync/price/media/lead health, approvals |
 | Sources & partner | Source registry status, PartnerRelationship versions/scope/badge/evidence |
 | Catalog | Hierarchy, source/local mappings, variants/properties/options/constraints/readiness |
-| Availability | Evidence/status; quantitative inventory only after approval |
+| Availability | Authoritative local status, separate AMIGO proposal/evidence/freshness; quantitative inventory only after approval |
 | Pricing | Versions, rules/categories/overrides, validation/parity, activation/rollback |
 | Media & rights | Assets, mappings, derivatives/usages, publication/revocation/delete |
 | Content | Pages, portfolio, partner examples, review/publication |
@@ -82,7 +88,7 @@ Review staged source entity → compare existing mapping/aliases → choose/crea
 
 ### Price activation
 
-Open staged version → verify source/context/checksum → inspect rule/category/override diff → run validation/parity → resolve/accept approved exceptions → separate approver schedules/activates → health check/cache update → rollback if needed. Current version remains active on failure.
+Open staged version → verify source/context/checksum → inspect rule/category/override exact diff → run validation/parity → resolve approved exceptions → authorized `OWNER`/`ADMIN` explicitly confirms and schedules/activates → audit outcome → health check/cache update → rollback if needed. Current version remains active on failure.
 
 ### Media publication/revoke
 
@@ -156,7 +162,7 @@ Tests: full role/capability matrix; object/environment scope; stale edit; approv
 
 ## 13. Dependencies, risks and open questions
 
-Dependencies: all domain modules, RBAC/auth, sync/media/storage/data/API/security/observability/deployment. Open: named roles/approvers, separation thresholds, support/private access, audit/export retention, bulk limits, alert owners, staff/team assignment and emergency access. Risks: broad admin, direct state edit, stale overwrite, approval of changed revision, secret/PII exposure, inaccessible grids and dangerous production confusion.
+Dependencies: all domain modules, RBAC/auth, sync/media/storage/data/API/security/observability/deployment. Activation roles are resolved by `OWNER-DECISION-002`; open: separation thresholds, support/private access, audit/export retention, bulk limits, alert owners, staff/team assignment and emergency access. Risks: broad admin, direct state edit, stale overwrite, approval of changed revision, secret/PII exposure, inaccessible grids and dangerous production confusion.
 
 ## 14. Связанные требования and history
 
@@ -165,3 +171,5 @@ Links: `FR-ADMIN-*`, `RBAC-*`, `NFR-AUDIT-*`, `ADMIN-SPEC-001`–`024`.
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Определены admin IA, capability workflows, safe mutation/approval/bulk/export contracts, failures and tests. |
+| 0.2.0 | 2026-08-02 | Добавлены authoritative local availability, AMIGO freshness gates и `OWNER`/`ADMIN` PriceVersion activation with exact diff/confirmation/audit. |
+| 0.3.0 | 2026-08-02 | Добавлены authority-aware read-only AMIGO fields, отдельные Business Owner commands и явное разделение PostgreSQL media metadata/object-storage binaries по `OWNER-DECISION-008`. |

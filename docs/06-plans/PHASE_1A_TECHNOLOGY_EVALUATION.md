@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Дата проверки | 2026-08-02 |
-| Статус | **RECOMMENDED / ADR ACCEPTANCE REQUIRED** |
+| Статус | **ACCEPTED FOR PHASE 1A via ADR-0007–0010** |
 | Область | Только Foundation; hosting, production data residency, e-mail/SMS и AI provider не выбираются |
 | Решения | [ADR-0007](../adr/ADR-0007-foundation-application-stack.md), [ADR-0008](../adr/ADR-0008-postgresql-and-migration-safety.md), [ADR-0009](../adr/ADR-0009-object-storage-and-background-jobs.md), [ADR-0010](../adr/ADR-0010-identity-secrets-and-observability-boundary.md) |
 
@@ -110,10 +110,11 @@ External documentation changes over time. Exact versions, licenses, advisories a
 
 ## 7. Решение readiness
 
-Рекомендация достаточна для детального Phase 1A plan, но не считается принятой архитектурой до перевода `ADR-0007`–`0010` из `Proposed` в `Accepted` письменным решением владельца. Ни hosting, ни production storage region, ни AI provider этим документом не выбираются.
+Product Owner принял `ADR-0007`–`0010` 2026-08-02 только для Phase 1A. Exact dependency/version/advisory verification остаётся обязательной до bootstrap. Ни hosting, ни production storage region, ни AI provider этим документом не выбираются.
 
 ## 8. История
 
 | Версия | Дата | Изменение |
 |---|---|---|
 | 1.0.0 | 2026-08-02 | Сравнён и рекомендован минимальный Foundation stack, определены migration/secrets baselines и gates. |
+| 1.1.0 | 2026-08-02 | Рекомендация принята Product Owner через ADR-0007–0010 для Phase 1A; production providers остаются undecided. |

@@ -7,6 +7,7 @@
 
 ### Added
 
+- Добавлен отдельный Graphile Worker foundation с versioned synthetic payload, bounded retry/timeout, durable idempotency, permanent-failure inspection, correlation-safe logs, явной operator-only миграцией и RLS hardening для runtime-роли без DDL; реальный PostgreSQL-тест подтверждает replay, retry, timeout, graceful drain и освобождение queue lock.
 - Добавлен provider-neutral S3-compatible storage port с отдельными public/private/quarantine namespaces, immutable/checksum metadata, scoped signed grants и реальными negative access/recovery tests на одноразовом loopback-only RustFS без production credentials или медиа.
 - Добавлены PostgreSQL/Prisma foundation, две воспроизводимые инфраструктурные миграции, отдельные migrator/runtime роли, append-only audit и автоматическая Windows-проверка clean/repeat/upgrade/drift/forward-recovery на одноразовой SCRAM-базе без бизнес-таблиц.
 - Добавлены typed fail-fast environment schemas для local/test/CI, явный public allowlist, `.env.example` без значений секретов, deterministic log redaction и автоматический repository secret scan с подавлением найденных значений.

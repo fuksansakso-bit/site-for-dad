@@ -69,3 +69,10 @@ the gated residency, encryption, restore and provider-replacement decision.
 
 The selection does not choose a production hosting, storage, identity, secrets, telemetry, or CI
 vendor. No production credentials are required or permitted.
+
+Graphile Worker migrations execute only through the explicit operator command. The command reapplies
+runtime RLS policies and grants after every queue migration; the application role has queue data-plane
+access but no schema `CREATE`. Completion/failure batching is enabled with a zero delay so graceful
+shutdown flushes the library's tracked finalization batch before the PostgreSQL pool closes. Disposable
+PostgreSQL verification covers repeated queue migration, runtime DDL denial, retry/timeout,
+idempotency, permanent failure, process readiness and queue-lock release.

@@ -23,7 +23,19 @@ const workerEnvironmentSchema = phase1ABaseSchema
     WORKER_CONCURRENCY: positiveIntegerString(1, 32),
     WORKER_HEALTH_HOST: z.enum(['127.0.0.1', '::1']),
     WORKER_HEALTH_PORT: positiveIntegerString(1, 65_535),
+    WORKER_JOB_TIMEOUT_MS: positiveIntegerString(100, 120_000),
+    WORKER_MAX_ATTEMPTS: positiveIntegerString(1, 25),
+    WORKER_POLL_INTERVAL_MS: positiveIntegerString(100, 30_000),
     WORKER_SHUTDOWN_TIMEOUT_MS: positiveIntegerString(1_000, 120_000),
+  })
+  .superRefine((environment, context) => {
+    if (environment.WORKER_SHUTDOWN_TIMEOUT_MS <= environment.WORKER_JOB_TIMEOUT_MS) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Worker shutdown timeout must exceed the per-job timeout.',
+        path: ['WORKER_SHUTDOWN_TIMEOUT_MS'],
+      });
+    }
   })
   .strict();
 export type WorkerEnvironment = z.infer<typeof workerEnvironmentSchema>;
@@ -32,6 +44,9 @@ const workerKeys = [
   'WORKER_CONCURRENCY',
   'WORKER_HEALTH_HOST',
   'WORKER_HEALTH_PORT',
+  'WORKER_JOB_TIMEOUT_MS',
+  'WORKER_MAX_ATTEMPTS',
+  'WORKER_POLL_INTERVAL_MS',
   'WORKER_SHUTDOWN_TIMEOUT_MS',
 ] as const;
 
@@ -53,6 +68,11 @@ export type DatabaseEnvironment = z.infer<typeof databaseEnvironmentSchema>;
 const migrationEnvironmentSchema = phase1ABaseSchema
   .extend({
     MIGRATION_DATABASE_URL: postgresUrlSchema,
+    WORKER_RUNTIME_DATABASE_ROLE: z
+      .string()
+      .min(1)
+      .max(63)
+      .regex(/^[a-z][a-z0-9_]*$/),
   })
   .strict();
 export type MigrationEnvironment = z.infer<typeof migrationEnvironmentSchema>;
@@ -162,6 +182,7 @@ export function parseMigrationEnvironment(source: EnvironmentSource): MigrationE
   return parseEnvironment('migration', migrationEnvironmentSchema, source, [
     ...baseKeys,
     'MIGRATION_DATABASE_URL',
+    'WORKER_RUNTIME_DATABASE_ROLE',
   ]);
 }
 

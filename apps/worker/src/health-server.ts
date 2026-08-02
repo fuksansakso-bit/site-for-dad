@@ -4,12 +4,13 @@ import { createServer, type Server } from 'node:http';
 import { createSafeErrorResponse, foundationErrorDefinitions } from '@project-name/contracts/error';
 import {
   correlationIdSchema,
+  type DependencyHealth,
   livenessResponseSchema,
   readinessResponseSchema,
 } from '@project-name/contracts/health';
 
 export interface WorkerHealthOptions {
-  readonly isReady: () => boolean;
+  readonly checkReadiness: () => Promise<Readonly<Record<string, DependencyHealth>>>;
 }
 
 function correlationId(candidate: string | undefined): string {
@@ -40,17 +41,33 @@ export function createWorkerHealthServer(options: WorkerHealthOptions): Server {
     }
 
     if (request.method === 'GET' && request.url === '/health/ready') {
-      const isReady = options.isReady();
-      response.statusCode = isReady ? 200 : 503;
-      response.end(
-        JSON.stringify(
-          readinessResponseSchema.parse({
-            checks: { worker: isReady ? 'ok' : 'unavailable' },
-            correlationId: requestCorrelationId,
-            status: isReady ? 'ok' : 'unavailable',
-          }),
-        ),
-      );
+      void options
+        .checkReadiness()
+        .then((checks) => {
+          const isReady = !Object.values(checks).includes('unavailable');
+          response.statusCode = isReady ? 200 : 503;
+          response.end(
+            JSON.stringify(
+              readinessResponseSchema.parse({
+                checks,
+                correlationId: requestCorrelationId,
+                status: isReady ? 'ok' : 'unavailable',
+              }),
+            ),
+          );
+        })
+        .catch(() => {
+          response.statusCode = 503;
+          response.end(
+            JSON.stringify(
+              readinessResponseSchema.parse({
+                checks: { database: 'unavailable', queue: 'unavailable', worker: 'unavailable' },
+                correlationId: requestCorrelationId,
+                status: 'unavailable',
+              }),
+            ),
+          );
+        });
       return;
     }
 

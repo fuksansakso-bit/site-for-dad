@@ -224,6 +224,7 @@ CREATE ROLE foundation_runtime LOGIN PASSWORD '$runtimePassword'
     $env:APP_ENV = 'test'
     $env:LOG_LEVEL = 'info'
     $env:DATABASE_STATEMENT_TIMEOUT_MS = '5000'
+    $env:WORKER_RUNTIME_DATABASE_ROLE = 'foundation_runtime'
 
     Write-Output 'stage=empty-and-repeat-deploy'
     $env:MIGRATION_DATABASE_URL = & $migrationUrlFor 'foundation_empty'
@@ -231,6 +232,10 @@ CREATE ROLE foundation_runtime LOGIN PASSWORD '$runtimePassword'
     Invoke-Pnpm -Arguments @('--filter', '@project-name/db', 'db:migrate:deploy') -FailureMessage 'Repeated migration deploy failed'
     Invoke-Pnpm -Arguments @('--filter', '@project-name/db', 'db:migrate:status') -FailureMessage 'Migration status failed'
     Invoke-Pnpm -Arguments @('--filter', '@project-name/db', 'db:migrate:diff') -FailureMessage 'Migration drift check failed'
+
+    Write-Output 'stage=queue-migration-explicit-and-repeat'
+    Invoke-Pnpm -Arguments @('--filter', '@project-name/jobs', 'jobs:migrate') -FailureMessage 'Queue migration failed'
+    Invoke-Pnpm -Arguments @('--filter', '@project-name/jobs', 'jobs:migrate') -FailureMessage 'Repeated queue migration failed'
 
     Write-Output 'stage=runtime-least-privilege'
     $env:PGPASSWORD = $migrationPassword
@@ -255,6 +260,20 @@ GRANT SELECT, INSERT ON audit_event TO foundation_runtime;
     $env:DATABASE_URL = & $runtimeUrlFor 'foundation_empty'
     Invoke-Pnpm -Arguments @('--filter', '@project-name/db', 'test:integration') -FailureMessage 'Database integration tests failed'
 
+    Write-Output 'stage=durable-job-contract'
+    $env:WORKER_CONCURRENCY = '1'
+    $env:WORKER_HEALTH_HOST = '127.0.0.1'
+    $healthListener = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopback, 0)
+    $healthListener.Start()
+    $env:WORKER_HEALTH_PORT = ([System.Net.IPEndPoint]$healthListener.LocalEndpoint).Port.ToString()
+    $healthListener.Stop()
+    $env:WORKER_JOB_TIMEOUT_MS = '1000'
+    $env:WORKER_MAX_ATTEMPTS = '3'
+    $env:WORKER_POLL_INTERVAL_MS = '100'
+    $env:WORKER_SHUTDOWN_TIMEOUT_MS = '5000'
+    Invoke-Pnpm -Arguments @('--filter', '@project-name/jobs', 'test:integration') -FailureMessage 'Durable job integration tests failed'
+    Invoke-Pnpm -Arguments @('--filter', '@project-name/worker', 'test:integration') -FailureMessage 'Worker process integration tests failed'
+
     $env:PGPASSWORD = $runtimePassword
     $previousErrorActionPreference = $ErrorActionPreference
     $ErrorActionPreference = 'Continue'
@@ -263,6 +282,13 @@ GRANT SELECT, INSERT ON audit_event TO foundation_runtime;
     $ErrorActionPreference = $previousErrorActionPreference
     if ($runtimeCreateExitCode -eq 0) {
         throw 'Runtime role unexpectedly created a table'
+    }
+    $ErrorActionPreference = 'Continue'
+    & $psql -h '127.0.0.1' -p $port -U 'foundation_runtime' -d 'foundation_empty' -v 'ON_ERROR_STOP=1' -c 'CREATE TABLE graphile_worker.forbidden_runtime_probe (id integer);' 2>$null
+    $queueRuntimeCreateExitCode = $LASTEXITCODE
+    $ErrorActionPreference = $previousErrorActionPreference
+    if ($queueRuntimeCreateExitCode -eq 0) {
+        throw 'Runtime role unexpectedly created a queue table'
     }
 
     Write-Output 'stage=upgrade-from-first-snapshot'
@@ -334,6 +360,9 @@ GRANT SELECT, INSERT ON audit_event TO foundation_runtime;
         passwordAuthentication = 'scram-sha-256'
         recovery = 'rolled-back-and-compensated'
         repeatedDeploy = 'passed'
+        queueIntegration = 'retry-timeout-idempotency-permanent-failure-graceful-shutdown'
+        queueMigrationReplay = 'passed'
+        queueRuntimeCreateDenied = $true
         runtimeCreateDenied = $true
         trustRules = $unsafeRules.Count
         upgradeAppliedMigrations = [int]$appliedUpgradeCount
@@ -348,6 +377,14 @@ finally {
     $env:PGCONNECT_TIMEOUT = $null
     $env:PGPASSWORD = $null
     $env:PRISMA_MIGRATIONS_PATH = $null
+    $env:WORKER_CONCURRENCY = $null
+    $env:WORKER_HEALTH_HOST = $null
+    $env:WORKER_HEALTH_PORT = $null
+    $env:WORKER_JOB_TIMEOUT_MS = $null
+    $env:WORKER_MAX_ATTEMPTS = $null
+    $env:WORKER_POLL_INTERVAL_MS = $null
+    $env:WORKER_SHUTDOWN_TIMEOUT_MS = $null
+    $env:WORKER_RUNTIME_DATABASE_ROLE = $null
     $env:Path = $originalPath
 
     if ($serverStarted -or (Test-Path -LiteralPath (Join-Path $dataDirectory 'postmaster.pid'))) {

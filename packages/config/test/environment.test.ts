@@ -5,8 +5,10 @@ import { parsePublicEnvironment } from '../src/public.js';
 import {
   parseDatabaseEnvironment,
   parseIdentityEnvironment,
+  parseMigrationEnvironment,
   parseStorageEnvironment,
   parseWebServerEnvironment,
+  parseWorkerEnvironment,
   serverOnlyEnvironmentKeys,
 } from '../src/server.js';
 
@@ -105,6 +107,51 @@ describe('typed environment validation', () => {
       parseStorageEnvironment({
         ...validStorageEnvironment,
         S3_BUCKET_PRIVATE: validStorageEnvironment.S3_BUCKET_PUBLIC,
+      }),
+    ).toThrowError(EnvironmentValidationError);
+  });
+
+  it('requires bounded worker retry, poll, job timeout, and shutdown controls', () => {
+    const validWorkerEnvironment = {
+      ...baseEnvironment,
+      WORKER_CONCURRENCY: '1',
+      WORKER_HEALTH_HOST: '127.0.0.1',
+      WORKER_HEALTH_PORT: '9464',
+      WORKER_JOB_TIMEOUT_MS: '5000',
+      WORKER_MAX_ATTEMPTS: '3',
+      WORKER_POLL_INTERVAL_MS: '500',
+      WORKER_SHUTDOWN_TIMEOUT_MS: '10000',
+    } as const;
+
+    expect(parseWorkerEnvironment(validWorkerEnvironment)).toMatchObject({
+      WORKER_JOB_TIMEOUT_MS: 5000,
+      WORKER_MAX_ATTEMPTS: 3,
+    });
+    expect(() =>
+      parseWorkerEnvironment({
+        ...validWorkerEnvironment,
+        WORKER_SHUTDOWN_TIMEOUT_MS: validWorkerEnvironment.WORKER_JOB_TIMEOUT_MS,
+      }),
+    ).toThrowError(EnvironmentValidationError);
+  });
+
+  it('accepts only a safe unquoted PostgreSQL runtime role for queue hardening', () => {
+    const migrationDatabaseUrl = [
+      'postgresql://migrator',
+      'synthetic-only@127.0.0.1/foundation',
+    ].join(':');
+    expect(
+      parseMigrationEnvironment({
+        ...baseEnvironment,
+        MIGRATION_DATABASE_URL: migrationDatabaseUrl,
+        WORKER_RUNTIME_DATABASE_ROLE: 'foundation_runtime',
+      }).WORKER_RUNTIME_DATABASE_ROLE,
+    ).toBe('foundation_runtime');
+    expect(() =>
+      parseMigrationEnvironment({
+        ...baseEnvironment,
+        MIGRATION_DATABASE_URL: migrationDatabaseUrl,
+        WORKER_RUNTIME_DATABASE_ROLE: 'foundation_runtime; DROP ROLE foundation_runtime',
       }),
     ).toThrowError(EnvironmentValidationError);
   });

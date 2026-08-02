@@ -16,8 +16,10 @@ afterEach(async () => {
   );
 });
 
-async function startServer(isReady: () => boolean): Promise<string> {
-  const server = createWorkerHealthServer({ isReady });
+async function startServer(
+  checkReadiness: () => Promise<Readonly<Record<string, 'ok' | 'unavailable'>>>,
+): Promise<string> {
+  const server = createWorkerHealthServer({ checkReadiness });
   activeServers.push(server);
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
@@ -30,7 +32,7 @@ async function startServer(isReady: () => boolean): Promise<string> {
 
 describe('worker health server', () => {
   it('separates liveness from readiness', async () => {
-    const baseUrl = await startServer(() => false);
+    const baseUrl = await startServer(async () => ({ queue: 'unavailable', worker: 'ok' }));
     const liveResponse = await fetch(`${baseUrl}/health/live`);
     const readyResponse = await fetch(`${baseUrl}/health/ready`);
 
@@ -38,17 +40,32 @@ describe('worker health server', () => {
     expect(livenessResponseSchema.parse(await liveResponse.json()).status).toBe('ok');
     expect(readyResponse.status).toBe(503);
     expect(readinessResponseSchema.parse(await readyResponse.json())).toMatchObject({
-      checks: { worker: 'unavailable' },
+      checks: { queue: 'unavailable', worker: 'ok' },
       status: 'unavailable',
     });
   });
 
   it('returns a safe not-found error without internal details', async () => {
-    const baseUrl = await startServer(() => true);
+    const baseUrl = await startServer(async () => ({ queue: 'ok', worker: 'ok' }));
     const response = await fetch(`${baseUrl}/internal-path`);
     const text = await response.text();
 
     expect(response.status).toBe(404);
     expect(text).not.toMatch(/stack|C:\\|connection|password/i);
+  });
+
+  it('maps a readiness dependency exception to a safe unavailable response', async () => {
+    const baseUrl = await startServer(async () => {
+      throw new Error('synthetic connection details that must stay private');
+    });
+    const response = await fetch(`${baseUrl}/health/ready`);
+    const text = await response.text();
+
+    expect(response.status).toBe(503);
+    expect(readinessResponseSchema.parse(JSON.parse(text))).toMatchObject({
+      checks: { database: 'unavailable', queue: 'unavailable', worker: 'unavailable' },
+      status: 'unavailable',
+    });
+    expect(text).not.toContain('synthetic connection details');
   });
 });

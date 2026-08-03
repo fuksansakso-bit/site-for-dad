@@ -199,6 +199,14 @@ try {
         Set-BuildEnvironment
         Invoke-Pnpm -Arguments @('build')
         Invoke-Pnpm -Arguments @('security:artifacts')
+        Invoke-Checked -Executable 'powershell.exe' -Arguments @(
+            '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', (Join-Path $repositoryRoot 'tooling\scripts\catalog-scale-acceptance.ps1'),
+            '-NodeRoot', $NodeRoot,
+            '-PnpmRoot', $PnpmRoot,
+            '-PostgresRoot', $PostgresRoot,
+            '-CacheRoot', (Join-Path $IntegrationCacheRoot 'catalog-scale'),
+            '-SkipBuild'
+        ) -FailureMessage 'Catalog scale acceptance failed'
     }
 
     Invoke-Stage -Name 'chromium-firefox-webkit-smoke' -Operation {

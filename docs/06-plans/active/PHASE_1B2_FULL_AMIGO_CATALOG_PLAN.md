@@ -72,8 +72,8 @@ Only one stage may be `IN_PROGRESS`.
 | 8 | Expand `/admin/catalog` | COMPLETED | Full inventory hierarchy, bounded server filters/pages, safe manifest/run/diff/history, exact review/bulk/release actions and responsive keyboard states passed clean 10-migration integration and all 9 CI stages |
 | 9 | Expand `/catalog` | COMPLETED | Hierarchy, search, server filters/sort/cursors, detail/media/breadcrumb/share URL/loading/error/empty states passed without AMIGO; full CI 9/9 |
 | 10 | Verify full catalog expansion | COMPLETED | 38 catalog, 6 contract and 20 web cases plus rollback public-state recovery passed; isolated active PostgreSQL/private-media catalog passed 5/5 browser profiles with zero runtime AMIGO; enclosing CI gate passed 9/9 with the 25/25 fail-closed baseline |
-| 11 | Validate full catalog scale | IN_PROGRESS | Synthetic dataset larger than real catalog verifies bounded memory, queries, no N+1, bulk and pagination performance |
-| 12 | Real import, acceptance documentation and stop | PENDING | Real manifest/no-op/resume/daily/bulk/persistence/public/perf/CI evidence recorded; report complete; tree clean; Phase 1C absent |
+| 11 | Validate full catalog scale | COMPLETED | 2,048 synthetic materials exceeded real 1,655; 41 bounded cursor pages were complete, public/admin/bulk used constant 1/4/6+12 planned statements with zero temp spill, one atomic bulk command, and the enclosing CI gate passed 9/9 |
+| 12 | Real import, acceptance documentation and stop | IN_PROGRESS | Real manifest/no-op/resume/daily/bulk/persistence/public/perf/CI evidence recorded; report complete; tree clean; Phase 1C absent |
 
 ## 7. Commit sequence
 

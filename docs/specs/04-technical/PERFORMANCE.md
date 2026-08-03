@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Draft / numeric budgets `BLOCKED_BY_TBD-INFRA-003/005`; measurement and degradation contract defined |
-| Версия | 0.2.0 |
+| Статус | Draft / numeric budgets `BLOCKED_BY_TBD-INFRA-003/005`; Phase 1B.2 synthetic catalog-scale method executed |
+| Версия | 0.3.0 |
 | Дата | 2026-08-02 |
 | Architecture | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | Responsive UX | [RESPONSIVE_SPEC.md](../03-ux/RESPONSIVE_SPEC.md) |
@@ -30,6 +30,7 @@ Performance preserves the primary catalog/configuration/contact task on target C
 - **PERF-SPEC-014 — MUST:** optimization cannot weaken privacy/security/rights/version correctness or serve wrong/stale material/price.
 - **PERF-SPEC-015 — MUST:** budgets, tests and capacity model update when category/media/model/traffic behavior changes.
 - **PERF-SPEC-016 — MUST:** regional production verification covers Grozny, Urus-Martan, Argun and Gudermes without VPN, mobile plus home/office Wi-Fi, at least two different routes, mobile Chrome and desktop Chrome.
+- **PERF-SPEC-017 — MUST:** the Phase 1B.2 scale gate uses a disposable synthetic catalog larger than the dated real discovery, preserves the public item guard and page limits, traverses every cursor page without duplicate/omission, records heap/time/query-plan evidence, proves constant application statement counts for public/admin/bulk paths and rejects temporary-block spill or partial bulk apply. Its observed values are regression evidence, never production SLA or traffic capacity.
 
 ## 2. Performance budget template
 
@@ -111,6 +112,12 @@ Measure route/task user timing, API/query/cache/storage, job stages/queue, provi
 
 Performance tests: lab synthetic, real-device/manual regional, API/component benchmark, load/stress/soak/spike, queue/backpressure, provider fault, frontend bundle/media/CLS/interaction, DB/query after selection and recovery/restore contention.
 
+### 9.1. Phase 1B.2 synthetic catalog-scale evidence
+
+The reproducible Windows gate `pnpm test:catalog-scale` uses an exact disposable PostgreSQL 18.4 database with `pg_stat_statements`, reviewed migrations and the least-privilege runtime role. Its synthetic input contains 2,048 materials, 32 categories and 16 systems, exceeding the dated real discovery of 1,655 materials without becoming catalog truth. Fixture construction and normalized persistence are chunked at 400 records; public projection retains the 10,000-item fail-closed guard; public navigation traverses 41 cursor pages of at most 50 items with no duplicate or omission.
+
+The final 2026-08-03 CI-equivalent execution observed: fixture construction/persistence 2,999.07 ms and 47,304,032-byte process heap delta; active public projection 51.88 ms through one planned statement; bounded 50-row admin page 80.08 ms through four planned statements; 2,048-target bulk preview 810.61 ms through six planned statements; atomic bulk apply 782.67 ms through twelve planned statements and one immutable command. PostgreSQL reported zero temporary blocks for all measured operations. These single-machine observations establish the regression baseline and constant-query/no-N+1 shape only; they do not close `TBD-INFRA-003/005`, approve traffic/concurrency/device/network budgets or substitute the Stage 12 real importer run.
+
 ## 10. Acceptance criteria and tests
 
 Primary: `AC-PERF-001`, plus task AC under representative budgets. `AC-PERF-001` cannot fully pass until numeric budgets/support matrix are approved; safe progressive/degraded behavior is immediately testable.
@@ -127,3 +134,4 @@ Dependencies: UX, architecture/data/API/media/AI/storage/observability/deploymen
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Defined task budgets template, target matrix, frontend/data/media/AI strategies, capacity and regression without invented numbers. |
 | 0.2.0 | 2026-08-02 | Региональная матрица без VPN закреплена `OWNER-DECISION-007`; numeric performance budgets остаются TBD. |
+| 0.3.0 | 2026-08-03 | Added the executed 2,048-material Phase 1B.2 synthetic scale method, constant query/plan counts, cursor completeness, bounded fixture persistence and atomic bulk evidence without declaring production SLA. |

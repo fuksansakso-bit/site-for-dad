@@ -5,8 +5,8 @@
 | Поле | Значение |
 |---|---|
 | Статус | Phase 1A baseline executed; Phase 1B.1 catalog pilot tests authorized/in progress; later/production tests gated |
-| Версия | 0.4.0 |
-| Дата | 2026-08-02 |
+| Версия | 0.5.0 |
+| Дата | 2026-08-03 |
 | Requirements | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) and profile specs |
 | Acceptance | [ACCEPTANCE_CRITERIA.md](../specs/01-product/ACCEPTANCE_CRITERIA.md) |
 | Traceability | [TRACEABILITY_MATRIX.md](../00-global/TRACEABILITY_MATRIX.md) |
@@ -33,6 +33,9 @@ Tests provide evidence for requirements and risk; they do not invent missing bus
 - **TEST-SPEC-016 — MUST:** test logs/artifacts/screenshots/traces are redacted/private/retained and never expose credentials or user media.
 - **TEST-SPEC-017 — MUST:** destructive/recovery tests use isolated exact targets and verify rollback/restore/deletion without risking production.
 - **TEST-SPEC-018 — MUST:** production release requires no open P0 failure and approved disposition for lower severity; no test waiver changes product truth.
+- **TEST-SPEC-019 — MUST:** the local/CI S3 contract gate covers `1`, `65,536`, `131,072`, `159,099`, `262,144`, `515,180`, `1 MiB`, `5 MiB` and a size above multipart threshold; every case verifies put/head/get, byte and SHA equality, type/length/metadata, scoped signed read/write, delete and missing head.
+- **TEST-SPEC-020 — MUST:** storage recovery coverage includes multipart complete/abort, immutable idempotence/content dedup/same-key concurrency, invalid MIME/oversize/checksum, timeout/retry/unavailable, concurrent files, graceful container restart, full Docker Desktop restart and named-volume persistence.
+- **TEST-SPEC-021 — MUST:** the real authorized AMIGO gate image is downloaded only through the bounded allowlisted transport, must be exactly 515,180 bytes and match SHA-256 after download from storage; any corruption, unsupported signed URL/multipart operation or persistence failure blocks media import.
 
 ## 2. Test layers and ownership
 
@@ -153,7 +156,11 @@ Report requirement/AC/test coverage, pass/fail/blocked/quarantined, P0/P1 defect
 
 ## 13. Phase 1A execution evidence
 
-The provider-neutral `ci:verify` pipeline passed 9/9 stages in the working tree and a clean clone. Executed Foundation baseline: 61 unit/contract tests, 19 PostgreSQL/RustFS/Graphile/identity integration/recovery tests and 20 browser scenarios. This evidence authorizes no feature by itself; `OWNER-DECISION-010` separately moves only Phase 1B.1 catalog tests from designed to required execution. Full Phase 1A detail: [report](../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
+The provider-neutral `ci:verify` pipeline passed 9/9 stages in the working tree and a clean clone. Executed Foundation baseline remains historical: 61 unit/contract tests, 19 PostgreSQL/RustFS/Graphile/identity integration/recovery tests and 20 browser scenarios. RustFS evidence no longer authorizes active use after the Phase 1B.1 Windows failure; PostgreSQL/Graphile/identity evidence remains unchanged. `OWNER-DECISION-010` separately moves only Phase 1B.1 catalog tests from designed to required execution. Full Phase 1A detail: [report](../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
+
+### 13.1. Phase 1B.1 storage gate evidence
+
+On Windows 11 with Docker Desktop 4.84.0 / Engine 29.6.2, digest-pinned VersityGW `v1.4.1` passed 15/15 automated contract cases (86.45 s, full harness exit 0). The size matrix passed byte-for-byte; real AMIGO JPEG SHA-256 was `ac86fc976afc2063cc97e1528611c978a348f357d26c8fe3c59b7c23f113d0cd`. Signed read/write, path-style SigV4, multipart completion/abort, negative anonymous access, timeout/retry/unavailable mapping, concurrency/idempotence/dedup, graceful restart, Docker Desktop auto-recovery and named-volume persistence passed. This gate permits continuation of the existing media WIP but does not itself claim media import or publication success.
 
 ## 14. Dependencies, risks and open questions
 
@@ -166,3 +173,5 @@ Dependencies: all specs/ADRs/evaluations, implementation stack/environments, app
 | 0.1.0 | 2026-08-02 | Defined risk-based multi-layer strategy and 40 critical scenarios mapped one-to-one to current acceptance criteria. |
 | 0.2.0 | 2026-08-02 | Updated parity tolerance/input contract and regional production matrix from `OWNER-DECISION-006/007`; Foundation execution evidence will be added at Phase 1A completion. |
 | 0.3.0 | 2026-08-02 | Added executed Phase 1A counts and clean-clone CI evidence without claiming any gated business/production scenario passed. |
+| 0.4.0 | 2026-08-02 | Marked Phase 1B.1 pilot tests required/in progress after explicit owner authorization. |
+| 0.5.0 | 2026-08-03 | Added and recorded the passed VersityGW real-image/signed/multipart/failure/restart contract gate from `OWNER-DECISION-011`. |

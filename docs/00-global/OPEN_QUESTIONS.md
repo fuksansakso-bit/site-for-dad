@@ -78,6 +78,7 @@ Risk отражает последствия неверного предполо
 | `TBD-AI-007` | Гарантирует ли provider no-training/region/delete? | Private external processing | Critical | `BLOCKER_BEFORE_FEATURE` | Provider/contract не выбран | Ничего не передавать внешнему AI; geometric local fallback | До первого external photo transfer | Privacy / Legal / Architecture |
 | `TBD-INFRA-002` | Где проверять региональную доступность без VPN? | Hosting/performance/release | High | `RESOLVED` | Грозный, Урус-Мартан, Аргун, Гудермес; mobile + home/office Wi-Fi; ≥2 routes; mobile/desktop Chrome, `OWNER-DECISION-007` | Production release не получает regional PASS без полного evidence | Закрыт 2026-08-02; измерения выполняются до Phase 1H release | Product Owner / Engineering |
 | `TBD-INFRA-004` | Какие data residency требования применимы? | Production DB/storage/AI/backup | Critical | `BLOCKER_BEFORE_FEATURE` | Legal/privacy ограничение неизвестно | Phase 1A только local/isolated synthetic data; production provider и PII запрещены | До shared staging/production с PII или private media | Privacy / Legal |
+| `TBD-INFRA-010` | Какой production object-storage provider, region и migration/exit contract выбраны? | Production storage/media delivery | Critical | `BLOCKER_BEFORE_FEATURE` | `OWNER-DECISION-011` выбрал только local/CI VersityGW; Supabase Storage, Cloudflare R2, AWS S3 и другие S3-compatible варианты не оценены | VersityGW только для local/CI; shared staging/production storage не создавать | До shared staging или production storage selection | Product Owner / Architecture / Security / Privacy |
 | `TBD-INFRA-006` | Каков WhatsApp integration mode? | Phase 1E handoff | High | `SAFE_DEFAULT_AVAILABLE` | Business API не подтверждён | Editable `wa.me`/deep-link или copy-to-clipboard с confirmed number; не заявлять delivery | До выбора Business API/automation | Владелец / Architecture |
 | `TBD-PRIV-001` | Каков TTL гостевых фото и производных? | Guest upload/delete | Critical | `BLOCKER_BEFORE_FEATURE` | TTL юридически не утверждён | Не принимать production guest photos | До Phase 1G guest upload | Privacy / владелец |
 | `TBD-PRIV-002` | Каковы сроки фото клиента, заявки и заказа? | Account/lead/order/media retention | Critical | `BLOCKER_BEFORE_FEATURE` | Retention matrix отсутствует | Synthetic data only; не включать долговременное photo storage | До соответствующего PII/media feature | Privacy / юрист |
@@ -277,6 +278,7 @@ Risk отражает последствия неверного предполо
 | TBD-INFRA-007 | P1 | Какие RPO, RTO и срок хранения резервных копий приемлемы? | Нужны бизнес-обоснованные recovery targets. | Владелец / Engineering | Открыт |
 | TBD-INFRA-008 | P1 | Кто реагирует на алерты и в какие часы поддерживается сервис? | Нужен operational ownership и severity model. | Владелец / Operations | Открыт |
 | TBD-INFRA-009 | P1 | Какой канал используется для уведомлений клиенту и сотрудникам? | Нужны провайдер, согласие, шаблоны и fallback. | Владелец / Product | Открыт |
+| TBD-INFRA-010 | P1 | Какой provider, region, encryption/key custody, migration и exit path используются для production object storage? | Local/CI VersityGW не является production decision; нужны evaluation, legal/privacy/security review и superseding/confirming ADR. | Product Owner / Architecture / Security / Privacy | Открыт — `OWNER-DECISION-011`, 2026-08-03, явно сохранил production choice gated |
 
 ## Приватность
 
@@ -304,11 +306,13 @@ Risk отражает последствия неверного предполо
 
 ## Implementation gates после Phase 1A
 
-До synthetic/local Foundation не было P0 со статусом `BLOCKER_BEFORE_FOUNDATION`. `QG-147/148` закрыты письменным решением Product Owner, а `QG-149`–`158` подтверждают завершение Phase 1A 2026-08-02. Foundation не закрывала и не придумывала ответы на business/data/privacy TBD; в реестре остаются 99 открытых из 119 исторических ID.
+До synthetic/local Foundation не было P0 со статусом `BLOCKER_BEFORE_FOUNDATION`. `QG-147/148` закрыты письменным решением Product Owner, а `QG-149`–`158` подтверждают завершение Phase 1A 2026-08-02. Foundation не закрывала и не придумывала ответы на business/data/privacy TBD; в реестре остаются 100 открытых из 120 исторических ID.
 
 Семь P0, ранее имевшие `OWNER_DECISION_REQUIRED`, решены 2026-08-02: `TBD-BIZ-001`, `TBD-PRICE-007`, `TBD-MIN-PRICE-001`, `TBD-PRICE-SOURCE-002`, `TBD-PRICE-PARITY-001`, `TBD-INVENTORY-002` и `TBD-INFRA-002`. External AMIGO data и `BLOCKER_BEFORE_FEATURE` по-прежнему закрываются перед указанными Phase 1B–1G activations, а не в Foundation.
 
 Только Phase 1B.1 разрешена `OWNER-DECISION-010`: owner-authorized public-page transport, stable IDs и frozen 32-item pilot manifest подтверждены dated discovery. `TBD-SOURCE-AMIGO-002` и `TBD-ASSORT-002` остаются открытыми для полного каталога/Phase 1B.2 и не блокируют честный ограниченный pilot.
+
+`OWNER-DECISION-011` закрывает только local/CI emulator choice: VersityGW в Docker/POSIX named volumes. `TBD-INFRA-010` явно сохраняет выбор production storage открытым; local choice не свидетельствует в пользу Supabase Storage, Cloudflare R2, AWS S3 или иного provider.
 
 `OWNER-DECISION-009` не закрывает ни один data/transport/price/asset TBD: оно фиксирует только PostgreSQL public-serving topology, обязательные diff/Business Owner approval/admin activation, no-auto-delete, override precedence, audit, source timestamps и rollback contract.
 

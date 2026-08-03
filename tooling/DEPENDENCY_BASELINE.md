@@ -1,16 +1,17 @@
-# Phase 1A dependency baseline
+# Implementation dependency baseline
 
-Verification date: **2026-08-02**. This file records exact implementation inputs for
-`PLAN-1A-001`; the lockfile remains the authoritative resolved dependency graph.
+Verification date: **2026-08-03**. This file retains Phase 1A inputs and records the
+`OWNER-DECISION-011` local/CI storage replacement; the lockfile remains the authoritative resolved dependency graph.
 
 ## Runtime and services
 
-| Component  | Exact version | License/source                                                           | Verification                                                                                                                        |
-| ---------- | ------------: | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Node.js    |       24.18.1 | MIT, official Node.js distribution                                       | Windows x64 archive SHA-256 `ec56b84a7551893ab2324ebdfdc4ab974a63b4781162600b68a1293cc3e53765`                                      |
-| pnpm       |       11.18.0 | MIT, npm registry                                                        | Requires Node.js `>=22.13`; pinned in `packageManager` and the lockfile                                                             |
-| PostgreSQL |          18.4 | PostgreSQL License, official EDB Windows binary linked by postgresql.org | Windows x64 archive SHA-256 `02e239529ed7833d169f98d915d3feffe0813264b08b3ae353e78e8b9c97e1a6`; password-authenticated smoke passed |
-| RustFS     | 1.0.0-beta.11 | Apache-2.0, official RustFS GitHub release                               | Windows x64 ZIP SHA-256 `e564ea478c969d69ee9b82371b598595fe2b320d5cedae60a76a7a089ac228bb`; loopback-only storage contract passed   |
+| Component                         |           Exact version | License/source                                                           | Verification                                                                                                                           |
+| --------------------------------- | ----------------------: | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Node.js                           |                 24.18.1 | MIT, official Node.js distribution                                       | Windows x64 archive SHA-256 `ec56b84a7551893ab2324ebdfdc4ab974a63b4781162600b68a1293cc3e53765`                                         |
+| pnpm                              |                 11.18.0 | MIT, npm registry                                                        | Requires Node.js `>=22.13`; pinned in `packageManager` and the lockfile                                                                |
+| PostgreSQL                        |                    18.4 | PostgreSQL License, official EDB Windows binary linked by postgresql.org | Windows x64 archive SHA-256 `02e239529ed7833d169f98d915d3feffe0813264b08b3ae353e78e8b9c97e1a6`; password-authenticated smoke passed    |
+| Docker Desktop / Engine / Compose | 4.84.0 / 29.6.2 / 5.3.1 | Official Docker Windows distribution                                     | Installer SHA-256 `fe54164c1ceb9e2004137e22e4013826baccf2352c1cedb27e8daa8e56230dd7`; WSL2 Linux-container smoke passed                |
+| VersityGW                         |                   1.4.1 | Apache-2.0, official Versity container image                             | `versity/versitygw:v1.4.1@sha256:0400cb59f59da0f1cf9f7fd49505191abc348dfadf54509bf1988caaff4eb96f`; POSIX named-volume contract passed |
 
 ## Application and quality toolchain
 
@@ -22,7 +23,7 @@ Verification date: **2026-08-02**. This file records exact implementation inputs
 | Runtime validation   | Zod 4.4.3                                                                                               |
 | PostgreSQL           | Prisma/Prisma Client/adapter-pg 7.9.1, pg 8.22.0                                                        |
 | Durable jobs         | Graphile Worker 0.17.3                                                                                  |
-| Object storage       | AWS SDK S3 client/presigner 3.1101.0; disposable RustFS 1.0.0-beta.11 emulator                          |
+| Object storage       | AWS SDK S3 client/presigner 3.1101.0; disposable VersityGW 1.4.1 Docker/POSIX adapter                   |
 | Telemetry            | OpenTelemetry API 1.9.1, Node SDK 0.221.0, OTLP HTTP trace/metric exporters 0.221.0, metrics SDK 2.10.0 |
 | Tests                | Vitest/coverage 4.1.10, Playwright 1.62.1                                                               |
 | Static quality       | ESLint/@eslint-js 9.39.5, typescript-eslint 8.65.0, eslint-config-next 16.2.12, Prettier 3.9.6          |
@@ -64,15 +65,18 @@ and has no production collector or vendor selection.
 After applying those controls, `pnpm audit --audit-level moderate` reported no known vulnerabilities
 and the Next.js production build passed on 2026-08-02.
 
-The local S3-compatible emulator selection is deliberately non-production. `s3rver@3.7.1` was
-rejected after its current npm graph reported three high-severity advisories. The final MinIO
-Community binary was also rejected because its published advisory set includes an unauthenticated
-write signature bypass that conflicts with the Foundation trust boundary. RustFS 1.0.0-beta.11 is
-an exact, checksummed Windows build; the official GitHub advisory ranges reviewed on 2026-08-02 do
-not include this release in a high- or critical-severity range. It binds only to loopback, receives
-generated disposable credentials and synthetic objects, and passed real negative access tests.
-This selection does not authorize RustFS for production; any production object vendor still needs
-the gated residency, encryption, restore and provider-replacement decision.
+The local S3-compatible adapter selection is deliberately non-production. `s3rver@3.7.1` and the
+final MinIO Community binary remain rejected for the Phase 1A dependency/security reasons recorded
+in its completion report. RustFS 1.0.0-beta.11 remains historical Phase 1A evidence, but Windows 11
+reproduced `HTTP 500 File access denied` at 159,099 and 262,144 bytes and on the real AMIGO media
+path, so `OWNER-DECISION-011` removed it from active local/CI configuration.
+
+VersityGW 1.4.1 is pinned by both tag and multi-platform image digest. It runs only in a Linux
+container with POSIX data/versioning/IAM Docker named volumes, loopback-only endpoints, generated
+credentials and all-private buckets. The 2026-08-03 gate passed 15/15 cases, exact nine-size and
+515,180-byte AMIGO round trips, signed read/write, multipart complete/abort and Docker restart
+persistence. This selection does not authorize VersityGW for production; `TBD-INFRA-010` and the
+residency, encryption, restore and provider-replacement gates remain open.
 
 The selection does not choose a production hosting, storage, identity, secrets, telemetry, or CI
 vendor. No production credentials are required or permitted.

@@ -90,7 +90,10 @@ describe('typed environment validation', () => {
       S3_BUCKET_QUARANTINE: 'project-name-test-quarantine',
       S3_ENDPOINT: 'http://127.0.0.1:4569',
       S3_FORCE_PATH_STYLE: 'true',
-      S3_MAX_OBJECT_BYTES: '1048576',
+      S3_MAX_OBJECT_BYTES: '8388608',
+      S3_MAX_ATTEMPTS: '3',
+      S3_MULTIPART_PART_SIZE_BYTES: '5242880',
+      S3_MULTIPART_THRESHOLD_BYTES: '5242880',
       S3_REGION: 'local',
       S3_REQUEST_TIMEOUT_MS: '2000',
       S3_SECRET_ACCESS_KEY: 'synthetic-secret-key-for-tests',
@@ -98,10 +101,17 @@ describe('typed environment validation', () => {
     } as const;
 
     expect(parseStorageEnvironment(validStorageEnvironment).S3_FORCE_PATH_STYLE).toBe(true);
+    expect(parseStorageEnvironment(validStorageEnvironment).S3_MAX_ATTEMPTS).toBe(3);
     expect(() =>
       parseStorageEnvironment({
         ...validStorageEnvironment,
         S3_ENDPOINT: 'https://object-provider.example',
+      }),
+    ).toThrowError(EnvironmentValidationError);
+    expect(() =>
+      parseStorageEnvironment({
+        ...validStorageEnvironment,
+        S3_MULTIPART_THRESHOLD_BYTES: validStorageEnvironment.S3_MAX_OBJECT_BYTES,
       }),
     ).toThrowError(EnvironmentValidationError);
     expect(() =>

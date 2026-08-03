@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Версия gate | 1.6.0 |
-| Проверяемая входная база | Phase 0B baseline `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`; Phase 0C baseline `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; Phase 1A completion `943d4a2efa5e05f0d05493633cf5eb549e072a22`; `GLOBAL_SPEC.md` 0.10.0 |
-| Дата entry self-audit | 2026-08-02, Europe/Moscow |
+| Версия gate | 1.7.0 |
+| Проверяемая входная база | Phase 0B baseline `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`; Phase 0C baseline `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; Phase 1A completion `943d4a2efa5e05f0d05493633cf5eb549e072a22`; Phase 1B.1 storage recovery from `d851647ab243e432641d650cb29e3d8132a92af1`; `GLOBAL_SPEC.md` 0.11.0 |
+| Дата entry self-audit | 2026-08-03, Europe/Moscow |
 | Решение по входу в 0B | **PASSED** |
 | Основание письменного решения | Приложенное владельцем задание «AUTHORIZED AMIGO FUNCTIONAL PARITY AND SPECIALIZED SPECS» и повторное указание «так приступай к работе» |
 | Утверждающие роли | Product Owner — владелец проекта; Business Owner — отец владельца проекта (`OWNER-DECISION-001`) |
@@ -15,6 +15,7 @@
 | Phase 1A Foundation Acceptance Gate | **PASSED_PHASE_1A_FOUNDATION** — QG-149–158 закрыты 2026-08-02 |
 | Post-Phase 1A Owner Decision Documentation Audit | **PASSED_DOCS_ONLY** — QG-159–168 закрыты 2026-08-02 как исторический pre-transition audit |
 | Phase 1B.1 Entry Gate | **AUTHORIZED_PHASE_1B1_IN_PROGRESS** — QG-169–176 закрыты 2026-08-02 |
+| Phase 1B.1 Local Storage Recovery Gate | **PASSED_PHASE_1B1_STORAGE_RECOVERY** — QG-177–184 закрыты 2026-08-03 |
 | Разрешённая реализация | Только Phase 1B.1 catalog pilot/local publication layer; Phase 1B.2/1C+ и production запрещены |
 
 Entry gate подтверждает, что исправления 0A.1 внесены и письменное решение начать документную фазу 0B получено. Он не означает готовность ценовой формулы, импорта, приложения или запуска. Открытые TBD блокируют утверждение зависимой спецификации или функции, но не отменяют разрешение создавать документацию 0B с безопасным поведением.
@@ -278,7 +279,20 @@ Gate confirms technical completion of the authorized phase only. It neither appr
 
 Entry result: **AUTHORIZED_PHASE_1B1_IN_PROGRESS**. Pilot completion остаётся непроверенным до implementation/test/media/import evidence; новый phase transition этим статусом не выдаётся.
 
-### 8.2. Pilot acceptance gate
+### 8.2. Local storage recovery gate
+
+- [x] **QG-177 — MUST:** Product Owner подтвердил `OWNER-DECISION-011`; исходный commit `d851647ab243e432641d650cb29e3d8132a92af1`, четыре существующих Phase 1B.1 commits, full diff, media WIP и historical failed run сохранены без reset/rollback/rewrite.
+- [x] **QG-178 — MUST:** RustFS удалён из active local/CI configuration; VersityGW `v1.4.1@sha256:0400cb59f59da0f1cf9f7fd49505191abc348dfadf54509bf1988caaff4eb96f` запущен в Linux Docker Compose с POSIX backend, loopback-only S3/Admin и тремя named volumes без Windows bind mount.
+- [x] **QG-179 — MUST:** внешний `StoragePort` остался provider-neutral; endpoint/region/credentials/buckets/path-style/retries/timeouts/multipart typed в environment, buckets идемпотентно провиженятся отдельно и все три остаются private.
+- [x] **QG-180 — MUST:** contract matrix `1`, `65,536`, `131,072`, `159,099`, `262,144`, `515,180`, `1 MiB`, `5 MiB`, `6 MiB` прошла put/head/get/byte equality/SHA/type/length/metadata/delete/missing-head; реальный AMIGO JPEG имеет SHA-256 `ac86fc976afc2063cc97e1528611c978a348f357d26c8fe3c59b7c23f113d0cd` до и после round trip.
+- [x] **QG-181 — MUST:** path-style SigV4 signed read/write, expiration/scope, multipart complete/abort, idempotent same-body put, content dedup, immutable conflicting same-key behavior и anonymous list/read/write denial прошли.
+- [x] **QG-182 — MUST:** invalid MIME, oversize, wrong checksum, timeout/retry/unavailable, concurrent different files/same-key safety, graceful container restart, full Docker Desktop auto-recovery и named-volume persistence прошли; formal harness result 15/15, exit 0.
+- [x] **QG-183 — MUST:** root PowerShell `dev`/`dev:status` работают без Bash и NTFS permission changes; credentials не закоммичены/не попали в logs, PostgreSQL не менялся, а run `798d5513-27b1-48e3-ab8e-389eeb672db4` остался `FAILED / CATALOG_PIPELINE_STORAGE_UNAVAILABLE`.
+- [x] **QG-184 — MUST:** storage recovery разрешает продолжить только существующий Phase 1B.1 media WIP новым run/correlation ID; production storage (`TBD-INFRA-010`) и Phase 1C не выбраны/не начаты.
+
+Storage result: **PASSED_PHASE_1B1_STORAGE_RECOVERY**. Этот статус не объявляет media import, publication или весь Phase 1B.1 завершёнными.
+
+### 8.3. Pilot acceptance gate
 
 Phase 1B.1 получит итоговый статус только после проверки реального импорта, idempotency, local media, ownership separation, overlay survival, source-removal tombstone, exact diff/activation/bulk publication, PostgreSQL-only public catalog, hidden filtering, required unit/contract/integration/browser/recovery tests, build/CI-equivalent, synchronized docs, clean tree и отсутствия Phase 1C work. До completion report этот gate имеет статус **IN PROGRESS**.
 
@@ -293,5 +307,6 @@ Phase 1B.1 получит итоговый статус только после 
 | 1.4.0 | 2026-08-02 | Добавлены QG-159–163 для `OWNER-DECISION-008`: authority matrix синхронизирована и механически проверена, отсутствие catalog/import implementation подтверждено, Phase 1B hold сохранён. |
 | 1.5.0 | 2026-08-02 | Добавлены QG-164–168 для `OWNER-DECISION-009`: PostgreSQL public-serving contract, diff/owner/admin activation, no-auto-delete, override/audit/version/rollback синхронизированы и проверены; Phase 1B hold сохранён. |
 | 1.6.0 | 2026-08-02 | `OWNER-DECISION-010` и QG-169–176 отдельно разрешили только Phase 1B.1 после real public-page transport/ID/media preflight; pilot acceptance оставлен `IN PROGRESS`, Phase 1B.2/1C+ запрещены. |
+| 1.7.0 | 2026-08-03 | QG-177–184 зафиксировали passed local VersityGW real-image/signed/multipart/restart recovery gate; media/pilot completion и production/Phase 1C остались gated. |
 | 0.2.0 | 2026-08-02 | Entry gate обновлён для `GLOBAL_SPEC` 0.4.0 и partner-authorized scope; письменное поручение владельца зафиксировано как разрешение начать 0B; добавлен отдельный completion gate 0B. |
 | 0.1.0 | 2026-08-02 | Предыдущий self-audit 0A.1 для версии 0.3.1; проверки `QG-001`–`087` впоследствии зарезервированы. |

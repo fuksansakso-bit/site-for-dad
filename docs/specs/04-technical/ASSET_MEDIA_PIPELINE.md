@@ -5,8 +5,8 @@
 | Поле | Значение |
 |---|---|
 | Статус | Phase 1B.1 controlled pilot media import authorized; user media/production pipeline gated |
-| Версия | 0.3.0 |
-| Дата | 2026-08-02 |
+| Версия | 0.4.0 |
+| Дата | 2026-08-03 |
 | Rights | [ASSET_RIGHTS_REGISTER.md](../../00-global/ASSET_RIGHTS_REGISTER.md) |
 | Storage | [STORAGE_MEDIA.md](STORAGE_MEDIA.md) |
 
@@ -45,6 +45,9 @@ Content manager registers/maps; rights approver/owner confirms scope; publicatio
 - **MEDIA-PIPE-021 — MUST:** AMIGO is source authority for AMIGO catalog-image identity, provenance and product/material relationship; an imported local copy or derivative MUST NOT change that authority or become owner-created/local portfolio.
 - **MEDIA-PIPE-022 — MUST:** PostgreSQL stores MediaAsset/SourceAsset metadata, provenance, hashes, exact mappings, rights/publication states and opaque object references; binary originals/derivatives are stored in the managed object-storage zones, not product/material rows.
 - **MEDIA-PIPE-023 — MUST:** Business Owner determines local portfolio composition, but pipeline promotion still requires creator/rightsholder evidence, consent/PII review where applicable, exact asset mapping and independent `PUBLICATION_APPROVED`.
+- **MEDIA-PIPE-024 — MUST:** real Phase 1B.1 media import MUST NOT start or be committed until the configured storage adapter passes `STORAGE-SPEC-026`, including the exact 515,180-byte AMIGO JPEG byte/SHA round trip; HTTP success without content equality is insufficient.
+- **MEDIA-PIPE-025 — MUST:** pilot intake preserves source URL as restricted provenance, applies SSRF allowlist/DNS-IP checks and bounded redirects, validates declared and detected MIME, size, dimensions and decompression limits, computes SHA-256, deduplicates by content, stores only generated safe keys and never executes HTML/SVG/script content.
+- **MEDIA-PIPE-026 — MUST:** an unavailable individual AMIGO image records an item-level audited failure/diff and does not silently hotlink or necessarily fail unrelated items; no object is published or activated by successful intake alone.
 
 ## 4. Asset lifecycle
 
@@ -153,3 +156,5 @@ Dependencies: rights/source/catalog/content/storage/admin/sync/AI/security/perfo
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Defined future controlled intake, provenance, quarantine, derivative profiles, mapping/publication, revoke/delete and tests without importing media. |
 | 0.2.0 | 2026-08-02 | Added AMIGO image authority, Business Owner portfolio authority and explicit PostgreSQL metadata/object-storage binary separation from `OWNER-DECISION-008`; no import was asserted. |
+| 0.3.0 | 2026-08-02 | Authorized controlled Phase 1B.1 pilot media intake while retaining rights/publication and later-phase gates. |
+| 0.4.0 | 2026-08-03 | Added mandatory pre-import VersityGW contract gate and exact SSRF/MIME/size/dimensions/hash/dedup/item-failure requirements from `OWNER-DECISION-011`. |

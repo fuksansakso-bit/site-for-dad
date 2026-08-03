@@ -5,8 +5,8 @@
 | Поле | Значение |
 |---|---|
 | Статус | Phase 1A security baseline implemented; Phase 1B.1 non-PII catalog/media/RBAC controls authorized; user media/AI/production gated |
-| Версия | 0.3.0 |
-| Дата | 2026-08-02 |
+| Версия | 0.4.0 |
+| Дата | 2026-08-03 |
 | Data model | [DATA_MODEL.md](DATA_MODEL.md) |
 | Roles | [ROLES_PERMISSIONS.md](../01-product/ROLES_PERMISSIONS.md) |
 
@@ -31,6 +31,9 @@ This specification covers threat boundaries, identity/authorization, input/uploa
 - **SEC-PRIV-013 — MUST:** production data is excluded from dev/test/demo; fixtures are synthetic or rights-cleared and non-sensitive.
 - **SEC-PRIV-014 — MUST:** vulnerability/incident handling has severity, owner, containment, evidence protection, notification/legal decision and regression control.
 - **SEC-PRIV-015 — MUST:** no claim of compliance/security/consent completeness is made until legal/security review and tests are recorded.
+- **SEC-PRIV-016 — MUST:** local object-storage root credentials are generated/injected only through process environment, never committed, returned to a browser or printed in logs/evidence; repository examples contain placeholders only.
+- **SEC-PRIV-017 — MUST:** local S3/Admin/Web UI endpoints are loopback-only and all trust-zone buckets deny anonymous write, listing and read. `PUBLIC_DELIVERY` permits only controlled scoped delivery and never permanent unbounded signed URLs.
+- **SEC-PRIV-018 — MUST:** source URLs, object keys, signed URLs and credentials are treated as sensitive telemetry fields; storage/media contract tests scan logs and fail on generated credential disclosure.
 
 ## 3. Trust boundaries and assets
 
@@ -151,3 +154,5 @@ Dependencies: all specs, legal review, provider/hosting/storage/auth/AI ADR/eval
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Defined threat model, mandatory controls, data inventory, provider/media/privacy/retention/incident and test contracts without invented policy values. |
 | 0.2.0 | 2026-08-02 | Recorded verified synthetic Foundation controls while retaining all PII/media/legal/provider production gates. |
+| 0.3.0 | 2026-08-02 | Added Phase 1B.1 non-PII catalog/media security boundary without enabling user media or production providers. |
+| 0.4.0 | 2026-08-03 | Applied local VersityGW loopback/all-private/environment-secret/log-redaction controls from `OWNER-DECISION-011`. |

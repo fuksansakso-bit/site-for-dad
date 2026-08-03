@@ -7,6 +7,7 @@
 
 ### Added
 
+- Зафиксировано `OWNER-DECISION-011` «LOCAL DEVELOPMENT OBJECT STORAGE»: воспроизводимый Windows 11 отказ RustFS `1.0.0-beta.11` на 159 099/262 144/515 180-byte real-media path переводит active local/CI S3 adapter на digest-pinned VersityGW `v1.4.1` в Docker Compose с POSIX named volumes и all-private trust zones; provider-neutral `StoragePort`, PostgreSQL/Prisma/Graphile и открытый выбор production storage сохранены.
 - Зафиксировано `OWNER-DECISION-010`: после `PASSED_PHASE_1A_FOUNDATION` отдельно разрешена только Phase 1B.1 в `phase/1b-amigo-catalog-pilot`; создан active plan и dated transport discovery с owner-authorized low-rate public-page adapter, stable numeric IDs, real 32-material/four-system allowlist, local media/publication boundaries и явным запретом Phase 1B.2/1C+, full import и production.
 - Зафиксировано `OWNER-DECISION-009` «LOCAL CATALOG AS PUBLIC SOURCE OF TRUTH»: AMIGO остаётся upstream authority, публичная часть читает только активную одобренную PostgreSQL `CatalogVersion`/transactional state, а source changes проходят import/sync → local staging → validation/diff → Business Owner approval → explicit admin activation. Запрещены auto-delete локальных данных и direct AMIGO/staging runtime reads; local overrides имеют явный приоритет в публичной проекции, все версии/изменения аудируются и имеют source/timestamps/rollback.
 - Зафиксировано `OWNER-DECISION-008` и каноническая authority matrix: AMIGO определяет AMIGO-origin products/materials/technical data/catalog images/base prices; Business Owner определяет local availability/visibility/price overrides/portfolio/commercial conditions; PostgreSQL хранит версионированную operational projection, а image binaries — object storage.
@@ -56,6 +57,9 @@
 
 ### Changed
 
+- Active local/CI object storage переведён с Windows-native RustFS на VersityGW `v1.4.1@sha256:0400cb59f59da0f1cf9f7fd49505191abc348dfadf54509bf1988caaff4eb96f` в Linux Docker Compose: loopback-only S3/Admin, POSIX backend, three persistent named volumes, private buckets, typed environment, graceful shutdown и automatic Docker restart recovery. PostgreSQL, Prisma, Graphile Worker, catalog model и provider-neutral `StoragePort` не менялись.
+- Storage contract gate прошёл 15/15 на размерах 1/65,536/131,072/159,099/262,144/515,180/1 MiB/5 MiB/6 MiB: byte-for-byte/SHA-256, head/metadata/type/length, signed read/write, multipart complete/abort, idempotence/dedup/concurrency, invalid input/checksum/timeout/unavailable, delete, graceful restart и named-volume/Docker Desktop persistence. Реальный AMIGO JPEG подтверждён SHA-256 `ac86fc976afc2063cc97e1528611c978a348f357d26c8fe3c59b7c23f113d0cd`.
+- `GLOBAL_SPEC.md` обновлён до 0.11.0, storage/media/security/deployment/test specifications, ADR-0009, quality gate QG-177–184, traceability, active plan, Windows runbook и dependency baseline синхронизированы с `OWNER-DECISION-011`; `TBD-INFRA-010` сохраняет production provider невыбранным.
 - `GLOBAL_SPEC.md` обновлён до 0.9.0, `ARCHITECTURE.md`/`AMIGO_SYNC_ARCHITECTURE.md`/`DATA_MODEL.md`/`FEATURE_SPEC.md`/`PRICING_CALCULATOR_SPEC.md` — до 0.4.0, `AMIGO_CATALOG_PARITY_SPEC.md` — до 0.3.0, `TRACEABILITY_MATRIX.md`/`SPEC_ROADMAP.md`/`SPEC_QUALITY_GATE.md` — до 1.5.0; glossary/external-source/pricing/open-question/specification-and-implementation-roadmap/test-strategy/index/README контекст и QG-164–168 синхронизированы с `OWNER-DECISION-009`. Existing transport/import/price/asset TBD и запрет Phase 1B сохранены; бизнес-таблицы и импорт не создавались.
 - `GLOBAL_SPEC.md` обновлён до 0.8.0; glossary, external/rights/pricing policies, open questions, feature/RBAC, parity/catalog/pricing/admin/content, architecture/data/sync/media/storage, roadmap, traceability, index и README синхронизированы с field-level authority и запретом cross-layer overwrite.
 - `SPEC_QUALITY_GATE.md` обновлён до 1.4.0: QG-159–163 фиксируют docs-only audit, успешные documentation/format/phase-scope checks и отсутствие фактической catalog/import implementation; Phase 1B hold сохранён.
@@ -95,6 +99,8 @@
 
 ### Fixed
 
+- RustFS `1.0.0-beta.11` больше не блокирует real Phase 1B.1 media на Windows 11: исторический `HTTP 500 File access denied` при 159,099/262,144 байт и реальном media path устранён local-only adapter replacement без подмены failed sync history или media fixtures.
+- Docker Desktop restart recovery исправлен с `restart: unless-stopped` на `restart: always`: VersityGW корректно завершается по SIGTERM и автоматически восстанавливается с теми же named volumes и checksum-preserved objects.
 - Устранено противоречие приоритета источников: `GLOBAL_SPEC` → accepted ADR → approved specialized spec; dynamic AMIGO snapshot не может переписать нормативное поведение.
 - `STANDARD_INTERIOR_PREVIEW` больше не называется `GEOMETRIC_PREVIEW` в ADR-0004/traceability; client-photo geometry и optional AI result остаются отдельными типами.
 - Исправлены stale/nonexistent ID ranges в ADR-0002/0004/0006 и ссылка `ARCHITECTURE` на устаревший `GLOBAL_SPEC` 0.4.0.

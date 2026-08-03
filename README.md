@@ -54,7 +54,7 @@
 
 ## Локальная разработка на Windows 11
 
-Требуются Git, Node.js `24.18.1`, pnpm `11.18.0`, PostgreSQL `18.4`, RustFS `1.0.0-beta.11` и установленные Playwright Chromium/Firefox/WebKit. По умолчанию PostgreSQL и RustFS ищутся в `%USERPROFILE%\.cache\project-name`; нестандартные каталоги задаются через `PROJECT_NAME_POSTGRES_ROOT` и `PROJECT_NAME_RUSTFS_ROOT`.
+Требуются Git, Node.js `24.18.1`, pnpm `11.18.0`, PostgreSQL `18.4`, Docker Desktop 4.84.0 или совместимый Linux-container runtime, а также Playwright Chromium/Firefox/WebKit. PostgreSQL по умолчанию ищется в `%USERPROFILE%\.cache\project-name`; нестандартный каталог задаётся через `PROJECT_NAME_POSTGRES_ROOT`. Local/CI object storage запускается из PowerShell как VersityGW `v1.4.1` с зафиксированным image digest; RustFS больше не является active prerequisite.
 
 ```powershell
 pnpm.cmd install --frozen-lockfile
@@ -62,13 +62,14 @@ pnpm.cmd exec playwright install chromium firefox webkit
 pnpm.cmd dev
 pnpm.cmd dev:status
 pnpm.cmd dev:stop
+pnpm.cmd test:storage
 ```
 
-`pnpm.cmd dev` одной командой поднимает loopback-only PostgreSQL, применяет reviewed migrations, запускает Graphile Worker migrations, private-by-default RustFS namespaces, web и отдельный worker. Состояние и диагностические журналы находятся только в игнорируемом `.local/foundation-environment/`; connection strings, ключи и токены в вывод не попадают.
+`pnpm.cmd dev` одной командой поднимает loopback-only PostgreSQL, применяет reviewed migrations, запускает Graphile Worker migrations, private-by-default VersityGW buckets, web и отдельный worker. S3 API слушает `127.0.0.1:4569`, Admin API — `127.0.0.1:4570`; object data, versioning и IAM хранятся в Docker named volumes `project_name_catalog_s3_data`, `project_name_catalog_s3_versioning`, `project_name_catalog_s3_iam`, без bind mount в NTFS. Состояние и диагностические журналы находятся только в игнорируемом `.local/foundation-environment/`; credentials генерируются локально и в вывод не попадают.
 
-Для проверки используйте `pnpm.cmd check`, `pnpm.cmd test:coverage`, `pnpm.cmd test:browser` или полный `pnpm.cmd ci:verify`. `pnpm.cmd dev:reset` сначала останавливает процессы, затем безвозвратно удаляет только проверенный каталог `.local/foundation-environment` с синтетическими локальными данными и ключами; следующая команда `dev` создаёт их заново.
+Для проверки используйте `pnpm.cmd test:storage`, `pnpm.cmd check`, `pnpm.cmd test:coverage`, `pnpm.cmd test:browser` или полный `pnpm.cmd ci:verify`. Storage gate временно создаёт и удаляет свои точные containers/volumes; учётные данны в evidence и логи не пишутся. `pnpm.cmd dev:reset` безвозвратно удаляет только проверенные local PostgreSQL data/secrets и три проектных VersityGW named volumes; обычные `dev:stop`/`dev` и Docker restart сохраняют объекты.
 
-Если запуск не удался, проверьте занятость loopback-портов web/metrics/PostgreSQL/RustFS (`3000`, `9464`, `55432`, `4569`), точные версии runtime и журналы `.local/foundation-environment/logs`. Production credentials для локального запуска не нужны и использовать их запрещено.
+Если запуск не удался, проверьте Docker Desktop, занятость loopback-портов web/metrics/PostgreSQL/S3/Admin (`3000`, `9464`, `55432`, `4569`, `4570`), точные версии runtime и журналы `.local/foundation-environment/logs`. Ручное изменение прав NTFS и bind mount object directory не требуются. Production credentials для локального запуска не нужны и использовать их запрещено.
 
 ## Текущая разрешённая работа
 

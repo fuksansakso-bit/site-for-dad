@@ -6,6 +6,7 @@
 Более локальный `AGENTS.md` в будущем MAY уточнять правила только для своей директории, но не может ослаблять требования этого файла.
 
 Фаза **1A — FOUNDATION** завершена 2026-08-02 со статусом `PASSED_PHASE_1A_FOUNDATION` на commit `943d4a2efa5e05f0d05493633cf5eb549e072a22`. Product Owner принял `OWNER-DECISION-010` и письменно разрешил только **Phase 1B.1 — AMIGO CATALOG PILOT AND LOCAL PUBLICATION LAYER** в ветке `phase/1b-amigo-catalog-pilot` по `PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN.md`.
+`OWNER-DECISION-011` от 2026-08-03 заменяет только active local/CI RustFS emulator на digest-pinned VersityGW Docker/POSIX named-volume adapter после воспроизводимого Windows 11 real-image failure. Оно сохраняет provider-neutral `StoragePort`, PostgreSQL/Prisma/Graphile Worker и не выбирает production storage или Phase 1C.
 В Phase 1B.1 разрешены только контролируемый реальный catalog pilot, source/normalized/business-overlay layers, local media, sync/diff/version approval, base source prices/local overrides, catalog APIs и минимальные `/catalog`/`/admin/catalog`. Phase 1B.2/1C+, полный импорт, configurator, расчёт, preview/AI, cart/order/WhatsApp/installment/account, final landing/starfield и production deployment запрещены. Завершение Phase 1B.1 не разрешает автоматически начинать следующую фазу.
 
 ## 2. Обязательный порядок чтения

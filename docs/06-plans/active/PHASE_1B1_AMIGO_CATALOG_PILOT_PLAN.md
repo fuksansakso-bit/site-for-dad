@@ -26,7 +26,7 @@
 - [x] приоритетный transport discovery выполнен; API/export не выдуманы.
 - [x] public-page fallback разрешён владельцем и доступен без login/CAPTCHA.
 - [x] у карточек подтверждены стабильные AMIGO `data-id`, section/path, title, price и media path.
-- [x] Phase 1A storage port поддерживает private zone, immutable checksum metadata и bounded objects; реальный JPEG preflight прошёл.
+- [x] Provider-neutral storage port сохранён; после воспроизводимого RustFS Windows failure `OWNER-DECISION-011` выбрал local-only VersityGW, а реальный 515,180-byte JPEG прошёл byte/SHA contract gate 2026-08-03.
 - [x] `PARTNER_LICENSE` охватывает pilot material/product media; публикация остаётся asset-level `PUBLICATION_APPROVED`.
 - [x] pilot allowlist ограничен 32 материалами и четырьмя системами.
 
@@ -47,17 +47,18 @@ Allowlist содержит roller blackout (`49129`, `50772`), Zebra blackout (`
 
 | № | Этап | Статус | Проверяемое завершение |
 |---:|---|---|---|
-| 1 | Авторизация, transport discovery, active plan и scope guard | **IN_PROGRESS** | Source of truth синхронизирован; transport/allowlist/stop conditions зафиксированы |
-| 2 | Source/normalized/overlay Prisma model и forward migration | PENDING | Stable UUID/source identity, ownership separation и migration replay проходят |
-| 3 | `CatalogSourceAdapter`, AMIGO parser и fixture adapter | PENDING | Contract/mapping/security tests проходят без domain selectors |
-| 4 | Graphile Worker sync, raw snapshots, normalization и idempotency | PENDING | Repeat/update/removal/retry/rollback evidence проходит |
-| 5 | Media import через storage abstraction | PENDING | MIME/size/hash/dedup/private delivery/audit tests проходят |
-| 6 | Catalog/Price versioning, exact diff и activation | PENDING | OWNER/ADMIN-only atomic activation и rollback доказаны |
-| 7 | Business overlay и mutation APIs | PENDING | Availability/visibility/local price переживают sync и аудируются |
-| 8 | Минимальный `/admin/catalog` по design-system rules | PENDING | RBAC, bulk publication, status/history/diff и responsive flow проходят |
-| 9 | Минимальный PostgreSQL-only `/catalog` | PENDING | Search/filter/hidden/out-of-stock/outage scenarios проходят |
-| 10 | Реальный pilot run и полный test/CI-equivalent gate | PENDING | 32 real variants/media/prices imported; build/tests/CI clean |
-| 11 | Документация, completion report и остановка | PENDING | План completed, report создан, tree clean, Phase 1C не начата |
+| 1 | Авторизация, transport discovery, active plan и scope guard | COMPLETED | Source of truth синхронизирован; transport/allowlist/stop conditions зафиксированы |
+| 2 | Source/normalized/overlay Prisma model и forward migration | COMPLETED | Stable UUID/source identity, ownership separation и migration replay прошли |
+| 3 | `CatalogSourceAdapter`, AMIGO parser и fixture adapter | COMPLETED | Contract/mapping/security tests прошли без domain selectors |
+| 4 | Graphile Worker sync, raw snapshots, normalization и idempotency | COMPLETED | Real pilot captured 6 snapshots, 32 variants, 59 media links and 32 prices; failed storage run retained historically |
+| 5 | Local storage recovery и mandatory contract gate | COMPLETED | RustFS inactive; VersityGW 15/15, signed/multipart/real JPEG/restart persistence, docs and logical commit passed |
+| 6 | Media import через storage abstraction | **IN_PROGRESS** | MIME/size/hash/dedup/private delivery/audit tests проходят; new run does not rewrite failed run |
+| 7 | Catalog/Price versioning, exact diff и activation | PENDING | OWNER/ADMIN-only atomic activation и rollback доказаны |
+| 8 | Business overlay и mutation APIs | PENDING | Availability/visibility/local price переживают sync и аудируются |
+| 9 | Минимальный `/admin/catalog` по design-system rules | PENDING | RBAC, bulk publication, status/history/diff и responsive flow проходят |
+| 10 | Минимальный PostgreSQL-only `/catalog` | PENDING | Search/filter/hidden/out-of-stock/outage scenarios проходят |
+| 11 | Реальный pilot run и полный test/CI-equivalent gate | PENDING | 32 real variants/media/prices imported; build/tests/CI clean |
+| 12 | Документация, completion report и остановка | PENDING | План completed, report создан, tree clean, Phase 1C не начата |
 
 ## 5. Commit sequence
 
@@ -65,17 +66,20 @@ Allowlist содержит roller blackout (`49129`, `50772`), Zebra blackout (`
 2. `feat: add catalog source data model`
 3. `feat: add catalog source adapters`
 4. `feat: add catalog synchronization pipeline`
-5. `feat: add catalog media import`
-6. `feat: add catalog versioning and diff`
-7. `feat: add catalog business overlays`
-8. `feat: add admin catalog pilot`
-9. `feat: add public catalog pilot`
-10. `test: verify catalog synchronization and publication`
-11. `docs: complete Phase 1B.1 pilot`
+5. `fix: replace local RustFS emulator with VersityGW`
+6. `feat: add catalog media import`
+7. `feat: add catalog versioning and diff`
+8. `feat: add catalog business overlays`
+9. `feat: add admin catalog pilot`
+10. `feat: add public catalog pilot`
+11. `test: verify catalog synchronization and publication`
+12. `docs: complete Phase 1B.1 pilot`
 
 ## 6. Verification and recovery
 
 Required evidence covers unit, adapter/storage/API/job contracts, PostgreSQL integration, real-source idempotency, source update/removal, overlay survival, media dedup, atomic version activation/rollback, audit, browser search/filter/admin/bulk publication, AMIGO/media/storage/database outages, worker restart/replay, lint/typecheck/build/security scans and full CI-equivalent execution.
+
+Storage recovery evidence 2026-08-03: VersityGW `v1.4.1` image digest `sha256:0400cb59f59da0f1cf9f7fd49505191abc348dfadf54509bf1988caaff4eb96f`; size matrix `1`, `65,536`, `131,072`, `159,099`, `262,144`, `515,180`, `1 MiB`, `5 MiB`, `6 MiB`; 15/15 tests passed with byte/SHA equality, signed read/write, multipart complete/abort, all-private negative access and graceful/Docker Desktop restart persistence. Existing run `798d5513-27b1-48e3-ab8e-389eeb672db4` remains `FAILED / CATALOG_PIPELINE_STORAGE_UNAVAILABLE`; media continuation must create a new run/correlation ID.
 
 ## 7. Stop conditions
 

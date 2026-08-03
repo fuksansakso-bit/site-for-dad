@@ -5,8 +5,8 @@
 | Поле | Значение |
 |---|---|
 | Статус | Phase 1A local S3 port verified; Phase 1B.1 pilot catalog media use authorized; production provider/region gated |
-| Версия | 0.3.0 |
-| Дата | 2026-08-02 |
+| Версия | 0.4.0 |
+| Дата | 2026-08-03 |
 | Media pipeline | [ASSET_MEDIA_PIPELINE.md](ASSET_MEDIA_PIPELINE.md) |
 | Privacy/security | [SECURITY_PRIVACY.md](SECURITY_PRIVACY.md) |
 
@@ -53,6 +53,12 @@ Logical classes MAY map to separate buckets/accounts/projects/keys according to 
 - **STORAGE-SPEC-019 — MUST:** repository and build artifacts exclude storage dumps, credentials, signed URLs, AMIGO media and user uploads.
 - **STORAGE-SPEC-020 — MUST:** restore/export/migration has integrity checks, counts/checksums, dry run, rollback/exit path and audit.
 - **STORAGE-SPEC-021 — MUST:** for AMIGO catalog images, PostgreSQL stores metadata copied from versioned authoritative AMIGO records, mappings, rights/publication state and opaque object references, while original/derivative bytes remain in object storage. Neither a database row nor an object alone transfers AMIGO authority or grants publication.
+- **STORAGE-SPEC-022 — MUST:** the external storage contract remains provider-neutral and supports put/get/head/delete, scoped signed read/write URLs, metadata and SHA-256 validation; S3 path-style/SigV4, endpoint, region, credentials, buckets, retry/timeout and multipart settings remain adapter/configuration concerns.
+- **STORAGE-SPEC-023 — MUST:** local/CI uses only digest-pinned VersityGW `v1.4.1` in a Linux Docker Compose container with a POSIX backend and separate Docker named volumes for object data, versioning and IAM. Windows object-directory bind mounts are prohibited.
+- **STORAGE-SPEC-024 — MUST:** `PRIVATE`, `QUARANTINE` and `PUBLIC_DELIVERY` buckets are environment-named, private by default and provisioned by an explicit idempotent initialization command. Anonymous write/list/read and automatic request-time provisioning are prohibited; public delivery remains controlled per object.
+- **STORAGE-SPEC-025 — MUST:** local S3/Admin/Web UI endpoints, when enabled, bind only to loopback; root credentials come only from environment, never enter repository/client/log/evidence, and are replaced with safe placeholders in `.env.example`.
+- **STORAGE-SPEC-026 — MUST:** before real media import, the adapter contract gate verifies byte equality, SHA-256, type/length/metadata, signed read/write, deletion, multipart complete/abort, idempotency/dedup/same-key safety, limits/checksum/MIME, concurrency, unavailable/timeout/retry and named-volume persistence for the approved size matrix and real AMIGO image.
+- **STORAGE-SPEC-027 — MUST:** VersityGW is a disposable local/CI adapter only. Production provider, region, encryption/key custody, retention and recovery remain gated by `TBD-INFRA-004`, `TBD-INFRA-010` and `TBD-PRIV-*` and require a future decision.
 
 ## 4. Object record and key strategy
 
@@ -139,6 +145,10 @@ Primary: `AC-ASSET-MAP-001`, `AC-ASSET-REVOKE-001`, `AC-AI-UPLOAD-001`, `AC-VIS-
 
 Tests: bucket/policy public exposure negative; upload grant scope/type/size/replay/expiry; hash/MIME/polyglot; cross-owner/environment; private cache/referrer/log scan; public projection only; revoke/purge/origin; delete during every stage/late callback/backup; orphan reconciliation; storage/CDN/DB partial failures; restore deletion ledger; quota/cost/large files and migration dry run.
 
+### Phase 1B.1 local contract evidence (2026-08-03)
+
+RustFS `1.0.0-beta.11` was removed from active local/CI configuration after Windows 11 reproduced successful 65,536/131,072-byte writes but `HTTP 500 File access denied` at 159,099/262,144 bytes and on the real-media path. VersityGW `v1.4.1@sha256:0400cb59f59da0f1cf9f7fd49505191abc348dfadf54509bf1988caaff4eb96f` passed 15/15 automated contract tests for `1`, `65,536`, `131,072`, `159,099`, `262,144`, `515,180`, `1,048,576`, `5,242,880` and `6,291,456` bytes. The allowlisted 515,180-byte AMIGO JPEG round-tripped byte-for-byte with SHA-256 `ac86fc976afc2063cc97e1528611c978a348f357d26c8fe3c59b7c23f113d0cd`; signed read/write, multipart complete/abort, negative anonymous access, graceful container restart, Docker Desktop auto-recovery and named-volume persistence passed.
+
 ## 13. Dependencies, risks and open questions
 
 Dependencies: media/AI/data/API/security/performance/observability/deployment/evaluation and storage ADR. Open: vendor/region/residency, encryption/key, private delivery pattern, exact limits/TTLs, CDN, backup/RPO/RTO, replication, provider deletion and cost. Risks: accidental public bucket, signed URL leak, incomplete deletion, restore resurrection, broad prefix delete, prod-to-test data and egress cost.
@@ -149,3 +159,5 @@ Dependencies: media/AI/data/API/security/performance/observability/deployment/ev
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Defined storage classes, private/public upload/delivery, retention/delete/backup/restore, failures and vendor-neutral controls. |
 | 0.2.0 | 2026-08-02 | Clarified `OWNER-DECISION-008` boundary between AMIGO image authority, PostgreSQL metadata and object-storage binary content. |
+| 0.3.0 | 2026-08-02 | Authorized bounded Phase 1B.1 use of the provider-neutral local storage port without choosing production infrastructure. |
+| 0.4.0 | 2026-08-03 | Recorded `OWNER-DECISION-011`, private VersityGW Compose/named-volume contract and passed real-image/signed/multipart/restart gate. |

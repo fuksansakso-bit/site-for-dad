@@ -4,15 +4,15 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Draft 0B — future controlled pipeline defined; no media imported in 0B |
-| Версия | 0.2.0 |
-| Дата | 2026-08-02 |
+| Статус | Phase 1B.1 controlled pilot media import verified; user media/production pipeline gated |
+| Версия | 0.5.0 |
+| Дата | 2026-08-03 |
 | Rights | [ASSET_RIGHTS_REGISTER.md](../../00-global/ASSET_RIGHTS_REGISTER.md) |
 | Storage | [STORAGE_MEDIA.md](STORAGE_MEDIA.md) |
 
 ## 1. Purpose and boundaries
 
-The pipeline registers, validates, stores, transforms, maps, reviews, publishes, revokes and deletes owner/partner/content/preview media with full provenance. Partner permission allows future controlled use, but phase 0B creates no importer, downloaded catalog or production storage.
+The pipeline registers, validates, stores, maps, reviews, publishes, revokes and deletes owner/partner media with full provenance. Phase 1B.1 MAY import only media referenced by the frozen pilot allowlist through the local private-by-default storage port; no full media crawl, user upload or production storage is authorized.
 
 Out of scope: bulk scraping, hotlink, watermark removal, authorship change, training use, client-photo public content and arbitrary transformations beyond rights/profile.
 
@@ -45,6 +45,9 @@ Content manager registers/maps; rights approver/owner confirms scope; publicatio
 - **MEDIA-PIPE-021 — MUST:** AMIGO is source authority for AMIGO catalog-image identity, provenance and product/material relationship; an imported local copy or derivative MUST NOT change that authority or become owner-created/local portfolio.
 - **MEDIA-PIPE-022 — MUST:** PostgreSQL stores MediaAsset/SourceAsset metadata, provenance, hashes, exact mappings, rights/publication states and opaque object references; binary originals/derivatives are stored in the managed object-storage zones, not product/material rows.
 - **MEDIA-PIPE-023 — MUST:** Business Owner determines local portfolio composition, but pipeline promotion still requires creator/rightsholder evidence, consent/PII review where applicable, exact asset mapping and independent `PUBLICATION_APPROVED`.
+- **MEDIA-PIPE-024 — MUST:** real Phase 1B.1 media import MUST NOT start or be committed until the configured storage adapter passes `STORAGE-SPEC-026`, including the exact 515,180-byte AMIGO JPEG byte/SHA round trip; HTTP success without content equality is insufficient.
+- **MEDIA-PIPE-025 — MUST:** pilot intake preserves source URL as restricted provenance, applies SSRF allowlist/DNS-IP checks and bounded redirects, validates declared and detected MIME, size, dimensions and decompression limits, computes SHA-256, deduplicates by content, stores only generated safe keys and never executes HTML/SVG/script content.
+- **MEDIA-PIPE-026 — MUST:** an unavailable individual AMIGO image records an item-level audited failure/diff and does not silently hotlink or necessarily fail unrelated items; no object is published or activated by successful intake alone.
 
 ## 4. Asset lifecycle
 
@@ -143,6 +146,10 @@ Primary: `AC-ASSET-MAP-001`, `AC-PORTFOLIO-001`, `AC-BADGE-001`, `AC-ASSET-REVOK
 
 Tests: signature/polyglot/bomb/malware/metadata; duplicate/hash; rights/status matrix; wrong variant/role; transform format/color/alpha/crop visual regression; badge restrictions; local-vs-partner labels; publication approval invalidation; revoke graph/cache/search/renderer/export; delete idempotency; no training/public client media; telemetry scan and performance derivatives.
 
+### Phase 1B.1 execution evidence (2026-08-03)
+
+The bounded AMIGO transport processed only the frozen 32-ID allowlist with concurrency `1`, redirect/SSRF policy, declared and detected MIME checks, size/dimension/decompression limits, SHA-256 and generated immutable keys. It created 59 mapped `PARTNER_LICENSE` assets for 32/32 variants, preserved source URLs/original filenames only as governed metadata, recorded audit/sync events and produced zero item-level failures. Separate asset publication approval preceded active composition; the public surface uses no hotlink and exposes no source URL/object key. Recovery and no-op repeats created no duplicate assets or links, and all stored bytes were reverified after restart.
+
 ## 14. Dependencies, risks and open questions
 
 Dependencies: rights/source/catalog/content/storage/admin/sync/AI/security/performance. Open: approved partner export/media transport, exact attribution/brand guidelines, asset inventory, formats/quality profiles, retention/cache purge, reviewers and color-management tolerances. Risks: wrong SKU image, license scope drift, metadata PII, parser exploit, color degradation, hotlink, incomplete revoke and training misuse.
@@ -153,3 +160,6 @@ Dependencies: rights/source/catalog/content/storage/admin/sync/AI/security/perfo
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Defined future controlled intake, provenance, quarantine, derivative profiles, mapping/publication, revoke/delete and tests without importing media. |
 | 0.2.0 | 2026-08-02 | Added AMIGO image authority, Business Owner portfolio authority and explicit PostgreSQL metadata/object-storage binary separation from `OWNER-DECISION-008`; no import was asserted. |
+| 0.3.0 | 2026-08-02 | Authorized controlled Phase 1B.1 pilot media intake while retaining rights/publication and later-phase gates. |
+| 0.4.0 | 2026-08-03 | Added mandatory pre-import VersityGW contract gate and exact SSRF/MIME/size/dimensions/hash/dedup/item-failure requirements from `OWNER-DECISION-011`. |
+| 0.5.0 | 2026-08-03 | Recorded completed 32-variant/59-asset media intake, zero failures, publication approval, no-hotlink public delivery, deduplication and restart verification. |

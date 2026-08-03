@@ -1,0 +1,837 @@
+import {
+  hashCanonicalSource,
+  type CapturedSource,
+  type SourceCategory,
+  type SourceIdentity,
+  type SourceMaterial,
+  type SourceMediaManifest,
+  type SourcePrice,
+  type SourceSystem,
+} from '@project-name/catalog';
+import type { JobHelpers } from 'graphile-worker';
+import type { PoolClient } from 'pg';
+
+import { type CatalogNormalizePayload } from './contracts.js';
+import { CatalogPipelineError, toCatalogPipelineError } from './errors.js';
+import { catalogSafeSnapshotPayloadSchema, type CatalogSafeSnapshotPayload } from './snapshot.js';
+
+interface ExistingSourceEntity {
+  readonly id: string;
+  readonly source_hash: string;
+  readonly status: 'ACTIVE' | 'PARSE_ERROR' | 'SOURCE_REMOVED';
+}
+
+interface NormalizedSourceEntity {
+  readonly id: string;
+  readonly itemStatus: 'CREATED' | 'UNCHANGED' | 'UPDATED';
+  readonly previousHash: string | null;
+}
+
+interface NormalizedReference {
+  readonly id: string;
+  readonly sourceEntityId: string;
+}
+
+function derivedIdentity(
+  base: SourceIdentity,
+  input: {
+    readonly entityType: SourceIdentity['sourceEntityType'];
+    readonly facts: unknown;
+    readonly sourceId: string;
+    readonly sourceSlug: string;
+  },
+): SourceIdentity {
+  return {
+    ...base,
+    sourceEntityType: input.entityType,
+    sourceHash: hashCanonicalSource(input.facts),
+    sourceId: input.sourceId,
+    sourceSlug: input.sourceSlug,
+  };
+}
+
+function stableToken(value: unknown): string {
+  return hashCanonicalSource(value).slice(0, 24);
+}
+
+function deduplicate<T extends { readonly data: { readonly identity: SourceIdentity } }>(
+  records: readonly T[],
+  entityType: string,
+): readonly T[] {
+  const result = new Map<string, T>();
+  for (const record of records) {
+    const sourceId = record.data.identity.sourceId;
+    const existing = result.get(sourceId);
+    if (
+      existing !== undefined &&
+      existing.data.identity.sourceHash !== record.data.identity.sourceHash
+    ) {
+      throw new CatalogPipelineError('CATALOG_PIPELINE_PAYLOAD_INVALID');
+    }
+    result.set(sourceId, record);
+  }
+  if (result.size === 0 && entityType === 'category') {
+    throw new CatalogPipelineError('CATALOG_PIPELINE_PAYLOAD_INVALID');
+  }
+  return [...result.values()];
+}
+
+function mergePayloads(payloads: readonly CatalogSafeSnapshotPayload[]): {
+  readonly categories: readonly CapturedSource<SourceCategory>[];
+  readonly materials: readonly CapturedSource<SourceMaterial>[];
+  readonly mediaManifests: readonly CapturedSource<SourceMediaManifest>[];
+  readonly prices: readonly CapturedSource<SourcePrice>[];
+  readonly systems: readonly CapturedSource<SourceSystem>[];
+} {
+  return {
+    categories: deduplicate(
+      payloads.flatMap((payload) => payload.categories) as CapturedSource<SourceCategory>[],
+      'category',
+    ),
+    materials: deduplicate(
+      payloads.flatMap((payload) => payload.materials) as CapturedSource<SourceMaterial>[],
+      'material',
+    ),
+    mediaManifests: deduplicate(
+      payloads.flatMap(
+        (payload) => payload.mediaManifests,
+      ) as CapturedSource<SourceMediaManifest>[],
+      'media',
+    ),
+    prices: deduplicate(
+      payloads.flatMap((payload) => payload.prices) as CapturedSource<SourcePrice>[],
+      'price',
+    ),
+    systems: deduplicate(
+      payloads.flatMap((payload) => payload.systems) as CapturedSource<SourceSystem>[],
+      'system',
+    ),
+  };
+}
+
+async function upsertSourceEntity(
+  client: PoolClient,
+  catalogSourceId: string,
+  identity: SourceIdentity,
+  safeSourceData: unknown,
+): Promise<NormalizedSourceEntity> {
+  const existingResult = await client.query<ExistingSourceEntity>(
+    `
+      SELECT id::text, source_hash, status
+      FROM source_entity
+      WHERE catalog_source_id = $1::uuid
+        AND source_type = $2::source_entity_type
+        AND source_id = $3
+      FOR UPDATE
+    `,
+    [catalogSourceId, identity.sourceEntityType, identity.sourceId],
+  );
+  const existing = existingResult.rows[0];
+  const result = await client.query<{ id: string }>(
+    `
+      INSERT INTO source_entity (
+        catalog_source_id, source_type, source_id, source_slug, source_url,
+        source_category, source_hash, source_captured_at, source_last_verified_at,
+        status, safe_source_data, removed_at, updated_at
+      ) VALUES (
+        $1::uuid, $2::source_entity_type, $3, $4, $5,
+        $6, $7, $8::timestamptz, $9::timestamptz,
+        'ACTIVE', $10::jsonb, NULL, NOW()
+      )
+      ON CONFLICT (catalog_source_id, source_type, source_id) DO UPDATE
+      SET source_slug = EXCLUDED.source_slug,
+          source_url = EXCLUDED.source_url,
+          source_category = EXCLUDED.source_category,
+          source_hash = EXCLUDED.source_hash,
+          source_captured_at = EXCLUDED.source_captured_at,
+          source_last_verified_at = EXCLUDED.source_last_verified_at,
+          status = 'ACTIVE',
+          safe_source_data = EXCLUDED.safe_source_data,
+          removed_at = NULL,
+          updated_at = NOW()
+      RETURNING id::text
+    `,
+    [
+      catalogSourceId,
+      identity.sourceEntityType,
+      identity.sourceId,
+      identity.sourceSlug,
+      identity.sourceUrl,
+      identity.sourceCategory ?? null,
+      identity.sourceHash,
+      identity.sourceCapturedAt,
+      identity.sourceLastVerifiedAt,
+      JSON.stringify(safeSourceData),
+    ],
+  );
+  const id = result.rows[0]?.id;
+  if (id === undefined) {
+    throw new CatalogPipelineError('CATALOG_PIPELINE_DATABASE');
+  }
+  return {
+    id,
+    itemStatus:
+      existing === undefined
+        ? 'CREATED'
+        : existing.source_hash === identity.sourceHash && existing.status === 'ACTIVE'
+          ? 'UNCHANGED'
+          : 'UPDATED',
+    previousHash: existing?.source_hash ?? null,
+  };
+}
+
+async function recordSyncItem(
+  client: PoolClient,
+  payload: CatalogNormalizePayload,
+  identity: SourceIdentity,
+  sourceEntity: NormalizedSourceEntity,
+): Promise<void> {
+  await client.query(
+    `
+      INSERT INTO catalog_sync_item (
+        sync_run_id, source_entity_id, source_type, source_id, status, stage,
+        progress, before_hash, after_hash, safe_metadata, updated_at
+      ) VALUES (
+        $1::uuid, $2::uuid, $3::source_entity_type, $4,
+        $5::catalog_sync_item_status, 'normalize', 100, $6, $7,
+        $8::jsonb, NOW()
+      )
+      ON CONFLICT (sync_run_id, source_type, source_id) DO UPDATE
+      SET source_entity_id = EXCLUDED.source_entity_id,
+          status = EXCLUDED.status,
+          stage = EXCLUDED.stage,
+          progress = EXCLUDED.progress,
+          before_hash = EXCLUDED.before_hash,
+          after_hash = EXCLUDED.after_hash,
+          safe_metadata = EXCLUDED.safe_metadata,
+          updated_at = NOW()
+    `,
+    [
+      payload.syncRunId,
+      sourceEntity.id,
+      identity.sourceEntityType,
+      identity.sourceId,
+      sourceEntity.itemStatus,
+      sourceEntity.previousHash,
+      identity.sourceHash,
+      JSON.stringify({ sourceCategory: identity.sourceCategory ?? null }),
+    ],
+  );
+}
+
+async function upsertFamily(
+  client: PoolClient,
+  payload: CatalogNormalizePayload,
+  category: CapturedSource<SourceCategory>,
+): Promise<NormalizedReference> {
+  const identity = derivedIdentity(category.data.identity, {
+    entityType: 'FAMILY',
+    facts: category.data.family,
+    sourceId: category.data.family.sourceId,
+    sourceSlug: `amigo-family-${category.data.family.code.toLowerCase()}`,
+  });
+  const sourceEntity = await upsertSourceEntity(
+    client,
+    payload.catalogSourceId,
+    identity,
+    category.data.family,
+  );
+  await recordSyncItem(client, payload, identity, sourceEntity);
+  const result = await client.query<{ id: string }>(
+    `
+      INSERT INTO product_family (
+        source_entity_id, code, slug, name, updated_at
+      ) VALUES ($1::uuid, $2, $3, $4, NOW())
+      ON CONFLICT (code) DO UPDATE
+      SET source_entity_id = EXCLUDED.source_entity_id,
+          slug = EXCLUDED.slug,
+          name = EXCLUDED.name,
+          updated_at = NOW()
+      RETURNING id::text
+    `,
+    [
+      sourceEntity.id,
+      category.data.family.code,
+      category.data.family.slug,
+      category.data.family.name,
+    ],
+  );
+  const id = result.rows[0]?.id;
+  if (id === undefined) throw new CatalogPipelineError('CATALOG_PIPELINE_DATABASE');
+  return { id, sourceEntityId: sourceEntity.id };
+}
+
+async function upsertCategory(
+  client: PoolClient,
+  payload: CatalogNormalizePayload,
+  record: CapturedSource<SourceCategory>,
+  familyId: string,
+): Promise<NormalizedReference> {
+  const sourceEntity = await upsertSourceEntity(
+    client,
+    payload.catalogSourceId,
+    record.data.identity,
+    record.data,
+  );
+  await recordSyncItem(client, payload, record.data.identity, sourceEntity);
+  const result = await client.query<{ id: string }>(
+    `
+      INSERT INTO product_category (
+        source_entity_id, family_id, slug, name, updated_at
+      ) VALUES ($1::uuid, $2::uuid, $3, $4, NOW())
+      ON CONFLICT (source_entity_id) DO UPDATE
+      SET family_id = EXCLUDED.family_id,
+          name = EXCLUDED.name,
+          updated_at = NOW()
+      RETURNING id::text
+    `,
+    [
+      sourceEntity.id,
+      familyId,
+      `amigo-category-${record.data.identity.sourceId}`,
+      record.data.name,
+    ],
+  );
+  const id = result.rows[0]?.id;
+  if (id === undefined) throw new CatalogPipelineError('CATALOG_PIPELINE_DATABASE');
+  return { id, sourceEntityId: sourceEntity.id };
+}
+
+async function upsertSystem(
+  client: PoolClient,
+  payload: CatalogNormalizePayload,
+  record: CapturedSource<SourceSystem>,
+  familyId: string,
+  categoryId: string,
+): Promise<NormalizedReference> {
+  const sourceEntity = await upsertSourceEntity(
+    client,
+    payload.catalogSourceId,
+    record.data.identity,
+    record.data,
+  );
+  await recordSyncItem(client, payload, record.data.identity, sourceEntity);
+  const result = await client.query<{ id: string }>(
+    `
+      INSERT INTO product_system (
+        source_entity_id, family_id, category_id, slug, name, description, updated_at
+      ) VALUES ($1::uuid, $2::uuid, $3::uuid, $4, $5, $6, NOW())
+      ON CONFLICT (source_entity_id) DO UPDATE
+      SET family_id = EXCLUDED.family_id,
+          category_id = EXCLUDED.category_id,
+          name = EXCLUDED.name,
+          description = EXCLUDED.description,
+          updated_at = NOW()
+      RETURNING id::text
+    `,
+    [
+      sourceEntity.id,
+      familyId,
+      categoryId,
+      record.data.identity.sourceSlug,
+      record.data.name,
+      record.data.description ?? null,
+    ],
+  );
+  const id = result.rows[0]?.id;
+  if (id === undefined) throw new CatalogPipelineError('CATALOG_PIPELINE_DATABASE');
+  return { id, sourceEntityId: sourceEntity.id };
+}
+
+async function upsertMaterial(
+  client: PoolClient,
+  payload: CatalogNormalizePayload,
+  record: CapturedSource<SourceMaterial>,
+  familyId: string,
+  categoryId: string,
+  primarySystemId: string | null,
+): Promise<NormalizedReference> {
+  const materialFacts = {
+    categorySourceId: record.data.categorySourceId,
+    familySourceId: record.data.family.sourceId,
+    name: record.data.materialName,
+  };
+  const materialIdentity = derivedIdentity(record.data.identity, {
+    entityType: 'MATERIAL',
+    facts: materialFacts,
+    sourceId: `material:${record.data.family.code}:${stableToken(materialFacts)}`,
+    sourceSlug: `amigo-material-group-${stableToken(materialFacts)}`,
+  });
+  const materialSourceEntity = await upsertSourceEntity(
+    client,
+    payload.catalogSourceId,
+    materialIdentity,
+    materialFacts,
+  );
+  await recordSyncItem(client, payload, materialIdentity, materialSourceEntity);
+  const materialResult = await client.query<{ id: string }>(
+    `
+      INSERT INTO material (
+        source_entity_id, family_id, category_id, slug, name, updated_at
+      ) VALUES ($1::uuid, $2::uuid, $3::uuid, $4, $5, NOW())
+      ON CONFLICT (source_entity_id) DO UPDATE
+      SET family_id = EXCLUDED.family_id,
+          category_id = EXCLUDED.category_id,
+          name = EXCLUDED.name,
+          updated_at = NOW()
+      RETURNING id::text
+    `,
+    [
+      materialSourceEntity.id,
+      familyId,
+      categoryId,
+      materialIdentity.sourceSlug,
+      record.data.materialName,
+    ],
+  );
+  const materialId = materialResult.rows[0]?.id;
+  if (materialId === undefined) throw new CatalogPipelineError('CATALOG_PIPELINE_DATABASE');
+
+  const colorFacts = { name: record.data.color };
+  const colorIdentity = derivedIdentity(record.data.identity, {
+    entityType: 'COLOR',
+    facts: colorFacts,
+    sourceId: `color:${stableToken(record.data.color.toLocaleLowerCase('ru-RU'))}`,
+    sourceSlug: `amigo-color-${stableToken(record.data.color.toLocaleLowerCase('ru-RU'))}`,
+  });
+  const colorSourceEntity = await upsertSourceEntity(
+    client,
+    payload.catalogSourceId,
+    colorIdentity,
+    colorFacts,
+  );
+  await recordSyncItem(client, payload, colorIdentity, colorSourceEntity);
+  const colorResult = await client.query<{ id: string }>(
+    `
+      INSERT INTO color (source_entity_id, slug, name, updated_at)
+      VALUES ($1::uuid, $2, $3, NOW())
+      ON CONFLICT (source_entity_id) DO UPDATE
+      SET name = EXCLUDED.name, updated_at = NOW()
+      RETURNING id::text
+    `,
+    [colorSourceEntity.id, colorIdentity.sourceSlug, record.data.color],
+  );
+  const colorId = colorResult.rows[0]?.id;
+  if (colorId === undefined) throw new CatalogPipelineError('CATALOG_PIPELINE_DATABASE');
+
+  const variantSourceEntity = await upsertSourceEntity(
+    client,
+    payload.catalogSourceId,
+    record.data.identity,
+    record.data,
+  );
+  await recordSyncItem(client, payload, record.data.identity, variantSourceEntity);
+  const variantResult = await client.query<{ id: string }>(
+    `
+      INSERT INTO material_variant (
+        source_entity_id, material_id, color_id, primary_system_id, slug, name,
+        article, width_mm, is_blackout, is_zebra, updated_at
+      ) VALUES (
+        $1::uuid, $2::uuid, $3::uuid, $4::uuid, $5, $6,
+        $7, $8, $9, $10, NOW()
+      )
+      ON CONFLICT (source_entity_id) DO UPDATE
+      SET material_id = EXCLUDED.material_id,
+          color_id = EXCLUDED.color_id,
+          primary_system_id = EXCLUDED.primary_system_id,
+          name = EXCLUDED.name,
+          article = EXCLUDED.article,
+          width_mm = EXCLUDED.width_mm,
+          is_blackout = EXCLUDED.is_blackout,
+          is_zebra = EXCLUDED.is_zebra,
+          updated_at = NOW()
+      RETURNING id::text
+    `,
+    [
+      variantSourceEntity.id,
+      materialId,
+      colorId,
+      primarySystemId,
+      record.data.identity.sourceSlug,
+      record.data.variantName,
+      record.data.article,
+      record.data.widthMm ?? null,
+      record.data.isBlackout,
+      record.data.isZebra,
+    ],
+  );
+  const variantId = variantResult.rows[0]?.id;
+  if (variantId === undefined) throw new CatalogPipelineError('CATALOG_PIPELINE_DATABASE');
+
+  for (const property of record.data.properties) {
+    const propertyFacts = { property, variantSourceId: record.data.identity.sourceId };
+    const propertyIdentity = derivedIdentity(record.data.identity, {
+      entityType: 'PROPERTY',
+      facts: propertyFacts,
+      sourceId: `property:${record.data.identity.sourceId}:${property.key}`,
+      sourceSlug: `amigo-property-${record.data.identity.sourceId}-${property.key}`,
+    });
+    const propertySourceEntity = await upsertSourceEntity(
+      client,
+      payload.catalogSourceId,
+      propertyIdentity,
+      propertyFacts,
+    );
+    await recordSyncItem(client, payload, propertyIdentity, propertySourceEntity);
+    await client.query(
+      `
+        INSERT INTO material_property (
+          source_entity_id, variant_id, key, name, value, unit, source_hash
+        ) VALUES ($1::uuid, $2::uuid, $3, $4, $5, $6, $7)
+        ON CONFLICT (variant_id, key) DO UPDATE
+        SET source_entity_id = EXCLUDED.source_entity_id,
+            name = EXCLUDED.name,
+            value = EXCLUDED.value,
+            unit = EXCLUDED.unit,
+            source_hash = EXCLUDED.source_hash
+      `,
+      [
+        propertySourceEntity.id,
+        variantId,
+        property.key,
+        property.name,
+        property.value,
+        property.unit ?? null,
+        propertyIdentity.sourceHash,
+      ],
+    );
+  }
+
+  return { id: variantId, sourceEntityId: variantSourceEntity.id };
+}
+
+async function upsertCompatibility(
+  client: PoolClient,
+  payload: CatalogNormalizePayload,
+  material: CapturedSource<SourceMaterial>,
+  materialVariantId: string,
+  systemSourceId: string,
+  systemId: string,
+): Promise<void> {
+  const facts = {
+    materialSourceId: material.data.identity.sourceId,
+    ruleType: 'SOURCE_CATEGORY_COMPATIBILITY',
+    systemSourceId,
+  };
+  const identity = derivedIdentity(material.data.identity, {
+    entityType: 'PROPERTY',
+    facts,
+    sourceId: `compatibility:${material.data.identity.sourceId}:${systemSourceId}`,
+    sourceSlug: `amigo-compatibility-${material.data.identity.sourceId}-${systemSourceId}`,
+  });
+  const sourceEntity = await upsertSourceEntity(client, payload.catalogSourceId, identity, facts);
+  await recordSyncItem(client, payload, identity, sourceEntity);
+  await client.query(
+    `
+      INSERT INTO compatibility_rule (
+        source_entity_id, system_id, material_variant_id, rule_type, conditions,
+        source_hash
+      ) VALUES (
+        $1::uuid, $2::uuid, $3::uuid, 'SOURCE_CATEGORY_COMPATIBILITY',
+        $4::jsonb, $5
+      )
+      ON CONFLICT (source_entity_id) DO UPDATE
+      SET system_id = EXCLUDED.system_id,
+          material_variant_id = EXCLUDED.material_variant_id,
+          conditions = EXCLUDED.conditions,
+          source_hash = EXCLUDED.source_hash
+    `,
+    [
+      sourceEntity.id,
+      systemId,
+      materialVariantId,
+      JSON.stringify({ sourceVerified: true }),
+      identity.sourceHash,
+    ],
+  );
+}
+
+async function upsertPrice(
+  client: PoolClient,
+  payload: CatalogNormalizePayload,
+  record: CapturedSource<SourcePrice>,
+  materialVariantId: string,
+): Promise<void> {
+  const sourceEntity = await upsertSourceEntity(
+    client,
+    payload.catalogSourceId,
+    record.data.identity,
+    record.data,
+  );
+  await recordSyncItem(client, payload, record.data.identity, sourceEntity);
+  await client.query(
+    `
+      INSERT INTO source_price_record (
+        catalog_source_id, source_entity_id, material_variant_id, source_type,
+        source_id, source_slug, source_url, source_category, source_hash,
+        source_captured_at, source_last_verified_at, status, kind, amount_minor,
+        currency, source_price_category, source_context
+      ) VALUES (
+        $1::uuid, $2::uuid, $3::uuid, $4::catalog_source_type,
+        $5, $6, $7, $8, $9,
+        $10::timestamptz, $11::timestamptz, $12::price_status,
+        $13::price_record_kind, $14, $15, $16, $17::jsonb
+      )
+      ON CONFLICT (catalog_source_id, source_id, source_hash) DO NOTHING
+    `,
+    [
+      payload.catalogSourceId,
+      sourceEntity.id,
+      materialVariantId,
+      record.data.identity.sourceType,
+      record.data.identity.sourceId,
+      record.data.identity.sourceSlug,
+      record.data.identity.sourceUrl,
+      record.data.identity.sourceCategory ?? null,
+      record.data.identity.sourceHash,
+      record.data.identity.sourceCapturedAt,
+      record.data.identity.sourceLastVerifiedAt,
+      record.data.status,
+      record.data.kind,
+      record.data.amountMinor,
+      record.data.currency,
+      record.data.sourcePriceCategory,
+      JSON.stringify(record.data.sourceContext),
+    ],
+  );
+}
+
+async function upsertMediaManifest(
+  client: PoolClient,
+  payload: CatalogNormalizePayload,
+  record: CapturedSource<SourceMediaManifest>,
+  materialVariantId: string,
+): Promise<void> {
+  for (const media of record.data.media) {
+    const sourceEntity = await upsertSourceEntity(client, payload.catalogSourceId, media.identity, {
+      materialSourceId: record.data.materialSourceId,
+      role: media.role,
+    });
+    await recordSyncItem(client, payload, media.identity, sourceEntity);
+    await client.query(
+      `
+        INSERT INTO source_media_asset (
+          catalog_source_id, source_entity_id, material_variant_id, source_type,
+          source_id, source_slug, source_url, source_category, source_hash,
+          source_captured_at, source_last_verified_at, role, content_type, status,
+          updated_at
+        ) VALUES (
+          $1::uuid, $2::uuid, $3::uuid, $4::catalog_source_type,
+          $5, $6, $7, $8, $9,
+          $10::timestamptz, $11::timestamptz, $12::media_asset_role,
+          $13, 'ACTIVE', NOW()
+        )
+        ON CONFLICT (catalog_source_id, source_id) DO UPDATE
+        SET source_entity_id = EXCLUDED.source_entity_id,
+            material_variant_id = EXCLUDED.material_variant_id,
+            source_slug = EXCLUDED.source_slug,
+            source_url = EXCLUDED.source_url,
+            source_category = EXCLUDED.source_category,
+            source_hash = EXCLUDED.source_hash,
+            source_captured_at = EXCLUDED.source_captured_at,
+            source_last_verified_at = EXCLUDED.source_last_verified_at,
+            role = EXCLUDED.role,
+            content_type = EXCLUDED.content_type,
+            status = 'ACTIVE',
+            updated_at = NOW()
+      `,
+      [
+        payload.catalogSourceId,
+        sourceEntity.id,
+        materialVariantId,
+        media.identity.sourceType,
+        media.identity.sourceId,
+        media.identity.sourceSlug,
+        media.identity.sourceUrl,
+        media.identity.sourceCategory ?? null,
+        media.identity.sourceHash,
+        media.identity.sourceCapturedAt,
+        media.identity.sourceLastVerifiedAt,
+        media.role,
+        media.contentTypeHint ?? null,
+      ],
+    );
+  }
+}
+
+export async function normalizeCatalogSnapshots(
+  payload: CatalogNormalizePayload,
+  helpers: JobHelpers,
+): Promise<void> {
+  try {
+    const snapshots = await helpers.query<{ safe_payload: unknown }>(
+      `
+        SELECT safe_payload
+        FROM source_snapshot
+        WHERE sync_run_id = $1::uuid AND status = 'CAPTURED'
+        ORDER BY source_url
+      `,
+      [payload.syncRunId],
+    );
+    if (snapshots.rows.length === 0) {
+      throw new CatalogPipelineError('CATALOG_PIPELINE_PAYLOAD_INVALID');
+    }
+    const batch = mergePayloads(
+      snapshots.rows.map((row) => catalogSafeSnapshotPayloadSchema.parse(row.safe_payload)),
+    );
+
+    await helpers.withPgClient(async (client) => {
+      await client.query('BEGIN');
+      try {
+        const families = new Map<string, NormalizedReference>();
+        const categories = new Map<string, NormalizedReference>();
+        const systems = new Map<string, NormalizedReference>();
+        const variants = new Map<string, NormalizedReference>();
+
+        for (const category of batch.categories) {
+          let family = families.get(category.data.family.sourceId);
+          if (family === undefined) {
+            family = await upsertFamily(client, payload, category);
+            families.set(category.data.family.sourceId, family);
+          }
+          const normalizedCategory = await upsertCategory(client, payload, category, family.id);
+          categories.set(category.data.identity.sourceId, normalizedCategory);
+        }
+
+        for (const system of batch.systems) {
+          const family = families.get(system.data.family.sourceId);
+          const category = categories.get(system.data.categorySourceId);
+          if (family === undefined || category === undefined) {
+            throw new CatalogPipelineError('CATALOG_PIPELINE_PAYLOAD_INVALID');
+          }
+          systems.set(
+            system.data.identity.sourceId,
+            await upsertSystem(client, payload, system, family.id, category.id),
+          );
+        }
+
+        for (const material of batch.materials) {
+          const family = families.get(material.data.family.sourceId);
+          const category = categories.get(material.data.categorySourceId);
+          if (family === undefined || category === undefined) {
+            throw new CatalogPipelineError('CATALOG_PIPELINE_PAYLOAD_INVALID');
+          }
+          const primarySystemId =
+            material.data.systemSourceIds
+              .map((sourceId) => systems.get(sourceId)?.id)
+              .find((id) => id !== undefined) ?? null;
+          const variant = await upsertMaterial(
+            client,
+            payload,
+            material,
+            family.id,
+            category.id,
+            primarySystemId,
+          );
+          variants.set(material.data.identity.sourceId, variant);
+          for (const systemSourceId of material.data.systemSourceIds) {
+            const system = systems.get(systemSourceId);
+            if (system !== undefined) {
+              await upsertCompatibility(
+                client,
+                payload,
+                material,
+                variant.id,
+                systemSourceId,
+                system.id,
+              );
+            }
+          }
+        }
+
+        for (const price of batch.prices) {
+          const variant = variants.get(price.data.identity.sourceId);
+          if (variant === undefined) {
+            throw new CatalogPipelineError('CATALOG_PIPELINE_PAYLOAD_INVALID');
+          }
+          await upsertPrice(client, payload, price, variant.id);
+        }
+        for (const manifest of batch.mediaManifests) {
+          const variant = variants.get(manifest.data.materialSourceId);
+          if (variant === undefined) {
+            throw new CatalogPipelineError('CATALOG_PIPELINE_PAYLOAD_INVALID');
+          }
+          await upsertMediaManifest(client, payload, manifest, variant.id);
+        }
+
+        const categoryIds = batch.categories.map((category) => category.data.identity.sourceId);
+        const seenMaterialIds = batch.materials.map((material) => material.data.identity.sourceId);
+        const removed = await client.query<{
+          id: string;
+          source_hash: string;
+          source_id: string;
+        }>(
+          `
+            UPDATE source_entity
+            SET status = 'SOURCE_REMOVED', removed_at = NOW(),
+                source_last_verified_at = NOW(), updated_at = NOW()
+            WHERE catalog_source_id = $1::uuid
+              AND source_type = 'MATERIAL_VARIANT'
+              AND source_category = ANY($2::text[])
+              AND NOT (source_id = ANY($3::text[]))
+              AND status <> 'SOURCE_REMOVED'
+            RETURNING id::text, source_id, source_hash
+          `,
+          [payload.catalogSourceId, categoryIds, seenMaterialIds],
+        );
+        for (const source of removed.rows) {
+          await client.query(
+            `
+              INSERT INTO catalog_sync_item (
+                sync_run_id, source_entity_id, source_type, source_id, status,
+                stage, progress, before_hash, after_hash, updated_at
+              ) VALUES (
+                $1::uuid, $2::uuid, 'MATERIAL_VARIANT', $3, 'SOURCE_REMOVED',
+                'normalize', 100, $4, $4, NOW()
+              )
+              ON CONFLICT (sync_run_id, source_type, source_id) DO UPDATE
+              SET source_entity_id = EXCLUDED.source_entity_id,
+                  status = 'SOURCE_REMOVED',
+                  stage = 'normalize',
+                  progress = 100,
+                  before_hash = EXCLUDED.before_hash,
+                  after_hash = EXCLUDED.after_hash,
+                  updated_at = NOW()
+            `,
+            [payload.syncRunId, source.id, source.source_id, source.source_hash],
+          );
+        }
+
+        const itemCount = await client.query<{ count: string }>(
+          'SELECT count(*)::text AS count FROM catalog_sync_item WHERE sync_run_id = $1::uuid',
+          [payload.syncRunId],
+        );
+        const processedCount = Number(itemCount.rows[0]?.count ?? '0');
+        await client.query(
+          `
+            UPDATE catalog_sync_run
+            SET status = 'IMPORTING_MEDIA',
+                discovered_count = GREATEST(discovered_count, $2),
+                processed_count = $2,
+                last_heartbeat_at = NOW(),
+                updated_at = NOW()
+            WHERE id = $1::uuid
+          `,
+          [payload.syncRunId, processedCount],
+        );
+        await client.query(
+          `
+            INSERT INTO audit_event (
+              actor_type, action, outcome, correlation_id, target_type, target_id
+            ) VALUES (
+              'SYSTEM_WORKER', 'CATALOG_NORMALIZED', 'SUCCEEDED', $1,
+              'CATALOG_SYNC_RUN', $2
+            )
+          `,
+          [payload.correlationId, payload.syncRunId],
+        );
+        await client.query('COMMIT');
+      } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+      }
+    });
+  } catch (error) {
+    throw toCatalogPipelineError(error);
+  }
+}

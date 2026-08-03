@@ -2,6 +2,8 @@ export const objectZones = ['public', 'private', 'quarantine'] as const;
 export type ObjectZone = (typeof objectZones)[number];
 
 export const syntheticObjectSource = 'SYNTHETIC_TEST' as const;
+export const objectSources = [syntheticObjectSource, 'AMIGO_CATALOG_PILOT'] as const;
+export type ObjectSource = (typeof objectSources)[number];
 
 export interface ObjectLocator {
   readonly key: string;
@@ -15,7 +17,7 @@ export interface StorageObjectMetadata {
   readonly etag?: string;
   readonly lastModified?: Date;
   readonly schemaVersion: 1;
-  readonly source: typeof syntheticObjectSource;
+  readonly source: ObjectSource;
   readonly zone: ObjectZone;
 }
 
@@ -28,6 +30,7 @@ export interface PutObjectInput {
   readonly body: Uint8Array;
   readonly contentType: string;
   readonly locator: ObjectLocator;
+  readonly source?: ObjectSource;
 }
 
 export interface SignedWriteInput {
@@ -35,6 +38,7 @@ export interface SignedWriteInput {
   readonly contentLength: number;
   readonly contentType: string;
   readonly locator: ObjectLocator;
+  readonly source?: ObjectSource;
 }
 
 export interface SignedObjectGrant {

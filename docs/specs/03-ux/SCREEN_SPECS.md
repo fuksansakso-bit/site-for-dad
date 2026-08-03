@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Draft 0B — public, account and admin screen contracts defined |
-| Версия | 0.1.0 |
-| Дата | 2026-08-02 |
+| Статус | Phase 1B.1 minimal catalog/admin screens implemented; later screens remain gated |
+| Версия | 0.2.0 |
+| Дата | 2026-08-03 |
 | IA | [INFORMATION_ARCHITECTURE.md](INFORMATION_ARCHITECTURE.md) |
 | Design/responsive/a11y | [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md), [RESPONSIVE_SPEC.md](RESPONSIVE_SPEC.md), [ACCESSIBILITY_SPEC.md](ACCESSIBILITY_SPEC.md) |
 
@@ -38,6 +38,8 @@ Every screen declares identity/H1, purpose, primary CTA, secondary actions, data
 | `S-ABOUT` | Establish local/partner trust / `Связаться` | Business story, partner statement/badge/text fallback, region/services | Name/legal requisites TBD; truthful minimum content |
 | `S-CONTACT` | Provide confirmed contact / `Открыть WhatsApp` | Confirmed number, purpose choices, hours/SLA only if approved, privacy note | Deep-link unavailable; copyable number/reference |
 | `S-HELP` | Reduce configuration/measurement errors / contextual CTA | Search/topics, diagrams with rights, warnings, contact | Unknown technical answer links manager/TBD |
+
+The Phase 1B.1 `/catalog` implementation combines the bounded `S-CATALOG`/`S-MATERIALS` pilot surface: semantic server-rendered H1/main, active-version label, result count, search, populated category/system/color/availability facets, blackout/zebra toggles, approved local images, article, preliminary source/local-override price status and text availability. It provides explicit not-activated, zero-result, invalid/stale-cursor and dependency-unavailable states, remains usable without client JavaScript and has no configurator/order CTA. The responsive layout targets desktop, tablet and narrow mobile without horizontal document overflow; status meaning is textual rather than color-only.
 
 ## 3. Configurator screens
 
@@ -148,3 +150,4 @@ Dependencies: IA/design/motion/responsive/accessibility, product/domain specs, c
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Определены shared screen contract, 20+ public/task/account/admin surfaces, required regions/states and privacy/performance behavior. |
+| 0.2.0 | 2026-08-03 | Recorded the implemented Phase 1B.1 server-rendered `/catalog` pilot, populated facets, version/readiness labels and empty/error/responsive boundaries without later-phase CTAs. |

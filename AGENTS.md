@@ -5,8 +5,9 @@
 Этот файл обязателен для людей и автоматизированных агентов, работающих во всём репозитории.
 Более локальный `AGENTS.md` в будущем MAY уточнять правила только для своей директории, но не может ослаблять требования этого файла.
 
-Фаза **0C: IMPLEMENTATION READINESS, MVP FREEZE AND P0 TBD TRIAGE** документально завершена 2026-08-02 на baseline commit `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; `GLOBAL_SPEC.md` обновлён до 0.7.0. Product Owner принял ADR-0007–0010, закрыл `QG-147/148` и письменно разрешил только **Phase 1A — FOUNDATION**.
-В Phase 1A разрешён исключительно фундамент из `PHASE_1A_FOUNDATION_PLAN.md`. AMIGO Catalog Pilot/import, каталог, pricing/configurator/preview/cart/order/WhatsApp/business admin/account/photo/AI и production deployment запрещены. Завершение Phase 1A не разрешает автоматически начинать Phase 1B.
+Фаза **1A — FOUNDATION** завершена 2026-08-02 со статусом `PASSED_PHASE_1A_FOUNDATION` на commit `943d4a2efa5e05f0d05493633cf5eb549e072a22`. Отдельно разрешённая Product Owner по `OWNER-DECISION-010` **Phase 1B.1 — AMIGO CATALOG PILOT AND LOCAL PUBLICATION LAYER** завершена 2026-08-03 со статусом `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT` в ветке `phase/1b-amigo-catalog-pilot`; никакая следующая фаза не разрешена.
+`OWNER-DECISION-011` от 2026-08-03 заменяет только active local/CI RustFS emulator на digest-pinned VersityGW Docker/POSIX named-volume adapter после воспроизводимого Windows 11 real-image failure. Оно сохраняет provider-neutral `StoragePort`, PostgreSQL/Prisma/Graphile Worker и не выбирает production storage или Phase 1C.
+В Phase 1B.1 разрешены только контролируемый реальный catalog pilot, source/normalized/business-overlay layers, local media, sync/diff/version approval, base source prices/local overrides, catalog APIs и минимальные `/catalog`/`/admin/catalog`. Phase 1B.2/1C+, полный импорт, configurator, расчёт, preview/AI, cart/order/WhatsApp/installment/account, final landing/starfield и production deployment запрещены. Завершение Phase 1B.1 не разрешает автоматически начинать следующую фазу.
 
 ## 2. Обязательный порядок чтения
 
@@ -38,9 +39,9 @@
 - Название `PROJECT_NAME` MUST использоваться до отдельного решения о бренде.
 - Окончательные технологии, хостинг и AI-провайдер MUST выбираться только через соответствующие сравнительные документы и ADR.
 
-Phase 1A MUST NOT начинаться, пока не выполнены все stop conditions Phase 0C: baseline commit и clean tree, 0 critical specs со статусом `BLOCKED`/`CONTRADICTORY`, frozen `MVP_SCOPE`, `IMPLEMENTATION_ROADMAP`, `PHASE_1A_FOUNDATION_PLAN`, полная P0-классификация, непротиворечивые price/catalog/rights/privacy boundaries, известные secrets/migration rollback strategies, accepted или superseding ADR-0007–0010 и отдельное письменное разрешение владельца.
+Завершённая Phase 1B.1 MUST NOT расширяться за пределы доказанного 32-ID allowlist без нового письменного решения. Official API/export MUST NOT предполагаться; выбранный public-page transport работает только по явным allowlisted HTTPS paths с concurrency `1`, rate limit/backoff, без login/CAPTCHA/action/filter endpoints. Fixtures разрешены только для тестов и никогда не считаются реальным импортом.
 
-Эти entry conditions зафиксированы как выполненные в `QG-147/148` 2026-08-02. Исполнитель MUST остановиться на границе Phase 1A и запросить новое письменное решение для любого расширения scope.
+Entry/completion conditions Phase 1B.1 зафиксированы в `OWNER-DECISION-010`, `QG-169`–`194`, stable plan, completion report и dated transport discovery. Исполнитель MUST остановиться на границе Phase 1B.1 и запросить новое письменное решение для любого расширения scope.
 
 ## 4. Планирование работы
 
@@ -162,7 +163,7 @@ ADR создаётся в будущем в `docs/adr/ADR-NNNN-kebab-case-title.
 
 - Исторический расчёт MUST сохранять source/price version и никогда не изменяться молча после обновления AMIGO.
 - Новый расчёт использует только активную подтверждённую price version; при отсутствии цены запрещено выдавать `0` или догадку.
-- Минимум 1500 рублей применяется к каждой отдельно изготавливаемой единице по `OWNER-DECISION-003`, но ценовой движок и само правило MUST NOT реализовываться в Phase 1A.
+- Минимум 1500 рублей применяется к каждой отдельно изготавливаемой единице по `OWNER-DECISION-003`, но ценовой движок и само правило MUST NOT реализовываться в Phase 1B.1.
 - Условия рассрочки до `TBD-INSTALLMENT-001`–`013` ограничены текстом «Доступна рассрочка. Уточните условия у менеджера»; обещания 0%, отсутствия переплаты/взноса, конкретного срока или всеобщего одобрения запрещены.
 - Разрешённые изображения AMIGO имеют основание `PARTNER_LICENSE`; запрещены неуправляемое массовое скачивание, hotlink, удаление водяных знаков, смена авторства и training use без отдельного разрешения.
 - Материал MUST NOT публиковаться без локального изображения с provenance, правильной связью с `MaterialVariant`, `rightsStatus = PARTNER_LICENSE` (или иным допустимым основанием) и `publicationStatus = PUBLICATION_APPROVED`.

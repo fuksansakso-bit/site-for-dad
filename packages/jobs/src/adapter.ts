@@ -1,4 +1,5 @@
 import type { DatabaseEnvironment, WorkerEnvironment } from '@project-name/config/server';
+import { amigoPilotCatalogSourceId } from '@project-name/catalog';
 import {
   runMigrations,
   runTaskList,
@@ -15,6 +16,21 @@ import {
   foundationProbeTaskIdentifier,
   type FoundationProbePayload,
 } from './contracts.js';
+import {
+  automaticCatalogDiscoveryPayload,
+  catalogActivateVersionPayloadSchema,
+  catalogApproveVersionPayloadSchema,
+  catalogJobIdentifiers,
+  catalogJobQueueName,
+  catalogRollbackVersionPayloadSchema,
+  catalogSourceDiscoveryPayloadSchema,
+  type CatalogActivateVersionPayload,
+  type CatalogApproveVersionPayload,
+  type CatalogRollbackVersionPayload,
+  type CatalogSourceDiscoveryPayload,
+} from './catalog/contracts.js';
+import { createCatalogJobServices, type CatalogJobServices } from './catalog/services.js';
+import { createCatalogTaskList, type CatalogTaskLifecycleSink } from './catalog/task.js';
 import { FoundationJobError } from './errors.js';
 import { createFoundationGraphileLogger, type FoundationQueueLogSink } from './logger.js';
 import { createFoundationTaskList, type FoundationTaskLifecycleSink } from './task.js';
@@ -24,6 +40,23 @@ export interface EnqueuedFoundationJob {
   readonly id: string;
   readonly maxAttempts: number;
   readonly taskIdentifier: typeof foundationProbeTaskIdentifier;
+}
+
+export interface EnqueuedCatalogJob {
+  readonly attempts: number;
+  readonly id: string;
+  readonly maxAttempts: number;
+  readonly taskIdentifier: typeof catalogJobIdentifiers.sourceDiscovery;
+}
+
+export interface EnqueuedCatalogGovernanceJob {
+  readonly attempts: number;
+  readonly id: string;
+  readonly maxAttempts: number;
+  readonly taskIdentifier:
+    | typeof catalogJobIdentifiers.activateVersion
+    | typeof catalogJobIdentifiers.approveVersion
+    | typeof catalogJobIdentifiers.rollbackVersion;
 }
 
 export interface PermanentFoundationFailure {
@@ -236,11 +269,189 @@ export async function enqueueFoundationProbe(
   };
 }
 
+export async function enqueueCatalogSourceDiscovery(
+  pool: Pool,
+  candidatePayload: CatalogSourceDiscoveryPayload,
+  maxAttempts = 5,
+  runAt?: Date,
+): Promise<EnqueuedCatalogJob> {
+  const payload = catalogSourceDiscoveryPayloadSchema.parse(candidatePayload);
+  if (!Number.isSafeInteger(maxAttempts) || maxAttempts < 1 || maxAttempts > 10) {
+    throw new FoundationJobError('FOUNDATION_JOB_VALIDATION');
+  }
+  const result = await pool.query<{
+    attempts: number;
+    id: string;
+    max_attempts: number;
+    task_identifier: string;
+  }>(
+    `
+      SELECT
+        (job).id::text AS id,
+        (job).attempts,
+        (job).max_attempts,
+        $1::text AS task_identifier
+      FROM (
+        SELECT graphile_worker.add_job(
+          identifier := $1::text,
+          payload := $2::json,
+          queue_name := $3::text,
+          run_at := COALESCE($4::timestamptz, NOW()),
+          max_attempts := $5::smallint,
+          job_key := $6::text,
+          priority := 0,
+          flags := ARRAY['catalog-pilot']::text[],
+          job_key_mode := 'replace'
+        ) AS job
+      ) queued
+    `,
+    [
+      catalogJobIdentifiers.sourceDiscovery,
+      JSON.stringify(payload),
+      catalogJobQueueName,
+      runAt?.toISOString() ?? null,
+      maxAttempts,
+      `${catalogJobIdentifiers.sourceDiscovery}:${payload.idempotencyKey}`,
+    ],
+  );
+  const job = result.rows[0];
+  if (job === undefined || job.task_identifier !== catalogJobIdentifiers.sourceDiscovery) {
+    throw new FoundationJobError('FOUNDATION_JOB_DEPENDENCY_UNAVAILABLE');
+  }
+  return {
+    attempts: job.attempts,
+    id: job.id,
+    maxAttempts: job.max_attempts,
+    taskIdentifier: catalogJobIdentifiers.sourceDiscovery,
+  };
+}
+
+async function enqueueCatalogGovernanceJob(
+  pool: Pool,
+  input:
+    | {
+        readonly identifier: typeof catalogJobIdentifiers.activateVersion;
+        readonly payload: CatalogActivateVersionPayload;
+      }
+    | {
+        readonly identifier: typeof catalogJobIdentifiers.approveVersion;
+        readonly payload: CatalogApproveVersionPayload;
+      }
+    | {
+        readonly identifier: typeof catalogJobIdentifiers.rollbackVersion;
+        readonly payload: CatalogRollbackVersionPayload;
+      },
+  maxAttempts = 3,
+): Promise<EnqueuedCatalogGovernanceJob> {
+  if (!Number.isSafeInteger(maxAttempts) || maxAttempts < 1 || maxAttempts > 10) {
+    throw new FoundationJobError('FOUNDATION_JOB_VALIDATION');
+  }
+  const result = await pool.query<{
+    attempts: number;
+    id: string;
+    max_attempts: number;
+    task_identifier: string;
+  }>(
+    `
+      SELECT
+        (job).id::text AS id,
+        (job).attempts,
+        (job).max_attempts,
+        $1::text AS task_identifier
+      FROM (
+        SELECT graphile_worker.add_job(
+          identifier := $1::text,
+          payload := $2::json,
+          queue_name := $3::text,
+          max_attempts := $4::smallint,
+          job_key := $5::text,
+          priority := -1,
+          flags := ARRAY['catalog-pilot', 'governance']::text[],
+          job_key_mode := 'replace'
+        ) AS job
+      ) queued
+    `,
+    [
+      input.identifier,
+      JSON.stringify(input.payload),
+      catalogJobQueueName,
+      maxAttempts,
+      `${input.identifier}:${input.payload.idempotencyKey}`,
+    ],
+  );
+  const job = result.rows[0];
+  if (job === undefined || job.task_identifier !== input.identifier) {
+    throw new FoundationJobError('FOUNDATION_JOB_DEPENDENCY_UNAVAILABLE');
+  }
+  return {
+    attempts: job.attempts,
+    id: job.id,
+    maxAttempts: job.max_attempts,
+    taskIdentifier: input.identifier,
+  };
+}
+
+export function enqueueCatalogVersionApproval(
+  pool: Pool,
+  candidatePayload: CatalogApproveVersionPayload,
+  maxAttempts = 3,
+): Promise<EnqueuedCatalogGovernanceJob> {
+  const payload = catalogApproveVersionPayloadSchema.parse(candidatePayload);
+  return enqueueCatalogGovernanceJob(
+    pool,
+    { identifier: catalogJobIdentifiers.approveVersion, payload },
+    maxAttempts,
+  );
+}
+
+export function enqueueCatalogVersionActivation(
+  pool: Pool,
+  candidatePayload: CatalogActivateVersionPayload,
+  maxAttempts = 3,
+): Promise<EnqueuedCatalogGovernanceJob> {
+  const payload = catalogActivateVersionPayloadSchema.parse(candidatePayload);
+  return enqueueCatalogGovernanceJob(
+    pool,
+    { identifier: catalogJobIdentifiers.activateVersion, payload },
+    maxAttempts,
+  );
+}
+
+export function enqueueCatalogVersionRollback(
+  pool: Pool,
+  candidatePayload: CatalogRollbackVersionPayload,
+  maxAttempts = 3,
+): Promise<EnqueuedCatalogGovernanceJob> {
+  const payload = catalogRollbackVersionPayloadSchema.parse(candidatePayload);
+  return enqueueCatalogGovernanceJob(
+    pool,
+    { identifier: catalogJobIdentifiers.rollbackVersion, payload },
+    maxAttempts,
+  );
+}
+
+export async function ensureDailyCatalogSourceDiscovery(
+  pool: Pool,
+  now = new Date(),
+): Promise<EnqueuedCatalogJob> {
+  const nextRunAt = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1),
+  );
+  return enqueueCatalogSourceDiscovery(
+    pool,
+    automaticCatalogDiscoveryPayload(amigoPilotCatalogSourceId, nextRunAt),
+    5,
+    nextRunAt,
+  );
+}
+
 export async function runFoundationJobsOnce(
   pool: Pool,
   environment: WorkerEnvironment,
   lifecycle?: FoundationTaskLifecycleSink,
   logSink?: FoundationQueueLogSink,
+  catalogLifecycle?: CatalogTaskLifecycleSink,
+  catalogServices: CatalogJobServices = createCatalogJobServices(),
 ): Promise<void> {
   await verifyFoundationQueueSchema(pool);
   const client: PoolClient = await pool.connect();
@@ -253,7 +464,14 @@ export async function runFoundationJobsOnce(
           worker: { completeJobBatchDelay: 0, failJobBatchDelay: 0 },
         },
       },
-      createFoundationTaskList(environment.WORKER_JOB_TIMEOUT_MS, lifecycle),
+      {
+        ...createFoundationTaskList(environment.WORKER_JOB_TIMEOUT_MS, lifecycle),
+        ...createCatalogTaskList(
+          catalogServices,
+          environment.WORKER_JOB_TIMEOUT_MS,
+          catalogLifecycle,
+        ),
+      },
       client,
     );
     await worker.promise;
@@ -291,6 +509,8 @@ export async function startFoundationJobRuntime(
   workerEnvironment: WorkerEnvironment,
   lifecycle?: FoundationTaskLifecycleSink,
   logSink?: FoundationQueueLogSink,
+  catalogLifecycle?: CatalogTaskLifecycleSink,
+  catalogServices: CatalogJobServices = createCatalogJobServices(),
 ): Promise<FoundationJobRuntime> {
   const pool = createFoundationJobPool(
     databaseEnvironment,
@@ -337,7 +557,14 @@ export async function startFoundationJobRuntime(
         worker: { completeJobBatchDelay: 0, failJobBatchDelay: 0 },
       },
     },
-    createFoundationTaskList(workerEnvironment.WORKER_JOB_TIMEOUT_MS, lifecycle),
+    {
+      ...createFoundationTaskList(workerEnvironment.WORKER_JOB_TIMEOUT_MS, lifecycle),
+      ...createCatalogTaskList(
+        catalogServices,
+        workerEnvironment.WORKER_JOB_TIMEOUT_MS,
+        catalogLifecycle,
+      ),
+    },
     pool,
   );
   const promise = workerPool.promise.finally(() => {

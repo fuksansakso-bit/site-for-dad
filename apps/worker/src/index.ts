@@ -1,11 +1,14 @@
 import {
   parseDatabaseEnvironment,
   parseObservabilityEnvironment,
+  parseStorageEnvironment,
   parseWorkerEnvironment,
 } from '@project-name/config/server';
+import { createCatalogJobServices } from '@project-name/jobs';
 import { createFoundationLogger } from '@project-name/observability/logger';
 import { foundationMetrics } from '@project-name/observability/metrics';
 import { initializeNodeTelemetry } from '@project-name/observability/telemetry';
+import { createS3ObjectStorage } from '@project-name/storage';
 
 import { createWorkerEventSink, startWorkerProcess } from './runtime.js';
 
@@ -30,6 +33,7 @@ try {
   const workerEnvironment = parseWorkerEnvironment(process.env);
   const databaseEnvironment = parseDatabaseEnvironment(process.env);
   const observabilityEnvironment = parseObservabilityEnvironment(process.env);
+  const storageEnvironment = parseStorageEnvironment(process.env);
   const telemetryRuntime = initializeNodeTelemetry(observabilityEnvironment, 'project-name-worker');
   const logger = createFoundationLogger({
     buildId: observabilityEnvironment.BUILD_ID,
@@ -38,6 +42,11 @@ try {
     service: 'worker',
   });
   const eventSink = createWorkerEventSink(logger);
+  const objectStorage = createS3ObjectStorage(storageEnvironment);
+  const catalogServices = createCatalogJobServices(undefined, () => ({
+    maximumBytes: storageEnvironment.S3_MAX_OBJECT_BYTES,
+    objectStorage,
+  }));
   let telemetryShutdown: Promise<void> | undefined;
   const shutdownTelemetry = (): Promise<void> => {
     telemetryShutdown ??= telemetryRuntime.shutdown();
@@ -46,10 +55,16 @@ try {
 
   let workerProcess: Awaited<ReturnType<typeof startWorkerProcess>> | undefined;
   try {
-    workerProcess = await startWorkerProcess(databaseEnvironment, workerEnvironment, eventSink, {
-      logger,
-      metrics: foundationMetrics,
-    });
+    workerProcess = await startWorkerProcess(
+      databaseEnvironment,
+      workerEnvironment,
+      eventSink,
+      {
+        logger,
+        metrics: foundationMetrics,
+      },
+      catalogServices,
+    );
   } catch (error) {
     logger.log({
       error,

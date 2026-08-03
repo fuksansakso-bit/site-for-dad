@@ -4,10 +4,11 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD` for Foundation; factual inventory/feature activation waits for authorized AMIGO data |
-| Версия | 0.3.0 |
+| Статус | Phase 1B.1 32-item factual pilot authorized; full parity/assortment remains gated |
+| Версия | 0.4.0 |
 | Дата | 2026-08-02 |
 | Source evidence | [AMIGO public parity snapshot](../../research/AMIGO_PUBLIC_PARITY_SNAPSHOT_2026-08-02.md) |
+| Pilot transport | [AMIGO Phase 1B.1 discovery](../../research/AMIGO_PILOT_TRANSPORT_DISCOVERY_2026-08-02.md) |
 | Governance | [EXTERNAL_SOURCES.md](../../00-global/EXTERNAL_SOURCES.md), [ASSET_RIGHTS_REGISTER.md](../../00-global/ASSET_RIGHTS_REGISTER.md) |
 
 ## 1. Назначение, ответственность и non-goals

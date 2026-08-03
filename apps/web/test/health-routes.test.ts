@@ -92,5 +92,7 @@ describe('web health route contracts', () => {
     expect(production).not.toContain("'unsafe-inline'");
     expect(production).not.toContain("'unsafe-eval'");
     expect(development).toContain("'unsafe-eval'");
+    expect(development).toContain("style-src 'self' 'unsafe-inline'");
+    expect(development).not.toContain("style-src 'self' 'nonce-synthetic-nonce'");
   });
 });

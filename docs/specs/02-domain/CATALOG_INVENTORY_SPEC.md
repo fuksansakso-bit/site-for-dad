@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD` for Foundation; actual pilot inventory requires `TBD-ASSORT-002`/authorized source before Phase 1B activation |
-| Версия | 0.3.0 |
-| Дата | 2026-08-02 |
+| Статус | Phase 1B.1 32-variant catalog/overlay pilot authorized; full inventory remains `TBD-ASSORT-002` |
+| Версия | 0.5.0 |
+| Дата | 2026-08-03 |
 | Sources | [EXTERNAL_SOURCES.md](../../00-global/EXTERNAL_SOURCES.md) |
 | Rights | [ASSET_RIGHTS_REGISTER.md](../../00-global/ASSET_RIGHTS_REGISTER.md) |
 
@@ -16,7 +16,7 @@
 
 In scope: supplier/partner/source catalogs, dynamic product hierarchy, materials/variants/properties, options/compatibility/dimensions, source/local states, provenance, aliases and availability records.
 
-Out of scope: physical DB schema/SQL, exact source transport, real stock quantities, unverified technical limits, price formulas and production imports.
+Out of scope: full AMIGO inventory, real stock quantities, unverified technical limits, price formulas/calculation and production imports/deployment. Phase 1B.1 physical schema and bounded public-page transport follow the active plan and technical specs.
 
 ## 2. Акторы, термины и ownership
 
@@ -170,6 +170,8 @@ Primary AC: `AC-CATALOG-001`, `AC-CATALOG-DYNAMIC-001`, `AC-AMIGO-PARITY-001`, `
 
 Tests: unique IDs/aliases; parent cycle; new price category `X`; unknown property; rename/move/split/merge; publication readiness matrix; missing/wrong asset; compatibility conflict; dimension boundary tables; stale availability; source removal; concurrent edit; historical quote after retirement; source outage and rollback.
 
+Phase 1B.1 implementation serves the 32-variant pilot only from a compatible active immutable catalog/price version pair. The projection excludes any entry unless visibility is `VISIBLE`, manual review is `APPROVED`, publication is `PUBLISHED`, availability is a known allowed state, price is explicit and primary media has permitted rights plus `PUBLICATION_APPROVED`. Local override takes precedence only inside the pinned composition; source price history remains unchanged. Search and facets use only populated normalized category/system/color/availability/blackout/zebra values. Missing active version is an empty unpublished catalog, while database or object-integrity failure is a degraded state and never falls back to AMIGO/staging.
+
 ## 14. Dependencies, risks and open questions
 
 Dependencies: parity, configurator, pricing, media, sync, admin, data model. Open: `TBD-ASSORT-002`–`007`, applicable `TBD-SYSTEM-*`, `TBD-SIZE-001`, `TBD-INVENTORY-001/004-007`, `TBD-SOURCE-AMIGO-002`, `TBD-ASSET-AMIGO-003`, applicable `TBD-PRICE-*`. `TBD-INVENTORY-002` is resolved by `OWNER-DECISION-004/005`.
@@ -185,3 +187,5 @@ Links: `FR-CATALOG-*`, `FR-MATERIAL-*`, `FR-VARIANT-*`, `AMIGO-SYNC-*`, `ASSET-*
 | 0.1.0 | 2026-08-02 | Определены normalized entity model, identifiers, four readiness dimensions, material properties, compatibility, availability boundary and lifecycle. |
 | 0.2.0 | 2026-08-02 | Локальная admin availability закреплена как source of truth; AMIGO proposal и 7/30-day freshness gates разделены. |
 | 0.3.0 | 2026-08-02 | По `OWNER-DECISION-008` добавлены field-level authority, PostgreSQL operational projection, защита local overlays от sync и object-storage boundary для image binaries. |
+| 0.4.0 | 2026-08-02 | Phase 1B.1 32-variant source/overlay pilot authorized while full inventory remained gated. |
+| 0.5.0 | 2026-08-03 | Recorded the active-version-only public projection, explicit readiness/price/media gates, normalized pilot facets and safe empty/degraded behavior. |

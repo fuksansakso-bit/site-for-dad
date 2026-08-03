@@ -2,7 +2,6 @@ import {
   CreateBucketCommand,
   DeleteBucketPolicyCommand,
   HeadBucketCommand,
-  PutBucketPolicyCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
 import { parseStorageEnvironment, type StorageEnvironment } from '@project-name/config/server';
@@ -24,7 +23,7 @@ function createAdministrativeClient(environment: StorageEnvironment): S3Client {
     },
     endpoint: environment.S3_ENDPOINT,
     forcePathStyle: environment.S3_FORCE_PATH_STYLE,
-    maxAttempts: 2,
+    maxAttempts: environment.S3_MAX_ATTEMPTS,
     region: environment.S3_REGION,
   });
 }
@@ -47,8 +46,8 @@ async function removeBucketPolicy(client: S3Client, bucket: string): Promise<voi
 }
 
 const environment = parseStorageEnvironment(process.env);
-if (environment.APP_ENV !== 'local') {
-  throw new Error('Local storage provisioning is available only for APP_ENV=local.');
+if (!['local', 'test', 'ci'].includes(environment.APP_ENV)) {
+  throw new Error('Disposable storage provisioning is unavailable for this environment profile.');
 }
 
 const client = createAdministrativeClient(environment);
@@ -56,27 +55,11 @@ try {
   await ensureBucket(client, environment.S3_BUCKET_PUBLIC);
   await ensureBucket(client, environment.S3_BUCKET_PRIVATE);
   await ensureBucket(client, environment.S3_BUCKET_QUARANTINE);
+  await removeBucketPolicy(client, environment.S3_BUCKET_PUBLIC);
   await removeBucketPolicy(client, environment.S3_BUCKET_PRIVATE);
   await removeBucketPolicy(client, environment.S3_BUCKET_QUARANTINE);
-  await client.send(
-    new PutBucketPolicyCommand({
-      Bucket: environment.S3_BUCKET_PUBLIC,
-      Policy: JSON.stringify({
-        Statement: [
-          {
-            Action: ['s3:GetObject'],
-            Effect: 'Allow',
-            Principal: '*',
-            Resource: [`arn:aws:s3:::${environment.S3_BUCKET_PUBLIC}/*`],
-            Sid: 'FoundationPublicReadOnly',
-          },
-        ],
-        Version: '2012-10-17',
-      }),
-    }),
-  );
   process.stdout.write(
-    `${JSON.stringify({ event: 'storage.local.provisioned', privateByDefault: true, trustZones: 3 })}\n`,
+    `${JSON.stringify({ allBucketsPrivate: true, event: 'storage.local.provisioned', trustZones: 3 })}\n`,
   );
 } finally {
   client.destroy();

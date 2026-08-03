@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Нормативный глобальный документ фазы 0A.1 |
-| Версия | 1.2.0 |
+| Статус | Нормативный global rights register; Phase 1B.1 pilot import authorized under asset-level gate |
+| Версия | 1.3.0 |
 | Дата | 2026-08-02, Europe/Moscow |
 | Главный источник правды | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) |
 | Реестр происхождения | [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md) |
@@ -31,6 +31,7 @@
 - **ASSET-015 — MUST:** отсутствие загруженной копии договора или бейджа не блокирует документацию и подготовку импорта; `optionalEvidenceReference` остаётся nullable, а факт подтверждения владельцем, дата и scope сохраняются в `PartnerRelationship`.
 - **ASSET-016 — MUST:** AMIGO является authority для происхождения и identity AMIGO catalog images; локальный import/derivative не меняет source, правообладателя, product/material mapping или attribution. PostgreSQL хранит asset metadata/provenance/status/object reference, а binary original/derivatives хранятся в управляемом object storage.
 - **ASSET-017 — MUST:** Business Owner является decision authority для состава локального портфолио, но это решение не заменяет доказательство авторства, прав, consent/PII review и `PUBLICATION_APPROVED`; AMIGO-source image MUST NOT стать `LOCAL_PORTFOLIO`.
+- **ASSET-018 — MUST:** Phase 1B.1 MAY download only primary/detail images referenced by the frozen 32-ID pilot manifest. Каждый файл проходит allowlisted HTTPS fetch, content-length/MIME/sniff/decompression limits, hash dedup, `PARTNER_LICENSE` record и отдельный `PUBLICATION_APPROVED`; это не является разрешением массово скачивать AMIGO media catalog.
 
 ## 2. Состояния прав и публикации
 
@@ -219,3 +220,4 @@ AMIGO-source asset MUST NOT иметь роль `LOCAL_PORTFOLIO`. Только 
 |---|---|---|
 | 1.1.0 | 2026-08-02 | Зафиксированы `PARTNER_LICENSE`, asset-level publication gate и управляемый будущий import AMIGO media. |
 | 1.2.0 | 2026-08-02 | По `OWNER-DECISION-008` разделены AMIGO image authority, PostgreSQL metadata и object-storage binaries; Business Owner закреплён как authority локального portfolio composition без ослабления rights/consent gate. |
+| 1.3.0 | 2026-08-02 | `OWNER-DECISION-010` разрешил только bounded media import для frozen Phase 1B.1 manifest с private storage, validation/dedup и отдельным publication gate. |

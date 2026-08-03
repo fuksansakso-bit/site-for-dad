@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A infrastructure schema implemented; all business aggregates remain logical and gated |
-| Версия | 0.4.0 |
+| Статус | Phase 1A infrastructure schema implemented; Phase 1B.1 catalog/source/overlay aggregates authorized for physical schema |
+| Версия | 0.5.0 |
 | Дата | 2026-08-02 |
 | Architecture | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | Glossary | [GLOSSARY.md](../../00-global/GLOSSARY.md) |
@@ -168,7 +168,7 @@ The only physical Phase 1A tables are `actor_identity`, `role_grant`, `synthetic
 
 ## 18. Dependencies, risks and open questions
 
-Dependencies: all domain specs, API/storage/security/deployment, ADRs and `OWNER-DECISION-008/009`. PostgreSQL/Prisma is fixed for Foundation; open: future business schema, production storage/index/search, ID evolution, encryption/key strategy, PII/retention/legal schema, quantitative inventory and detailed order state. The serving/version model does not assert that these logical tables already exist or authorize Phase 1B. Risks: over-normalization vs opaque blobs, revision explosion, accidental cascade deletion, mutable history, projection drift, enum lock-in and private data in generic metadata.
+Dependencies: all domain specs, API/storage/security/deployment, ADRs and `OWNER-DECISION-008/009/010`. PostgreSQL/Prisma is fixed; Phase 1B.1 MAY physicalize only catalog/source/version/overlay/media-reference/audit entities. Production storage/index/search, PII/legal/order aggregates and Phase 1C+ remain gated. Risks: over-normalization vs opaque blobs, revision explosion, accidental cascade deletion, mutable history, projection drift, enum lock-in and private data in generic metadata.
 
 ## 19. History
 

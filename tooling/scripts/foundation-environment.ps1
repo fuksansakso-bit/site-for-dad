@@ -5,7 +5,7 @@ param(
 
     [string]$PostgresRoot = '',
 
-    [string]$RustfsRoot = '',
+    [string]$DockerExecutable = '',
 
     [ValidateRange(1, 65535)]
     [int]$WebPort = 3000,
@@ -17,7 +17,10 @@ param(
     [int]$DatabasePort = 55432,
 
     [ValidateRange(1, 65535)]
-    [int]$StoragePort = 4569
+    [int]$StoragePort = 4569,
+
+    [ValidateRange(1, 65535)]
+    [int]$StorageAdminPort = 4570
 )
 
 Set-StrictMode -Version Latest
@@ -66,25 +69,6 @@ function Test-LoopbackPort {
     finally {
         $client.Dispose()
     }
-}
-
-function Wait-LoopbackPort {
-    param(
-        [Parameter(Mandatory = $true)][int]$Port,
-        [Parameter(Mandatory = $true)][System.Diagnostics.Process]$Process,
-        [int]$TimeoutSeconds = 45
-    )
-
-    $deadline = [DateTimeOffset]::UtcNow.AddSeconds($TimeoutSeconds)
-    while ([DateTimeOffset]::UtcNow -lt $deadline) {
-        $Process.Refresh()
-        if ($Process.HasExited) {
-            throw "Process $($Process.Id) exited before loopback port $Port became ready."
-        }
-        if (Test-LoopbackPort -Port $Port) { return }
-        Start-Sleep -Milliseconds 150
-    }
-    throw "Loopback port $Port did not become ready within $TimeoutSeconds seconds."
 }
 
 function Wait-Health {
@@ -165,21 +149,12 @@ $runtimeRoot = Assert-ChildPath -Candidate (Join-Path $localRoot 'foundation-env
 $statePath = Join-Path $runtimeRoot 'state.json'
 $secretsPath = Join-Path $runtimeRoot 'secrets.json'
 $postgresData = Join-Path $runtimeRoot 'postgres-data'
-$storageData = Join-Path $runtimeRoot 'storage-data'
 $logRoot = Join-Path $runtimeRoot 'logs'
-
 if ($PostgresRoot -eq '') {
     $PostgresRoot = if ($env:PROJECT_NAME_POSTGRES_ROOT) {
         $env:PROJECT_NAME_POSTGRES_ROOT
     } else {
         Join-Path $env:USERPROFILE '.cache\project-name\postgresql-18.4-2-windows-x64\pgsql'
-    }
-}
-if ($RustfsRoot -eq '') {
-    $RustfsRoot = if ($env:PROJECT_NAME_RUSTFS_ROOT) {
-        $env:PROJECT_NAME_RUSTFS_ROOT
-    } else {
-        Join-Path $env:USERPROFILE '.cache\project-name\rustfs-1.0.0-beta.11\bin'
     }
 }
 
@@ -188,9 +163,63 @@ $pgCtl = Join-Path $postgresBin 'pg_ctl.exe'
 $initdb = Join-Path $postgresBin 'initdb.exe'
 $psql = Join-Path $postgresBin 'psql.exe'
 $createdb = Join-Path $postgresBin 'createdb.exe'
-$rustfsExecutable = Join-Path ([System.IO.Path]::GetFullPath($RustfsRoot)) 'rustfs.exe'
-$nodeExecutable = (Get-Command 'node.exe' -ErrorAction Stop).Source
-$pnpmExecutable = (Get-Command 'pnpm.cmd' -ErrorAction Stop).Source
+$pinnedNodeVersion = (Get-Content -LiteralPath (Join-Path $repositoryRoot '.node-version') -Raw).Trim()
+$pinnedPnpmVersion = ((Get-Content -LiteralPath (Join-Path $repositoryRoot 'package.json') -Raw | ConvertFrom-Json).packageManager -split '@')[-1]
+$cachedNodeExecutable = Join-Path $env:USERPROFILE ".cache\project-name\node-v$pinnedNodeVersion\node-v$pinnedNodeVersion-win-x64\node.exe"
+$cachedPnpmExecutable = Join-Path $env:USERPROFILE ".cache\project-name\pnpm-$pinnedPnpmVersion\pnpm.cmd"
+$nodeExecutable = if (Test-Path -LiteralPath $cachedNodeExecutable -PathType Leaf) {
+    $cachedNodeExecutable
+} else {
+    (Get-Command 'node.exe' -ErrorAction Stop).Source
+}
+$pnpmExecutable = if (Test-Path -LiteralPath $cachedPnpmExecutable -PathType Leaf) {
+    $cachedPnpmExecutable
+} else {
+    (Get-Command 'pnpm.cmd' -ErrorAction Stop).Source
+}
+$env:PATH = "$(Split-Path -Parent $nodeExecutable);$(Split-Path -Parent $pnpmExecutable);$env:PATH"
+$composeFile = Join-Path $repositoryRoot 'infrastructure\local\compose.storage.yml'
+$composeProject = 'project-name-local-storage'
+$composeArguments = @('compose', '--project-name', $composeProject, '--file', $composeFile)
+if ($DockerExecutable -eq '') {
+    $dockerCommand = Get-Command 'docker.exe' -ErrorAction SilentlyContinue
+    if ($null -ne $dockerCommand) {
+        $DockerExecutable = $dockerCommand.Source
+    }
+    else {
+        $perUserDocker = Join-Path $env:LOCALAPPDATA 'Programs\DockerDesktop\resources\bin\docker.exe'
+        if (Test-Path -LiteralPath $perUserDocker -PathType Leaf) {
+            $DockerExecutable = $perUserDocker
+        }
+    }
+}
+
+function Set-StorageComposeEnvironment {
+    param([AllowNull()]$Secrets)
+
+    $env:CATALOG_S3_ADMIN_PORT = "$StorageAdminPort"
+    $env:CATALOG_S3_PORT = "$StoragePort"
+    $env:CATALOG_S3_VOLUME_PREFIX = 'project_name'
+    $env:S3_ACCESS_KEY_ID = if ($null -eq $Secrets) { 'local-placeholder-access' } else { [string]$Secrets.storageAccessKey }
+    $env:S3_REGION = 'local'
+    $env:S3_SECRET_ACCESS_KEY = if ($null -eq $Secrets) { 'local-placeholder-secret' } else { [string]$Secrets.storageSecretKey }
+}
+
+function Invoke-StorageComposeQuiet {
+    param(
+        [Parameter(Mandatory = $true)][string[]]$Arguments,
+        [Parameter(Mandatory = $true)][string]$FailureMessage
+    )
+
+    $previousErrorPreference = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    & $DockerExecutable @composeArguments @Arguments *> $null
+    $composeExitCode = $LASTEXITCODE
+    $ErrorActionPreference = $previousErrorPreference
+    if ($composeExitCode -ne 0) {
+        throw "$FailureMessage (exit $composeExitCode)"
+    }
+}
 
 function Read-State {
     if (-not (Test-Path -LiteralPath $statePath -PathType Leaf)) { return $null }
@@ -202,7 +231,15 @@ function Stop-Environment {
     if ($null -ne $state) {
         Stop-TrackedProcess -Reference $state.worker -Name 'worker'
         Stop-TrackedProcess -Reference $state.web -Name 'web'
-        Stop-TrackedProcess -Reference $state.storage -Name 'storage'
+    }
+    $storageSecrets = if (Test-Path -LiteralPath $secretsPath -PathType Leaf) {
+        Get-Content -LiteralPath $secretsPath -Raw | ConvertFrom-Json
+    } else {
+        $null
+    }
+    Set-StorageComposeEnvironment -Secrets $storageSecrets
+    if ((Test-Path -LiteralPath $composeFile -PathType Leaf) -and $DockerExecutable -ne '') {
+        Invoke-StorageComposeQuiet -Arguments @('stop', '--timeout', '30', 'catalog-storage') -FailureMessage 'Graceful VersityGW stop failed'
     }
     if (Test-Path -LiteralPath (Join-Path $postgresData 'PG_VERSION') -PathType Leaf) {
         & $pgCtl status -D $postgresData *> $null
@@ -223,6 +260,12 @@ if ($Action -eq 'Stop') {
 
 if ($Action -eq 'Reset') {
     Stop-Environment
+    Set-StorageComposeEnvironment -Secrets $null
+    if ((Test-Path -LiteralPath $composeFile -PathType Leaf) -and $DockerExecutable -ne '') {
+        Invoke-StorageComposeQuiet -Arguments @(
+            'down', '--volumes', '--remove-orphans', '--timeout', '30'
+        ) -FailureMessage 'VersityGW named-volume reset failed'
+    }
     if (Test-Path -LiteralPath $runtimeRoot) {
         $verifiedRuntimeRoot = Assert-ChildPath -Candidate $runtimeRoot -Parent $localRoot
         Remove-Item -LiteralPath $verifiedRuntimeRoot -Recurse -Force
@@ -235,17 +278,22 @@ if ($Action -eq 'Status') {
     [pscustomobject]@{
         database = if (Test-LoopbackPort -Port $DatabasePort) { 'running' } else { 'stopped' }
         storage = if (Test-LoopbackPort -Port $StoragePort) { 'running' } else { 'stopped' }
+        storageAdmin = if (Test-LoopbackPort -Port $StorageAdminPort) { 'running' } else { 'stopped' }
         web = Get-EndpointStatus -Uri "http://127.0.0.1:$WebPort/api/v1/health/live"
         worker = Get-EndpointStatus -Uri "http://127.0.0.1:$WorkerPort/health/live"
     } | ConvertTo-Json -Compress
     exit 0
 }
 
-foreach ($requiredExecutable in @($nodeExecutable, $pnpmExecutable, $pgCtl, $initdb, $psql, $createdb, $rustfsExecutable)) {
+foreach ($requiredExecutable in @($nodeExecutable, $pnpmExecutable, $pgCtl, $initdb, $psql, $createdb, $DockerExecutable)) {
     if (-not (Test-Path -LiteralPath $requiredExecutable -PathType Leaf)) {
         throw "Required Phase 1A prerequisite is missing: $requiredExecutable"
     }
 }
+if (-not (Test-Path -LiteralPath $composeFile -PathType Leaf)) {
+    throw "Required VersityGW Compose configuration is missing: $composeFile"
+}
+Invoke-Checked -Executable $DockerExecutable -Arguments @('info') -FailureMessage 'Docker runtime is unavailable'
 $expectedNode = (Get-Content -LiteralPath (Join-Path $repositoryRoot '.node-version') -Raw).Trim()
 $actualNode = (& $nodeExecutable --version).TrimStart('v').Trim()
 $expectedPnpm = ((Get-Content -LiteralPath (Join-Path $repositoryRoot 'package.json') -Raw | ConvertFrom-Json).packageManager -split '@')[-1]
@@ -253,7 +301,7 @@ $actualPnpm = (& $pnpmExecutable --version).Trim()
 if ($actualNode -ne $expectedNode -or $actualPnpm -ne $expectedPnpm) {
     throw "Pinned toolchain mismatch. Expected Node $expectedNode / pnpm $expectedPnpm."
 }
-if (@($WebPort, $WorkerPort, $DatabasePort, $StoragePort) | Group-Object | Where-Object Count -gt 1) {
+if (@($WebPort, $WorkerPort, $DatabasePort, $StoragePort, $StorageAdminPort) | Group-Object | Where-Object Count -gt 1) {
     throw 'Local Foundation ports must be distinct.'
 }
 
@@ -262,6 +310,7 @@ if ($null -ne $existingState) {
     $trackedEnvironmentIsHealthy =
         (Test-LoopbackPort -Port $DatabasePort) -and
         (Test-LoopbackPort -Port $StoragePort) -and
+        (Test-LoopbackPort -Port $StorageAdminPort) -and
         (Get-EndpointStatus -Uri "http://127.0.0.1:$WebPort/api/v1/health/live") -eq 'ok' -and
         (Get-EndpointStatus -Uri "http://127.0.0.1:$WorkerPort/health/live") -eq 'ok'
     if ($trackedEnvironmentIsHealthy) {
@@ -273,7 +322,7 @@ if ($null -ne $existingState) {
     }
     Stop-Environment
 }
-foreach ($port in @($WebPort, $WorkerPort, $DatabasePort, $StoragePort)) {
+foreach ($port in @($WebPort, $WorkerPort, $DatabasePort, $StoragePort, $StorageAdminPort)) {
     if (Test-LoopbackPort -Port $port) {
         throw "Required loopback port is already in use: $port"
     }
@@ -281,7 +330,6 @@ foreach ($port in @($WebPort, $WorkerPort, $DatabasePort, $StoragePort)) {
 
 New-Item -ItemType Directory -Path $runtimeRoot -Force | Out-Null
 New-Item -ItemType Directory -Path $logRoot -Force | Out-Null
-New-Item -ItemType Directory -Path $storageData -Force | Out-Null
 if (-not (Test-Path -LiteralPath $secretsPath -PathType Leaf)) {
     [ordered]@{
         adminPassword = [guid]::NewGuid().ToString('N')
@@ -297,7 +345,7 @@ $secrets = Get-Content -LiteralPath $secretsPath -Raw | ConvertFrom-Json
 
 $passwordFile = $null
 $postgresStarted = $false
-$storageProcess = $null
+$storageStarted = $false
 $webProcess = $null
 $workerProcess = $null
 try {
@@ -375,7 +423,10 @@ try {
     $env:S3_BUCKET_QUARANTINE = 'project-name-local-quarantine'
     $env:S3_ENDPOINT = "http://127.0.0.1:$StoragePort"
     $env:S3_FORCE_PATH_STYLE = 'true'
-    $env:S3_MAX_OBJECT_BYTES = '1048576'
+    $env:S3_MAX_OBJECT_BYTES = '8388608'
+    $env:S3_MAX_ATTEMPTS = '3'
+    $env:S3_MULTIPART_PART_SIZE_BYTES = '5242880'
+    $env:S3_MULTIPART_THRESHOLD_BYTES = '5242880'
     $env:S3_REGION = 'local'
     $env:S3_REQUEST_TIMEOUT_MS = '3000'
     $env:S3_SECRET_ACCESS_KEY = [string]$secrets.storageSecretKey
@@ -385,22 +436,22 @@ try {
     $env:WORKER_CONCURRENCY = '1'
     $env:WORKER_HEALTH_HOST = '127.0.0.1'
     $env:WORKER_HEALTH_PORT = "$WorkerPort"
-    $env:WORKER_JOB_TIMEOUT_MS = '5000'
+    $env:WORKER_JOB_TIMEOUT_MS = '100000'
     $env:WORKER_MAX_ATTEMPTS = '3'
     $env:WORKER_POLL_INTERVAL_MS = '500'
     $env:WORKER_RUNTIME_DATABASE_ROLE = 'foundation_runtime'
-    $env:WORKER_SHUTDOWN_TIMEOUT_MS = '10000'
+    $env:WORKER_SHUTDOWN_TIMEOUT_MS = '120000'
+    Set-StorageComposeEnvironment -Secrets $secrets
 
     Invoke-Checked -Executable $pnpmExecutable -Arguments @('--dir', $repositoryRoot, '--filter', '@project-name/db', 'db:migrate:deploy') -FailureMessage 'Prisma migration deploy failed'
     Invoke-Checked -Executable $pnpmExecutable -Arguments @('--dir', $repositoryRoot, '--filter', '@project-name/jobs', 'jobs:migrate') -FailureMessage 'Graphile migration deploy failed'
     $env:PGPASSWORD = [string]$secrets.migrationPassword
     Invoke-Checked -Executable $psql -Arguments @('-h', '127.0.0.1', '-p', "$DatabasePort", '-U', 'foundation_migrator', '-d', 'foundation', '-v', 'ON_ERROR_STOP=1', '-f', (Join-Path $repositoryRoot 'infrastructure\local\runtime-grants.sql')) -FailureMessage 'Runtime grants failed'
 
-    $env:RUSTFS_ACCESS_KEY = [string]$secrets.storageAccessKey
-    $env:RUSTFS_SECRET_KEY = [string]$secrets.storageSecretKey
-    $env:RUSTFS_LOG_LEVEL = 'info'
-    $storageProcess = Start-Process -FilePath $rustfsExecutable -ArgumentList @('server', '--address', "127.0.0.1:$StoragePort", 'storage-data') -WorkingDirectory $runtimeRoot -WindowStyle Hidden -RedirectStandardOutput (Join-Path $logRoot 'storage.out.log') -RedirectStandardError (Join-Path $logRoot 'storage.err.log') -PassThru
-    Wait-LoopbackPort -Port $StoragePort -Process $storageProcess
+    Invoke-Checked -Executable $DockerExecutable -Arguments ($composeArguments + @(
+        'up', '--detach', '--wait', '--wait-timeout', '60', 'catalog-storage'
+    )) -FailureMessage 'VersityGW Compose startup failed'
+    $storageStarted = $true
     Invoke-Checked -Executable $pnpmExecutable -Arguments @('--dir', $repositoryRoot, '--filter', '@project-name/storage', 'storage:provision:local') -FailureMessage 'Local storage provisioning failed'
 
     Invoke-Checked -Executable $pnpmExecutable -Arguments @('--dir', $repositoryRoot, 'exec', 'turbo', 'run', 'build', '--filter=@project-name/web', '--filter=@project-name/worker') -FailureMessage 'Foundation application build failed'
@@ -412,7 +463,16 @@ try {
     [ordered]@{
         databasePort = $DatabasePort
         schemaVersion = 1
-        storage = New-ProcessReference -Process $storageProcess -Executable $rustfsExecutable
+        storage = [ordered]@{
+            composeProject = $composeProject
+            image = 'versity/versitygw:v1.4.1@sha256:0400cb59f59da0f1cf9f7fd49505191abc348dfadf54509bf1988caaff4eb96f'
+            namedVolumes = @(
+                'project_name_catalog_s3_data',
+                'project_name_catalog_s3_versioning',
+                'project_name_catalog_s3_iam'
+            )
+        }
+        storageAdminPort = $StorageAdminPort
         storagePort = $StoragePort
         web = New-ProcessReference -Process $webProcess -Executable $nodeExecutable
         webPort = $WebPort
@@ -428,10 +488,18 @@ try {
     } | ConvertTo-Json -Compress
 }
 catch {
-    foreach ($process in @($workerProcess, $webProcess, $storageProcess)) {
+    foreach ($process in @($workerProcess, $webProcess)) {
         if ($null -ne $process -and -not $process.HasExited) {
             Stop-Process -Id $process.Id -Force
             [void]$process.WaitForExit(5000)
+        }
+    }
+    if ($storageStarted) {
+        try {
+            Invoke-StorageComposeQuiet -Arguments @('stop', '--timeout', '30', 'catalog-storage') -FailureMessage 'VersityGW cleanup stop failed'
+        }
+        catch {
+            # Preserve the original startup failure; exact container/volumes remain recoverable.
         }
     }
     if ($postgresStarted) {

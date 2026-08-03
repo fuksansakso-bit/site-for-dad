@@ -4,6 +4,6 @@ export default defineFoundationTestConfig({
   test: {
     fileParallelism: false,
     include: ['test/integration/**/*.integration.test.ts'],
-    testTimeout: 20_000,
+    testTimeout: 120_000,
   },
 });

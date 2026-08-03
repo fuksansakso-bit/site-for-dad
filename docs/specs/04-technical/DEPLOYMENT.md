@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A local/CI foundation implemented; production deployment and hosting remain forbidden/unselected |
-| Версия | 0.3.0 |
-| Дата | 2026-08-02 |
+| Статус | Phase 1A and Phase 1B.1 local/CI workflows verified; production deployment and hosting remain forbidden/unselected |
+| Версия | 0.5.0 |
+| Дата | 2026-08-03 |
 | Architecture | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | Quality gate | [SPEC_QUALITY_GATE.md](../../00-global/SPEC_QUALITY_GATE.md) |
 
@@ -37,6 +37,8 @@ This document defines environment isolation, build artifact, configuration/secre
 - **DEPLOY-SPEC-019 — MUST:** hosting/network/data residency/availability/cost/exit is selected by evaluation and ADR, not this spec.
 - **DEPLOY-SPEC-020 — MUST:** Phase 1A authorization does not permit production deployment or Phase 1B; each requires a separate written transition/release decision.
 - **DEPLOY-SPEC-021 — MUST:** production release evidence includes no-VPN checks in Grozny, Urus-Martan, Argun and Gudermes, mobile and home/office Wi-Fi, at least two network routes, mobile Chrome and desktop Chrome.
+- **DEPLOY-SPEC-022 — MUST:** the first-class Windows 11 local/CI workflow runs VersityGW through Docker Compose using an exact image tag/digest, POSIX named volumes, loopback ports, healthcheck, graceful stop and automatic Docker-runtime restart recovery; the primary lifecycle requires no Bash command or manual NTFS permission change.
+- **DEPLOY-SPEC-023 — MUST:** local VersityGW configuration, credentials, ports and volumes MUST NOT be reused as or imply staging/production topology. Production object storage remains blocked by `TBD-INFRA-004`, `TBD-INFRA-010` and a future provider ADR/decision.
 
 ## 3. Environment model
 
@@ -138,6 +140,10 @@ Tests: artifact traceability/reproducibility, environment isolation/no prod data
 
 Provider-neutral CI and Windows local lifecycle are implemented and verified, including frozen install, code/docs/scope/boundary checks, coverage, disposable integration dependencies, migration validation, production build, artifact/secret scans and multi-browser smoke. No hosting configuration, deployment credential, domain, production environment or remote pipeline integration was created. The regional no-VPN matrix remains a future production release gate, not a skipped Foundation failure. Evidence: [Phase 1A report](../../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
 
+On 2026-08-03 the top-level PowerShell lifecycle started PostgreSQL unchanged and replaced only local S3 runtime with digest-pinned VersityGW. Loopback S3/Admin health, three Docker named volumes, clean graceful shutdown, automatic recovery after a full Docker Desktop restart and checksum-preserving object persistence were verified. This evidence is local-only and does not authorize production deployment.
+
+The completed Phase 1B.1 workflow then verified a full `dev:stop` → `dev` restart with PostgreSQL, VersityGW, web and worker healthy; active CatalogVersion/PriceVersion IDs, historical failed run and all 59 object hashes remained unchanged. The final exact-toolchain `ci:verify` passed 9/9 stages with Node 24.18.1, pnpm 11.18.0, PostgreSQL 18.4, Docker Engine 29.6.2, VersityGW v1.4.1 and Playwright 1.62.1. No remote CI, hosting, domain, production secret, production storage provider or deployment configuration was created.
+
 ## 15. Dependencies, risks and open questions
 
 Dependencies: architecture/data/API/sync/media/AI/storage/security/performance/observability/test strategy/evaluations/ADRs. `TBD-INFRA-002` regional matrix is resolved; open: hosting/CI/CD/runtime, environments/domains, other applicable `TBD-INFRA-*`, RPO/RTO, owners/change windows, release cadence and artifact/signing/flag platforms. Risks: environment leak, irreversible migration, incompatible rollback, unobserved canary, provider prod call from test and data/version coupling.
@@ -149,3 +155,5 @@ Dependencies: architecture/data/API/sync/media/AI/storage/security/performance/o
 | 0.1.0 | 2026-08-02 | Defined vendor-neutral environments, artifact/config/migration/data release, progressive rollout/rollback and release evidence. |
 | 0.2.0 | 2026-08-02 | Phase 1A-only authorization and exact future regional production evidence matrix recorded; no production deployment authorized. |
 | 0.3.0 | 2026-08-02 | Recorded verified local/CI Foundation lifecycle; production topology, credentials and regional deployment checks remain outside authorization. |
+| 0.4.0 | 2026-08-03 | Replaced active local RustFS prerequisite with reproducible VersityGW Compose/named-volume Windows workflow and retained the production provider gate. |
+| 0.5.0 | 2026-08-03 | Recorded completed Phase 1B.1 full-environment restart/persistence and exact-toolchain 9/9 CI evidence without production deployment selection. |

@@ -6,7 +6,10 @@ import { runFoundationReadinessChecks } from '@project-name/observability/health
 import type { FoundationLogSeverity, FoundationLogger } from '@project-name/observability/logger';
 import type { FoundationMetrics } from '@project-name/observability/metrics';
 import {
+  ensureDailyCatalogSourceDiscovery,
   startFoundationJobRuntime,
+  type CatalogJobServices,
+  type CatalogTaskLifecycleEvent,
   type FoundationQueueLogEvent,
   type FoundationTaskLifecycleEvent,
 } from '@project-name/jobs';
@@ -70,6 +73,7 @@ export async function startWorkerProcess(
   workerEnvironment: WorkerEnvironment,
   eventSink: WorkerEventSink = writeWorkerEvent,
   telemetry?: WorkerRuntimeTelemetry,
+  catalogServices?: CatalogJobServices,
 ): Promise<RunningWorkerProcess> {
   let stopping = false;
   let stopped = false;
@@ -108,7 +112,7 @@ export async function startWorkerProcess(
   const queueLog = (event: FoundationQueueLogEvent): void => {
     eventSink({ ...event, service: 'worker' });
   };
-  const lifecycleLog = (event: FoundationTaskLifecycleEvent): void => {
+  const lifecycleLog = (event: CatalogTaskLifecycleEvent | FoundationTaskLifecycleEvent): void => {
     eventSink({ ...event, event: `worker.job.${event.event}`, level: 'info', service: 'worker' });
   };
 
@@ -118,8 +122,12 @@ export async function startWorkerProcess(
       workerEnvironment,
       lifecycleLog,
       queueLog,
+      lifecycleLog,
+      catalogServices,
     );
+    await ensureDailyCatalogSourceDiscovery(jobRuntime.pool);
   } catch (error) {
+    await jobRuntime?.forceStop().catch(() => undefined);
     await closeHealthServer();
     throw error;
   }

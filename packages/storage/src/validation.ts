@@ -1,8 +1,10 @@
 import { StorageError } from './errors.js';
 import {
+  objectSources,
   objectZones,
   syntheticObjectSource,
   type ObjectLocator,
+  type ObjectSource,
   type ObjectZone,
   type SignedWriteInput,
 } from './types.js';
@@ -75,12 +77,13 @@ export function createProviderMetadata(
   zone: ObjectZone,
   contentLength: number,
   checksumSha256: string,
+  source: ObjectSource | undefined = syntheticObjectSource,
 ): Record<string, string> {
   return {
     [providerMetadataKeys.checksumSha256]: checksumSha256,
     [providerMetadataKeys.contentLength]: String(contentLength),
     [providerMetadataKeys.schemaVersion]: '1',
-    [providerMetadataKeys.source]: syntheticObjectSource,
+    [providerMetadataKeys.source]: source ?? syntheticObjectSource,
     [providerMetadataKeys.zone]: zone,
   };
 }
@@ -95,7 +98,7 @@ export function validateProviderMetadata(
   readonly etag?: string;
   readonly lastModified?: Date;
   readonly schemaVersion: 1;
-  readonly source: typeof syntheticObjectSource;
+  readonly source: ObjectSource;
   readonly zone: ObjectZone;
 } {
   const metadata = providerObject.Metadata ?? {};
@@ -113,7 +116,7 @@ export function validateProviderMetadata(
     contentType === undefined ||
     !contentTypePattern.test(contentType) ||
     metadata[providerMetadataKeys.schemaVersion] !== '1' ||
-    metadata[providerMetadataKeys.source] !== syntheticObjectSource ||
+    !objectSources.includes(metadata[providerMetadataKeys.source] as ObjectSource) ||
     metadata[providerMetadataKeys.zone] !== locator.zone
   ) {
     throw new StorageError('STORAGE_METADATA_INVALID', 'Stored object metadata is invalid.');
@@ -128,7 +131,7 @@ export function validateProviderMetadata(
       ? {}
       : { lastModified: providerObject.LastModified }),
     schemaVersion: 1,
-    source: syntheticObjectSource,
+    source: metadata[providerMetadataKeys.source] as ObjectSource,
     zone: locator.zone,
   };
 }

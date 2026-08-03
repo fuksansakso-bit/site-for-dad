@@ -4,15 +4,15 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD` for Foundation; Phase 1B data capture is blocked until `TBD-SOURCE-AMIGO-002` has authorized transport/evidence |
-| Версия | 0.4.0 |
+| Статус | Phase 1B.1 bounded public-page sync authorized; full-catalog transport remains `TBD-SOURCE-AMIGO-002` |
+| Версия | 0.5.0 |
 | Дата | 2026-08-02 |
 | Source registry | [EXTERNAL_SOURCES.md](../../00-global/EXTERNAL_SOURCES.md) |
 | Pricing policy | [PRICING_SOURCE_POLICY.md](../../00-global/PRICING_SOURCE_POLICY.md) |
 
 ## 1. Purpose and boundaries
 
-Sync architecture safely captures authorized AMIGO catalog/technical/price/media metadata into immutable PostgreSQL-backed staging, normalizes and diffs it, obtains Business Owner approval, records explicit administrator activation, atomically publishes local versions and rolls back. Public flows consume only the active approved local version. This specification does not assume a public API or authorize Phase 1B import/media acquisition.
+Sync architecture safely captures authorized AMIGO catalog/price/media metadata into immutable PostgreSQL-backed staging, normalizes and diffs it, obtains Business Owner approval, records explicit administrator activation, atomically publishes local versions and rolls back. Public flows consume only the active approved local version. `OWNER-DECISION-010` authorizes this pipeline only for the four-path/32-ID Phase 1B.1 pilot; it does not assume a public API or authorize full-catalog acquisition.
 
 ## 2. Transport priority and evidence
 

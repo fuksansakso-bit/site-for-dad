@@ -1,4 +1,7 @@
 import {
+  AbortMultipartUploadCommand,
+  CompleteMultipartUploadCommand,
+  CreateMultipartUploadCommand,
   DeleteObjectCommand,
   GetObjectCommand,
   HeadBucketCommand,
@@ -6,6 +9,8 @@ import {
   PutObjectCommand,
   S3Client,
   S3ServiceException,
+  UploadPartCommand,
+  type CompletedPart,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import type { StorageEnvironment } from '@project-name/config/server';
@@ -32,6 +37,7 @@ import {
   type SignedWriteInput,
   type StorageObjectMetadata,
   type StoredObject,
+  syntheticObjectSource,
 } from './types.js';
 
 const bucketsForEnvironment = (environment: StorageEnvironment): Record<ObjectZone, string> => ({
@@ -39,6 +45,28 @@ const bucketsForEnvironment = (environment: StorageEnvironment): Record<ObjectZo
   public: environment.S3_BUCKET_PUBLIC,
   quarantine: environment.S3_BUCKET_QUARANTINE,
 });
+
+const immutableWriteTails = new Map<string, Promise<void>>();
+
+async function withImmutableWriteLock<T>(key: string, operation: () => Promise<T>): Promise<T> {
+  const preceding = immutableWriteTails.get(key) ?? Promise.resolve();
+  let release = (): void => undefined;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const tail = preceding.then(() => gate);
+  immutableWriteTails.set(key, tail);
+
+  await preceding;
+  try {
+    return await operation();
+  } finally {
+    release();
+    if (immutableWriteTails.get(key) === tail) {
+      immutableWriteTails.delete(key);
+    }
+  }
+}
 
 function sha256Hex(value: Uint8Array): string {
   return createHash('sha256').update(value).digest('hex');
@@ -81,7 +109,7 @@ export class S3ObjectStorage implements ObjectStorage {
       },
       endpoint: environment.S3_ENDPOINT,
       forcePathStyle: environment.S3_FORCE_PATH_STYLE,
-      maxAttempts: 1,
+      maxAttempts: environment.S3_MAX_ATTEMPTS,
       region: environment.S3_REGION,
     });
   }
@@ -128,6 +156,137 @@ export class S3ObjectStorage implements ObjectStorage {
     return this.#buckets[locator.zone];
   }
 
+  async #putSingle(input: PutObjectInput, bucket: string, checksumSha256: string): Promise<void> {
+    await this.#runWithTimeout('put', (abortSignal) =>
+      this.#client.send(
+        new PutObjectCommand({
+          Body: input.body,
+          Bucket: bucket,
+          ChecksumSHA256: checksumBase64(checksumSha256),
+          ContentLength: input.body.byteLength,
+          ContentType: input.contentType,
+          IfNoneMatch: '*',
+          Key: input.locator.key,
+          Metadata: createProviderMetadata(
+            input.locator.zone,
+            input.body.byteLength,
+            checksumSha256,
+            input.source,
+          ),
+        }),
+        { abortSignal },
+      ),
+    );
+  }
+
+  async #putMultipart(
+    input: PutObjectInput,
+    bucket: string,
+    checksumSha256: string,
+  ): Promise<void> {
+    let uploadId: string | undefined;
+    try {
+      const created = await this.#runWithTimeout('multipart_create', (abortSignal) =>
+        this.#client.send(
+          new CreateMultipartUploadCommand({
+            Bucket: bucket,
+            ContentType: input.contentType,
+            Key: input.locator.key,
+            Metadata: createProviderMetadata(
+              input.locator.zone,
+              input.body.byteLength,
+              checksumSha256,
+              input.source,
+            ),
+          }),
+          { abortSignal },
+        ),
+      );
+      uploadId = created.UploadId;
+      if (uploadId === undefined) {
+        throw new StorageError(
+          'STORAGE_METADATA_INVALID',
+          'Multipart upload identifier is invalid.',
+        );
+      }
+
+      const completedParts: CompletedPart[] = [];
+      const partSize = this.#environment.S3_MULTIPART_PART_SIZE_BYTES;
+      for (let offset = 0, partNumber = 1; offset < input.body.byteLength; partNumber += 1) {
+        const body = input.body.slice(offset, Math.min(offset + partSize, input.body.byteLength));
+        const uploaded = await this.#runWithTimeout('multipart_upload_part', (abortSignal) =>
+          this.#client.send(
+            new UploadPartCommand({
+              Body: body,
+              Bucket: bucket,
+              ContentLength: body.byteLength,
+              Key: input.locator.key,
+              PartNumber: partNumber,
+              UploadId: uploadId,
+            }),
+            { abortSignal },
+          ),
+        );
+        if (uploaded.ETag === undefined) {
+          throw new StorageError('STORAGE_METADATA_INVALID', 'Multipart part ETag is invalid.');
+        }
+        completedParts.push({ ETag: uploaded.ETag, PartNumber: partNumber });
+        offset += body.byteLength;
+      }
+
+      await this.#runWithTimeout('multipart_complete', (abortSignal) =>
+        this.#client.send(
+          new CompleteMultipartUploadCommand({
+            Bucket: bucket,
+            IfNoneMatch: '*',
+            Key: input.locator.key,
+            MultipartUpload: { Parts: completedParts },
+            UploadId: uploadId,
+          }),
+          { abortSignal },
+        ),
+      );
+    } catch (error) {
+      if (uploadId !== undefined) {
+        try {
+          await this.#runWithTimeout('multipart_abort', (abortSignal) =>
+            this.#client.send(
+              new AbortMultipartUploadCommand({
+                Bucket: bucket,
+                Key: input.locator.key,
+                UploadId: uploadId,
+              }),
+              { abortSignal },
+            ),
+          );
+        } catch {
+          // Preserve the original operation error; orphan detection is covered by the contract gate.
+        }
+      }
+      throw error;
+    }
+  }
+
+  async #resolveIdempotentConflict(
+    input: PutObjectInput,
+    checksumSha256: string,
+    error: unknown,
+  ): Promise<StorageObjectMetadata> {
+    if (!isStorageError(error) || error.code !== 'STORAGE_CONFLICT') {
+      throw error;
+    }
+    const existing = await this.head(input.locator);
+    if (
+      existing.checksumSha256 === checksumSha256 &&
+      existing.contentLength === input.body.byteLength &&
+      existing.contentType === input.contentType &&
+      existing.source === (input.source ?? syntheticObjectSource)
+    ) {
+      return existing;
+    }
+    throw error;
+  }
+
   async checkReadiness(): Promise<'ok' | 'unavailable'> {
     try {
       await Promise.all(
@@ -148,27 +307,19 @@ export class S3ObjectStorage implements ObjectStorage {
     assertContentType(input.contentType);
     assertContentLength(input.body.byteLength, this.#environment.S3_MAX_OBJECT_BYTES);
     const checksumSha256 = sha256Hex(input.body);
-
-    await this.#runWithTimeout('put', (abortSignal) =>
-      this.#client.send(
-        new PutObjectCommand({
-          Body: input.body,
-          Bucket: bucket,
-          ChecksumSHA256: checksumBase64(checksumSha256),
-          ContentLength: input.body.byteLength,
-          ContentType: input.contentType,
-          IfNoneMatch: '*',
-          Key: input.locator.key,
-          Metadata: createProviderMetadata(
-            input.locator.zone,
-            input.body.byteLength,
-            checksumSha256,
-          ),
-        }),
-        { abortSignal },
-      ),
-    );
-    return this.head(input.locator);
+    const lockKey = `${this.#environment.S3_ENDPOINT}\u0000${bucket}\u0000${input.locator.key}`;
+    return withImmutableWriteLock(lockKey, async () => {
+      try {
+        if (input.body.byteLength > this.#environment.S3_MULTIPART_THRESHOLD_BYTES) {
+          await this.#putMultipart(input, bucket, checksumSha256);
+        } else {
+          await this.#putSingle(input, bucket, checksumSha256);
+        }
+        return await this.head(input.locator);
+      } catch (error) {
+        return this.#resolveIdempotentConflict(input, checksumSha256, error);
+      }
+    });
   }
 
   async head(locator: ObjectLocator): Promise<StorageObjectMetadata> {
@@ -246,6 +397,7 @@ export class S3ObjectStorage implements ObjectStorage {
       input.locator.zone,
       input.contentLength,
       input.checksumSha256,
+      input.source,
     );
     const checksum = checksumBase64(input.checksumSha256);
     const command = new PutObjectCommand({

@@ -1,4 +1,18 @@
 export {
+  publicCatalogFacetOptionSchema,
+  publicCatalogFacetsSchema,
+  publicCatalogMaterialSchema,
+  publicCatalogQuerySchema,
+  publicCatalogResponseSchema,
+  publicCatalogVersionSchema,
+  type PublicCatalogFacetOption,
+  type PublicCatalogFacets,
+  type PublicCatalogMaterial,
+  type PublicCatalogQuery,
+  type PublicCatalogResponse,
+  type PublicCatalogVersion,
+} from './catalog.js';
+export {
   createSafeErrorResponse,
   foundationErrorCodeSchema,
   foundationErrorCodes,

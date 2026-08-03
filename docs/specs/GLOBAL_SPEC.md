@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A Foundation письменно разрешена; Phase 1B и production activation не разрешены |
-| Версия | 0.9.0 |
-| Дата | 2026-08-02, Europe/Moscow |
+| Статус | Phase 1A passed; Phase 1B.1 catalog pilot completed and passed; no later phase authorized |
+| Версия | 0.12.0 |
+| Дата | 2026-08-03, Europe/Moscow |
 | Владелец документа | Product Owner — владелец проекта; Business Owner — отец владельца проекта (`OWNER-DECISION-001`) |
 | Продукт | `PROJECT_NAME` до отдельного решения о бренде |
 | Язык | Русский; английские идентификаторы и технические термины допустимы |
@@ -30,6 +30,9 @@
 - [Implementation roadmap](../06-plans/IMPLEMENTATION_ROADMAP.md)
 - [Specification readiness audit](../06-plans/SPEC_READINESS_AUDIT.md)
 - [Phase 1A Foundation plan](../06-plans/active/PHASE_1A_FOUNDATION_PLAN.md)
+- [Phase 1B.1 AMIGO catalog pilot plan](../06-plans/active/PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN.md)
+- [Phase 1B.1 completion report](../06-plans/completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md)
+- [Phase 1B.1 transport discovery](../research/AMIGO_PILOT_TRANSPORT_DISCOVERY_2026-08-02.md)
 - [Правила работы](../../AGENTS.md)
 - [История изменений](../../CHANGELOG.md)
 - [Правила референсов](../../reference/README.md)
@@ -48,6 +51,9 @@
 | 0.7.0 | 2026-08-02 | Зафиксированы `OWNER-DECISION-001`–`007`, закрыты семь owner-decision P0 и QG-147/148; письменно разрешена только Phase 1A Foundation без перехода к Phase 1B или production. |
 | 0.8.0 | 2026-08-02 | Зафиксировано `OWNER-DECISION-008`: AMIGO и Business Owner разделены как authority для source-backed и локальных полей; PostgreSQL определён как локальная операционная проекция, а не новый upstream-источник. Фактический импорт и Phase 1B этим решением не объявлены завершёнными или разрешёнными. |
 | 0.9.0 | 2026-08-02 | Зафиксировано `OWNER-DECISION-009` «LOCAL CATALOG AS PUBLIC SOURCE OF TRUTH»: публичный runtime использует только активную одобренную локальную версию в PostgreSQL, а AMIGO остаётся upstream authority. Добавлены обязательные diff/approval/override/audit/version/rollback границы без разрешения Phase 1B. |
+| 0.10.0 | 2026-08-02 | `OWNER-DECISION-010` отдельно разрешил только Phase 1B.1: реальный 32-material AMIGO pilot через ограниченный public-page transport, local publication layer, sync/diff/media/base-price/overlay и минимальные catalog/admin surfaces; Phase 1B.2/1C+ и production остаются запрещены. |
+| 0.11.0 | 2026-08-03 | `OWNER-DECISION-011` заменил только active local/CI RustFS adapter на digest-pinned VersityGW Docker/POSIX named-volume runtime после воспроизводимого Windows 11 real-image failure; provider-neutral `StoragePort`, PostgreSQL и выбор production storage не изменены. |
+| 0.12.0 | 2026-08-03 | Phase 1B.1 Pilot Acceptance Gate passed: the reviewed 32-variant AMIGO pilot, 59 local media assets, immutable CatalogVersion/PriceVersion v1, business overlays, admin/public catalog, restart/idempotency/recovery and 9/9 CI evidence are recorded without authorizing Phase 1B.2/1C or production. |
 
 ## 1. Нормативный язык и приоритет источников
 
@@ -96,7 +102,7 @@
 
 ### 2.2. Решения владельца для implementation governance и будущих feature gates
 
-Источник `OWNER-DECISION-*` — письменные решения Product Owner от 2026-08-02. Они задают бизнес- и архитектурные границы; ни одно из них не расширяет implementation scope без отдельного transition decision. Единственное ранее выданное implementation-разрешение относилось к завершённой Phase 1A Foundation.
+Источник `OWNER-DECISION-*` — письменные решения Product Owner от 2026-08-02. Они задают бизнес- и архитектурные границы; implementation scope расширяется только явным transition decision. Phase 1A и отдельно разрешённая Phase 1B.1 завершены; дальнейшая работа не разрешена без нового письменного решения.
 
 - **OWNER-DECISION-001 — MUST:** Product Owner — владелец проекта; Business Owner — отец владельца проекта. Product Owner утверждает продуктовые решения, UX, технические этапы, приоритеты и MVP. Business Owner утверждает цены, ассортимент, наличие, правила изготовления, гарантийные решения и коммерческие условия.
 - **OWNER-DECISION-002 — MUST:** новую `PriceVersion` может активировать только actor с ролью `OWNER` или `ADMIN`, после просмотра точного diff и явного подтверждения; каждая попытка и успешная активация MUST попадать в audit log.
@@ -107,6 +113,8 @@
 - **OWNER-DECISION-007 — MUST:** production-доступность без VPN проверяется в Грозном, Урус-Мартане, Аргуне и Гудермесе через мобильное подключение и домашний или офисный Wi-Fi, минимум по двум разным сетевым маршрутам, в mobile Chrome и desktop Chrome. Production infrastructure выбирается позднее отдельным решением.
 - **OWNER-DECISION-008 — MUST:** для AMIGO-origin записей AMIGO является upstream authority для продуктов, материалов, технических данных, catalog images и базовых цен; Business Owner является decision authority для локального наличия, локальной видимости/публикации, локальных ценовых override, локального портфолио и коммерческих условий. PostgreSQL хранит версионированные source snapshots, нормализованную локальную проекцию и решения Business Owner как operational system of record, но импорт не переносит authority между слоями и не разрешает редактировать source-поля как локальные факты. Бинарные изображения хранятся в управляемом object storage, а PostgreSQL хранит их provenance, mapping, rights/publication metadata и object references. Решение задаёт ownership данных, но само по себе не доказывает завершённый импорт и не разрешает Phase 1B.
 - **OWNER-DECISION-009 — MUST:** «LOCAL CATALOG AS PUBLIC SOURCE OF TRUTH». AMIGO остаётся upstream source of truth для импортируемых product/material metadata, технических спецификаций, identity/provenance изображений поставщика и базовых цен, но публичная часть приложения MUST NOT читать AMIGO напрямую. Активная одобренная `CatalogVersion` и связанные транзакционные записи в PostgreSQL являются единственным каноническим runtime-источником для клиентского каталога, поиска, фильтров, конфигуратора, расчётов, заявок и аналитики. Полный pipeline, правила публикации, приоритета overrides, аудита и версионирования в §2.2.1 являются частью решения. Object storage доставляет только approved image binaries по ссылкам из активной версии и не становится отдельным источником каталожной истины. Решение не доказывает существование business schema/imported data, не закрывает source/price/asset TBD и не разрешает Phase 1B.
+- **OWNER-DECISION-010 — MUST:** Product Owner разрешает начать и завершить только Phase 1B.1 на branch `phase/1b-amigo-catalog-pilot`: provider-neutral source adapter; raw/normalized/business-overlay catalog layers; контролируемый реальный allowlist из 32 AMIGO `MaterialVariant` четырёх семейств и четырёх систем; ограниченные licensed media в private-by-default local object storage; daily/manual sync, diff и explicit OWNER/ADMIN activation; source prices «от», `PRICE_ON_REQUEST` и separate local override; минимальные server-authorized APIs, `/admin/catalog` и PostgreSQL-only `/catalog`. Для пилота разрешён low-rate import четырёх явных публичных `shop.amigo.ru` catalog paths без login/CAPTCHA/filter/action endpoints, поскольку официальный API/export не подтверждён; source-specific DOM/selectors остаются только внутри адаптера и не копируются как frontend code. Phase 1B.2/1C+, полный AMIGO import, calculation/configurator/preview/AI/cart/order/WhatsApp/installment/account/final landing/starfield и production deployment MUST NOT начинаться. Fixtures являются только test doubles и не могут подменить Pilot Acceptance Gate.
+- **OWNER-DECISION-011 — MUST:** «LOCAL DEVELOPMENT OBJECT STORAGE». RustFS `1.0.0-beta.11` MUST NOT использоваться как активное local-development/CI object storage после воспроизводимого Windows 11 отказа записи на реальных AMIGO JPEG: 65 536 и 131 072 байта сохранялись, а 159 099 и 262 144 байта возвращали `HTTP 500 File access denied`; разрешённый контрольный JPEG имеет размер 515 180 байт. Local development и CI MUST использовать VersityGW `v1.4.1` в Linux-контейнере Docker Compose с POSIX backend и Docker named volumes для object data, versioning и IAM; S3/Admin/Web UI, если включён, публикуются только на loopback, все три trust-zone buckets остаются private и создаются отдельной идемпотентной командой. Bind mount object directory в Windows filesystem запрещён. Существующий provider-neutral `StoragePort`, domain/catalog/media boundaries сохраняются; endpoint, region, credentials, bucket names, path-style, timeouts, retries и multipart thresholds поступают из typed configuration и остаются внутри S3 adapter/infrastructure. VersityGW является только disposable local/CI adapter: production provider/region/credentials не выбраны; Supabase Storage, Cloudflare R2, AWS S3 или иной S3-compatible provider требуют отдельного будущего решения. Решение не меняет PostgreSQL, Prisma, Graphile Worker, catalog/ownership model, другие решения Phase 1A и не разрешает Phase 1C.
 
 Гарантийная политика MUST NOT уменьшать обязательные права потребителя, предусмотренные применимым законодательством. Порядок обращения, доказательства, сроки проверки и способы удовлетворения требования остаются в `TBD-WARRANTY-001` и не придумываются.
 
@@ -934,8 +942,8 @@ Public Catalog (explicit administrator activation)
 2. **0A.1 — External source, pricing, warranty and asset governance update:** завершённая корректирующая документационная фаза; entry gate пройден 2026-08-02.
 3. **0B — Specialized specifications:** обязательный комплект создан; completion gate пройден 2026-08-02 без разрешения кода/import/media ingestion.
 4. **0C — Implementation readiness, MVP freeze and P0 TBD triage:** MVP, P0 classification, critical spec audit, sequence 1A–1H и Foundation plan подготовлены; итог gate не является implementation authorization.
-5. **1A — Foundation:** monorepo, web/BFF, data/storage/jobs, environment/CI/tests, auth/observability/security baseline без бизнес-функций.
-6. **1B — AMIGO catalog pilot:** authorized import of 20–50 verified materials, local media, diff/approval и public/admin catalog.
+5. **1A — Foundation:** завершённые monorepo, web/BFF, data/storage/jobs, environment/CI/tests, auth/observability/security baseline без бизнес-функций.
+6. **1B.1 — AMIGO catalog pilot:** завершённый allowlisted import 32 verified materials, 59 local media assets, diff/version/approval/overlays и минимальный public/admin catalog; Phase 1B.2/full import требуют нового письменного решения.
 7. **1C — Configurator and pricing:** compatibility, millimetres/quantity, versioned preliminary price, override/manual fallback и parity tests.
 8. **1D — Standard preview:** deterministic prepared-scene rendering for supported MVP profiles.
 9. **1E — Cart, WhatsApp and orders:** multi-item cart, guest/measurement lead, neutral installment request and saved calculation.

@@ -4,10 +4,10 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A Foundation implemented and verified; feature/production topology remains gated |
-| Версия | 0.4.0 |
-| Дата | 2026-08-02 |
-| Global baseline | [GLOBAL_SPEC.md](../GLOBAL_SPEC.md) 0.9.0 |
+| Статус | Phase 1A and Phase 1B.1 verified; later features/production gated |
+| Версия | 0.7.0 |
+| Дата | 2026-08-03 |
+| Global baseline | [GLOBAL_SPEC.md](../GLOBAL_SPEC.md) 0.11.0 |
 | Decisions | [docs/adr](../../adr/) |
 
 ## 1. Назначение and boundaries
@@ -50,13 +50,15 @@ Architecture defines logical components, trust/data boundaries, synchronous/asyn
 - **ARCH-SPEC-019 — MUST:** PostgreSQL is the local transactional operational system of record for source captures, normalized catalog projections, local overlays, active pointers and audit; it is not authority to redefine AMIGO-origin or Business Owner-owned values.
 - **ARCH-SPEC-020 — MUST:** source-owned fields (AMIGO products, materials, technical data, catalog-image identity and base prices) and local-owned fields (availability, visibility/publication, price overrides, portfolio and commercial conditions) use separate version/provenance/mutation paths; cross-layer last-write-wins is prohibited.
 - **ARCH-SPEC-021 — MUST:** AMIGO image metadata, provenance, mapping, rights/publication state and object references MAY reside in PostgreSQL, while binary originals/derivatives MUST remain in managed object storage under ADR-0006/0009.
-- **ARCH-SPEC-022 — MUST:** documenting the PostgreSQL target and authority matrix does not assert an existing catalog schema/import or authorize Phase 1B; implementation still follows roadmap entry gates and reviewed migrations.
+- **ARCH-SPEC-022 — MUST:** `OWNER-DECISION-010` authorizes only the reviewed Phase 1B.1 catalog schema/import/publication slice; documenting later topology does not assert completion or authorize Phase 1B.2/1C+.
 - **ARCH-SPEC-023 — MUST:** by `OWNER-DECISION-009`, the public application MUST NOT read AMIGO, raw captures or staged candidates directly. Client catalog, search, filters, configurator, calculations, leads and analytics use PostgreSQL active approved catalog/transactional state as their only canonical runtime source.
 - **ARCH-SPEC-024 — MUST:** cache, search index, filter facets, analytics datasets and other read projections MAY serve requests only when derived from and pinned to an exact active `CatalogVersion`; they are rebuildable/disposable and cannot accept AMIGO directly or become a mutation authority.
 - **ARCH-SPEC-025 — MUST:** every AMIGO change follows `source capture → import/synchronization → PostgreSQL staged local catalog → validation/diff → Business Owner approval → explicit administrator activation → public catalog`. No adapter, worker, cache or admin shortcut may bypass a stage.
 - **ARCH-SPEC-026 — MUST:** import/source removal MUST NOT automatically delete, clear, hide or retire a local entity, local-only record, Business Owner overlay or historical reference. It creates a reviewed difference/proposal; any local lifecycle transition is an explicit audited command.
 - **ARCH-SPEC-027 — MUST:** applicable local overrides take precedence when composing the public projection, without mutating immutable AMIGO source values. Precedence is typed, scoped, versioned, effective-dated and conflict-checked rather than last-write-wins.
 - **ARCH-SPEC-028 — MUST:** every catalog version and lifecycle mutation records source/source-version manifest, timestamps, capture/sync/diff, approvals, activation actor, audit correlation, predecessor and rollback target; published versions are immutable.
+- **ARCH-SPEC-029 — MUST:** `OWNER-DECISION-011` changes only the local/CI implementation behind the existing provider-neutral `StoragePort`: VersityGW-specific endpoint, path-style SigV4, credentials, retry/timeout and multipart settings remain in typed configuration/S3 adapter and MUST NOT enter catalog domain, media domain or client code.
+- **ARCH-SPEC-030 — MUST:** local VersityGW runs as a Linux Docker Compose service with POSIX data/versioning/IAM named volumes and loopback-only S3/Admin endpoints; its selection MUST NOT be treated as a production object-storage decision.
 
 ## 4. Logical context
 
@@ -199,9 +201,13 @@ Every request/job/command carries correlation/causation and safe version identif
 
 Architecture acceptance is covered by domain AC plus contract/component/integration/failure/recovery/security tests in `TEST_STRATEGY`. Required architecture tests: adapter outage, no live AMIGO/staging dependency, exact active-version pinning of public and derived reads, source-removal no-auto-delete, override precedence without source mutation, approval/activation authorization, version/audit completeness, rollback, outbox atomicity, job idempotency/cancel/delete, mixed-version rejection, cache invalidation, role/object checks, secret/private telemetry scan, rolling compatibility and backup/restore.
 
-## 17. Phase 1A implementation record
+## 17. Implementation record
 
-Implemented topology matches ADR-0007–0010: Next.js same-origin web/BFF, separate Node worker, PostgreSQL/Prisma, Graphile Worker, S3-compatible and identity ports, shared contracts/config/observability/testing packages and automated acyclic dependency direction. Only technical shell and synthetic Foundation behavior exist; no feature module or production topology was added. Evidence: [Phase 1A report](../../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
+Phase 1A topology matches ADR-0007–0010: Next.js same-origin web/BFF, separate Node worker, PostgreSQL/Prisma, Graphile Worker, S3-compatible and identity ports, shared contracts/config/observability/testing packages and automated acyclic dependency direction. Evidence: [Phase 1A report](../../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
+
+For Phase 1B.1, `OWNER-DECISION-011` replaced the unreliable Windows-native RustFS process only in local/CI infrastructure. The application port and trust-zone model did not change; Docker Compose now supplies digest-pinned VersityGW with three named volumes. The 2026-08-03 contract gate passed byte-for-byte real-image, signed URL, multipart, outage and restart-persistence scenarios without selecting production storage.
+
+The completed Phase 1B.1 slice adds source/normalized/business-overlay modules behind the established boundaries, separate worker synchronization/media stages, immutable PostgreSQL catalog/price versions, audited OWNER approval/ADMIN activation, and same-origin public/admin catalog surfaces. Real run `9bd1a4f8-e456-4617-9e16-7f5604c1c65c` activated an exact 40-entry/32-price composition; the public projection returned 32 items and 32 checksum-verified primary images without any live AMIGO/staging dependency. Restart and no-op repeat evidence preserved active pointers/history and produced no duplicate/version drift. No configurator, pricing engine, preview, cart, AI or production topology was added. Evidence: [Phase 1B.1 report](../../06-plans/completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md).
 
 ## 18. Dependencies, risks and open questions
 
@@ -215,3 +221,6 @@ Dependencies: all specs, ADR/evaluations, data/API/sync/media/AI/storage/securit
 | 0.2.0 | 2026-08-02 | Recorded Phase 1A implementation conformance and resolved Foundation stack/topology unknowns while retaining production provider gates. |
 | 0.3.0 | 2026-08-02 | Added `OWNER-DECISION-008` authority boundaries, PostgreSQL operational projection and object-storage image binary split without claiming Phase 1B implementation. |
 | 0.4.0 | 2026-08-02 | Applied `OWNER-DECISION-009`: active approved PostgreSQL `CatalogVersion` is the only public-serving runtime truth; added version-pinned derived projections, mandatory source→diff→owner/admin activation, no-auto-delete, override precedence, audit and rollback boundaries. |
+| 0.5.0 | 2026-08-02 | Added the authorized Phase 1B.1 catalog pilot topology and preserved all later-phase boundaries. |
+| 0.6.0 | 2026-08-03 | Applied local-only `OWNER-DECISION-011`: VersityGW Docker/POSIX named-volume adapter replaced active RustFS while `StoragePort`, catalog/media boundaries and production-provider gate remained neutral. |
+| 0.7.0 | 2026-08-03 | Recorded completed Phase 1B.1 source/version/overlay/worker/admin/public topology, active real pilot versions and restart/idempotency evidence without starting later domains or production. |

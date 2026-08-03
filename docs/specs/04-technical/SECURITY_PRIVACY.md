@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A synthetic security baseline implemented; public PII/media/AI activation remains blocked by legal, retention and provider values |
-| Версия | 0.2.0 |
-| Дата | 2026-08-02 |
+| Статус | Phase 1A baseline and Phase 1B.1 non-PII catalog/media/RBAC controls verified; user media/AI/production gated |
+| Версия | 0.5.0 |
+| Дата | 2026-08-03 |
 | Data model | [DATA_MODEL.md](DATA_MODEL.md) |
 | Roles | [ROLES_PERMISSIONS.md](../01-product/ROLES_PERMISSIONS.md) |
 
@@ -31,6 +31,9 @@ This specification covers threat boundaries, identity/authorization, input/uploa
 - **SEC-PRIV-013 — MUST:** production data is excluded from dev/test/demo; fixtures are synthetic or rights-cleared and non-sensitive.
 - **SEC-PRIV-014 — MUST:** vulnerability/incident handling has severity, owner, containment, evidence protection, notification/legal decision and regression control.
 - **SEC-PRIV-015 — MUST:** no claim of compliance/security/consent completeness is made until legal/security review and tests are recorded.
+- **SEC-PRIV-016 — MUST:** local object-storage root credentials are generated/injected only through process environment, never committed, returned to a browser or printed in logs/evidence; repository examples contain placeholders only.
+- **SEC-PRIV-017 — MUST:** local S3/Admin/Web UI endpoints are loopback-only and all trust-zone buckets deny anonymous write, listing and read. `PUBLIC_DELIVERY` permits only controlled scoped delivery and never permanent unbounded signed URLs.
+- **SEC-PRIV-018 — MUST:** source URLs, object keys, signed URLs and credentials are treated as sensitive telemetry fields; storage/media contract tests scan logs and fail on generated credential disclosure.
 
 ## 3. Trust boundaries and assets
 
@@ -137,9 +140,11 @@ Primary: `AC-SEC-001`, `AC-PRIV-001`, `AC-AUTH-001`, `AC-AI-UPLOAD-001`, `AC-VIS
 
 Tests: full authz/IDOR matrix, CSRF/XSS/injection/SSRF, headers/CORS/cache, auth/session/recovery/rate, upload/parser/polyglot/bomb, storage/public policy/signed URLs, provider callback/replay/delete, job/event idempotency, secret/PII telemetry scan, consent/version/withdrawal, retention/delete/backup restore, role/approval separation, dependency outage, supply-chain/config and incident tabletop.
 
-## 18. Phase 1A implementation record
+## 18. Implementation record
 
-Implemented controls include typed server/public configuration, fail-fast secrets, secret/artifact scanning, nonce CSP and secure headers, exact-origin/CSRF/body-size/rate-limit boundaries, safe error contracts, redacted structured telemetry, private-by-default storage, deny-by-default server authorization and synthetic session revoke/expiry. Only generated test objects and identities are used; uploads, real PII, external auth and production credentials do not exist. Evidence: [Phase 1A report](../../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
+Phase 1A controls include typed server/public configuration, fail-fast secrets, secret/artifact scanning, nonce CSP and secure headers, exact-origin/CSRF/body-size/rate-limit boundaries, safe error contracts, redacted structured telemetry, private-by-default storage, deny-by-default server authorization and synthetic session revoke/expiry. Evidence: [Phase 1A report](../../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
+
+Phase 1B.1 used real partner catalog media but no customer PII, customer upload, external identity or production credential. The bounded source transport enforced allowlisted HTTPS paths, SSRF/redirect/rate/size/MIME/dimension/decompression controls and generated object keys. OWNER and ADMIN duties remained separate; admin tokens are HttpOnly/server-side, public DTOs omit raw/source/object/credential data, media delivery rechecks MIME/length/SHA, and storage/data outages fail closed without internal detail. Anonymous list/read/write remained denied, repository and 3,354-file generated-canary artifact scans passed, and 25/25 multi-browser degraded-state scenarios passed. Evidence: [Phase 1B.1 report](../../06-plans/completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md).
 
 ## 19. Dependencies, risks and open questions
 
@@ -151,3 +156,6 @@ Dependencies: all specs, legal review, provider/hosting/storage/auth/AI ADR/eval
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Defined threat model, mandatory controls, data inventory, provider/media/privacy/retention/incident and test contracts without invented policy values. |
 | 0.2.0 | 2026-08-02 | Recorded verified synthetic Foundation controls while retaining all PII/media/legal/provider production gates. |
+| 0.3.0 | 2026-08-02 | Added Phase 1B.1 non-PII catalog/media security boundary without enabling user media or production providers. |
+| 0.4.0 | 2026-08-03 | Applied local VersityGW loopback/all-private/environment-secret/log-redaction controls from `OWNER-DECISION-011`. |
+| 0.5.0 | 2026-08-03 | Recorded verified Phase 1B.1 SSRF/media integrity, role separation, fail-closed public delivery, secret scans and no-PII/no-production boundary. |

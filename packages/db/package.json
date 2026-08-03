@@ -31,6 +31,7 @@
     "@prisma/adapter-pg": "catalog:",
     "@prisma/client": "catalog:",
     "@project-name/config": "workspace:*",
+    "@project-name/catalog": "workspace:*",
     "@project-name/observability": "workspace:*",
     "pg": "catalog:"
   },
@@ -44,7 +45,7 @@
   },
   "projectName": {
     "layer": "db",
-    "responsibility": "PostgreSQL adapter, infrastructure-only Prisma schema, migration tooling, and readiness checks.",
+    "responsibility": "PostgreSQL adapter, catalog-pilot Prisma schema, migration tooling, and readiness checks.",
     "publicInterface": [
       ".",
       "./client"

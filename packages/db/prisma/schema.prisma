@@ -58,6 +58,238 @@ enum ServiceHealthStatus {
   @@map("service_health_status")
 }
 
+enum CatalogSourceType {
+  PARTNER_API
+  PARTNER_EXPORT
+  PARTNER_FILE
+  PARTNER_PORTAL
+  AUTHORIZED_PUBLIC_WEB
+  MANUAL_MANIFEST
+  FIXTURE
+
+  @@map("catalog_source_type")
+}
+
+enum SupplierRelationshipStatus {
+  AUTHORIZED_PARTNER_SOURCE
+  REVOKED
+
+  @@map("supplier_relationship_status")
+}
+
+enum SourceSnapshotStatus {
+  CAPTURED
+  NOT_MODIFIED
+  FAILED
+
+  @@map("source_snapshot_status")
+}
+
+enum SourceEntityType {
+  CATEGORY
+  FAMILY
+  SYSTEM
+  MODEL
+  MATERIAL
+  MATERIAL_VARIANT
+  COLOR
+  PROPERTY
+  MEDIA
+  PRICE
+
+  @@map("source_entity_type")
+}
+
+enum SourceEntityStatus {
+  ACTIVE
+  SOURCE_REMOVED
+  PARSE_ERROR
+
+  @@map("source_entity_status")
+}
+
+enum CatalogSyncTrigger {
+  AUTOMATIC
+  MANUAL
+  TEST
+
+  @@map("catalog_sync_trigger")
+}
+
+enum CatalogSyncStatus {
+  QUEUED
+  DISCOVERING
+  CAPTURING
+  NORMALIZING
+  IMPORTING_MEDIA
+  BUILDING_DIFF
+  AWAITING_APPROVAL
+  COMPLETED
+  PARTIAL_FAILED
+  FAILED
+
+  @@map("catalog_sync_status")
+}
+
+enum CatalogSyncItemStatus {
+  PENDING
+  UNCHANGED
+  CREATED
+  UPDATED
+  SOURCE_REMOVED
+  PARSE_ERROR
+  MEDIA_ERROR
+  FAILED
+
+  @@map("catalog_sync_item_status")
+}
+
+enum CatalogDifferenceType {
+  NEW_CATEGORY
+  NEW_SYSTEM
+  NEW_MODEL
+  NEW_MATERIAL
+  ARTICLE_CHANGED
+  COLOR_CHANGED
+  PROPERTY_CHANGED
+  NEW_MEDIA
+  PRICE_CHANGED
+  SOURCE_REMOVED
+  PARSE_ERROR
+
+  @@map("catalog_difference_type")
+}
+
+enum CatalogDifferenceResolution {
+  PENDING
+  KEEP
+  HIDE
+  ARCHIVE
+  REPLACE
+  RESTORE
+  APPROVED
+  REJECTED
+
+  @@map("catalog_difference_resolution")
+}
+
+enum CatalogVersionStatus {
+  DRAFT
+  AWAITING_APPROVAL
+  APPROVED
+  ACTIVE
+  SUPERSEDED
+  REJECTED
+
+  @@map("catalog_version_status")
+}
+
+enum CatalogEntityType {
+  CATEGORY
+  SYSTEM
+  MATERIAL_VARIANT
+
+  @@map("catalog_entity_type")
+}
+
+enum CatalogVisibility {
+  VISIBLE
+  HIDDEN
+
+  @@map("catalog_visibility")
+}
+
+enum AvailabilityStatus {
+  UNREVIEWED
+  AVAILABLE
+  OUT_OF_STOCK
+  INQUIRY_ONLY
+  HIDDEN
+
+  @@map("availability_status")
+}
+
+enum PublicationStatus {
+  UNREVIEWED
+  DRAFT
+  PUBLISHED
+  HIDDEN
+  ARCHIVED
+
+  @@map("publication_status")
+}
+
+enum ManualReviewStatus {
+  UNREVIEWED
+  APPROVED
+  NEEDS_REVIEW
+  REJECTED
+
+  @@map("manual_review_status")
+}
+
+enum MediaAssetRole {
+  PRIMARY
+  DETAIL
+  SWATCH
+  SYSTEM
+
+  @@map("media_asset_role")
+}
+
+enum MediaRightsStatus {
+  REFERENCE_ONLY
+  PERMISSION_PENDING
+  PARTNER_LICENSE
+  OWNER_CREATED
+  CLIENT_CONSENT
+  PUBLICATION_BLOCKED
+
+  @@map("media_rights_status")
+}
+
+enum MediaPublicationStatus {
+  PENDING
+  PUBLICATION_APPROVED
+  PUBLICATION_BLOCKED
+
+  @@map("media_publication_status")
+}
+
+enum PriceStatus {
+  AVAILABLE
+  PRICE_ON_REQUEST
+
+  @@map("price_status")
+}
+
+enum PriceRecordKind {
+  FROM
+  BASE
+
+  @@map("price_record_kind")
+}
+
+enum PriceVersionStatus {
+  DRAFT
+  AWAITING_APPROVAL
+  APPROVED
+  ACTIVE
+  SUPERSEDED
+  REJECTED
+
+  @@map("price_version_status")
+}
+
+enum LocalPriceOverrideStatus {
+  ACTIVE
+  REMOVED
+  SCHEDULED
+  EXPIRED
+
+  @@map("local_price_override_status")
+}
+
 model ActorIdentity {
   id             String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   provider       String             @db.VarChar(64)
@@ -170,4 +402,691 @@ model ServiceHeartbeat {
   @@unique([serviceName, instanceId], map: "service_heartbeat_service_instance_key")
   @@index([status, observedAt], map: "service_heartbeat_status_time_idx")
   @@map("service_heartbeat")
+}
+
+model Supplier {
+  id             String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug           String                 @unique(map: "supplier_slug_key") @db.VarChar(96)
+  name           String                 @db.VarChar(255)
+  createdAt      DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
+  relationships  SupplierRelationship[]
+  catalogSources CatalogSource[]
+
+  @@map("supplier")
+}
+
+model SupplierRelationship {
+  id                         String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  supplierId                 String                     @map("supplier_id") @db.Uuid
+  version                    Int
+  status                     SupplierRelationshipStatus
+  partnerName                String                     @map("partner_name") @db.VarChar(255)
+  partnerRegion              String?                    @map("partner_region") @db.VarChar(255)
+  partnerBadgeAssetId        String?                    @map("partner_badge_asset_id") @db.Uuid
+  permissionScope            Json                       @map("permission_scope") @db.JsonB
+  permissionConfirmedByOwner Boolean                    @map("permission_confirmed_by_owner")
+  permissionRecordedAt       DateTime                   @map("permission_recorded_at") @db.Timestamptz(6)
+  optionalEvidenceReference  String?                    @map("optional_evidence_reference") @db.VarChar(512)
+  brandUsageNotes            String?                    @map("brand_usage_notes") @db.Text
+  effectiveAt                DateTime                   @map("effective_at") @db.Timestamptz(6)
+  revokedAt                  DateTime?                  @map("revoked_at") @db.Timestamptz(6)
+  createdAt                  DateTime                   @default(now()) @map("created_at") @db.Timestamptz(6)
+  supplier                   Supplier                   @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  partnerBadgeAsset          MediaAsset?                @relation(fields: [partnerBadgeAssetId], references: [id], onDelete: Restrict)
+  catalogSources             CatalogSource[]
+
+  @@unique([supplierId, version], map: "supplier_relationship_supplier_version_key")
+  @@index([supplierId, status], map: "supplier_relationship_status_idx")
+  @@map("supplier_relationship")
+}
+
+model CatalogSource {
+  id                     String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  supplierId             String               @map("supplier_id") @db.Uuid
+  supplierRelationshipId String               @map("supplier_relationship_id") @db.Uuid
+  sourceType             CatalogSourceType    @map("source_type")
+  name                   String               @db.VarChar(160)
+  baseUrl                String               @map("base_url") @db.VarChar(512)
+  parserVersion          String               @map("parser_version") @db.VarChar(64)
+  mappingVersion         String               @map("mapping_version") @db.VarChar(64)
+  maximumConcurrency     Int                  @default(1) @map("maximum_concurrency") @db.SmallInt
+  minimumDelayMs         Int                  @default(1000) @map("minimum_delay_ms")
+  enabled                Boolean              @default(true)
+  lastCheckedAt          DateTime?            @map("last_checked_at") @db.Timestamptz(6)
+  createdAt              DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt              DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
+  supplier               Supplier             @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  supplierRelationship   SupplierRelationship @relation(fields: [supplierRelationshipId], references: [id], onDelete: Restrict)
+  snapshots              SourceSnapshot[]
+  entities               SourceEntity[]
+  syncRuns               CatalogSyncRun[]
+  mediaAssets            SourceMediaAsset[]
+  priceRecords           SourcePriceRecord[]
+
+  @@unique([supplierId, sourceType, name], map: "catalog_source_identity_key")
+  @@index([supplierRelationshipId], map: "catalog_source_relationship_idx")
+  @@map("catalog_source")
+}
+
+model SourceSnapshot {
+  id              String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  catalogSourceId String               @map("catalog_source_id") @db.Uuid
+  syncRunId       String               @map("sync_run_id") @db.Uuid
+  sourceEntityId  String?              @map("source_entity_id") @db.Uuid
+  sourceUrl       String               @map("source_url") @db.VarChar(1024)
+  capturedAt      DateTime             @map("captured_at") @db.Timestamptz(6)
+  status          SourceSnapshotStatus
+  httpStatus      Int?                 @map("http_status") @db.SmallInt
+  contentHash     String               @map("content_hash") @db.Char(64)
+  safePayload     Json                 @map("safe_payload") @db.JsonB
+  parserVersion   String               @map("parser_version") @db.VarChar(64)
+  mappingVersion  String               @map("mapping_version") @db.VarChar(64)
+  sourceVersion   String?              @map("source_version") @db.VarChar(160)
+  createdAt       DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  catalogSource   CatalogSource        @relation(fields: [catalogSourceId], references: [id], onDelete: Restrict)
+  syncRun         CatalogSyncRun       @relation(fields: [syncRunId], references: [id], onDelete: Restrict)
+  sourceEntity    SourceEntity?        @relation(fields: [sourceEntityId], references: [id], onDelete: Restrict)
+  syncItems       CatalogSyncItem[]
+
+  @@unique([syncRunId, sourceUrl], map: "source_snapshot_run_url_key")
+  @@index([catalogSourceId, capturedAt], map: "source_snapshot_source_time_idx")
+  @@index([contentHash], map: "source_snapshot_hash_idx")
+  @@map("source_snapshot")
+}
+
+model SourceEntity {
+  id                   String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  catalogSourceId      String                  @map("catalog_source_id") @db.Uuid
+  sourceType           SourceEntityType        @map("source_type")
+  sourceId             String                  @map("source_id") @db.VarChar(255)
+  sourceSlug           String                  @map("source_slug") @db.VarChar(255)
+  sourceUrl            String                  @map("source_url") @db.VarChar(1024)
+  sourceCategory       String?                 @map("source_category") @db.VarChar(255)
+  sourceHash           String                  @map("source_hash") @db.Char(64)
+  sourceCapturedAt     DateTime                @map("source_captured_at") @db.Timestamptz(6)
+  sourceLastVerifiedAt DateTime                @map("source_last_verified_at") @db.Timestamptz(6)
+  status               SourceEntityStatus      @default(ACTIVE)
+  safeSourceData       Json                    @map("safe_source_data") @db.JsonB
+  removedAt            DateTime?               @map("removed_at") @db.Timestamptz(6)
+  createdAt            DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime                @updatedAt @map("updated_at") @db.Timestamptz(6)
+  catalogSource        CatalogSource           @relation(fields: [catalogSourceId], references: [id], onDelete: Restrict)
+  snapshots            SourceSnapshot[]
+  syncItems            CatalogSyncItem[]
+  differences          CatalogSyncDifference[]
+  family               ProductFamily?
+  category             ProductCategory?
+  system               ProductSystem?
+  model                ProductModel?
+  material             Material?
+  color                Color?
+  materialVariant      MaterialVariant?
+  materialProperty     MaterialProperty?
+  compatibilityRule    CompatibilityRule?
+  dimensionConstraint  DimensionConstraint?
+  sourceMediaAssets    SourceMediaAsset[]
+  sourcePriceRecords   SourcePriceRecord[]
+
+  @@unique([catalogSourceId, sourceType, sourceId], map: "source_entity_stable_identity_key")
+  @@index([catalogSourceId, status], map: "source_entity_status_idx")
+  @@index([sourceHash], map: "source_entity_hash_idx")
+  @@map("source_entity")
+}
+
+model CatalogSyncRun {
+  id                 String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  catalogSourceId    String                  @map("catalog_source_id") @db.Uuid
+  trigger            CatalogSyncTrigger
+  status             CatalogSyncStatus       @default(QUEUED)
+  idempotencyKey     String                  @unique(map: "catalog_sync_run_idempotency_key") @map("idempotency_key") @db.VarChar(255)
+  correlationId      String                  @map("correlation_id") @db.VarChar(128)
+  requestedByActorId String?                 @map("requested_by_actor_id") @db.Uuid
+  startedAt          DateTime?               @map("started_at") @db.Timestamptz(6)
+  completedAt        DateTime?               @map("completed_at") @db.Timestamptz(6)
+  lastHeartbeatAt    DateTime?               @map("last_heartbeat_at") @db.Timestamptz(6)
+  attempt            Int                     @default(0)
+  discoveredCount    Int                     @default(0) @map("discovered_count")
+  processedCount     Int                     @default(0) @map("processed_count")
+  errorCount         Int                     @default(0) @map("error_count")
+  parserVersion      String                  @map("parser_version") @db.VarChar(64)
+  mappingVersion     String                  @map("mapping_version") @db.VarChar(64)
+  sourceVersion      String?                 @map("source_version") @db.VarChar(160)
+  errorCode          String?                 @map("error_code") @db.VarChar(128)
+  auditContext       Json                    @map("audit_context") @db.JsonB
+  createdAt          DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime                @updatedAt @map("updated_at") @db.Timestamptz(6)
+  catalogSource      CatalogSource           @relation(fields: [catalogSourceId], references: [id], onDelete: Restrict)
+  snapshots          SourceSnapshot[]
+  items              CatalogSyncItem[]
+  differences        CatalogSyncDifference[]
+  catalogVersions    CatalogVersion[]
+  priceVersions      PriceVersion[]
+
+  @@index([catalogSourceId, createdAt], map: "catalog_sync_run_source_time_idx")
+  @@index([status, createdAt], map: "catalog_sync_run_status_idx")
+  @@map("catalog_sync_run")
+}
+
+model CatalogSyncItem {
+  id             String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  syncRunId      String                @map("sync_run_id") @db.Uuid
+  sourceEntityId String?               @map("source_entity_id") @db.Uuid
+  snapshotId     String?               @map("snapshot_id") @db.Uuid
+  sourceType     SourceEntityType      @map("source_type")
+  sourceId       String                @map("source_id") @db.VarChar(255)
+  status         CatalogSyncItemStatus @default(PENDING)
+  stage          String                @db.VarChar(64)
+  progress       Int                   @default(0) @db.SmallInt
+  beforeHash     String?               @map("before_hash") @db.Char(64)
+  afterHash      String?               @map("after_hash") @db.Char(64)
+  errorCode      String?               @map("error_code") @db.VarChar(128)
+  safeMetadata   Json?                 @map("safe_metadata") @db.JsonB
+  createdAt      DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime              @updatedAt @map("updated_at") @db.Timestamptz(6)
+  syncRun        CatalogSyncRun        @relation(fields: [syncRunId], references: [id], onDelete: Restrict)
+  sourceEntity   SourceEntity?         @relation(fields: [sourceEntityId], references: [id], onDelete: Restrict)
+  snapshot       SourceSnapshot?       @relation(fields: [snapshotId], references: [id], onDelete: Restrict)
+
+  @@unique([syncRunId, sourceType, sourceId], map: "catalog_sync_item_run_identity_key")
+  @@index([syncRunId, status], map: "catalog_sync_item_status_idx")
+  @@map("catalog_sync_item")
+}
+
+model CatalogSyncDifference {
+  id                    String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  syncRunId             String                      @map("sync_run_id") @db.Uuid
+  sourceEntityId        String?                     @map("source_entity_id") @db.Uuid
+  differenceKey         String                      @map("difference_key") @db.VarChar(255)
+  type                  CatalogDifferenceType
+  entityType            SourceEntityType            @map("entity_type")
+  beforeValue           Json?                       @map("before_value") @db.JsonB
+  afterValue            Json?                       @map("after_value") @db.JsonB
+  oldPriceMinor         Int?                        @map("old_price_minor")
+  newPriceMinor         Int?                        @map("new_price_minor")
+  absoluteChangeMinor   Int?                        @map("absolute_change_minor")
+  percentageChange      Decimal?                    @map("percentage_change") @db.Decimal(9, 4)
+  sourceUrl             String?                     @map("source_url") @db.VarChar(1024)
+  sourceCapturedAt      DateTime?                   @map("source_captured_at") @db.Timestamptz(6)
+  resolution            CatalogDifferenceResolution @default(PENDING)
+  resolvedByActorId     String?                     @map("resolved_by_actor_id") @db.Uuid
+  resolvedAt            DateTime?                   @map("resolved_at") @db.Timestamptz(6)
+  safeResolutionComment String?                     @map("safe_resolution_comment") @db.Text
+  createdAt             DateTime                    @default(now()) @map("created_at") @db.Timestamptz(6)
+  syncRun               CatalogSyncRun              @relation(fields: [syncRunId], references: [id], onDelete: Restrict)
+  sourceEntity          SourceEntity?               @relation(fields: [sourceEntityId], references: [id], onDelete: Restrict)
+
+  @@unique([syncRunId, differenceKey], map: "catalog_sync_difference_run_key")
+  @@index([syncRunId, type, resolution], map: "catalog_sync_difference_review_idx")
+  @@map("catalog_sync_difference")
+}
+
+model CatalogVersion {
+  id                 String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  versionNumber      Int                   @unique(map: "catalog_version_number_key") @map("version_number")
+  status             CatalogVersionStatus  @default(DRAFT)
+  activationKey      String?               @unique(map: "catalog_version_activation_key") @map("activation_key") @db.VarChar(64)
+  syncRunId          String                @map("sync_run_id") @db.Uuid
+  createdAt          DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  publishedAt        DateTime?             @map("published_at") @db.Timestamptz(6)
+  sourceManifest     Json                  @map("source_manifest") @db.JsonB
+  sourceVersion      String?               @map("source_version") @db.VarChar(160)
+  captureChecksum    String                @map("capture_checksum") @db.Char(64)
+  differenceChecksum String                @map("difference_checksum") @db.Char(64)
+  approvedByActorId  String?               @map("approved_by_actor_id") @db.Uuid
+  approvedAt         DateTime?             @map("approved_at") @db.Timestamptz(6)
+  activatedByActorId String?               @map("activated_by_actor_id") @db.Uuid
+  activatedAt        DateTime?             @map("activated_at") @db.Timestamptz(6)
+  predecessorId      String?               @map("predecessor_id") @db.Uuid
+  rollbackTargetId   String?               @map("rollback_target_id") @db.Uuid
+  safeNotes          String?               @map("safe_notes") @db.Text
+  syncRun            CatalogSyncRun        @relation(fields: [syncRunId], references: [id], onDelete: Restrict)
+  predecessor        CatalogVersion?       @relation("catalog_version_predecessor", fields: [predecessorId], references: [id], onDelete: Restrict)
+  successors         CatalogVersion[]      @relation("catalog_version_predecessor")
+  rollbackTarget     CatalogVersion?       @relation("catalog_version_rollback", fields: [rollbackTargetId], references: [id], onDelete: Restrict)
+  rollbackSources    CatalogVersion[]      @relation("catalog_version_rollback")
+  entries            CatalogVersionEntry[]
+
+  @@index([status, createdAt], map: "catalog_version_status_idx")
+  @@map("catalog_version")
+}
+
+model ProductFamily {
+  id             String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sourceEntityId String?           @unique(map: "product_family_source_entity_key") @map("source_entity_id") @db.Uuid
+  code           String            @unique(map: "product_family_code_key") @db.VarChar(64)
+  slug           String            @unique(map: "product_family_slug_key") @db.VarChar(128)
+  name           String            @db.VarChar(255)
+  sortOrder      Int               @default(0) @map("sort_order")
+  createdAt      DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+  sourceEntity   SourceEntity?     @relation(fields: [sourceEntityId], references: [id], onDelete: Restrict)
+  categories     ProductCategory[]
+  systems        ProductSystem[]
+  materials      Material[]
+
+  @@map("product_family")
+}
+
+model ProductCategory {
+  id              String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sourceEntityId  String?                @unique(map: "product_category_source_entity_key") @map("source_entity_id") @db.Uuid
+  familyId        String                 @map("family_id") @db.Uuid
+  parentId        String?                @map("parent_id") @db.Uuid
+  slug            String                 @unique(map: "product_category_slug_key") @db.VarChar(160)
+  name            String                 @db.VarChar(255)
+  sortOrder       Int                    @default(0) @map("sort_order")
+  createdAt       DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
+  sourceEntity    SourceEntity?          @relation(fields: [sourceEntityId], references: [id], onDelete: Restrict)
+  family          ProductFamily          @relation(fields: [familyId], references: [id], onDelete: Restrict)
+  parent          ProductCategory?       @relation("product_category_tree", fields: [parentId], references: [id], onDelete: Restrict)
+  children        ProductCategory[]      @relation("product_category_tree")
+  systems         ProductSystem[]
+  materials       Material[]
+  businessEntries BusinessCatalogEntry[]
+
+  @@index([familyId, sortOrder], map: "product_category_family_order_idx")
+  @@map("product_category")
+}
+
+model ProductSystem {
+  id                   String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sourceEntityId       String?                @unique(map: "product_system_source_entity_key") @map("source_entity_id") @db.Uuid
+  familyId             String                 @map("family_id") @db.Uuid
+  categoryId           String?                @map("category_id") @db.Uuid
+  slug                 String                 @unique(map: "product_system_slug_key") @db.VarChar(160)
+  name                 String                 @db.VarChar(255)
+  description          String?                @db.Text
+  sortOrder            Int                    @default(0) @map("sort_order")
+  createdAt            DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
+  sourceEntity         SourceEntity?          @relation(fields: [sourceEntityId], references: [id], onDelete: Restrict)
+  family               ProductFamily          @relation(fields: [familyId], references: [id], onDelete: Restrict)
+  category             ProductCategory?       @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  models               ProductModel[]
+  primaryVariants      MaterialVariant[]
+  compatibilityRules   CompatibilityRule[]
+  dimensionConstraints DimensionConstraint[]
+  businessEntries      BusinessCatalogEntry[]
+
+  @@index([familyId, sortOrder], map: "product_system_family_order_idx")
+  @@map("product_system")
+}
+
+model ProductModel {
+  id                   String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sourceEntityId       String?               @unique(map: "product_model_source_entity_key") @map("source_entity_id") @db.Uuid
+  systemId             String                @map("system_id") @db.Uuid
+  slug                 String                @unique(map: "product_model_slug_key") @db.VarChar(160)
+  name                 String                @db.VarChar(255)
+  description          String?               @db.Text
+  createdAt            DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime              @updatedAt @map("updated_at") @db.Timestamptz(6)
+  sourceEntity         SourceEntity?         @relation(fields: [sourceEntityId], references: [id], onDelete: Restrict)
+  system               ProductSystem         @relation(fields: [systemId], references: [id], onDelete: Restrict)
+  compatibilityRules   CompatibilityRule[]
+  dimensionConstraints DimensionConstraint[]
+
+  @@index([systemId], map: "product_model_system_idx")
+  @@map("product_model")
+}
+
+model Material {
+  id             String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sourceEntityId String?           @unique(map: "material_source_entity_key") @map("source_entity_id") @db.Uuid
+  familyId       String            @map("family_id") @db.Uuid
+  categoryId     String            @map("category_id") @db.Uuid
+  slug           String            @unique(map: "material_slug_key") @db.VarChar(180)
+  name           String            @db.VarChar(255)
+  createdAt      DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+  family         ProductFamily     @relation(fields: [familyId], references: [id], onDelete: Restrict)
+  category       ProductCategory   @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  sourceEntity   SourceEntity?     @relation(fields: [sourceEntityId], references: [id], onDelete: Restrict)
+  variants       MaterialVariant[]
+
+  @@unique([categoryId, name], map: "material_category_name_key")
+  @@map("material")
+}
+
+model Color {
+  id             String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sourceEntityId String?           @unique(map: "color_source_entity_key") @map("source_entity_id") @db.Uuid
+  slug           String            @unique(map: "color_slug_key") @db.VarChar(128)
+  name           String            @db.VarChar(160)
+  normalizedHex  String?           @map("normalized_hex") @db.Char(7)
+  aliases        Json?             @db.JsonB
+  createdAt      DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+  variants       MaterialVariant[]
+  sourceEntity   SourceEntity?     @relation(fields: [sourceEntityId], references: [id], onDelete: Restrict)
+
+  @@map("color")
+}
+
+model MaterialVariant {
+  id                   String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sourceEntityId       String                 @unique(map: "material_variant_source_entity_key") @map("source_entity_id") @db.Uuid
+  materialId           String                 @map("material_id") @db.Uuid
+  colorId              String?                @map("color_id") @db.Uuid
+  primarySystemId      String?                @map("primary_system_id") @db.Uuid
+  slug                 String                 @unique(map: "material_variant_slug_key") @db.VarChar(200)
+  name                 String                 @db.VarChar(255)
+  article              String                 @db.VarChar(128)
+  widthMm              Decimal?               @map("width_mm") @db.Decimal(10, 2)
+  isBlackout           Boolean                @default(false) @map("is_blackout")
+  isZebra              Boolean                @default(false) @map("is_zebra")
+  createdAt            DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
+  sourceEntity         SourceEntity           @relation(fields: [sourceEntityId], references: [id], onDelete: Restrict)
+  material             Material               @relation(fields: [materialId], references: [id], onDelete: Restrict)
+  color                Color?                 @relation(fields: [colorId], references: [id], onDelete: Restrict)
+  primarySystem        ProductSystem?         @relation(fields: [primarySystemId], references: [id], onDelete: Restrict)
+  properties           MaterialProperty[]
+  media                MaterialMediaAsset[]
+  sourceMediaAssets    SourceMediaAsset[]
+  compatibilityRules   CompatibilityRule[]
+  dimensionConstraints DimensionConstraint[]
+  sourcePrices         SourcePriceRecord[]
+  businessEntries      BusinessCatalogEntry[]
+
+  @@unique([materialId, article], map: "material_variant_material_article_key")
+  @@index([colorId], map: "material_variant_color_idx")
+  @@map("material_variant")
+}
+
+model MaterialProperty {
+  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sourceEntityId String?         @unique(map: "material_property_source_entity_key") @map("source_entity_id") @db.Uuid
+  variantId      String          @map("variant_id") @db.Uuid
+  key            String          @db.VarChar(96)
+  name           String          @db.VarChar(160)
+  value          String          @db.VarChar(512)
+  unit           String?         @db.VarChar(32)
+  sourceOwned    Boolean         @default(true) @map("source_owned")
+  sourceHash     String          @map("source_hash") @db.Char(64)
+  createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  variant        MaterialVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  sourceEntity   SourceEntity?   @relation(fields: [sourceEntityId], references: [id], onDelete: Restrict)
+
+  @@unique([variantId, key], map: "material_property_variant_key")
+  @@map("material_property")
+}
+
+model MediaAsset {
+  id                         String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  fileHash                   String                 @unique(map: "media_asset_file_hash_key") @map("file_hash") @db.Char(64)
+  storageZone                String                 @map("storage_zone") @db.VarChar(32)
+  objectKey                  String                 @unique(map: "media_asset_object_key_key") @map("object_key") @db.VarChar(512)
+  mimeType                   String                 @map("mime_type") @db.VarChar(128)
+  byteSize                   Int                    @map("byte_size")
+  width                      Int
+  height                     Int
+  rightsStatus               MediaRightsStatus      @map("rights_status")
+  publicationStatus          MediaPublicationStatus @default(PENDING) @map("publication_status")
+  createdAt                  DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                  DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
+  sourceAssets               SourceMediaAsset[]
+  materialLinks              MaterialMediaAsset[]
+  catalogEntries             CatalogVersionEntry[]
+  supplierRelationshipBadges SupplierRelationship[]
+
+  @@index([publicationStatus], map: "media_asset_publication_idx")
+  @@map("media_asset")
+}
+
+model SourceMediaAsset {
+  id                   String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  catalogSourceId      String              @map("catalog_source_id") @db.Uuid
+  sourceEntityId       String              @map("source_entity_id") @db.Uuid
+  materialVariantId    String              @map("material_variant_id") @db.Uuid
+  mediaAssetId         String?             @map("media_asset_id") @db.Uuid
+  sourceType           CatalogSourceType   @map("source_type")
+  sourceId             String              @map("source_id") @db.VarChar(255)
+  sourceSlug           String              @map("source_slug") @db.VarChar(255)
+  sourceUrl            String              @map("source_url") @db.VarChar(1024)
+  sourceCategory       String?             @map("source_category") @db.VarChar(255)
+  sourceHash           String              @map("source_hash") @db.Char(64)
+  sourceCapturedAt     DateTime            @map("source_captured_at") @db.Timestamptz(6)
+  sourceLastVerifiedAt DateTime            @map("source_last_verified_at") @db.Timestamptz(6)
+  role                 MediaAssetRole
+  contentType          String?             @map("content_type") @db.VarChar(128)
+  contentLength        Int?                @map("content_length")
+  status               SourceEntityStatus  @default(ACTIVE)
+  createdAt            DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime            @updatedAt @map("updated_at") @db.Timestamptz(6)
+  catalogSource        CatalogSource       @relation(fields: [catalogSourceId], references: [id], onDelete: Restrict)
+  sourceEntity         SourceEntity        @relation(fields: [sourceEntityId], references: [id], onDelete: Restrict)
+  materialVariant      MaterialVariant     @relation(fields: [materialVariantId], references: [id], onDelete: Restrict)
+  mediaAsset           MediaAsset?         @relation(fields: [mediaAssetId], references: [id], onDelete: Restrict)
+  placement            MaterialMediaAsset?
+
+  @@unique([catalogSourceId, sourceId], map: "source_media_asset_identity_key")
+  @@index([materialVariantId, role], map: "source_media_asset_variant_role_idx")
+  @@map("source_media_asset")
+}
+
+model MaterialMediaAsset {
+  id                 String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  materialVariantId  String            @map("material_variant_id") @db.Uuid
+  mediaAssetId       String            @map("media_asset_id") @db.Uuid
+  sourceMediaAssetId String?           @unique(map: "material_media_source_asset_key") @map("source_media_asset_id") @db.Uuid
+  role               MediaAssetRole
+  sortOrder          Int               @default(0) @map("sort_order")
+  materialVariant    MaterialVariant   @relation(fields: [materialVariantId], references: [id], onDelete: Restrict)
+  mediaAsset         MediaAsset        @relation(fields: [mediaAssetId], references: [id], onDelete: Restrict)
+  sourceMediaAsset   SourceMediaAsset? @relation(fields: [sourceMediaAssetId], references: [id], onDelete: Restrict)
+
+  @@unique([materialVariantId, role, sortOrder], map: "material_media_variant_role_order_key")
+  @@map("material_media_asset")
+}
+
+model CompatibilityRule {
+  id                String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sourceEntityId    String?          @unique(map: "compatibility_rule_source_entity_key") @map("source_entity_id") @db.Uuid
+  systemId          String           @map("system_id") @db.Uuid
+  modelId           String?          @map("model_id") @db.Uuid
+  materialVariantId String?          @map("material_variant_id") @db.Uuid
+  ruleType          String           @map("rule_type") @db.VarChar(96)
+  conditions        Json             @db.JsonB
+  sourceHash        String           @map("source_hash") @db.Char(64)
+  createdAt         DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  sourceEntity      SourceEntity?    @relation(fields: [sourceEntityId], references: [id], onDelete: Restrict)
+  system            ProductSystem    @relation(fields: [systemId], references: [id], onDelete: Restrict)
+  model             ProductModel?    @relation(fields: [modelId], references: [id], onDelete: Restrict)
+  materialVariant   MaterialVariant? @relation(fields: [materialVariantId], references: [id], onDelete: Restrict)
+
+  @@index([systemId, materialVariantId], map: "compatibility_rule_lookup_idx")
+  @@map("compatibility_rule")
+}
+
+model DimensionConstraint {
+  id                String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sourceEntityId    String?          @unique(map: "dimension_constraint_source_entity_key") @map("source_entity_id") @db.Uuid
+  systemId          String           @map("system_id") @db.Uuid
+  modelId           String?          @map("model_id") @db.Uuid
+  materialVariantId String?          @map("material_variant_id") @db.Uuid
+  dimension         String           @db.VarChar(64)
+  minimumValue      Decimal?         @map("minimum_value") @db.Decimal(12, 3)
+  maximumValue      Decimal?         @map("maximum_value") @db.Decimal(12, 3)
+  unit              String           @db.VarChar(16)
+  sourceHash        String           @map("source_hash") @db.Char(64)
+  createdAt         DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  sourceEntity      SourceEntity?    @relation(fields: [sourceEntityId], references: [id], onDelete: Restrict)
+  system            ProductSystem    @relation(fields: [systemId], references: [id], onDelete: Restrict)
+  model             ProductModel?    @relation(fields: [modelId], references: [id], onDelete: Restrict)
+  materialVariant   MaterialVariant? @relation(fields: [materialVariantId], references: [id], onDelete: Restrict)
+
+  @@index([systemId, dimension], map: "dimension_constraint_lookup_idx")
+  @@map("dimension_constraint")
+}
+
+model SourcePriceRecord {
+  id                   String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  catalogSourceId      String                @map("catalog_source_id") @db.Uuid
+  sourceEntityId       String                @map("source_entity_id") @db.Uuid
+  materialVariantId    String                @map("material_variant_id") @db.Uuid
+  sourceType           CatalogSourceType     @map("source_type")
+  sourceId             String                @map("source_id") @db.VarChar(255)
+  sourceSlug           String                @map("source_slug") @db.VarChar(255)
+  sourceUrl            String                @map("source_url") @db.VarChar(1024)
+  sourceCategory       String?               @map("source_category") @db.VarChar(255)
+  sourceHash           String                @map("source_hash") @db.Char(64)
+  sourceCapturedAt     DateTime              @map("source_captured_at") @db.Timestamptz(6)
+  sourceLastVerifiedAt DateTime              @map("source_last_verified_at") @db.Timestamptz(6)
+  status               PriceStatus
+  kind                 PriceRecordKind       @default(FROM)
+  amountMinor          Int?                  @map("amount_minor")
+  currency             String                @db.Char(3)
+  sourcePriceCategory  String?               @map("source_price_category") @db.VarChar(64)
+  sourceContext        Json                  @map("source_context") @db.JsonB
+  createdAt            DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  catalogSource        CatalogSource         @relation(fields: [catalogSourceId], references: [id], onDelete: Restrict)
+  sourceEntity         SourceEntity          @relation(fields: [sourceEntityId], references: [id], onDelete: Restrict)
+  materialVariant      MaterialVariant       @relation(fields: [materialVariantId], references: [id], onDelete: Restrict)
+  versionEntries       PriceVersionRecord[]
+  catalogEntries       CatalogVersionEntry[]
+
+  @@unique([catalogSourceId, sourceId, sourceHash], map: "source_price_record_version_key")
+  @@index([materialVariantId, sourceCapturedAt], map: "source_price_record_variant_time_idx")
+  @@map("source_price_record")
+}
+
+model PriceVersion {
+  id                 String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  versionNumber      Int                  @unique(map: "price_version_number_key") @map("version_number")
+  status             PriceVersionStatus   @default(DRAFT)
+  activationKey      String?              @unique(map: "price_version_activation_key") @map("activation_key") @db.VarChar(64)
+  syncRunId          String               @map("sync_run_id") @db.Uuid
+  sourceManifest     Json                 @map("source_manifest") @db.JsonB
+  differenceChecksum String               @map("difference_checksum") @db.Char(64)
+  approvedByActorId  String?              @map("approved_by_actor_id") @db.Uuid
+  approvedAt         DateTime?            @map("approved_at") @db.Timestamptz(6)
+  activatedByActorId String?              @map("activated_by_actor_id") @db.Uuid
+  activatedAt        DateTime?            @map("activated_at") @db.Timestamptz(6)
+  predecessorId      String?              @map("predecessor_id") @db.Uuid
+  rollbackTargetId   String?              @map("rollback_target_id") @db.Uuid
+  createdAt          DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  syncRun            CatalogSyncRun       @relation(fields: [syncRunId], references: [id], onDelete: Restrict)
+  predecessor        PriceVersion?        @relation("price_version_predecessor", fields: [predecessorId], references: [id], onDelete: Restrict)
+  successors         PriceVersion[]       @relation("price_version_predecessor")
+  rollbackTarget     PriceVersion?        @relation("price_version_rollback", fields: [rollbackTargetId], references: [id], onDelete: Restrict)
+  rollbackSources    PriceVersion[]       @relation("price_version_rollback")
+  records            PriceVersionRecord[]
+
+  @@index([status, createdAt], map: "price_version_status_idx")
+  @@map("price_version")
+}
+
+model PriceVersionRecord {
+  id                  String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  priceVersionId      String            @map("price_version_id") @db.Uuid
+  sourcePriceRecordId String            @map("source_price_record_id") @db.Uuid
+  priceVersion        PriceVersion      @relation(fields: [priceVersionId], references: [id], onDelete: Restrict)
+  sourcePriceRecord   SourcePriceRecord @relation(fields: [sourcePriceRecordId], references: [id], onDelete: Restrict)
+
+  @@unique([priceVersionId, sourcePriceRecordId], map: "price_version_record_key")
+  @@map("price_version_record")
+}
+
+model BusinessCatalogEntry {
+  id                String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  entityType        CatalogEntityType     @map("entity_type")
+  categoryId        String?               @unique(map: "business_catalog_entry_category_key") @map("category_id") @db.Uuid
+  systemId          String?               @unique(map: "business_catalog_entry_system_key") @map("system_id") @db.Uuid
+  materialVariantId String?               @unique(map: "business_catalog_entry_variant_key") @map("material_variant_id") @db.Uuid
+  visibility        CatalogVisibility     @default(HIDDEN)
+  localDescription  String?               @map("local_description") @db.Text
+  localOrder        Int                   @default(0) @map("local_order")
+  manualReviewState ManualReviewStatus    @default(UNREVIEWED) @map("manual_review_state")
+  ownerNotes        String?               @map("owner_notes") @db.Text
+  createdAt         DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime              @updatedAt @map("updated_at") @db.Timestamptz(6)
+  category          ProductCategory?      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  system            ProductSystem?        @relation(fields: [systemId], references: [id], onDelete: Restrict)
+  materialVariant   MaterialVariant?      @relation(fields: [materialVariantId], references: [id], onDelete: Restrict)
+  availability      AvailabilityRecord[]
+  priceOverrides    LocalPriceOverride[]
+  publications      PublicationRecord[]
+  versionEntries    CatalogVersionEntry[]
+
+  @@index([entityType, visibility], map: "business_catalog_entry_visibility_idx")
+  @@map("business_catalog_entry")
+}
+
+model AvailabilityRecord {
+  id                     String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  businessCatalogEntryId String                @map("business_catalog_entry_id") @db.Uuid
+  status                 AvailabilityStatus
+  reason                 String?               @db.VarChar(512)
+  decidedByActorId       String?               @map("decided_by_actor_id") @db.Uuid
+  effectiveAt            DateTime              @default(now()) @map("effective_at") @db.Timestamptz(6)
+  endedAt                DateTime?             @map("ended_at") @db.Timestamptz(6)
+  createdAt              DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  businessCatalogEntry   BusinessCatalogEntry  @relation(fields: [businessCatalogEntryId], references: [id], onDelete: Restrict)
+  catalogEntries         CatalogVersionEntry[]
+
+  @@index([businessCatalogEntryId, effectiveAt], map: "availability_record_entry_time_idx")
+  @@map("availability_record")
+}
+
+model LocalPriceOverride {
+  id                     String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  businessCatalogEntryId String                   @map("business_catalog_entry_id") @db.Uuid
+  amountMinor            Int                      @map("amount_minor")
+  currency               String                   @db.Char(3)
+  status                 LocalPriceOverrideStatus @default(ACTIVE)
+  reason                 String                   @db.VarChar(512)
+  decidedByActorId       String?                  @map("decided_by_actor_id") @db.Uuid
+  effectiveFrom          DateTime                 @default(now()) @map("effective_from") @db.Timestamptz(6)
+  effectiveTo            DateTime?                @map("effective_to") @db.Timestamptz(6)
+  removedAt              DateTime?                @map("removed_at") @db.Timestamptz(6)
+  createdAt              DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+  businessCatalogEntry   BusinessCatalogEntry     @relation(fields: [businessCatalogEntryId], references: [id], onDelete: Restrict)
+  catalogEntries         CatalogVersionEntry[]
+
+  @@index([businessCatalogEntryId, status, effectiveFrom], map: "local_price_override_active_idx")
+  @@map("local_price_override")
+}
+
+model PublicationRecord {
+  id                     String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  businessCatalogEntryId String                @map("business_catalog_entry_id") @db.Uuid
+  status                 PublicationStatus
+  reason                 String?               @db.VarChar(512)
+  decidedByActorId       String?               @map("decided_by_actor_id") @db.Uuid
+  effectiveAt            DateTime              @default(now()) @map("effective_at") @db.Timestamptz(6)
+  endedAt                DateTime?             @map("ended_at") @db.Timestamptz(6)
+  createdAt              DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  businessCatalogEntry   BusinessCatalogEntry  @relation(fields: [businessCatalogEntryId], references: [id], onDelete: Restrict)
+  catalogEntries         CatalogVersionEntry[]
+
+  @@index([businessCatalogEntryId, effectiveAt], map: "publication_record_entry_time_idx")
+  @@map("publication_record")
+}
+
+model CatalogVersionEntry {
+  id                     String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  catalogVersionId       String               @map("catalog_version_id") @db.Uuid
+  businessCatalogEntryId String               @map("business_catalog_entry_id") @db.Uuid
+  publicationRecordId    String               @map("publication_record_id") @db.Uuid
+  availabilityRecordId   String               @map("availability_record_id") @db.Uuid
+  localPriceOverrideId   String?              @map("local_price_override_id") @db.Uuid
+  sourcePriceRecordId    String?              @map("source_price_record_id") @db.Uuid
+  primaryMediaAssetId    String?              @map("primary_media_asset_id") @db.Uuid
+  sourceEntityHash       String               @map("source_entity_hash") @db.Char(64)
+  overlayHash            String               @map("overlay_hash") @db.Char(64)
+  createdAt              DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  catalogVersion         CatalogVersion       @relation(fields: [catalogVersionId], references: [id], onDelete: Restrict)
+  businessCatalogEntry   BusinessCatalogEntry @relation(fields: [businessCatalogEntryId], references: [id], onDelete: Restrict)
+  publicationRecord      PublicationRecord    @relation(fields: [publicationRecordId], references: [id], onDelete: Restrict)
+  availabilityRecord     AvailabilityRecord   @relation(fields: [availabilityRecordId], references: [id], onDelete: Restrict)
+  localPriceOverride     LocalPriceOverride?  @relation(fields: [localPriceOverrideId], references: [id], onDelete: Restrict)
+  sourcePriceRecord      SourcePriceRecord?   @relation(fields: [sourcePriceRecordId], references: [id], onDelete: Restrict)
+  primaryMediaAsset      MediaAsset?          @relation(fields: [primaryMediaAssetId], references: [id], onDelete: Restrict)
+
+  @@unique([catalogVersionId, businessCatalogEntryId], map: "catalog_version_entry_key")
+  @@index([catalogVersionId, publicationRecordId], map: "catalog_version_entry_publication_idx")
+  @@map("catalog_version_entry")
 }

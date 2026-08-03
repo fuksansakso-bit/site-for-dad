@@ -13,14 +13,18 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "@project-name/catalog": "workspace:*",
     "@project-name/config": "workspace:*",
     "@project-name/contracts": "workspace:*",
     "@project-name/db": "workspace:*",
+    "@project-name/identity": "workspace:*",
+    "@project-name/jobs": "workspace:*",
     "@project-name/observability": "workspace:*",
     "@project-name/storage": "workspace:*",
     "next": "catalog:",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@project-name/tooling": "workspace:*",

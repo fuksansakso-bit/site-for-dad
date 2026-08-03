@@ -4,16 +4,17 @@
 
 | Поле | Значение |
 |---|---|
-| Состояние | Phase 1A Foundation complete and accepted; Phase 1B+ not authorized |
-| Версия roadmap | 1.5.0 |
-| Дата | 2026-08-02 |
+| Состояние | Phase 1A and Phase 1B.1 complete; later phases hold |
+| Версия roadmap | 1.7.0 |
+| Дата | 2026-08-03 |
 | Entry gate | `PASSED`, [QG-088–QG-111](SPEC_QUALITY_GATE.md) |
 | Обязательный комплект 0B | `PASSED`, [QG-112–QG-130](SPEC_QUALITY_GATE.md) |
 | Phase 0C readiness | `AUTHORIZED_FOR_PHASE_1A_FOUNDATION`, [QG-131–QG-148](SPEC_QUALITY_GATE.md) |
 | Phase 1A acceptance | `PASSED_PHASE_1A_FOUNDATION`, [QG-149–QG-158](SPEC_QUALITY_GATE.md) |
-| Разрешённая implementation | Новая implementation не разрешена; Phase 1B+, AMIGO import и production запрещены |
+| Phase 1B.1 acceptance | `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT`, [QG-169–QG-194](SPEC_QUALITY_GATE.md) |
+| Разрешённая implementation | Нет новой implementation authorization; Phase 1B.2/1C+ и production запрещены |
 
-Глобальная база: [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.9.0, [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md), [ASSET_RIGHTS_REGISTER.md](ASSET_RIGHTS_REGISTER.md) и [PRICING_SOURCE_POLICY.md](PRICING_SOURCE_POLICY.md). `OWNER-DECISION-008` разделяет AMIGO source authority и Business Owner local authority; `OWNER-DECISION-009` делает активную одобренную PostgreSQL `CatalogVersion` единственным public-serving runtime source после staged diff/owner/admin activation. Оба решения сохраняют открытыми transport/import/data gates и не являются transition decision. Письменное решение Product Owner разрешило и ограничило выполненную Phase 1A Foundation; оно не разрешает каталог/import/Phase 1B или production.
+Глобальная база: [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.12.0, [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md), [ASSET_RIGHTS_REGISTER.md](ASSET_RIGHTS_REGISTER.md) и [PRICING_SOURCE_POLICY.md](PRICING_SOURCE_POLICY.md). `OWNER-DECISION-008/009` задают authority и PostgreSQL-only public runtime; bounded 32-ID Phase 1B.1, разрешённая `OWNER-DECISION-010`, завершена. Full catalog/Phase 1B.2 и последующие фазы остаются gated.
 
 Нормативные спецификации находятся только в `docs/specs/`. Gate, реестры, policies, quality strategy, evaluations и ADR остаются в профильных каталогах.
 
@@ -152,9 +153,9 @@ ADR принимают устойчивую границу, а не неподт
 
 ## 9. Implementation sequence after Phase 0C
 
-1. Product Owner принял ADR-0007–0010 и письменно разрешил только Phase 1A 2026-08-02.
+1. Product Owner принял ADR-0007–0010 и письменно разрешил Phase 1A 2026-08-02.
 2. Phase 1A выполнена по [завершённому плану](../06-plans/active/PHASE_1A_FOUNDATION_PLAN.md) без AMIGO import и business features; результат зафиксирован в [completion report](../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
-3. Phase 1B не начинается до отдельного письменного transition decision; будущие Phase 1B–1H после разрешения идут строго по [IMPLEMENTATION_ROADMAP](../06-plans/IMPLEMENTATION_ROADMAP.md) и своим entry gates.
+3. `OWNER-DECISION-010` разрешил только Phase 1B.1 по [active plan](../06-plans/active/PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN.md); Phase 1B.2/1C–1H не начинаются до собственных письменных transition decisions и entry gates.
 4. Закрываются только те P0/P1 business/data/privacy вопросы, от которых зависит выбранный slice; safe fallback не выдаётся за решение.
 5. Source/hosting/AI evaluations используют только разрешённые данные и завершаются ADR до provider commitment.
 
@@ -174,3 +175,5 @@ ADR принимают устойчивую границу, а не неподт
 | 1.3.0 | 2026-08-02 | Phase 1A plan и report получили completion evidence, QG-149–158 passed; roadmap остановлен перед Phase 1B до нового письменного решения. |
 | 1.4.0 | 2026-08-02 | Глобальная база обновлена до 0.8.0 с authority matrix `OWNER-DECISION-008`; Phase 1B entry/import evidence и transition hold не изменены. |
 | 1.5.0 | 2026-08-02 | Глобальная база обновлена до 0.9.0 с PostgreSQL public-serving contract `OWNER-DECISION-009`; Phase 1B entry/import evidence и transition hold не изменены. |
+| 1.6.0 | 2026-08-02 | `OWNER-DECISION-010` разрешил только Phase 1B.1 с dated transport evidence/32-ID plan; Phase 1B.2/1C+ и production сохранены на hold. |
+| 1.7.0 | 2026-08-03 | Phase 1B.1 completion report and QG-169–194 recorded; global source advanced to 0.12.0 and no-next-phase hold preserved. |

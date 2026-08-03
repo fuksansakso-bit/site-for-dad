@@ -3,7 +3,7 @@ param(
     [string]$NodeRoot = '',
     [string]$PnpmRoot = '',
     [string]$PostgresRoot = '',
-    [string]$RustfsRoot = '',
+    [string]$DockerExecutable = '',
     [string]$IntegrationCacheRoot = ''
 )
 
@@ -68,7 +68,10 @@ function Set-BuildEnvironment {
         S3_BUCKET_QUARANTINE = 'project-name-ci-quarantine'
         S3_ENDPOINT = 'http://127.0.0.1:1'
         S3_FORCE_PATH_STYLE = 'true'
-        S3_MAX_OBJECT_BYTES = '1048576'
+        S3_MAX_OBJECT_BYTES = '8388608'
+        S3_MAX_ATTEMPTS = '3'
+        S3_MULTIPART_PART_SIZE_BYTES = '5242880'
+        S3_MULTIPART_THRESHOLD_BYTES = '5242880'
         S3_REGION = 'local'
         S3_REQUEST_TIMEOUT_MS = '500'
         S3_SECRET_ACCESS_KEY = "$([guid]::NewGuid().ToString('N'))$([guid]::NewGuid().ToString('N'))"
@@ -92,13 +95,27 @@ function Set-BuildEnvironment {
 }
 
 $repositoryRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
-if ($NodeRoot -eq '') { $NodeRoot = Split-Path -Parent ((Get-Command 'node.exe' -ErrorAction Stop).Source) }
-if ($PnpmRoot -eq '') { $PnpmRoot = Split-Path -Parent ((Get-Command 'pnpm.cmd' -ErrorAction Stop).Source) }
+if ($NodeRoot -eq '') {
+    $pinnedNodeVersion = (Get-Content -LiteralPath (Join-Path $repositoryRoot '.node-version') -Raw).Trim()
+    $cachedNodeRoot = Join-Path $env:USERPROFILE ".cache\project-name\node-v$pinnedNodeVersion\node-v$pinnedNodeVersion-win-x64"
+    $NodeRoot = if (Test-Path -LiteralPath (Join-Path $cachedNodeRoot 'node.exe') -PathType Leaf) { $cachedNodeRoot } else { Split-Path -Parent ((Get-Command 'node.exe' -ErrorAction Stop).Source) }
+}
+if ($PnpmRoot -eq '') {
+    $pinnedPnpmVersion = ((Get-Content -LiteralPath (Join-Path $repositoryRoot 'package.json') -Raw | ConvertFrom-Json).packageManager -split '@')[-1]
+    $cachedPnpmRoot = Join-Path $env:USERPROFILE ".cache\project-name\pnpm-$pinnedPnpmVersion"
+    $PnpmRoot = if (Test-Path -LiteralPath (Join-Path $cachedPnpmRoot 'pnpm.cmd') -PathType Leaf) { $cachedPnpmRoot } else { Split-Path -Parent ((Get-Command 'pnpm.cmd' -ErrorAction Stop).Source) }
+}
 if ($PostgresRoot -eq '') {
     $PostgresRoot = if ($env:PROJECT_NAME_POSTGRES_ROOT) { $env:PROJECT_NAME_POSTGRES_ROOT } else { Join-Path $env:USERPROFILE '.cache\project-name\postgresql-18.4-2-windows-x64\pgsql' }
 }
-if ($RustfsRoot -eq '') {
-    $RustfsRoot = if ($env:PROJECT_NAME_RUSTFS_ROOT) { $env:PROJECT_NAME_RUSTFS_ROOT } else { Join-Path $env:USERPROFILE '.cache\project-name\rustfs-1.0.0-beta.11\bin' }
+if ($DockerExecutable -eq '') {
+    $dockerCommand = Get-Command 'docker.exe' -ErrorAction SilentlyContinue
+    if ($null -ne $dockerCommand) {
+        $DockerExecutable = $dockerCommand.Source
+    }
+    else {
+        $DockerExecutable = Join-Path $env:LOCALAPPDATA 'Programs\DockerDesktop\resources\bin\docker.exe'
+    }
 }
 if ($IntegrationCacheRoot -eq '') {
     $IntegrationCacheRoot = Join-Path $env:USERPROFILE '.cache\project-name\phase-1a-validation'
@@ -107,13 +124,12 @@ if ($IntegrationCacheRoot -eq '') {
 $NodeRoot = [System.IO.Path]::GetFullPath($NodeRoot)
 $PnpmRoot = [System.IO.Path]::GetFullPath($PnpmRoot)
 $PostgresRoot = [System.IO.Path]::GetFullPath($PostgresRoot)
-$RustfsRoot = [System.IO.Path]::GetFullPath($RustfsRoot)
+$DockerExecutable = [System.IO.Path]::GetFullPath($DockerExecutable)
 $IntegrationCacheRoot = [System.IO.Path]::GetFullPath($IntegrationCacheRoot)
 $nodeExecutable = Join-Path $NodeRoot 'node.exe'
 $pnpmExecutable = Join-Path $PnpmRoot 'pnpm.cmd'
 $postgresExecutable = Join-Path $PostgresRoot 'bin\postgres.exe'
-$rustfsExecutable = Join-Path $RustfsRoot 'rustfs.exe'
-foreach ($requiredExecutable in @($nodeExecutable, $pnpmExecutable, $postgresExecutable, $rustfsExecutable)) {
+foreach ($requiredExecutable in @($nodeExecutable, $pnpmExecutable, $postgresExecutable, $DockerExecutable)) {
     if (-not (Test-Path -LiteralPath $requiredExecutable -PathType Leaf)) {
         throw "Required verification prerequisite is missing: $requiredExecutable"
     }
@@ -136,7 +152,7 @@ try {
         if ((& $nodeExecutable --version).TrimStart('v').Trim() -ne $expectedNode) { throw 'Node version mismatch.' }
         if ((& $pnpmExecutable --version).Trim() -ne $expectedPnpm) { throw 'pnpm version mismatch.' }
         if ((@(& $postgresExecutable --version) -join "`n") -notmatch '\b18\.4\b') { throw 'PostgreSQL version mismatch.' }
-        if ((@(& $rustfsExecutable --version) -join "`n") -notmatch '\b1\.0\.0-beta\.11\b') { throw 'RustFS version mismatch.' }
+        Invoke-Checked -Executable $DockerExecutable -Arguments @('info') -FailureMessage 'Docker runtime unavailable'
         Invoke-Pnpm -Arguments @('install', '--frozen-lockfile')
     }
 
@@ -168,10 +184,10 @@ try {
         ) -FailureMessage 'PostgreSQL/recovery integration failed'
     }
 
-    Invoke-Stage -Name 's3-storage-contract-integration' -Operation {
+    Invoke-Stage -Name 'versitygw-storage-contract-integration' -Operation {
         Invoke-Checked -Executable 'powershell.exe' -Arguments @(
             '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', (Join-Path $repositoryRoot 'tooling\scripts\storage-integration.ps1'),
-            '-RustfsRoot', $RustfsRoot,
+            '-DockerExecutable', $DockerExecutable,
             '-NodeRoot', $NodeRoot,
             '-PnpmRoot', $PnpmRoot,
             '-RepositoryRoot', $repositoryRoot,
@@ -212,7 +228,8 @@ try {
             playwright = (& $pnpmExecutable exec playwright --version).Trim()
             pnpm = (& $pnpmExecutable --version).Trim()
             postgres = (& $postgresExecutable --version).Trim()
-            rustfs = (& $rustfsExecutable --version).Trim()
+            docker = (& $DockerExecutable version --format '{{.Server.Version}}').Trim()
+            versitygw = 'v1.4.1@sha256:0400cb59f59da0f1cf9f7fd49505191abc348dfadf54509bf1988caaff4eb96f'
         }
     }
     $manifest | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $evidenceRoot 'foundation-evidence.json') -Encoding UTF8

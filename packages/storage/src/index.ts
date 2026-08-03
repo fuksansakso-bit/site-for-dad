@@ -6,9 +6,11 @@ export {
 } from './errors.js';
 export { createS3ObjectStorage, S3ObjectStorage } from './s3-object-storage.js';
 export {
+  objectSources,
   objectZones,
   syntheticObjectSource,
   type ObjectLocator,
+  type ObjectSource,
   type ObjectStorage,
   type ObjectZone,
   type PutObjectInput,

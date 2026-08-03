@@ -113,6 +113,9 @@ const storageEnvironmentSchema = phase1ABaseSchema
     S3_ENDPOINT: localS3EndpointSchema,
     S3_FORCE_PATH_STYLE: z.literal('true').transform(() => true as const),
     S3_MAX_OBJECT_BYTES: positiveIntegerString(1, 10 * 1_024 * 1_024),
+    S3_MAX_ATTEMPTS: positiveIntegerString(1, 5),
+    S3_MULTIPART_PART_SIZE_BYTES: positiveIntegerString(5 * 1_024 * 1_024, 10 * 1_024 * 1_024),
+    S3_MULTIPART_THRESHOLD_BYTES: positiveIntegerString(5 * 1_024 * 1_024, 10 * 1_024 * 1_024),
     S3_REGION: z.string().min(1).max(64),
     S3_REQUEST_TIMEOUT_MS: positiveIntegerString(100, 30_000),
     S3_SECRET_ACCESS_KEY: z.string().min(16).max(512),
@@ -132,6 +135,20 @@ const storageEnvironmentSchema = phase1ABaseSchema
           path: [path],
         });
       }
+    }
+    if (environment.S3_MULTIPART_THRESHOLD_BYTES >= environment.S3_MAX_OBJECT_BYTES) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Multipart threshold must be smaller than the maximum object size.',
+        path: ['S3_MULTIPART_THRESHOLD_BYTES'],
+      });
+    }
+    if (environment.S3_MULTIPART_PART_SIZE_BYTES > environment.S3_MAX_OBJECT_BYTES) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Multipart part size must not exceed the maximum object size.',
+        path: ['S3_MULTIPART_PART_SIZE_BYTES'],
+      });
     }
   })
   .strict();
@@ -214,6 +231,9 @@ export function parseStorageEnvironment(source: EnvironmentSource): StorageEnvir
     'S3_ENDPOINT',
     'S3_FORCE_PATH_STYLE',
     'S3_MAX_OBJECT_BYTES',
+    'S3_MAX_ATTEMPTS',
+    'S3_MULTIPART_PART_SIZE_BYTES',
+    'S3_MULTIPART_THRESHOLD_BYTES',
     'S3_REGION',
     'S3_REQUEST_TIMEOUT_MS',
     'S3_SECRET_ACCESS_KEY',

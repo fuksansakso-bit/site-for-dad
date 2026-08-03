@@ -24,11 +24,14 @@ import {
   catalogJobQueueName,
   catalogRollbackVersionPayloadSchema,
   catalogSourceDiscoveryPayloadSchema,
+  catalogSyncCancellationRequestSchema,
   type CatalogActivateVersionPayload,
   type CatalogApproveVersionPayload,
   type CatalogRollbackVersionPayload,
   type CatalogSourceDiscoveryPayload,
+  type CatalogSyncCancellationRequest,
 } from './catalog/contracts.js';
+import { CatalogPipelineError } from './catalog/errors.js';
 import { createCatalogJobServices, type CatalogJobServices } from './catalog/services.js';
 import { createCatalogTaskList, type CatalogTaskLifecycleSink } from './catalog/task.js';
 import { FoundationJobError } from './errors.js';
@@ -300,7 +303,7 @@ export async function enqueueCatalogSourceDiscovery(
           max_attempts := $5::smallint,
           job_key := $6::text,
           priority := 0,
-          flags := ARRAY['catalog-pilot']::text[],
+          flags := ARRAY['catalog-full']::text[],
           job_key_mode := 'replace'
         ) AS job
       ) queued
@@ -324,6 +327,118 @@ export async function enqueueCatalogSourceDiscovery(
     maxAttempts: job.max_attempts,
     taskIdentifier: catalogJobIdentifiers.sourceDiscovery,
   };
+}
+
+export async function requestCatalogSyncCancellation(
+  pool: Pool,
+  candidate: CatalogSyncCancellationRequest,
+): Promise<'ALREADY_REQUESTED' | 'REQUESTED'> {
+  const input = catalogSyncCancellationRequestSchema.parse(candidate);
+  const client = await pool.connect();
+  let transactionActive = false;
+  try {
+    await client.query('BEGIN');
+    transactionActive = true;
+    const actorResult = await client.query<{ allowed: boolean }>(
+      `
+        SELECT bool_or(grant_row.role IN ('OWNER', 'ADMIN')) AS allowed
+        FROM actor_identity actor
+        JOIN role_grant grant_row ON grant_row.actor_id = actor.id
+        WHERE actor.id = $1::uuid
+          AND actor.disabled_at IS NULL
+          AND grant_row.revoked_at IS NULL
+        GROUP BY actor.id
+      `,
+      [input.actorId],
+    );
+    if (actorResult.rows[0]?.allowed !== true) {
+      await client.query(
+        `
+          INSERT INTO audit_event (
+            actor_type, actor_identity_id, action, outcome, correlation_id,
+            target_type, target_id, reason_code
+          ) VALUES (
+            CASE WHEN EXISTS (
+              SELECT 1 FROM actor_identity WHERE id = $1::uuid
+            ) THEN 'IDENTITY'::audit_actor_type ELSE 'SYSTEM_WORKER'::audit_actor_type END,
+            CASE WHEN EXISTS (
+              SELECT 1 FROM actor_identity WHERE id = $1::uuid
+            ) THEN $1::uuid ELSE NULL END,
+            'CATALOG_SYNC_CANCELLATION_REQUESTED', 'DENIED', $2,
+            'CATALOG_SYNC_RUN', $3, 'CATALOG_ADMIN_OR_OWNER_REQUIRED'
+          )
+        `,
+        [input.actorId, input.correlationId, input.syncRunId],
+      );
+      await client.query('COMMIT');
+      transactionActive = false;
+      throw new CatalogPipelineError('CATALOG_PIPELINE_AUTHORIZATION');
+    }
+
+    const runResult = await client.query<{
+      cancel_requested_at: Date | null;
+      cancel_requested_by_actor_id: string | null;
+      cancellation_reason: string | null;
+      status: string;
+    }>(
+      `
+        SELECT status::text, cancel_requested_at,
+               cancel_requested_by_actor_id::text, cancellation_reason
+        FROM catalog_sync_run
+        WHERE id = $1::uuid AND catalog_source_id = $2::uuid
+        FOR UPDATE
+      `,
+      [input.syncRunId, input.catalogSourceId],
+    );
+    const run = runResult.rows[0];
+    if (
+      run === undefined ||
+      !['DISCOVERING', 'CAPTURING', 'NORMALIZING', 'IMPORTING_MEDIA', 'BUILDING_DIFF'].includes(
+        run.status,
+      )
+    ) {
+      throw new CatalogPipelineError('CATALOG_PIPELINE_VERSION_CONFLICT');
+    }
+    const alreadyRequested = run.cancel_requested_at !== null;
+    if (
+      alreadyRequested &&
+      (run.cancel_requested_by_actor_id !== input.actorId ||
+        run.cancellation_reason !== input.reason)
+    ) {
+      throw new CatalogPipelineError('CATALOG_PIPELINE_VERSION_CONFLICT');
+    }
+    if (!alreadyRequested) {
+      await client.query(
+        `
+          UPDATE catalog_sync_run
+          SET cancel_requested_at = NOW(), cancel_requested_by_actor_id = $2::uuid,
+              cancellation_reason = $3, last_heartbeat_at = NOW(), updated_at = NOW()
+          WHERE id = $1::uuid
+        `,
+        [input.syncRunId, input.actorId, input.reason],
+      );
+      await client.query(
+        `
+          INSERT INTO audit_event (
+            actor_type, actor_identity_id, action, outcome, correlation_id,
+            target_type, target_id, reason_code
+          ) VALUES (
+            'IDENTITY', $1::uuid, 'CATALOG_SYNC_CANCELLATION_REQUESTED',
+            'SUCCEEDED', $2, 'CATALOG_SYNC_RUN', $3, 'OPERATOR_REQUEST'
+          )
+        `,
+        [input.actorId, input.correlationId, input.syncRunId],
+      );
+    }
+    await client.query('COMMIT');
+    transactionActive = false;
+    return alreadyRequested ? 'ALREADY_REQUESTED' : 'REQUESTED';
+  } catch (error) {
+    if (transactionActive) await client.query('ROLLBACK').catch(() => undefined);
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 async function enqueueCatalogGovernanceJob(
@@ -366,7 +481,7 @@ async function enqueueCatalogGovernanceJob(
           max_attempts := $4::smallint,
           job_key := $5::text,
           priority := -1,
-          flags := ARRAY['catalog-pilot', 'governance']::text[],
+          flags := ARRAY['catalog-full', 'governance']::text[],
           job_key_mode := 'replace'
         ) AS job
       ) queued

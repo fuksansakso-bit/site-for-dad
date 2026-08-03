@@ -3,8 +3,10 @@ import type { JobHelpers } from 'graphile-worker';
 
 import { type CatalogJobIdentifier } from './contracts.js';
 import { CatalogPipelineError, type CatalogPipelineErrorCode } from './errors.js';
+import { sealCatalogImportManifest } from './manifest.js';
 
 interface CatalogIdempotentPayload {
+  readonly catalogSourceId: string;
   readonly correlationId: string;
   readonly idempotencyKey: string;
   readonly schemaVersion: 1;
@@ -99,29 +101,45 @@ export async function failCatalogExecution(
         `,
         [identifier, payload.idempotencyKey],
       );
+      let failedSyncRunId: string | undefined;
       if (
         payload.syncRunId !== undefined &&
-        !['catalog-activate-version', 'catalog-approve-version'].includes(identifier)
+        [
+          'catalog-build-diff',
+          'catalog-import-media',
+          'catalog-normalize',
+          'catalog-sync-run',
+        ].includes(identifier)
       ) {
-        await client.query(
+        const failedRun = await client.query<{ id: string }>(
           `
             UPDATE catalog_sync_run
             SET status = 'FAILED', error_count = error_count + 1,
                 error_code = $2, completed_at = NOW(), updated_at = NOW()
             WHERE id = $1::uuid
+            RETURNING id::text
           `,
           [payload.syncRunId, code],
         );
+        failedSyncRunId = failedRun.rows[0]?.id;
       } else if (identifier === 'catalog-source-discovery') {
-        await client.query(
+        const failedRun = await client.query<{ id: string }>(
           `
             UPDATE catalog_sync_run
             SET status = 'FAILED', error_count = error_count + 1,
                 error_code = $2, completed_at = NOW(), updated_at = NOW()
             WHERE idempotency_key = $1
+            RETURNING id::text
           `,
           [payload.idempotencyKey, code],
         );
+        failedSyncRunId = failedRun.rows[0]?.id;
+      }
+      if (failedSyncRunId !== undefined) {
+        await sealCatalogImportManifest(client, {
+          catalogSourceId: payload.catalogSourceId,
+          syncRunId: failedSyncRunId,
+        });
       }
       await client.query(
         `

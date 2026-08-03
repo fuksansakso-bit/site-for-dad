@@ -2,25 +2,30 @@ import { randomUUID } from 'node:crypto';
 
 import {
   FixtureCatalogSourceAdapter,
+  CatalogSourceError,
   hashCanonicalSource,
   type FixtureCatalogDataset,
 } from '@project-name/catalog';
 import {
   parseDatabaseEnvironment,
+  parseMigrationEnvironment,
   parseWorkerEnvironment,
   type WorkerEnvironment,
 } from '@project-name/config/server';
 import { createCatalogManagementAdapter } from '@project-name/db';
 import type { JobHelpers } from 'graphile-worker';
-import type { PoolClient, QueryResult, QueryResultRow } from 'pg';
+import { Pool, type PoolClient, type QueryResult, type QueryResultRow } from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import {
   createFoundationJobPool,
   enqueueCatalogSourceDiscovery,
+  requestCatalogSyncCancellation,
   runFoundationJobsOnce,
   verifyFoundationQueueSchema,
 } from '../../src/adapter.js';
+import { catalogJobIdentifiers, catalogStageIdempotencyKey } from '../../src/catalog/contracts.js';
+import { failCatalogExecution } from '../../src/catalog/idempotency.js';
 import type { CatalogTaskLifecycleEvent } from '../../src/catalog/task.js';
 import { createCatalogJobServices } from '../../src/catalog/services.js';
 import {
@@ -36,11 +41,13 @@ import {
 const catalogSourceId = '00000000-0000-4000-8000-000000000103';
 const runTag = randomUUID().slice(0, 8);
 const databaseEnvironment = parseDatabaseEnvironment(process.env);
+const migrationEnvironment = parseMigrationEnvironment(process.env);
 const workerEnvironment: WorkerEnvironment = {
   ...parseWorkerEnvironment(process.env),
   WORKER_JOB_TIMEOUT_MS: 5_000,
 };
 const pool = createFoundationJobPool(databaseEnvironment, 4);
+const migrationPool = new Pool({ connectionString: migrationEnvironment.MIGRATION_DATABASE_URL });
 const objectStorage = createMemoryCatalogStorage();
 const ownerActorId = randomUUID();
 const adminActorId = randomUUID();
@@ -181,6 +188,7 @@ beforeAll(async () => {
 afterAll(async () => {
   await management.close();
   await pool.end();
+  await migrationPool.end();
 });
 
 describe.sequential('catalog synchronization pipeline', () => {
@@ -194,7 +202,11 @@ describe.sequential('catalog synchronization pipeline', () => {
       audit_count: string;
       catalog_difference_count: string;
       catalog_version_count: string;
+      checkpoint_count: string;
+      import_manifest_complete: boolean;
+      import_manifest_count: string;
       material_count: string;
+      model_count: string;
       media_reference_count: string;
       media_asset_count: string;
       media_audit_count: string;
@@ -208,6 +220,12 @@ describe.sequential('catalog synchronization pipeline', () => {
           (SELECT count(*)::text FROM source_snapshot WHERE sync_run_id = $1::uuid) AS snapshot_count,
           (SELECT count(*)::text FROM catalog_version WHERE sync_run_id = $1::uuid)
             AS catalog_version_count,
+          (SELECT count(*)::text FROM catalog_sync_checkpoint WHERE sync_run_id = $1::uuid)
+            AS checkpoint_count,
+          (SELECT count(*)::text FROM catalog_import_manifest WHERE sync_run_id = $1::uuid)
+            AS import_manifest_count,
+          (SELECT complete FROM catalog_import_manifest WHERE sync_run_id = $1::uuid)
+            AS import_manifest_complete,
           (SELECT count(*)::text FROM price_version WHERE sync_run_id = $1::uuid)
             AS price_version_count,
           (SELECT count(*)::text FROM catalog_sync_difference WHERE sync_run_id = $1::uuid)
@@ -219,6 +237,15 @@ describe.sequential('catalog synchronization pipeline', () => {
             WHERE source.catalog_source_id = '${catalogSourceId}'::uuid
               AND source.source_id = 'jobs-material-roller-1001'
           ) AS material_count,
+          (
+            SELECT count(*)::text
+            FROM product_model model
+            JOIN source_entity source ON source.id = model.source_entity_id
+            WHERE source.catalog_source_id = '${catalogSourceId}'::uuid
+              AND source.source_id = 'jobs-model-roller-ready-1001'
+              AND model.category_id IS NOT NULL
+              AND model.system_id IS NOT NULL
+          ) AS model_count,
           (
             SELECT count(*)::text
             FROM source_media_asset
@@ -245,7 +272,7 @@ describe.sequential('catalog synchronization pipeline', () => {
             FROM catalog_sync_item
             WHERE sync_run_id = $1::uuid
               AND source_type = 'MEDIA'
-            LIMIT 1
+              AND source_id = 'jobs-material-roller-1001:primary:1'
           ) AS media_metadata_filename,
           (
             SELECT count(*)::text
@@ -261,14 +288,259 @@ describe.sequential('catalog synchronization pipeline', () => {
     expect(counts.rows[0]).toMatchObject({
       audit_count: '4',
       catalog_version_count: '1',
+      checkpoint_count: '8',
+      import_manifest_complete: true,
+      import_manifest_count: '1',
       material_count: '1',
+      model_count: '1',
       media_asset_count: '1',
       media_audit_count: '1',
       media_metadata_filename: 'jobs-material-roller-1001.png',
       media_reference_count: '1',
       price_count: '1',
       price_version_count: '1',
-      snapshot_count: '1',
+      snapshot_count: '6',
+    });
+  });
+
+  it('resumes the same run from immutable snapshots after a retryable source interruption', async () => {
+    let failNextPriceFetch = true;
+    const fetchCounts = { material: 0, media: 0, model: 0, price: 0, system: 0 };
+    class RetryOnceFixtureAdapter extends FixtureCatalogSourceAdapter {
+      override async fetchMaterial(sourceId: string) {
+        fetchCounts.material += 1;
+        return super.fetchMaterial(sourceId);
+      }
+
+      override async fetchMediaManifest(sourceId: string) {
+        fetchCounts.media += 1;
+        return super.fetchMediaManifest(sourceId);
+      }
+
+      override async fetchModel(sourceId: string) {
+        fetchCounts.model += 1;
+        return super.fetchModel(sourceId);
+      }
+
+      override async fetchPrice(sourceId: string) {
+        fetchCounts.price += 1;
+        if (failNextPriceFetch) {
+          failNextPriceFetch = false;
+          throw new CatalogSourceError(
+            'SOURCE_TRANSPORT_UNAVAILABLE',
+            'Synthetic retryable source interruption.',
+            { retryable: true },
+          );
+        }
+        return super.fetchPrice(sourceId);
+      }
+
+      override async fetchProduct(sourceId: string) {
+        fetchCounts.system += 1;
+        return super.fetchProduct(sourceId);
+      }
+    }
+    const resumableServices = createCatalogJobServices(
+      () => new RetryOnceFixtureAdapter(createJobsCatalogFixture()),
+      () => ({ maximumBytes: 1_048_576, objectStorage }),
+    );
+    const correlationId = `catalog-resume-${runTag}`;
+    const syncRunId = await resumableServices.discoverSource(
+      {
+        catalogSourceId,
+        correlationId,
+        idempotencyKey: `catalog:test:${catalogSourceId}:${runTag}:resume`,
+        schemaVersion: 1,
+        trigger: 'TEST',
+      },
+      versionHelpers,
+      new AbortController().signal,
+    );
+    const stagePayload = {
+      catalogSourceId,
+      correlationId,
+      idempotencyKey: catalogStageIdempotencyKey(catalogJobIdentifiers.syncRun, syncRunId),
+      schemaVersion: 1 as const,
+      syncRunId,
+    };
+    await expect(
+      resumableServices.synchronize(stagePayload, versionHelpers, new AbortController().signal),
+    ).rejects.toMatchObject({ code: 'CATALOG_PIPELINE_SOURCE_UNAVAILABLE' });
+    const interrupted = await pool.query<{ snapshot_count: string }>(
+      'SELECT count(*)::text AS snapshot_count FROM source_snapshot WHERE sync_run_id = $1::uuid',
+      [syncRunId],
+    );
+    expect(interrupted.rows[0]?.snapshot_count).toBe('4');
+
+    await expect(
+      resumableServices.synchronize(stagePayload, versionHelpers, new AbortController().signal),
+    ).resolves.toBe('CAPTURED');
+    const resumed = await pool.query<{
+      completed_checkpoints: string;
+      resume_count: string;
+      snapshot_count: string;
+    }>(
+      `
+        SELECT
+          (SELECT count(*)::text FROM source_snapshot
+           WHERE sync_run_id = $1::uuid) AS snapshot_count,
+          (SELECT COALESCE(sum(resume_count), 0)::text FROM catalog_sync_checkpoint
+           WHERE sync_run_id = $1::uuid) AS resume_count,
+          (SELECT count(*)::text FROM catalog_sync_checkpoint
+           WHERE sync_run_id = $1::uuid AND status = 'COMPLETED') AS completed_checkpoints
+      `,
+      [syncRunId],
+    );
+    expect(resumed.rows[0]).toEqual({
+      completed_checkpoints: '8',
+      resume_count: '4',
+      snapshot_count: '6',
+    });
+    expect(fetchCounts).toEqual({ material: 1, media: 1, model: 1, price: 2, system: 1 });
+  });
+
+  it('durably cancels an in-flight run and seals retained evidence without a candidate', async () => {
+    const correlationId = `catalog-cancel-${runTag}`;
+    const syncRunId = await services.discoverSource(
+      {
+        catalogSourceId,
+        correlationId,
+        idempotencyKey: `catalog:test:${catalogSourceId}:${runTag}:cancel`,
+        schemaVersion: 1,
+        trigger: 'TEST',
+      },
+      versionHelpers,
+      new AbortController().signal,
+    );
+    const command = {
+      actorId: ownerActorId,
+      catalogSourceId,
+      correlationId,
+      reason: 'Synthetic operator cancellation verification.',
+      syncRunId,
+    } as const;
+    await expect(requestCatalogSyncCancellation(pool, command)).resolves.toBe('REQUESTED');
+    await expect(requestCatalogSyncCancellation(pool, command)).resolves.toBe('ALREADY_REQUESTED');
+    await expect(
+      services.synchronize(
+        {
+          catalogSourceId,
+          correlationId,
+          idempotencyKey: catalogStageIdempotencyKey(catalogJobIdentifiers.syncRun, syncRunId),
+          schemaVersion: 1,
+          syncRunId,
+        },
+        versionHelpers,
+        new AbortController().signal,
+      ),
+    ).resolves.toBe('CANCELLED');
+    const state = await pool.query<{
+      candidate_count: string;
+      complete: boolean;
+      manifest_status: string;
+      run_status: string;
+    }>(
+      `
+        SELECT run.status::text AS run_status,
+               manifest.status::text AS manifest_status,
+               manifest.complete,
+               (
+                 (SELECT count(*) FROM catalog_version WHERE sync_run_id = run.id) +
+                 (SELECT count(*) FROM price_version WHERE sync_run_id = run.id)
+               )::text AS candidate_count
+        FROM catalog_sync_run run
+        JOIN catalog_import_manifest manifest ON manifest.sync_run_id = run.id
+        WHERE run.id = $1::uuid
+      `,
+      [syncRunId],
+    );
+    expect(state.rows[0]).toEqual({
+      candidate_count: '0',
+      complete: false,
+      manifest_status: 'CANCELLED',
+      run_status: 'CANCELLED',
+    });
+    await expect(
+      pool.query(
+        `UPDATE catalog_import_manifest SET complete = true WHERE sync_run_id = $1::uuid`,
+        [syncRunId],
+      ),
+    ).rejects.toMatchObject({ code: '42501' });
+    await expect(
+      migrationPool.query(
+        `UPDATE catalog_import_manifest SET complete = true WHERE sync_run_id = $1::uuid`,
+        [syncRunId],
+      ),
+    ).rejects.toMatchObject({ code: '55000' });
+  });
+
+  it('seals a partial manifest when retryable capture exhausts its attempts', async () => {
+    class UnavailablePriceFixtureAdapter extends FixtureCatalogSourceAdapter {
+      override async fetchPrice(_sourceId: string): Promise<never> {
+        throw new CatalogSourceError(
+          'SOURCE_TRANSPORT_UNAVAILABLE',
+          'Synthetic exhausted source interruption.',
+          { retryable: true },
+        );
+      }
+    }
+    const failingServices = createCatalogJobServices(
+      () => new UnavailablePriceFixtureAdapter(createJobsCatalogFixture()),
+      () => ({ maximumBytes: 1_048_576, objectStorage }),
+    );
+    const correlationId = `catalog-permanent-failure-${runTag}`;
+    const syncRunId = await failingServices.discoverSource(
+      {
+        catalogSourceId,
+        correlationId,
+        idempotencyKey: `catalog:test:${catalogSourceId}:${runTag}:permanent-failure`,
+        schemaVersion: 1,
+        trigger: 'TEST',
+      },
+      versionHelpers,
+      new AbortController().signal,
+    );
+    const stagePayload = {
+      catalogSourceId,
+      correlationId,
+      idempotencyKey: catalogStageIdempotencyKey(catalogJobIdentifiers.syncRun, syncRunId),
+      schemaVersion: 1 as const,
+      syncRunId,
+    };
+    await expect(
+      failingServices.synchronize(stagePayload, versionHelpers, new AbortController().signal),
+    ).rejects.toMatchObject({ code: 'CATALOG_PIPELINE_SOURCE_UNAVAILABLE' });
+    await failCatalogExecution(
+      catalogJobIdentifiers.syncRun,
+      stagePayload,
+      versionHelpers,
+      'CATALOG_PIPELINE_SOURCE_UNAVAILABLE',
+    );
+    const state = await pool.query<{
+      candidate_count: string;
+      complete: boolean;
+      manifest_status: string;
+      run_status: string;
+    }>(
+      `
+        SELECT run.status::text AS run_status,
+               manifest.status::text AS manifest_status,
+               manifest.complete,
+               (
+                 (SELECT count(*) FROM catalog_version WHERE sync_run_id = run.id) +
+                 (SELECT count(*) FROM price_version WHERE sync_run_id = run.id)
+               )::text AS candidate_count
+        FROM catalog_sync_run run
+        JOIN catalog_import_manifest manifest ON manifest.sync_run_id = run.id
+        WHERE run.id = $1::uuid
+      `,
+      [syncRunId],
+    );
+    expect(state.rows[0]).toEqual({
+      candidate_count: '0',
+      complete: false,
+      manifest_status: 'PARTIAL_FAILED',
+      run_status: 'FAILED',
     });
   });
 

@@ -66,7 +66,7 @@ async function enqueueStage(
   payload: CatalogSyncStagePayload,
 ): Promise<void> {
   await helpers.addJob(identifier, payload, {
-    flags: ['catalog-pilot'],
+    flags: ['catalog-full'],
     jobKey: `${identifier}:${payload.syncRunId}`,
     jobKeyMode: 'replace',
     maxAttempts: 5,
@@ -194,7 +194,6 @@ export function createCatalogTaskList(
         timeoutMilliseconds,
         lifecycle,
         async (payload, signal) => {
-          const syncRunId = await services.discoverSource(payload, helpers, signal);
           if (payload.trigger === 'AUTOMATIC') {
             const nextRunAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
             const nextPayload = automaticCatalogDiscoveryPayload(
@@ -202,7 +201,7 @@ export function createCatalogTaskList(
               nextRunAt,
             );
             await helpers.addJob(catalogJobIdentifiers.sourceDiscovery, nextPayload, {
-              flags: ['catalog-pilot', 'automatic'],
+              flags: ['catalog-full', 'automatic'],
               jobKey: `${catalogJobIdentifiers.sourceDiscovery}:${nextPayload.idempotencyKey}`,
               jobKeyMode: 'replace',
               maxAttempts: 5,
@@ -210,6 +209,7 @@ export function createCatalogTaskList(
               runAt: nextRunAt,
             });
           }
+          const syncRunId = await services.discoverSource(payload, helpers, signal);
           await enqueueStage(helpers, catalogJobIdentifiers.syncRun, {
             catalogSourceId: payload.catalogSourceId,
             correlationId: payload.correlationId,
@@ -228,7 +228,8 @@ export function createCatalogTaskList(
         timeoutMilliseconds,
         lifecycle,
         async (payload, signal) => {
-          await services.synchronize(payload, helpers, signal);
+          const result = await services.synchronize(payload, helpers, signal);
+          if (result === 'CANCELLED') return;
           await enqueueStage(
             helpers,
             catalogJobIdentifiers.normalize,
@@ -245,7 +246,8 @@ export function createCatalogTaskList(
         timeoutMilliseconds,
         lifecycle,
         async (payload, signal) => {
-          await services.normalize(payload, helpers, signal);
+          const result = await services.normalize(payload, helpers, signal);
+          if (result === 'CANCELLED') return;
           await enqueueStage(
             helpers,
             catalogJobIdentifiers.mediaImport,
@@ -262,7 +264,8 @@ export function createCatalogTaskList(
         timeoutMilliseconds,
         lifecycle,
         async (payload, signal) => {
-          await services.importMedia(payload, helpers, signal);
+          const result = await services.importMedia(payload, helpers, signal);
+          if (result === 'CANCELLED') return;
           await enqueueStage(
             helpers,
             catalogJobIdentifiers.buildDiff,
@@ -278,7 +281,9 @@ export function createCatalogTaskList(
         helpers,
         timeoutMilliseconds,
         lifecycle,
-        (payload, signal) => services.buildDiff(payload, helpers, signal),
+        async (payload, signal) => {
+          await services.buildDiff(payload, helpers, signal);
+        },
       ),
     [catalogJobIdentifiers.approveVersion]: (candidate, helpers) =>
       executeTask(

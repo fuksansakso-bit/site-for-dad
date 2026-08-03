@@ -1,3 +1,6 @@
+import { createHash } from 'node:crypto';
+
+import type { JobHelpers } from 'graphile-worker';
 import { describe, expect, it, vi } from 'vitest';
 
 import {
@@ -7,18 +10,20 @@ import {
   catalogJobIdentifiers,
   catalogRollbackVersionPayloadSchema,
   catalogSourceDiscoveryPayloadSchema,
+  catalogSyncCancellationRequestSchema,
 } from '../../src/catalog/contracts.js';
 import {
   catalogSafeSnapshotPayloadSchema,
   emptyCatalogSafeSnapshotPayload,
 } from '../../src/catalog/snapshot.js';
 import { type CatalogJobServices } from '../../src/catalog/services.js';
+import { CatalogPipelineError } from '../../src/catalog/errors.js';
 import { createCatalogTaskList } from '../../src/catalog/task.js';
 
 const catalogSourceId = '00000000-0000-4000-8000-000000000103';
 
 describe('catalog synchronization job contracts', () => {
-  it('registers exactly the owner-authorized Phase 1B.1 jobs', () => {
+  it('registers exactly the owner-authorized Phase 1B.2 catalog jobs', () => {
     const services = {
       activateVersion: vi.fn(),
       approveVersion: vi.fn(),
@@ -68,6 +73,53 @@ describe('catalog synchronization job contracts', () => {
     expect(JSON.stringify(payload)).not.toMatch(/password|secret|token/i);
   });
 
+  it('schedules the next daily run before a retryable discovery failure', async () => {
+    const payload = automaticCatalogDiscoveryPayload(
+      catalogSourceId,
+      new Date('2026-08-03T00:00:00.000Z'),
+    );
+    const services = {
+      activateVersion: vi.fn(),
+      approveVersion: vi.fn(),
+      buildDiff: vi.fn(),
+      discoverSource: vi.fn().mockRejectedValue(
+        new CatalogPipelineError('CATALOG_PIPELINE_SOURCE_UNAVAILABLE', {
+          retryable: true,
+        }),
+      ),
+      importMedia: vi.fn(),
+      normalize: vi.fn(),
+      rollbackVersion: vi.fn(),
+      synchronize: vi.fn(),
+    } satisfies CatalogJobServices;
+    const addJob = vi.fn().mockResolvedValue(undefined);
+    const digest = createHash('sha256').update(JSON.stringify(payload)).digest('hex');
+    const helpers = {
+      abortSignal: new AbortController().signal,
+      addJob,
+      job: { attempts: 1, max_attempts: 5 },
+      query: vi.fn(async (text: string) =>
+        text.includes('SELECT payload_digest, status')
+          ? { rows: [{ payload_digest: digest, status: 'IN_PROGRESS' }] }
+          : { rows: [] },
+      ),
+    } as unknown as JobHelpers;
+    const task = createCatalogTaskList(services, 1_000)[catalogJobIdentifiers.sourceDiscovery];
+    if (task === undefined) throw new Error('Catalog discovery task is unavailable.');
+
+    await expect(task(payload, helpers)).rejects.toMatchObject({
+      code: 'CATALOG_PIPELINE_SOURCE_UNAVAILABLE',
+    });
+    expect(addJob).toHaveBeenCalledTimes(1);
+    expect(addJob.mock.calls[0]?.[0]).toBe(catalogJobIdentifiers.sourceDiscovery);
+    expect(addJob.mock.calls[0]?.[1]).toMatchObject({ trigger: 'AUTOMATIC' });
+    expect(addJob.mock.calls[0]?.[2]).toMatchObject({
+      flags: ['catalog-full', 'automatic'],
+      maxAttempts: 5,
+      queueName: 'catalog-full-sync',
+    });
+  });
+
   it('accepts an explicit safe retry link to a historical sync run', () => {
     expect(
       catalogSourceDiscoveryPayloadSchema.parse({
@@ -79,6 +131,28 @@ describe('catalog synchronization job contracts', () => {
         trigger: 'TEST',
       }),
     ).toMatchObject({ retryOfSyncRunId: '798d5513-27b1-48e3-ab8e-389eeb672db4' });
+  });
+
+  it('requires a bounded actor-attributed cancellation request', () => {
+    expect(
+      catalogSyncCancellationRequestSchema.parse({
+        actorId: '00000000-0000-4000-8000-000000000201',
+        catalogSourceId,
+        correlationId: 'catalog-cancel-unit-001',
+        reason: 'Operator stopped the current capture.',
+        syncRunId: '00000000-0000-4000-8000-000000000301',
+      }),
+    ).toMatchObject({ reason: 'Operator stopped the current capture.' });
+    expect(() =>
+      catalogSyncCancellationRequestSchema.parse({
+        actorId: '00000000-0000-4000-8000-000000000201',
+        catalogSourceId,
+        correlationId: 'catalog-cancel-unit-001',
+        reason: 'x'.repeat(513),
+        secret: 'not-allowed',
+        syncRunId: '00000000-0000-4000-8000-000000000301',
+      }),
+    ).toThrow();
   });
 
   it('binds approval, activation and rollback commands to explicit version pairs', () => {

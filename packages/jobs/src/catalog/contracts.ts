@@ -15,7 +15,7 @@ export const catalogJobIdentifiers = {
 export type CatalogJobIdentifier =
   (typeof catalogJobIdentifiers)[keyof typeof catalogJobIdentifiers];
 
-export const catalogJobQueueName = 'catalog-pilot-sync' as const;
+export const catalogJobQueueName = 'catalog-full-sync' as const;
 
 const idempotencyKeySchema = z
   .string()
@@ -58,6 +58,16 @@ export const catalogSyncRunPayloadSchema = z.object(syncStagePayloadShape).stric
 export const catalogNormalizePayloadSchema = z.object(syncStagePayloadShape).strict();
 export const catalogMediaImportPayloadSchema = z.object(syncStagePayloadShape).strict();
 export const catalogBuildDiffPayloadSchema = z.object(syncStagePayloadShape).strict();
+
+export const catalogSyncCancellationRequestSchema = z
+  .object({
+    actorId: z.uuid(),
+    catalogSourceId: z.uuid(),
+    correlationId: correlationIdSchema,
+    reason: z.string().trim().min(3).max(512),
+    syncRunId: z.uuid(),
+  })
+  .strict();
 
 const checksumSchema = z.string().regex(/^[0-9a-f]{64}$/);
 const governanceReasonSchema = z.string().trim().min(3).max(512);
@@ -181,6 +191,7 @@ export type CatalogSyncRunPayload = z.infer<typeof catalogSyncRunPayloadSchema>;
 export type CatalogNormalizePayload = z.infer<typeof catalogNormalizePayloadSchema>;
 export type CatalogMediaImportPayload = z.infer<typeof catalogMediaImportPayloadSchema>;
 export type CatalogBuildDiffPayload = z.infer<typeof catalogBuildDiffPayloadSchema>;
+export type CatalogSyncCancellationRequest = z.infer<typeof catalogSyncCancellationRequestSchema>;
 export type CatalogApproveVersionPayload = z.infer<typeof catalogApproveVersionPayloadSchema>;
 export type CatalogActivateVersionPayload = z.infer<typeof catalogActivateVersionPayloadSchema>;
 export type CatalogRollbackVersionPayload = z.infer<typeof catalogRollbackVersionPayloadSchema>;

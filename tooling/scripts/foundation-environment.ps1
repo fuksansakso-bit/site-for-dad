@@ -436,11 +436,11 @@ try {
     $env:WORKER_CONCURRENCY = '1'
     $env:WORKER_HEALTH_HOST = '127.0.0.1'
     $env:WORKER_HEALTH_PORT = "$WorkerPort"
-    $env:WORKER_JOB_TIMEOUT_MS = '100000'
+    $env:WORKER_JOB_TIMEOUT_MS = '600000'
     $env:WORKER_MAX_ATTEMPTS = '3'
     $env:WORKER_POLL_INTERVAL_MS = '500'
     $env:WORKER_RUNTIME_DATABASE_ROLE = 'foundation_runtime'
-    $env:WORKER_SHUTDOWN_TIMEOUT_MS = '120000'
+    $env:WORKER_SHUTDOWN_TIMEOUT_MS = '660000'
     Set-StorageComposeEnvironment -Secrets $secrets
 
     Invoke-Checked -Executable $pnpmExecutable -Arguments @('--dir', $repositoryRoot, '--filter', '@project-name/db', 'db:migrate:deploy') -FailureMessage 'Prisma migration deploy failed'

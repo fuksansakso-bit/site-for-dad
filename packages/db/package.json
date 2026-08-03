@@ -45,7 +45,7 @@
   },
   "projectName": {
     "layer": "db",
-    "responsibility": "PostgreSQL adapter, catalog-pilot Prisma schema, migration tooling, and readiness checks.",
+    "responsibility": "PostgreSQL adapter, Phase 1B.2 catalog source/normalized/overlay schema, migration tooling, and readiness checks.",
     "publicInterface": [
       ".",
       "./client"

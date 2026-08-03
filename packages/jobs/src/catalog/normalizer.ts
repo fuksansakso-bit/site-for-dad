@@ -5,6 +5,7 @@ import {
   type SourceIdentity,
   type SourceMaterial,
   type SourceMediaManifest,
+  type SourceModel,
   type SourcePrice,
   type SourceSystem,
 } from '@project-name/catalog';
@@ -80,6 +81,7 @@ function mergePayloads(payloads: readonly CatalogSafeSnapshotPayload[]): {
   readonly categories: readonly CapturedSource<SourceCategory>[];
   readonly materials: readonly CapturedSource<SourceMaterial>[];
   readonly mediaManifests: readonly CapturedSource<SourceMediaManifest>[];
+  readonly models: readonly CapturedSource<SourceModel>[];
   readonly prices: readonly CapturedSource<SourcePrice>[];
   readonly systems: readonly CapturedSource<SourceSystem>[];
 } {
@@ -97,6 +99,10 @@ function mergePayloads(payloads: readonly CatalogSafeSnapshotPayload[]): {
         (payload) => payload.mediaManifests,
       ) as CapturedSource<SourceMediaManifest>[],
       'media',
+    ),
+    models: deduplicate(
+      payloads.flatMap((payload) => payload.models) as CapturedSource<SourceModel>[],
+      'model',
     ),
     prices: deduplicate(
       payloads.flatMap((payload) => payload.prices) as CapturedSource<SourcePrice>[],
@@ -277,11 +283,12 @@ async function upsertCategory(
   const result = await client.query<{ id: string }>(
     `
       INSERT INTO product_category (
-        source_entity_id, family_id, slug, name, updated_at
-      ) VALUES ($1::uuid, $2::uuid, $3, $4, NOW())
+        source_entity_id, family_id, slug, name, sort_order, updated_at
+      ) VALUES ($1::uuid, $2::uuid, $3, $4, $5, NOW())
       ON CONFLICT (source_entity_id) DO UPDATE
       SET family_id = EXCLUDED.family_id,
           name = EXCLUDED.name,
+          sort_order = EXCLUDED.sort_order,
           updated_at = NOW()
       RETURNING id::text
     `,
@@ -290,6 +297,48 @@ async function upsertCategory(
       familyId,
       `amigo-category-${record.data.identity.sourceId}`,
       record.data.name,
+      record.data.sortOrder ?? 0,
+    ],
+  );
+  const id = result.rows[0]?.id;
+  if (id === undefined) throw new CatalogPipelineError('CATALOG_PIPELINE_DATABASE');
+  return { id, sourceEntityId: sourceEntity.id };
+}
+
+async function upsertModel(
+  client: PoolClient,
+  payload: CatalogNormalizePayload,
+  record: CapturedSource<SourceModel>,
+  categoryId: string,
+  systemId: string | null,
+): Promise<NormalizedReference> {
+  const sourceEntity = await upsertSourceEntity(
+    client,
+    payload.catalogSourceId,
+    record.data.identity,
+    record.data,
+  );
+  await recordSyncItem(client, payload, record.data.identity, sourceEntity);
+  const result = await client.query<{ id: string }>(
+    `
+      INSERT INTO product_model (
+        source_entity_id, category_id, system_id, slug, name, description, updated_at
+      ) VALUES ($1::uuid, $2::uuid, $3::uuid, $4, $5, $6, NOW())
+      ON CONFLICT (source_entity_id) DO UPDATE
+      SET category_id = EXCLUDED.category_id,
+          system_id = EXCLUDED.system_id,
+          name = EXCLUDED.name,
+          description = EXCLUDED.description,
+          updated_at = NOW()
+      RETURNING id::text
+    `,
+    [
+      sourceEntity.id,
+      categoryId,
+      systemId,
+      record.data.identity.sourceSlug,
+      record.data.name,
+      record.data.description ?? null,
     ],
   );
   const id = result.rows[0]?.id;
@@ -602,6 +651,16 @@ async function upsertMediaManifest(
   record: CapturedSource<SourceMediaManifest>,
   materialVariantId: string,
 ): Promise<void> {
+  const manifestSourceEntity = await upsertSourceEntity(
+    client,
+    payload.catalogSourceId,
+    record.data.identity,
+    {
+      materialSourceId: record.data.materialSourceId,
+      mediaSourceIds: record.data.media.map((media) => media.identity.sourceId),
+    },
+  );
+  await recordSyncItem(client, payload, record.data.identity, manifestSourceEntity);
   for (const media of record.data.media) {
     const sourceEntity = await upsertSourceEntity(client, payload.catalogSourceId, media.identity, {
       materialSourceId: record.data.materialSourceId,
@@ -681,6 +740,7 @@ export async function normalizeCatalogSnapshots(
         const families = new Map<string, NormalizedReference>();
         const categories = new Map<string, NormalizedReference>();
         const systems = new Map<string, NormalizedReference>();
+        const models = new Map<string, NormalizedReference>();
         const variants = new Map<string, NormalizedReference>();
 
         for (const category of batch.categories) {
@@ -693,6 +753,28 @@ export async function normalizeCatalogSnapshots(
           categories.set(category.data.identity.sourceId, normalizedCategory);
         }
 
+        for (const category of batch.categories) {
+          const normalizedCategory = categories.get(category.data.identity.sourceId);
+          if (normalizedCategory === undefined) {
+            throw new CatalogPipelineError('CATALOG_PIPELINE_PAYLOAD_INVALID');
+          }
+          const parent =
+            category.data.parentCategorySourceId === undefined
+              ? undefined
+              : categories.get(category.data.parentCategorySourceId);
+          if (category.data.parentCategorySourceId !== undefined && parent === undefined) {
+            throw new CatalogPipelineError('CATALOG_PIPELINE_PAYLOAD_INVALID');
+          }
+          await client.query(
+            `
+              UPDATE product_category
+              SET parent_id = $2::uuid, sort_order = $3, updated_at = NOW()
+              WHERE id = $1::uuid
+            `,
+            [normalizedCategory.id, parent?.id ?? null, category.data.sortOrder ?? 0],
+          );
+        }
+
         for (const system of batch.systems) {
           const family = families.get(system.data.family.sourceId);
           const category = categories.get(system.data.categorySourceId);
@@ -702,6 +784,24 @@ export async function normalizeCatalogSnapshots(
           systems.set(
             system.data.identity.sourceId,
             await upsertSystem(client, payload, system, family.id, category.id),
+          );
+        }
+
+        for (const model of batch.models) {
+          const category = categories.get(model.data.categorySourceId);
+          const system =
+            model.data.systemSourceId === undefined
+              ? undefined
+              : systems.get(model.data.systemSourceId);
+          if (
+            category === undefined ||
+            (model.data.systemSourceId !== undefined && system === undefined)
+          ) {
+            throw new CatalogPipelineError('CATALOG_PIPELINE_PAYLOAD_INVALID');
+          }
+          models.set(
+            model.data.identity.sourceId,
+            await upsertModel(client, payload, model, category.id, system?.id ?? null),
           );
         }
 

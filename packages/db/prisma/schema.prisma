@@ -126,6 +126,7 @@ enum CatalogSyncStatus {
   AWAITING_APPROVAL
   COMPLETED
   PARTIAL_FAILED
+  CANCELLED
   FAILED
 
   @@map("catalog_sync_status")
@@ -142,6 +143,23 @@ enum CatalogSyncItemStatus {
   FAILED
 
   @@map("catalog_sync_item_status")
+}
+
+enum CatalogSyncCheckpointStatus {
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+  CANCELLED
+
+  @@map("catalog_sync_checkpoint_status")
+}
+
+enum CatalogImportManifestStatus {
+  COMPLETE
+  PARTIAL_FAILED
+  CANCELLED
+
+  @@map("catalog_import_manifest_status")
 }
 
 enum CatalogDifferenceType {
@@ -474,6 +492,7 @@ model SourceSnapshot {
   catalogSourceId String               @map("catalog_source_id") @db.Uuid
   syncRunId       String               @map("sync_run_id") @db.Uuid
   sourceEntityId  String?              @map("source_entity_id") @db.Uuid
+  captureKey      String               @map("capture_key") @db.VarChar(512)
   sourceUrl       String               @map("source_url") @db.VarChar(1024)
   capturedAt      DateTime             @map("captured_at") @db.Timestamptz(6)
   status          SourceSnapshotStatus
@@ -489,7 +508,7 @@ model SourceSnapshot {
   sourceEntity    SourceEntity?        @relation(fields: [sourceEntityId], references: [id], onDelete: Restrict)
   syncItems       CatalogSyncItem[]
 
-  @@unique([syncRunId, sourceUrl], map: "source_snapshot_run_url_key")
+  @@unique([syncRunId, captureKey], map: "source_snapshot_run_capture_key")
   @@index([catalogSourceId, capturedAt], map: "source_snapshot_source_time_idx")
   @@index([contentHash], map: "source_snapshot_hash_idx")
   @@map("source_snapshot")
@@ -535,33 +554,39 @@ model SourceEntity {
 }
 
 model CatalogSyncRun {
-  id                 String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  catalogSourceId    String                  @map("catalog_source_id") @db.Uuid
-  trigger            CatalogSyncTrigger
-  status             CatalogSyncStatus       @default(QUEUED)
-  idempotencyKey     String                  @unique(map: "catalog_sync_run_idempotency_key") @map("idempotency_key") @db.VarChar(255)
-  correlationId      String                  @map("correlation_id") @db.VarChar(128)
-  requestedByActorId String?                 @map("requested_by_actor_id") @db.Uuid
-  startedAt          DateTime?               @map("started_at") @db.Timestamptz(6)
-  completedAt        DateTime?               @map("completed_at") @db.Timestamptz(6)
-  lastHeartbeatAt    DateTime?               @map("last_heartbeat_at") @db.Timestamptz(6)
-  attempt            Int                     @default(0)
-  discoveredCount    Int                     @default(0) @map("discovered_count")
-  processedCount     Int                     @default(0) @map("processed_count")
-  errorCount         Int                     @default(0) @map("error_count")
-  parserVersion      String                  @map("parser_version") @db.VarChar(64)
-  mappingVersion     String                  @map("mapping_version") @db.VarChar(64)
-  sourceVersion      String?                 @map("source_version") @db.VarChar(160)
-  errorCode          String?                 @map("error_code") @db.VarChar(128)
-  auditContext       Json                    @map("audit_context") @db.JsonB
-  createdAt          DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt          DateTime                @updatedAt @map("updated_at") @db.Timestamptz(6)
-  catalogSource      CatalogSource           @relation(fields: [catalogSourceId], references: [id], onDelete: Restrict)
-  snapshots          SourceSnapshot[]
-  items              CatalogSyncItem[]
-  differences        CatalogSyncDifference[]
-  catalogVersions    CatalogVersion[]
-  priceVersions      PriceVersion[]
+  id                       String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  catalogSourceId          String                  @map("catalog_source_id") @db.Uuid
+  trigger                  CatalogSyncTrigger
+  status                   CatalogSyncStatus       @default(QUEUED)
+  idempotencyKey           String                  @unique(map: "catalog_sync_run_idempotency_key") @map("idempotency_key") @db.VarChar(255)
+  correlationId            String                  @map("correlation_id") @db.VarChar(128)
+  requestedByActorId       String?                 @map("requested_by_actor_id") @db.Uuid
+  startedAt                DateTime?               @map("started_at") @db.Timestamptz(6)
+  completedAt              DateTime?               @map("completed_at") @db.Timestamptz(6)
+  lastHeartbeatAt          DateTime?               @map("last_heartbeat_at") @db.Timestamptz(6)
+  attempt                  Int                     @default(0)
+  discoveredCount          Int                     @default(0) @map("discovered_count")
+  processedCount           Int                     @default(0) @map("processed_count")
+  errorCount               Int                     @default(0) @map("error_count")
+  parserVersion            String                  @map("parser_version") @db.VarChar(64)
+  mappingVersion           String                  @map("mapping_version") @db.VarChar(64)
+  sourceVersion            String?                 @map("source_version") @db.VarChar(160)
+  errorCode                String?                 @map("error_code") @db.VarChar(128)
+  cancelRequestedAt        DateTime?               @map("cancel_requested_at") @db.Timestamptz(6)
+  cancelRequestedByActorId String?                 @map("cancel_requested_by_actor_id") @db.Uuid
+  cancellationReason       String?                 @map("cancellation_reason") @db.VarChar(512)
+  cancelledAt              DateTime?               @map("cancelled_at") @db.Timestamptz(6)
+  auditContext             Json                    @map("audit_context") @db.JsonB
+  createdAt                DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                DateTime                @updatedAt @map("updated_at") @db.Timestamptz(6)
+  catalogSource            CatalogSource           @relation(fields: [catalogSourceId], references: [id], onDelete: Restrict)
+  snapshots                SourceSnapshot[]
+  items                    CatalogSyncItem[]
+  differences              CatalogSyncDifference[]
+  checkpoints              CatalogSyncCheckpoint[]
+  importManifest           CatalogImportManifest?
+  catalogVersions          CatalogVersion[]
+  priceVersions            PriceVersion[]
 
   @@index([catalogSourceId, createdAt], map: "catalog_sync_run_source_time_idx")
   @@index([status, createdAt], map: "catalog_sync_run_status_idx")
@@ -591,6 +616,44 @@ model CatalogSyncItem {
   @@unique([syncRunId, sourceType, sourceId], map: "catalog_sync_item_run_identity_key")
   @@index([syncRunId, status], map: "catalog_sync_item_status_idx")
   @@map("catalog_sync_item")
+}
+
+model CatalogSyncCheckpoint {
+  id             String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  syncRunId      String                      @map("sync_run_id") @db.Uuid
+  stage          String                      @db.VarChar(64)
+  partitionKey   String                      @map("partition_key") @db.VarChar(255)
+  status         CatalogSyncCheckpointStatus @default(IN_PROGRESS)
+  expectedCount  Int                         @default(0) @map("expected_count")
+  processedCount Int                         @default(0) @map("processed_count")
+  errorCount     Int                         @default(0) @map("error_count")
+  resumeCount    Int                         @default(0) @map("resume_count")
+  safeCursor     Json                        @map("safe_cursor") @db.JsonB
+  checksum       String?                     @db.Char(64)
+  startedAt      DateTime                    @default(now()) @map("started_at") @db.Timestamptz(6)
+  completedAt    DateTime?                   @map("completed_at") @db.Timestamptz(6)
+  createdAt      DateTime                    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime                    @updatedAt @map("updated_at") @db.Timestamptz(6)
+  syncRun        CatalogSyncRun              @relation(fields: [syncRunId], references: [id], onDelete: Restrict)
+
+  @@unique([syncRunId, stage, partitionKey], map: "catalog_sync_checkpoint_identity_key")
+  @@index([syncRunId, status], map: "catalog_sync_checkpoint_status_idx")
+  @@map("catalog_sync_checkpoint")
+}
+
+model CatalogImportManifest {
+  id               String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  syncRunId        String                      @unique(map: "catalog_import_manifest_run_key") @map("sync_run_id") @db.Uuid
+  status           CatalogImportManifestStatus
+  complete         Boolean
+  safeManifest     Json                        @map("safe_manifest") @db.JsonB
+  manifestChecksum String                      @map("manifest_checksum") @db.Char(64)
+  sealedAt         DateTime                    @map("sealed_at") @db.Timestamptz(6)
+  createdAt        DateTime                    @default(now()) @map("created_at") @db.Timestamptz(6)
+  syncRun          CatalogSyncRun              @relation(fields: [syncRunId], references: [id], onDelete: Restrict)
+
+  @@index([status, sealedAt], map: "catalog_import_manifest_status_idx")
+  @@map("catalog_import_manifest")
 }
 
 model CatalogSyncDifference {
@@ -683,6 +746,7 @@ model ProductCategory {
   parent          ProductCategory?       @relation("product_category_tree", fields: [parentId], references: [id], onDelete: Restrict)
   children        ProductCategory[]      @relation("product_category_tree")
   systems         ProductSystem[]
+  models          ProductModel[]
   materials       Material[]
   businessEntries BusinessCatalogEntry[]
 
@@ -717,17 +781,20 @@ model ProductSystem {
 model ProductModel {
   id                   String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   sourceEntityId       String?               @unique(map: "product_model_source_entity_key") @map("source_entity_id") @db.Uuid
-  systemId             String                @map("system_id") @db.Uuid
+  categoryId           String?               @map("category_id") @db.Uuid
+  systemId             String?               @map("system_id") @db.Uuid
   slug                 String                @unique(map: "product_model_slug_key") @db.VarChar(160)
   name                 String                @db.VarChar(255)
   description          String?               @db.Text
   createdAt            DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt            DateTime              @updatedAt @map("updated_at") @db.Timestamptz(6)
   sourceEntity         SourceEntity?         @relation(fields: [sourceEntityId], references: [id], onDelete: Restrict)
-  system               ProductSystem         @relation(fields: [systemId], references: [id], onDelete: Restrict)
+  category             ProductCategory?      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  system               ProductSystem?        @relation(fields: [systemId], references: [id], onDelete: Restrict)
   compatibilityRules   CompatibilityRule[]
   dimensionConstraints DimensionConstraint[]
 
+  @@index([categoryId], map: "product_model_category_idx")
   @@index([systemId], map: "product_model_system_idx")
   @@map("product_model")
 }

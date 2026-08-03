@@ -38,7 +38,7 @@
   },
   "projectName": {
     "layer": "jobs",
-    "responsibility": "Versioned durable task contracts, Graphile Worker adapter, idempotency, retry, timeout, and permanent-failure inspection.",
+    "responsibility": "Versioned durable Graphile Worker contracts, resumable catalog checkpoints/manifests, idempotency, cancellation, retry, timeout, and permanent-failure inspection.",
     "publicInterface": [
       "."
     ]

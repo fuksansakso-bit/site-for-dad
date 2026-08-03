@@ -23,10 +23,10 @@ const workerEnvironmentSchema = phase1ABaseSchema
     WORKER_CONCURRENCY: positiveIntegerString(1, 32),
     WORKER_HEALTH_HOST: z.enum(['127.0.0.1', '::1']),
     WORKER_HEALTH_PORT: positiveIntegerString(1, 65_535),
-    WORKER_JOB_TIMEOUT_MS: positiveIntegerString(100, 120_000),
+    WORKER_JOB_TIMEOUT_MS: positiveIntegerString(100, 900_000),
     WORKER_MAX_ATTEMPTS: positiveIntegerString(1, 25),
     WORKER_POLL_INTERVAL_MS: positiveIntegerString(100, 30_000),
-    WORKER_SHUTDOWN_TIMEOUT_MS: positiveIntegerString(1_000, 120_000),
+    WORKER_SHUTDOWN_TIMEOUT_MS: positiveIntegerString(1_000, 960_000),
   })
   .superRefine((environment, context) => {
     if (environment.WORKER_SHUTDOWN_TIMEOUT_MS <= environment.WORKER_JOB_TIMEOUT_MS) {

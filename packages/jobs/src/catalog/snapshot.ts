@@ -66,10 +66,18 @@ const propertySchema = z
 
 const categorySchema = z
   .object({
+    childCategorySourceIds: z.array(z.string().min(1).max(255)).optional(),
+    description: z.string().max(20_000).optional(),
     family: familySchema,
     identity: sourceIdentitySchema,
     materialSourceIds: z.array(z.string().min(1).max(255)),
+    mediaSourceUrls: z.array(z.url().max(1024)).optional(),
+    modelSourceIds: z.array(z.string().min(1).max(255)).optional(),
     name: z.string().min(1).max(255),
+    parentCategorySourceId: z.string().min(1).max(255).optional(),
+    sortOrder: z.number().int().min(0).optional(),
+    sourcePageReferences: z.array(z.url().max(1024)).optional(),
+    sourceStatus: z.enum(['ACTIVE', 'PARSER_REVIEW_REQUIRED', 'SOURCE_REMOVED']).optional(),
     systemSourceIds: z.array(z.string().min(1).max(255)),
   })
   .strict();
@@ -81,6 +89,19 @@ const systemSchema = z
     identity: sourceIdentitySchema,
     mediaSourceUrl: z.url().max(1024).optional(),
     name: z.string().min(1).max(255),
+  })
+  .strict();
+const modelSchema = z
+  .object({
+    categorySourceId: z.string().min(1).max(255),
+    description: z.string().max(20_000).optional(),
+    family: familySchema,
+    identity: sourceIdentitySchema,
+    mediaSourceUrls: z.array(z.url().max(1024)),
+    name: z.string().min(1).max(255),
+    sourceAvailability: z.enum(['AVAILABLE', 'OUT_OF_STOCK', 'UNKNOWN']).optional(),
+    sourceCategoryName: z.string().max(255).optional(),
+    systemSourceId: z.string().min(1).max(255).optional(),
   })
   .strict();
 const materialSchema = z
@@ -137,23 +158,45 @@ function capturedSchema<T extends z.ZodType>(data: T) {
   return z.object({ capture: captureSchema, data }).strict();
 }
 
-export const catalogSafeSnapshotPayloadSchema = z
+const snapshotPayloadShape = {
+  categories: z.array(capturedSchema(categorySchema)),
+  materials: z.array(capturedSchema(materialSchema)),
+  mediaManifests: z.array(capturedSchema(mediaManifestSchema)),
+  prices: z.array(capturedSchema(priceSchema)),
+  sourceVersion: z
+    .object({
+      capturedAt: z.iso.datetime(),
+      sourceType: sourceTypeSchema,
+      version: z.string().min(1).max(160),
+    })
+    .strict(),
+  systems: z.array(capturedSchema(systemSchema)),
+} as const;
+
+const catalogSafeSnapshotPayloadV2Schema = z
   .object({
-    categories: z.array(capturedSchema(categorySchema)),
-    materials: z.array(capturedSchema(materialSchema)),
-    mediaManifests: z.array(capturedSchema(mediaManifestSchema)),
-    prices: z.array(capturedSchema(priceSchema)),
-    schemaVersion: z.literal(1),
-    sourceVersion: z
-      .object({
-        capturedAt: z.iso.datetime(),
-        sourceType: sourceTypeSchema,
-        version: z.string().min(1).max(160),
-      })
-      .strict(),
-    systems: z.array(capturedSchema(systemSchema)),
+    ...snapshotPayloadShape,
+    models: z.array(capturedSchema(modelSchema)),
+    schemaVersion: z.literal(2),
   })
   .strict();
+
+const legacyCatalogSafeSnapshotPayloadV1Schema = z
+  .object({
+    ...snapshotPayloadShape,
+    schemaVersion: z.literal(1),
+  })
+  .strict()
+  .transform((payload) => ({
+    ...payload,
+    models: [],
+    schemaVersion: 2 as const,
+  }));
+
+export const catalogSafeSnapshotPayloadSchema = z.union([
+  catalogSafeSnapshotPayloadV2Schema,
+  legacyCatalogSafeSnapshotPayloadV1Schema,
+]);
 
 export type CatalogSafeSnapshotPayload = z.infer<typeof catalogSafeSnapshotPayloadSchema>;
 
@@ -164,8 +207,9 @@ export function emptyCatalogSafeSnapshotPayload(
     categories: [],
     materials: [],
     mediaManifests: [],
+    models: [],
     prices: [],
-    schemaVersion: 1,
+    schemaVersion: 2,
     sourceVersion,
     systems: [],
   };

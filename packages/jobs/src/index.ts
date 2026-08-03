@@ -8,6 +8,7 @@ export {
   ensureDailyCatalogSourceDiscovery,
   listPermanentFoundationFailures,
   migrateFoundationJobs,
+  requestCatalogSyncCancellation,
   runFoundationJobsOnce,
   startFoundationJobRuntime,
   verifyFoundationQueueSchema,
@@ -30,6 +31,7 @@ export {
   catalogSourceDiscoveryPayloadSchema,
   catalogStageIdempotencyKey,
   catalogSyncRunPayloadSchema,
+  catalogSyncCancellationRequestSchema,
   type CatalogActivateVersionPayload,
   type CatalogApproveVersionPayload,
   type CatalogBuildDiffPayload,
@@ -39,6 +41,7 @@ export {
   type CatalogRollbackVersionPayload,
   type CatalogSourceDiscoveryPayload,
   type CatalogSyncRunPayload,
+  type CatalogSyncCancellationRequest,
 } from './catalog/contracts.js';
 export {
   activateCatalogVersions,

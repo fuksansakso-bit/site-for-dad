@@ -10,6 +10,7 @@ import {
   type SourceMaterial,
   type SourceMediaManifest,
   type SourceMediaFile,
+  type SourceModel,
   type SourcePrice,
   type SourceSystem,
 } from '@project-name/catalog';
@@ -22,6 +23,7 @@ import type {
 const capturedAt = '2026-08-02T12:00:00.000Z';
 const categorySourceId = 'jobs-category-roller';
 const materialSourceId = 'jobs-material-roller-1001';
+const modelSourceId = 'jobs-model-roller-ready-1001';
 const systemSourceId = 'jobs-system-mini';
 
 function identity(
@@ -83,6 +85,7 @@ export function createJobsCatalogFixture(): FixtureCatalogDataset {
     family,
     identity: identity('CATEGORY', categorySourceId),
     materialSourceIds: [materialSourceId],
+    modelSourceIds: [modelSourceId],
     name: 'Рулонные ткани',
     systemSourceIds: [systemSourceId],
   };
@@ -104,6 +107,15 @@ export function createJobsCatalogFixture(): FixtureCatalogDataset {
     properties: [{ key: 'texture', name: 'Фактура', value: 'гладкая' }],
     systemSourceIds: [systemSourceId],
     variantName: 'Тестовая ткань — серый',
+  };
+  const model: SourceModel = {
+    categorySourceId,
+    family,
+    identity: identity('MODEL', modelSourceId, categorySourceId),
+    mediaSourceUrls: [],
+    name: 'Р“РѕС‚РѕРІР°СЏ СЂСѓР»РѕРЅРЅР°СЏ С€С‚РѕСЂР°',
+    sourceAvailability: 'UNKNOWN',
+    systemSourceId,
   };
   const price: SourcePrice = {
     amountMinor: 150_000,
@@ -140,6 +152,7 @@ export function createJobsCatalogFixture(): FixtureCatalogDataset {
     materials: [captured(material)],
     mediaManifests: [captured(mediaManifest)],
     mediaFiles: [mediaFile],
+    models: [captured(model)],
     prices: [captured(price)],
     sourceVersion,
     systems: [captured(system)],

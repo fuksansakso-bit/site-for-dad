@@ -6,8 +6,8 @@ const migrationsRoot = new URL('../../prisma/migrations/', import.meta.url);
 const forbiddenLaterPhaseEntity =
   /\b(?:customer[_ ]?photos?|orders?|quotes?|visualizations?|carts?|configurators?)\b/i;
 
-describe('Phase 1B.1 migration boundary', () => {
-  it('contains only reviewed Foundation and catalog-pilot tables', async () => {
+describe('Phase 1B.2 migration boundary', () => {
+  it('contains only reviewed Foundation and catalog tables through Phase 1B.2', async () => {
     const migrationDirectories = (await readdir(migrationsRoot, { withFileTypes: true }))
       .filter((entry) => entry.isDirectory())
       .map((entry) => entry.name)
@@ -18,12 +18,13 @@ describe('Phase 1B.1 migration boundary', () => {
       '20260802162000_workload_audit_context',
       '20260802233000_catalog_source_model',
       '20260803001000_amigo_pilot_source_registry',
+      '20260803133000_phase_1b2_resumable_catalog_import',
     ]);
 
     const tables = new Set<string>();
     for (const directory of migrationDirectories) {
       const sql = await readFile(new URL(`${directory}/migration.sql`, migrationsRoot), 'utf8');
-      expect(sql).toMatch(/PLAN-(?:1A|1B1) migration risk: (?:LOW|MEDIUM)/);
+      expect(sql).toMatch(/PLAN-(?:1A|1B1|1B2) migration risk: (?:LOW|MEDIUM)/);
       expect(sql).toMatch(/\bBEGIN;/);
       expect(sql).toMatch(/\bCOMMIT;/);
       expect(sql).not.toMatch(/\b(?:DROP\s+TABLE|TRUNCATE)\b/i);
@@ -38,7 +39,9 @@ describe('Phase 1B.1 migration boundary', () => {
       'audit_event',
       'availability_record',
       'business_catalog_entry',
+      'catalog_import_manifest',
       'catalog_source',
+      'catalog_sync_checkpoint',
       'catalog_sync_difference',
       'catalog_sync_item',
       'catalog_sync_run',
@@ -99,5 +102,16 @@ describe('Phase 1B.1 migration boundary', () => {
     expect(sql).toContain('source_price_record_value_check');
     expect(sql).toContain('prevent_catalog_immutable_mutation');
     expect(sql).toContain('catalog_version_activation_check');
+
+    const resumableSql = await readFile(
+      new URL(
+        '../../prisma/migrations/20260803133000_phase_1b2_resumable_catalog_import/migration.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    );
+    expect(resumableSql).toContain('source_snapshot_run_capture_key');
+    expect(resumableSql).toContain('catalog_sync_checkpoint_counts_check');
+    expect(resumableSql).toContain('catalog_import_manifest_append_only');
   });
 });

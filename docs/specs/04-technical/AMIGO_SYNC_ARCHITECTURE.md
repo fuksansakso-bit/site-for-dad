@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Статус | Phase 1B.2 full public-page discovery verified; durable import/review/activation in progress |
-| Версия | 0.6.0 |
+| Версия | 0.8.0 |
 | Дата | 2026-08-03 |
 | Source registry | [EXTERNAL_SOURCES.md](../../00-global/EXTERNAL_SOURCES.md) |
 | Pricing policy | [PRICING_SOURCE_POLICY.md](../../00-global/PRICING_SOURCE_POLICY.md) |
@@ -69,6 +69,11 @@ Public browser research and volatile customizer DOM/iframe are not a production 
 - **SYNC-ARCH-038 — MUST:** canonical full collection cards take precedence over overview previews; the same upstream identity is not duplicated merely because a poorer preview exists on a parent page.
 - **SYNC-ARCH-039 — MUST:** numeric section identity is used only for one unambiguous nested source section. Multi-section collections retain canonical path identity and preserve all observed section facts with a nonblocking warning.
 - **SYNC-ARCH-040 — MUST:** source card price zero is not imported as money; the entity remains discoverable and its price status is `PRICE_ON_REQUEST` with structured warning evidence.
+- **SYNC-ARCH-041 — MUST:** every captured page or logical source record is inserted once into append-only `SourceSnapshot` under a deterministic per-run `captureKey`. Retry MAY reuse only an existing snapshot with the same source URL, source version, parser/mapping versions and content hash; conflicting evidence fails closed and is never overwritten.
+- **SYNC-ARCH-042 — MUST:** resumable import persists PostgreSQL checkpoints for discovery and each bounded capture partition. A worker restart recomputes progress from durable snapshots/checkpoints, skips verified completed keys and continues safe missing work; a changed semantic source version during the same run is a blocking conflict rather than a mixed snapshot.
+- **SYNC-ARCH-043 — MUST:** an operator cancellation request is durable and checked between bounded items. It seals the run as `CANCELLED`, keeps captured evidence and does not enqueue normalization. Process shutdown/timeout is not cancellation: it releases the Graphile Worker job for retry and keeps the run resumable without declaring partial completion.
+- **SYNC-ARCH-044 — MUST:** after normalization/media/diff, the pipeline inserts exactly one append-only `CatalogImportManifest` for the run. It records source/parser/mapping versions, start/end, expected and captured category/system/model/material/page/media/price counts, warning/failure/skip/duplicate/source-removal counts, checkpoint/resume evidence and deterministic checksum summary. Any failure or incomplete discovery yields `PARTIAL_FAILED`, never a complete manifest.
+- **SYNC-ARCH-045 — MUST:** normalization preserves the discovered category parent/order hierarchy and every typed `ProductModel`. A model always retains its evidence-backed category and links to a system only when the source supplies that relationship; missing referenced categories/systems fail closed instead of inventing or silently dropping the relation.
 
 ## 4. Pipeline stages
 
@@ -213,3 +218,5 @@ Dependencies: catalog/pricing/media/admin/data/API/security/observability/deploy
 | 0.4.0 | 2026-08-02 | Applied `OWNER-DECISION-009`: PostgreSQL active `CatalogVersion` is the only public-serving source; added exact owner/admin pipeline, no-auto-delete, override precedence, full audit/version metadata and version-pinned derived rebuilds. |
 | 0.5.0 | 2026-08-03 | Authorized only Phase 1B.2 expansion of the existing importer and retained all activation/Phase 1C/production gates. |
 | 0.6.0 | 2026-08-03 | Recorded controlled full public-page discovery: dynamic path traversal, pagination/models, load bounds, semantic catalog hashing, canonical-card selection, item-level diagnostics, multi-section path identity and zero-price normalization. |
+| 0.7.0 | 2026-08-03 | Defined deterministic append-only capture keys, PostgreSQL stage checkpoints, same-source-version resume, durable cancellation versus graceful retry, and one sealed checksummed full-run import manifest. |
+| 0.8.0 | 2026-08-03 | Required full category hierarchy and typed model normalization with evidence-backed optional system links; missing referenced nodes fail closed. |

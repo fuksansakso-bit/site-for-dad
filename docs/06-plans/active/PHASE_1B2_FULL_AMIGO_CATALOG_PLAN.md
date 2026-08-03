@@ -63,9 +63,9 @@ Only one stage may be `IN_PROGRESS`.
 | № | Этап | Статус | Проверяемое завершение |
 |---:|---|---|---|
 | 1 | Authorize Phase 1B.2, create active plan and entry gate | COMPLETED | `OWNER-DECISION-012`, scope, branch, stop conditions, QG and changelog committed as `377a74e` |
-| 2 | Expand existing AMIGO source discovery | COMPLETED | Existing adapter completed 114 real pages: 28 categories, 56 systems, 9 models, 1655 variants, semantic source hash, 0 failures; regression suite passed |
-| 3 | Add resumable full catalog import | IN_PROGRESS | Durable stage jobs, manifest, snapshots, checkpoints, progress/cancel/resume/graceful shutdown and daily schedule pass |
-| 4 | Import full catalog media | PENDING | Allowed media are local, hash-deduplicated, validated and item failures isolated; no hotlink |
+| 2 | Expand existing AMIGO source discovery | COMPLETED | Existing adapter completed 114 real pages: 28 categories, 56 systems, 9 models, 1655 variants, semantic source hash, 0 failures; regression suite passed in `177c83c` |
+| 3 | Add resumable full catalog import | COMPLETED | Append-only snapshots, 8 durable checkpoints, verified-key skip/resume, hierarchy/model normalization, cancellation, daily self-schedule and COMPLETE/PARTIAL_FAILED manifests passed clean migration/recovery, 12 integration scenarios and 9/9 CI stages |
+| 4 | Import full catalog media | IN_PROGRESS | Allowed media are local, hash-deduplicated, validated and item failures isolated; no hotlink |
 | 5 | Add full catalog price snapshots | PENDING | Source price/price-from/category/currency/context/version imported; unknown values become `PRICE_ON_REQUEST`; overrides persist |
 | 6 | Add full catalog review and activation | PENDING | Complete diff/review actions and atomic manual CatalogVersion/PriceVersion activation/rollback pass |
 | 7 | Add bulk business catalog controls | PENDING | Confirmed transactional idempotent category/filter/selection actions produce actor/correlation audit |

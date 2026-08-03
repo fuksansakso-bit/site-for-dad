@@ -1,4 +1,4 @@
--- Phase 1B.1 local runtime grants. This file is applied explicitly after schema/queue migrations.
+-- Phase 1B.2 local runtime grants. This file is applied explicitly after schema/queue migrations.
 REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 GRANT USAGE ON SCHEMA public TO foundation_runtime;
 GRANT SELECT, INSERT, UPDATE, DELETE ON
@@ -17,6 +17,7 @@ GRANT SELECT, INSERT, UPDATE ON
     source_entity,
     catalog_sync_run,
     catalog_sync_item,
+    catalog_sync_checkpoint,
     catalog_sync_difference,
     catalog_version,
     product_family,
@@ -40,6 +41,7 @@ GRANT SELECT, INSERT, UPDATE ON
 TO foundation_runtime;
 GRANT SELECT, INSERT ON
     source_snapshot,
+    catalog_import_manifest,
     source_price_record,
     price_version_record,
     catalog_version_entry

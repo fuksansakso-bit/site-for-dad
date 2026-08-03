@@ -9,6 +9,7 @@ import type {
   CatalogRollbackVersionPayload,
 } from './contracts.js';
 import { CatalogPipelineError, toCatalogPipelineError } from './errors.js';
+import { sealCatalogImportManifest } from './manifest.js';
 
 type DifferenceType =
   | 'ARTICLE_CHANGED'
@@ -36,7 +37,9 @@ type SourceEntityType =
   | 'SYSTEM';
 
 interface SyncRunRow {
+  readonly capture_complete: boolean;
   readonly catalog_source_id: string;
+  readonly error_count: number;
   readonly source_version: string | null;
   readonly status: string;
 }
@@ -81,6 +84,7 @@ interface PriceAttachmentRow {
 }
 
 interface SnapshotEvidenceRow {
+  readonly capture_key: string;
   readonly captured_at: Date | string;
   readonly content_hash: string;
   readonly source_url: string;
@@ -109,6 +113,7 @@ interface VersionManifest {
   readonly entities: readonly VersionEntity[];
   readonly evidence: {
     readonly snapshots: readonly {
+      readonly captureKey: string;
       readonly capturedAt: string;
       readonly contentHash: string;
       readonly sourceUrl: string;
@@ -295,6 +300,7 @@ function makeManifest(
     entities,
     evidence: {
       snapshots: snapshots.map((snapshot) => ({
+        captureKey: snapshot.capture_key,
         capturedAt: iso(snapshot.captured_at),
         contentHash: snapshot.content_hash,
         sourceUrl: snapshot.source_url,
@@ -542,7 +548,9 @@ export async function buildCatalogVersionDiff(
         await client.query("SELECT pg_advisory_xact_lock(hashtext('catalog-version-build'))");
         const runResult = await client.query<SyncRunRow>(
           `
-            SELECT catalog_source_id::text, source_version, status::text
+            SELECT catalog_source_id::text, source_version, status::text, error_count,
+                   COALESCE((audit_context->>'captureComplete')::boolean, false)
+                     AS capture_complete
             FROM catalog_sync_run
             WHERE id = $1::uuid
             FOR UPDATE
@@ -568,6 +576,45 @@ export async function buildCatalogVersionDiff(
           [payload.syncRunId],
         );
         if (Number(existingForRun.rows[0]?.count ?? '0') > 0) {
+          await client.query('COMMIT');
+          return;
+        }
+
+        if (!run.capture_complete || run.error_count > 0) {
+          await client.query(
+            `
+              UPDATE catalog_sync_run
+              SET status = 'PARTIAL_FAILED', completed_at = NOW(),
+                  last_heartbeat_at = NOW(), updated_at = NOW()
+              WHERE id = $1::uuid
+            `,
+            [payload.syncRunId],
+          );
+          const importManifest = await sealCatalogImportManifest(client, payload);
+          await client.query(
+            `
+              UPDATE catalog_sync_run
+              SET audit_context = audit_context || jsonb_build_object(
+                    'importManifestChecksum', $2::text,
+                    'importManifestStatus', $3::text
+                  ),
+                  updated_at = NOW()
+              WHERE id = $1::uuid
+            `,
+            [payload.syncRunId, importManifest.checksum, importManifest.status],
+          );
+          await client.query(
+            `
+              INSERT INTO audit_event (
+                actor_type, action, outcome, correlation_id, target_type,
+                target_id, reason_code
+              ) VALUES (
+                'SYSTEM_WORKER', 'CATALOG_PARTIAL_IMPORT_RETAINED', 'FAILED', $1,
+                'CATALOG_SYNC_RUN', $2, 'INCOMPLETE_IMPORT_MANIFEST'
+              )
+            `,
+            [payload.correlationId, payload.syncRunId],
+          );
           await client.query('COMMIT');
           return;
         }
@@ -614,10 +661,10 @@ export async function buildCatalogVersionDiff(
         );
         const snapshotRows = await client.query<SnapshotEvidenceRow>(
           `
-              SELECT captured_at, content_hash, source_url, source_version
+              SELECT capture_key, captured_at, content_hash, source_url, source_version
               FROM source_snapshot
               WHERE sync_run_id = $1::uuid
-              ORDER BY source_url
+              ORDER BY capture_key
           `,
           [payload.syncRunId],
         );
@@ -782,6 +829,7 @@ export async function buildCatalogVersionDiff(
         }
 
         const createdAny = createCatalog || createPrice;
+        const importManifest = await sealCatalogImportManifest(client, payload);
         await client.query(
           `
             UPDATE catalog_sync_run
@@ -794,7 +842,9 @@ export async function buildCatalogVersionDiff(
                   'priceDifferenceChecksum', $6::text,
                   'equivalentCatalogVersionId', $7::text,
                   'equivalentPriceVersionId', $8::text,
-                  'equivalentVersionReuse', $9::boolean
+                  'equivalentVersionReuse', $9::boolean,
+                  'importManifestChecksum', $10::text,
+                  'importManifestStatus', $11::text
                 )),
                 updated_at = NOW()
             WHERE id = $1::uuid
@@ -809,6 +859,8 @@ export async function buildCatalogVersionDiff(
             equivalentCatalog.rows[0]?.id ?? null,
             equivalentPrice.rows[0]?.id ?? null,
             !createdAny,
+            importManifest.checksum,
+            importManifest.status,
           ],
         );
         await client.query(

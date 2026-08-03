@@ -4,10 +4,10 @@
 
 | Поле | Значение |
 |---|---|
-| Фаза документа | Phase 1A and Phase 1B.1 completed; later phases hold |
-| Статус roadmap | **PHASE 1A PASSED / PHASE 1B.1 PASSED / LATER PHASES HOLD** |
+| Фаза документа | Phase 1A and Phase 1B.1 completed; only Phase 1B.2 authorized/in progress; Phase 1C+ hold |
+| Статус roadmap | **PHASE 1A PASSED / PHASE 1B.1 PASSED / PHASE 1B.2 AUTHORIZED / PHASE 1C+ HOLD** |
 | Scope | [MVP_SCOPE](MVP_SCOPE.md) |
-| Планы / evidence | [PHASE_1A_FOUNDATION_PLAN](active/PHASE_1A_FOUNDATION_PLAN.md), [PHASE_1A_FOUNDATION_REPORT](completed/PHASE_1A_FOUNDATION_REPORT.md), [PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN](active/PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN.md), [PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT](completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md) |
+| Планы / evidence | [PHASE_1A_FOUNDATION_PLAN](active/PHASE_1A_FOUNDATION_PLAN.md), [PHASE_1A_FOUNDATION_REPORT](completed/PHASE_1A_FOUNDATION_REPORT.md), [PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN](active/PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN.md), [PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT](completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md), [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN](active/PHASE_1B2_FULL_AMIGO_CATALOG_PLAN.md) |
 
 - **ROADMAP-001 — MUST:** фазы выполняются по порядку 1A–1H; параллельный research MAY идти, но dependent implementation не обходит entry gate.
 - **ROADMAP-002 — MUST:** каждая возможность включается feature flag только после собственных acceptance/security/data gates; наличие кода не равно production activation.
@@ -47,11 +47,26 @@
 | Запрещённые изменения | Scraping/access bypass, hotlink, watermarks removal, bulk unmanaged download, auto-publication, auto-delete/hide of local data, direct public reads from AMIGO/staging, assumptions about full assortment or AMIGO API/cadence. |
 | Rollback | Atomically restore the previous active `CatalogVersion`, rebuild version-pinned projections, revoke affected derivative URLs and preserve immutable evidence/audit; migration compensation only through ADR-0008. |
 
-Phase 1B.2 (full authorized AMIGO catalog expansion) is a separate future transition. It requires the Phase 1B.1 Pilot Acceptance Gate plus confirmed full-catalog transport/export/schema and a new written Product Owner decision. It MUST NOT begin during this plan.
+Phase 1B.1 completed 2026-08-03 as `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT`; exact implementation, data/version IDs, recovery and CI evidence are in the completion report. `OWNER-DECISION-012` separately authorizes only Phase 1B.2 below.
 
-Phase 1B.1 completed 2026-08-03 as `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT`; exact implementation, data/version IDs, recovery and CI evidence are in the completion report. Passing the gate satisfies a prerequisite for considering Phase 1B.2/1C but does not authorize either one.
+## 3. PHASE 1B.2 — FULL AUTHORIZED AMIGO CATALOG EXPANSION
 
-## 3. PHASE 1C — CONFIGURATOR AND PRICING
+| Поле | Содержание |
+|---|---|
+| ID / цель | **ROADMAP-1B2-001:** расширить доказанный Phase 1B.1 pipeline до полного доступного разрешённого AMIGO catalog без live upstream dependency и без dimensional calculation. |
+| Зависимости | Passed 1A/1B.1; `OWNER-DECISION-008`–`012`; ADR-0002/0006/0008/0009; catalog/parity/admin/sync/media/storage/security/performance/test specs; rights/source/pricing policies. |
+| Входные условия | `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT`; branch/baseline confirmed; Product Owner authorized only Phase 1B.2; active plan and QG-195–202; existing adapter/worker/storage foundation intact. |
+| Deliverables | Dynamic full category discovery; pagination/nesting/entities/properties/compatibility source facts; stable identities; raw snapshots and retention protection; Full Catalog Import Manifest; resumable/cancellable Graphile jobs with progress; licensed local media; full source/base/card price snapshots and `PRICE_ON_REQUEST`; exact diff/review/manual catalog/price activation; preserved overlays; transactional audited bulk controls; scalable public/admin catalog; daily schedule/history. |
+| Acceptance criteria | Coverage manifest accounts for every discovered/failed/skipped/duplicate/removed entity; no unhandled global failure or duplicate; repeat is no-op; resume works; media is local/no hotlink; local visibility/availability/price survives sync; source removal is non-destructive; initial accepted overlay is VISIBLE + INQUIRY_ONLY; only active PostgreSQL versions are public; manual activation/rollback and daily non-activating sync work. |
+| Тесты | Unit/contract/integration/browser/recovery/performance suites named in active plan; synthetic scale set substantially exceeds real catalog but never substitutes real import evidence; CI-equivalent verification and documentation gates pass. |
+| Риски | Hidden access gate/CAPTCHA, unstable identity, selector drift, duplicates, overloading source, storage loss, incomplete media/prices, overlay overwrite, mass-publish error, slow/N+1 queries. |
+| Definition of Done | Accepted real full manifest/report with honest counts/categories/errors/skips; full diff and manual versions active; no-op/resume/daily/bulk/overlay/public/performance evidence; clean tree; Phase 1C absent. |
+| Запрещённые изменения | Second importer; access/CAPTCHA/rate bypass; AMIGO frontend/design/code reuse; hotlink/unmanaged download/watermark removal; guessed properties/prices/zero price; auto activation/deletion; dimensional calculator/configurator/preview/AI/cart/order/WhatsApp/account/final design; production provider/secrets/deployment; Phase 1C. |
+| Rollback | Cancel/drain jobs, retain checkpoint/manifest/snapshots, reactivate prior compatible CatalogVersion/PriceVersion atomically, preserve overlays/audit/source-removed history and use forward compensation for schema changes. |
+
+Execution contract: [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN](active/PHASE_1B2_FULL_AMIGO_CATALOG_PLAN.md). Passing Phase 1B.2 will not authorize Phase 1C.
+
+## 4. PHASE 1C — CONFIGURATOR AND PRICING
 
 | Поле | Содержание |
 |---|---|
@@ -66,7 +81,7 @@ Phase 1B.1 completed 2026-08-03 as `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT`; exact
 | Запрещённые изменения | Guessed formulas, implicit 1500 minimum, float money, modifying historical quote, activating price without approver/parity, presenting estimate as final offer. |
 | Rollback | Deactivate bad PriceVersion/override; reactivate last approved version; preserve historical quotes; disable affected family to `PRICE_ON_REQUEST`; compensate schema forward. |
 
-## 4. PHASE 1D — STANDARD PREVIEW
+## 5. PHASE 1D — STANDARD PREVIEW
 
 | Поле | Содержание |
 |---|---|
@@ -81,7 +96,7 @@ Phase 1B.1 completed 2026-08-03 as `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT`; exact
 | Запрещённые изменения | Treating standard preview as AI or client-photo preview, generative substitution, unlicensed asset, promise of measurement accuracy, silent generic shape. |
 | Rollback | Disable affected renderer profile, serve static/product-image fallback, restore previous profile/assets/cache version. |
 
-## 5. PHASE 1E — CART, WHATSAPP AND ORDERS
+## 6. PHASE 1E — CART, WHATSAPP AND ORDERS
 
 | Поле | Содержание |
 |---|---|
@@ -96,7 +111,7 @@ Phase 1B.1 completed 2026-08-03 as `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT`; exact
 | Запрещённые изменения | Auto-send without confirmation, final-price/order claim, collecting excess PII, automated installment application, online payment, supplier order. |
 | Rollback | Feature flags disable forms/deep link; retain/delete already collected PII by approved policy; queue retries stopped safely; cart remains local/read-only where allowed. |
 
-## 6. PHASE 1F — ADMIN AND ACCOUNTS
+## 7. PHASE 1F — ADMIN AND ACCOUNTS
 
 | Поле | Содержание |
 |---|---|
@@ -111,7 +126,7 @@ Phase 1B.1 completed 2026-08-03 as `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT`; exact
 | Запрещённые изменения | Client data export without policy, shared admin account, client-side-only auth, silently deleting audit, forcing guest registration, post-MVP account scope. |
 | Rollback | Revoke sessions/roles, disable account/admin modules separately, preserve audit and immutable versions, restore prior catalog/price/content state. |
 
-## 7. PHASE 1G — AI WINDOW VISUALIZER PILOT
+## 8. PHASE 1G — AI WINDOW VISUALIZER PILOT
 
 | Поле | Содержание |
 |---|---|
@@ -126,7 +141,7 @@ Phase 1B.1 completed 2026-08-03 as `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT`; exact
 | Запрещённые изменения | Public bucket/logging image URLs, training use, all-family activation, automatic every-sash recognition claim, removal of manual correction, AI-only result. |
 | Rollback | Disable upload/refinement independently; stop/cancel jobs; revoke grants; execute retention deletion; keep standard/geometric fallback; revoke provider keys and preserve non-sensitive audit evidence. |
 
-## 8. PHASE 1H — HARDENING AND RELEASE
+## 9. PHASE 1H — HARDENING AND RELEASE
 
 | Поле | Содержание |
 |---|---|
@@ -141,7 +156,7 @@ Phase 1B.1 completed 2026-08-03 as `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT`; exact
 | Запрещённые изменения | Untested feature/vendor migration, direct production schema change, bypassed gate, real-user launch without privacy/legal/restore evidence, hidden post-MVP scope. |
 | Rollback | Stop rollout/traffic, revert compatible app version or disable flags, restore previous catalog/price/assets, execute migration compensation/restore only by runbook, notify/escalate per incident plan. |
 
-## 9. Sequence gates
+## 10. Sequence gates
 
 | Переход | Минимальный gate |
 |---|---|
@@ -154,7 +169,7 @@ Phase 1B.1 completed 2026-08-03 as `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT`; exact
 | 1F → 1G | Private media/provider/privacy/evaluation/cost gate |
 | 1G → 1H | MVP feature freeze and complete release candidate |
 
-## 10. История
+## 11. История
 
 | Версия | Дата | Изменение |
 |---|---|---|
@@ -164,3 +179,4 @@ Phase 1B.1 completed 2026-08-03 as `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT`; exact
 | 1.3.0 | 2026-08-02 | Phase 1B синхронизирована с `OWNER-DECISION-009`: active PostgreSQL `CatalogVersion` обслуживает public runtime после staged diff/Business Owner approval/admin activation; добавлены no-auto-delete, override/audit/version/projection/rollback gates без разрешения реализации. |
 | 1.4.0 | 2026-08-02 | `OWNER-DECISION-010` разрешил только Phase 1B.1 с 32-ID real pilot/public-page transport; full-catalog expansion выделен в отдельную Phase 1B.2 и остаётся на hold вместе с Phase 1C+. |
 | 1.5.0 | 2026-08-03 | Phase 1B.1 отмечена passed со ссылкой на 32-variant/59-media/version/restart/CI completion evidence; Phase 1B.2/1C+ hold сохранён. |
+| 1.6.0 | 2026-08-03 | `OWNER-DECISION-012` и active plan разрешили только Phase 1B.2 full authorized catalog expansion с manifest/resume/media/price/review/bulk/public/admin/performance gates; Phase 1C+ и production сохранены на hold. |

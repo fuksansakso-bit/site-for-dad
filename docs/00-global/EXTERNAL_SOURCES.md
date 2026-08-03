@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Нормативный глобальный реестр; только allowlisted Phase 1B.1 acquisition разрешена |
-| Версия | 1.5.0 |
-| Дата проверки источников | 2026-08-02, Europe/Moscow |
+| Статус | Нормативный глобальный реестр; Phase 1B.2 full authorized discovery/import разрешены только через controlled transport gate |
+| Версия | 1.6.0 |
+| Дата проверки источников | 2026-08-03, Europe/Moscow |
 | Главный источник правды | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) |
 | Связанные политики | [PRICING_SOURCE_POLICY.md](PRICING_SOURCE_POLICY.md), [ASSET_RIGHTS_REGISTER.md](ASSET_RIGHTS_REGISTER.md) |
 
@@ -34,6 +34,8 @@
 - **EXTSRC-018 — MUST:** опубликованная локальная версия требует Business Owner approval и явной administrator activation; applicable local overrides имеют приоритет только в composed public projection и не меняют source snapshot.
 - **EXTSRC-019 — MUST:** каждая `CatalogVersion` хранит timestamp и source/source-version manifest, а capture/import/validation/diff/override/approval/activation/rejection/rollback/projection rebuild оставляют audit trail.
 - **EXTSRC-020 — MUST:** в Phase 1B.1 выбран только owner-authorized public-page transport четырёх явных `shop.amigo.ru` material paths из dated transport discovery: concurrency `1`, bounded rate/backoff/timeout/redirects, descriptive user agent, HTTPS/host/path allowlist, без cookies/login/CAPTCHA/search/filter/action/Bitrix endpoints. Нормализация ограничена 32-ID manifest; это решение не доказывает официальный API/export и не разрешает полный crawl/import.
+- **EXTSRC-021 — MUST:** `OWNER-DECISION-012` разрешает Phase 1B.2 расширить существующий adapter до полного доступного разрешённого catalog discovery. Каждый обнаруженный category/page path MUST сначала пройти HTTPS host/path classification, access/CAPTCHA/identity/parser preflight и затем войти в dated allowlist/manifest; concurrency, rate, timeout, retry/backoff/jitter, redirects, payload limits, checkpoint/resume/cancellation и graceful shutdown остаются bounded и диагностируемыми.
+- **EXTSRC-022 — MUST:** full discovery MUST сохранять все обнаруженные категории и честно учитывать failures/skips/duplicates/source-removed/checksums в manifest. Нераспознанная массовая структура, credential/login/CAPTCHA, technical refusal, нестабильная identity, дубликаты или невозможность доказать coverage являются stop condition; частичный результат MUST NOT называться полным каталогом.
 
 ## 2. Модель внешнего значения
 
@@ -64,12 +66,12 @@
 |---|---|
 | Организация | AMIGO; публичный интернет-магазин `shop.amigo.ru` |
 | Статус отношения | `AUTHORIZED_PARTNER_SOURCE`; официальный партнёрский статус подтверждён владельцем |
-| Наблюдаемый access method | Публичные страницы и volatile public customizer; для Phase 1B.1 подтверждены stable numeric material/system IDs на четырёх allowlisted paths; формат partner export/API не подтверждён |
+| Наблюдаемый access method | Публичные страницы и volatile public customizer; для Phase 1B.1 подтверждены stable numeric material/system IDs на четырёх allowlisted paths. Phase 1B.2 выполняет новое dynamic discovery; формат partner export/API не подтверждён до отдельного доказательства |
 | Надёжность | Первичный публичный источник для того, что опубликовано на конкретной странице; не гарантирует локальную применимость, наличие или неизменность |
 | Изменяемость | Высокая: ассортимент, названия, цены, город, условия и структура страниц могут изменяться без уведомления PROJECT_NAME |
 | Правовое/договорное основание | `PARTNER_LICENSE`, подтверждённое владельцем бизнеса 2026-08-02; копия evidence reference необязательна для документирования |
 | Разрешение на изображения | `PARTNER_LICENSE`; локальный файл в подтверждённом scope публикуется при asset record `PUBLICATION_APPROVED` |
-| Базовый способ обновления | Предпочтение: partner API/export/file; Phase 1B.1 fallback: bounded authorized public-page adapter + frozen real-ID manifest; будущий полный импорт снова проходит transport gate |
+| Базовый способ обновления | Предпочтение: partner API/export/file; Phase 1B.2 authorized fallback: расширенный existing public-page adapter + dated dynamic path/entity manifest только после transport gate |
 | Базовый fallback | Последняя подтверждённая локальная версия, ручная проверка менеджера либо нейтральное сообщение без выдуманного значения |
 | Разделение authority и serving | AMIGO определяет AMIGO-origin source fields; Business Owner определяет локальные availability/visibility/override/portfolio/commercial fields; активная одобренная PostgreSQL `CatalogVersion` является единственным public-serving source, не новым upstream source |
 
@@ -373,10 +375,10 @@
 - Не утверждается наличие у AMIGO официального публичного API.
 - Подтверждён официальный партнёрский статус и permission scope из `PARTNER-001`–`007`; документ не расширяет его на code/DOM/closed API, training use или неразрешённые модификации.
 - Не утверждаются конкретный partner API/export format, его schema или credentials до отдельного доказательства.
-- Cadence/staleness зафиксированы `OWNER-DECISION-005`; Phase 1B.1 реализует только выбранный bounded public-page transport и scheduler, а official/full-catalog transport остаётся `TBD-SOURCE-AMIGO-002`.
+- Cadence/staleness зафиксированы `OWNER-DECISION-005`; Phase 1B.2 MAY доказать full-catalog public-page transport фактическим discovery/manifest evidence, но official partner API/export всё ещё остаётся `TBD-SOURCE-AMIGO-002` до отдельного доказательства.
 - Не задаётся город AMIGO для базового price snapshot до `TBD-PRICE-SOURCE-001`.
-- Phase 1B.1 создаёт только frozen 32-ID pilot; отсутствие official export не разрешает расширить его до полного каталога.
-- `OWNER-DECISION-010` является отдельным Phase 1B.1 transition decision и разрешает public-page fallback; оно не закрывает full-catalog `TBD-SOURCE-AMIGO-002`/`TBD-ASSORT-002`.
+- Phase 1B.1 создал только frozen 32-ID pilot; `OWNER-DECISION-012` теперь разрешает controlled Phase 1B.2 expansion, но не объявляет discovery успешным заранее.
+- `OWNER-DECISION-012` разрешает public-page fallback для полного доступного каталога только при выполнении stop/coverage/manifest gates; `TBD-SOURCE-AMIGO-002`/`TBD-ASSORT-002` закрываются либо уточняются только фактическим evidence.
 - `OWNER-DECISION-009` определяет public-serving topology и governance версии, но не доказывает transport/schema, фактический import batch, полноту каталога, активную `PriceVersion` или готовые assets.
 
 ## 7. История изменений
@@ -387,3 +389,4 @@
 | 1.3.0 | 2026-08-02 | По `OWNER-DECISION-008` добавлено field-level authority и разделение PostgreSQL operational projection/object-storage media при сохранении import/transport TBD. |
 | 1.4.0 | 2026-08-02 | По `OWNER-DECISION-009` AMIGO отделён от единственного PostgreSQL public-serving source; добавлены staged diff, Business Owner/admin activation, no-auto-delete, override precedence, audit и source/timestamp `CatalogVersion`. |
 | 1.5.0 | 2026-08-02 | `OWNER-DECISION-010` разрешил bounded public-page transport только для Phase 1B.1; зафиксированы четыре paths, 32-ID manifest, concurrency/rate/security controls и сохранён full-catalog export TBD. |
+| 1.6.0 | 2026-08-03 | `OWNER-DECISION-012` разрешил controlled full-catalog discovery через расширение existing adapter с path/entity manifest, bounded load/resume и честными stop/coverage conditions; official API/export не предполагается. |

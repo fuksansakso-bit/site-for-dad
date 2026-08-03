@@ -4,17 +4,18 @@
 
 | Поле | Значение |
 |---|---|
-| Состояние | Phase 1A and Phase 1B.1 complete; later phases hold |
-| Версия roadmap | 1.7.0 |
+| Состояние | Phase 1A and Phase 1B.1 complete; only Phase 1B.2 authorized/in progress; Phase 1C+ hold |
+| Версия roadmap | 1.8.0 |
 | Дата | 2026-08-03 |
 | Entry gate | `PASSED`, [QG-088–QG-111](SPEC_QUALITY_GATE.md) |
 | Обязательный комплект 0B | `PASSED`, [QG-112–QG-130](SPEC_QUALITY_GATE.md) |
 | Phase 0C readiness | `AUTHORIZED_FOR_PHASE_1A_FOUNDATION`, [QG-131–QG-148](SPEC_QUALITY_GATE.md) |
 | Phase 1A acceptance | `PASSED_PHASE_1A_FOUNDATION`, [QG-149–QG-158](SPEC_QUALITY_GATE.md) |
 | Phase 1B.1 acceptance | `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT`, [QG-169–QG-194](SPEC_QUALITY_GATE.md) |
-| Разрешённая implementation | Нет новой implementation authorization; Phase 1B.2/1C+ и production запрещены |
+| Phase 1B.2 entry | `AUTHORIZED_PHASE_1B2_IN_PROGRESS`, [QG-195–QG-202](SPEC_QUALITY_GATE.md) |
+| Разрешённая implementation | Только Phase 1B.2 full authorized catalog expansion; Phase 1C+ и production запрещены |
 
-Глобальная база: [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.12.0, [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md), [ASSET_RIGHTS_REGISTER.md](ASSET_RIGHTS_REGISTER.md) и [PRICING_SOURCE_POLICY.md](PRICING_SOURCE_POLICY.md). `OWNER-DECISION-008/009` задают authority и PostgreSQL-only public runtime; bounded 32-ID Phase 1B.1, разрешённая `OWNER-DECISION-010`, завершена. Full catalog/Phase 1B.2 и последующие фазы остаются gated.
+Глобальная база: [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.13.0, [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md), [ASSET_RIGHTS_REGISTER.md](ASSET_RIGHTS_REGISTER.md) и [PRICING_SOURCE_POLICY.md](PRICING_SOURCE_POLICY.md). `OWNER-DECISION-008/009` задают authority и PostgreSQL-only public runtime; bounded 32-ID Phase 1B.1 завершена, а `OWNER-DECISION-012` разрешает только Phase 1B.2 full authorized catalog expansion по active plan. Phase 1C+ остаются gated.
 
 Нормативные спецификации находятся только в `docs/specs/`. Gate, реестры, policies, quality strategy, evaluations и ADR остаются в профильных каталогах.
 
@@ -129,6 +130,8 @@ ADR принимают устойчивую границу, а не неподт
 | [PHASE_1A_TECHNOLOGY_EVALUATION.md](../06-plans/PHASE_1A_TECHNOLOGY_EVALUATION.md) | Vendor-neutral Foundation stack and alternatives | `ADR_ACCEPTED` |
 | [PHASE_1A_FOUNDATION_PLAN.md](../06-plans/active/PHASE_1A_FOUNDATION_PLAN.md) | Detailed Foundation execution plan and commit sequence | `COMPLETED` |
 | [PHASE_1A_FOUNDATION_REPORT.md](../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md) | Actual implementation, commits, verification, skipped scope and acceptance | `PASSED_PHASE_1A_FOUNDATION` |
+| [PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md](../06-plans/completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md) | Real pilot, versions, media, recovery and CI evidence | `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT` |
+| [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN.md](../06-plans/active/PHASE_1B2_FULL_AMIGO_CATALOG_PLAN.md) | Authorized full discovery/import/media/price/review/bulk/public/admin/performance execution contract | `IN_PROGRESS` |
 
 ### 7.2. Accepted Phase 1A ADR
 
@@ -141,8 +144,9 @@ ADR принимают устойчивую границу, а не неподт
 
 ## 8. Незакрытые зависимости по implementation gate
 
-- **Phase 1A:** завершена и проверена; Foundation использует только synthetic/local data, а дальнейшая implementation остановлена.
-- **До Phase 1B:** разрешённый AMIGO transport/file, pilot inventory/mapping and owners; полный ассортимент не требуется.
+- **Phase 1A:** завершена и проверена; Foundation остаётся неизменной основой.
+- **Phase 1B.1:** завершена и проверена; 32-ID pilot остаётся исходной активной версией до отдельной Phase 1B.2 activation.
+- **Phase 1B.2:** разрешена; full transport/inventory `TBD-SOURCE-AMIGO-002`/`TBD-ASSORT-002` закрываются только dated discovery, manifest и acceptance evidence, при любом stop condition работа останавливается без ложного статуса full.
 - **До Phase 1C:** нужны active price snapshot, formula/rounding/compatibility/dimensions; activation roles, parity tolerance и per-item minimum уже решены, но не реализуются в Phase 1A.
 - **До Phase 1D:** approved `SceneProfile`, renderer profiles/assets and visual baselines (`TBD-PREVIEW-001`).
 - **До Phase 1E/1F:** legal/privacy/retention, business state mapping, identity/recovery and operational roles.
@@ -155,9 +159,10 @@ ADR принимают устойчивую границу, а не неподт
 
 1. Product Owner принял ADR-0007–0010 и письменно разрешил Phase 1A 2026-08-02.
 2. Phase 1A выполнена по [завершённому плану](../06-plans/active/PHASE_1A_FOUNDATION_PLAN.md) без AMIGO import и business features; результат зафиксирован в [completion report](../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
-3. `OWNER-DECISION-010` разрешил только Phase 1B.1 по [active plan](../06-plans/active/PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN.md); Phase 1B.2/1C–1H не начинаются до собственных письменных transition decisions и entry gates.
-4. Закрываются только те P0/P1 business/data/privacy вопросы, от которых зависит выбранный slice; safe fallback не выдаётся за решение.
-5. Source/hosting/AI evaluations используют только разрешённые данные и завершаются ADR до provider commitment.
+3. `OWNER-DECISION-010` разрешил и завершил только Phase 1B.1 по [stable plan](../06-plans/active/PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN.md) и [report](../06-plans/completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md).
+4. `OWNER-DECISION-012` разрешает только Phase 1B.2 по [active plan](../06-plans/active/PHASE_1B2_FULL_AMIGO_CATALOG_PLAN.md); Phase 1C–1H не начинаются до собственных письменных transition decisions и entry gates.
+5. Закрываются только те P0/P1 business/data/privacy вопросы, от которых зависит выбранный slice; safe fallback не выдаётся за решение.
+6. Source/hosting/AI evaluations используют только разрешённые данные и завершаются ADR до provider commitment.
 
 ## 10. Правило изменения roadmap
 
@@ -177,3 +182,4 @@ ADR принимают устойчивую границу, а не неподт
 | 1.5.0 | 2026-08-02 | Глобальная база обновлена до 0.9.0 с PostgreSQL public-serving contract `OWNER-DECISION-009`; Phase 1B entry/import evidence и transition hold не изменены. |
 | 1.6.0 | 2026-08-02 | `OWNER-DECISION-010` разрешил только Phase 1B.1 с dated transport evidence/32-ID plan; Phase 1B.2/1C+ и production сохранены на hold. |
 | 1.7.0 | 2026-08-03 | Phase 1B.1 completion report and QG-169–194 recorded; global source advanced to 0.12.0 and no-next-phase hold preserved. |
+| 1.8.0 | 2026-08-03 | `OWNER-DECISION-012`, QG-195–202 and active Phase 1B.2 plan authorize only full catalog expansion; Phase 1C+ and production remain gated. |

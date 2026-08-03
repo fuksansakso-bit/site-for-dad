@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Версия gate | 1.8.0 |
-| Проверяемая входная база | Phase 0B baseline `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`; Phase 0C baseline `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; Phase 1A completion `943d4a2efa5e05f0d05493633cf5eb549e072a22`; Phase 1B.1 recovery baseline `d851647ab243e432641d650cb29e3d8132a92af1`; `GLOBAL_SPEC.md` 0.12.0 |
+| Версия gate | 1.9.0 |
+| Проверяемая входная база | Phase 0B baseline `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`; Phase 0C baseline `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; Phase 1A completion `943d4a2efa5e05f0d05493633cf5eb549e072a22`; Phase 1B.1 completion baseline `af8411d2b854e572b6b61b214d3e99a88b96cafc`; `GLOBAL_SPEC.md` 0.13.0 |
 | Дата entry self-audit | 2026-08-03, Europe/Moscow |
 | Решение по входу в 0B | **PASSED** |
 | Основание письменного решения | Приложенное владельцем задание «AUTHORIZED AMIGO FUNCTIONAL PARITY AND SPECIALIZED SPECS» и повторное указание «так приступай к работе» |
@@ -17,7 +17,9 @@
 | Phase 1B.1 Entry Gate | **AUTHORIZED_PHASE_1B1_IN_PROGRESS** — QG-169–176 закрыты 2026-08-02 |
 | Phase 1B.1 Local Storage Recovery Gate | **PASSED_PHASE_1B1_STORAGE_RECOVERY** — QG-177–184 закрыты 2026-08-03 |
 | Phase 1B.1 Pilot Acceptance Gate | **PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT** — QG-185–194 закрыты 2026-08-03 |
-| Разрешённая реализация | Только Phase 1B.1 catalog pilot/local publication layer; Phase 1B.2/1C+ и production запрещены |
+| Phase 1B.2 Entry Gate | **AUTHORIZED_PHASE_1B2_IN_PROGRESS** — QG-195–202 закрыты 2026-08-03 |
+| Phase 1B.2 Completion Gate | **NOT_EVALUATED** — QG-203–230 открыты до фактического full-catalog evidence |
+| Разрешённая реализация | Только Phase 1B.2 full authorized catalog expansion; Phase 1C+ и production запрещены |
 
 Entry gate подтверждает, что исправления 0A.1 внесены и письменное решение начать документную фазу 0B получено. Он не означает готовность ценовой формулы, импорта, приложения или запуска. Открытые TBD блокируют утверждение зависимой спецификации или функции, но не отменяют разрешение создавать документацию 0B с безопасным поведением.
 
@@ -306,9 +308,57 @@ Storage result: **PASSED_PHASE_1B1_STORAGE_RECOVERY**. Этот статус н�
 - [x] **QG-193 — MUST:** canonical specs, ADR-0009, test strategy, plan, traceability, open questions, README, changelog and completion report synchronized; production storage remains `TBD-INFRA-010`, and no production credential/provider/anonymous bucket was selected.
 - [x] **QG-194 — MUST:** final format/docs/scope/boundary/lint/type/test/build/security checks pass, tracked worktree is clean at handoff, and Phase 1B.2/1C/configurator/calculation/preview/cart/WhatsApp/AI/production work is absent.
 
-Gate result: **PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT**. Evidence is frozen in [PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md](../06-plans/completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md). This result completes only Phase 1B.1 and grants no permission to start Phase 1B.2, Phase 1C or production infrastructure selection.
+Gate result: **PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT**. Evidence is frozen in [PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md](../06-plans/completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md). This result completes only Phase 1B.1; Phase 1B.2 is authorized separately by `OWNER-DECISION-012`, never by this historical gate.
 
-## 9. История изменений
+## 9. Phase 1B.2 full authorized catalog expansion gates
+
+### 9.1. Entry gate
+
+- [x] **QG-195 — MUST:** written `OWNER-DECISION-012` authorizes only Phase 1B.2 full authorized catalog expansion and explicitly keeps Phase 1C+, dimensional calculator/configurator/preview/AI/cart/order/WhatsApp/account/final landing, production provider/secrets/deployment forbidden.
+- [x] **QG-196 — MUST:** Phase 1B.1 is `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT`; baseline commit `af8411d2b854e572b6b61b214d3e99a88b96cafc`, branch `phase/1b2-amigo-full-catalog` and clean pre-change tree are recorded.
+- [x] **QG-197 — MUST:** mandatory repository/global/profile/technical/quality/roadmap/report documents, `OWNER-DECISION-008/009/011` and all accepted ADR were reviewed before implementation.
+- [x] **QG-198 — MUST:** partner permission covers requested catalog/technical/media/base-price facts while AMIGO frontend code/design/DOM reuse, hotlink, watermark removal, false attribution, training use, authorization/CAPTCHA/rate/access bypass and excessive load remain prohibited.
+- [x] **QG-199 — MUST:** existing `AmigoCatalogSourceAdapter`, PostgreSQL/Prisma/Graphile Worker source-normalized-overlay pipeline and VersityGW `StoragePort` are mandatory foundations; a second parallel importer or production provider choice is prohibited.
+- [x] **QG-200 — MUST:** active plan records a verifiable outcome, one in-progress stage, dependencies, exact 12 logical commits, real-import/manifest/no-op/resume/daily/bulk/overlay/public/performance/CI checks, documentation/report work and precise stop conditions.
+- [x] **QG-201 — MUST:** canonical ownership/runtime/default contracts are synchronized: overlay > active version > normalized source; PostgreSQL-only public runtime; staged sync never auto-activates/deletes/overwrites local decisions; new accepted items propose VISIBLE + INQUIRY_ONLY; unknown price is `PRICE_ON_REQUEST`, never zero.
+- [x] **QG-202 — MUST:** `format:check`, `docs:check` (74 files / 1396 normative IDs), `phase-scope:check` and `git diff --check` passed for the authorization change before production code began. The local shell used Node 22.22.2 for this docs-only entry check and reported the pinned Node 24.18.1 warning; exact toolchain remains mandatory at final CI-equivalent QG-227.
+
+Entry result: **AUTHORIZED_PHASE_1B2_IN_PROGRESS**. Only the active plan scope may now proceed; completion remains unverified and Phase 1C+ remain forbidden.
+
+### 9.2. Completion gate
+
+- [ ] **QG-203 — MUST:** real authorized discovery accounts for all accessible current categories, nested paths and pagination in a dated transport report and full manifest; partial coverage is not labeled full.
+- [ ] **QG-204 — MUST:** every source entity has stable identity; duplicate detection is zero-loss, repeat import is a proven no-op and source removal creates `SOURCE_REMOVED` without physical deletion.
+- [ ] **QG-205 — MUST:** durable Graphile Worker stages support bounded load/retry/backoff/jitter/timeout, checkpoint/resume/cancel/progress/graceful shutdown/safe rerun and daily/manual history without false time promise.
+- [ ] **QG-206 — MUST:** reproducible minimized raw snapshots, parser/mapping/source versions/hashes and retention protection for active/audit-linked versions are implemented without cookies/tokens/PII/secrets or unnecessary scripts.
+- [ ] **QG-207 — MUST:** full normalized category/system/model/material/variant/property/compatibility/source-link records preserve unknowns as null/review-required rather than invented values.
+- [ ] **QG-208 — MUST:** all permitted discovered media links are accounted for; imported binaries are local private VersityGW objects with validation/hash/dedup/generated keys/rights/publication metadata, no hotlink, item-level failures and visible missing-media filter/approved placeholder.
+- [ ] **QG-209 — MUST:** full source/base/card/price-from/category/currency/context/date/version snapshots and detailed activation diff are implemented; unknowns are `PRICE_ON_REQUEST`, local overrides survive sync and only OWNER/ADMIN activate `PriceVersion`.
+- [ ] **QG-210 — MUST:** initial reviewed overlays use VISIBLE + INQUIRY_ONLY/«Уточнить наличие» and local availability, visibility, order/description and price override survive every subsequent sync.
+- [ ] **QG-211 — MUST:** required category/filter/selection bulk actions are confirmed, counted, transactional, audited with actor/correlation/idempotency and safely repeatable.
+- [ ] **QG-212 — MUST:** `/admin/catalog` exposes understandable full-catalog fields/filters/actions/manifest/progress/diff/history while keeping hashes/raw/parser diagnostics off the main screen.
+- [ ] **QG-213 — MUST:** `/catalog` provides responsive hierarchy/search/server filters/sort/pagination/material detail/media/properties/price/availability/breadcrumb/shareable/loading/empty/error behavior from active PostgreSQL versions only.
+- [ ] **QG-214 — MUST:** complete diff/review classifies new/changed/removed/parser/media/incompatible facts and supports accept selected/all, reject, defer, compare/source link and separate manual catalog/price activation.
+- [ ] **QG-215 — MUST:** catalog/price activation is atomic, audited and reversible; rollback restores the prior compatible active versions without losing snapshots, overlays or source-removed history.
+- [ ] **QG-216 — MUST:** all admin mutations are server-authorized, deny-by-default, validated, CSRF/origin protected, idempotent, audited and correlation-safe under OWNER/ADMIN/MANAGER capability rules; guest/customer see public catalog only.
+- [ ] **QG-217 — MUST:** AMIGO unavailable/partial, damaged category, parser drift and single-item media failures degrade safely, preserve last active public catalog and expose admin diagnostics without raw/internal errors to clients.
+- [ ] **QG-218 — MUST:** worker and Docker storage restart plus database transaction failure recovery preserve checkpoints, object integrity, active versions and audit history; resumed import completes safely.
+- [ ] **QG-219 — MUST:** indexes/query limits/server filtering/cursors/thumbnails/lazy responsive media/cache invalidation/search guards/no-N+1 are verified on synthetic scale materially above real catalog without substituting synthetic data for import evidence.
+- [ ] **QG-220 — MUST:** required unit tests pass for discovery/nesting/identity/normalization/precedence/defaults/price-on-request/dedup/diff/parser failures.
+- [ ] **QG-221 — MUST:** required contract tests pass for source/media/catalog/admin/jobs/activation contracts.
+- [ ] **QG-222 — MUST:** required integration tests pass for full import/resume/no-op/new category/price/source-removed/overlay persistence/bulk/activation/rollback/audit.
+- [ ] **QG-223 — MUST:** required browser tests pass for public catalog/search/filters/pagination/detail/fallback labels and admin bulk/category/availability/price/diff workflows.
+- [ ] **QG-224 — MUST:** required recovery tests pass for upstream/page/category/worker/storage/media/database failures and importer resume.
+- [ ] **QG-225 — MUST:** final real manifest/report records exact discovered/imported/skipped/duplicate/removed/checksum/category/system/model/material/variant/media/price/error counts and every discrepancy.
+- [ ] **QG-226 — MUST:** once-daily schedule and OWNER/ADMIN manual run/cancel/progress/retry/resume/history are verified; automatic sync creates snapshots/diff but never activates versions or overwrites overlays.
+- [ ] **QG-227 — MUST:** exact-toolchain CI-equivalent format/docs/scope/boundary/lint/type/coverage/database/storage/build/browser/security/advisory checks pass.
+- [ ] **QG-228 — MUST:** all required factual specs, policies, roadmap, traceability, open questions, README, changelog and completed Phase 1B.2 report match actual import evidence without invented facts.
+- [ ] **QG-229 — MUST:** exact logical commit sequence is preserved and final tracked/untracked worktree is clean.
+- [ ] **QG-230 — MUST:** Phase 1C, dimensional calculator/configurator/preview/AI/cart/order/WhatsApp/account/final design, production provider/secrets/deployment were not started; no next-phase permission is inferred.
+
+Completion result remains **NOT_EVALUATED** until every QG-203–230 item passes with linked evidence.
+
+## 10. История изменений
 
 | Версия | Дата | Изменение |
 |---|---|---|
@@ -321,5 +371,6 @@ Gate result: **PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT**. Evidence is frozen in [PH
 | 1.6.0 | 2026-08-02 | `OWNER-DECISION-010` и QG-169–176 отдельно разрешили только Phase 1B.1 после real public-page transport/ID/media preflight; pilot acceptance оставлен `IN PROGRESS`, Phase 1B.2/1C+ запрещены. |
 | 1.7.0 | 2026-08-03 | QG-177–184 зафиксировали passed local VersityGW real-image/signed/multipart/restart recovery gate; media/pilot completion и production/Phase 1C остались gated. |
 | 1.8.0 | 2026-08-03 | QG-185–194 зафиксировали completed real 32-variant/59-media pilot, approved active catalog/price versions, restart/no-op recovery, public/admin surfaces and passed 9/9 CI gate; later phases and production remain unauthorized. |
+| 1.9.0 | 2026-08-03 | `OWNER-DECISION-012` и passed QG-195–202 разрешили только Phase 1B.2; QG-203–230 остаются открыты до real completion evidence, Phase 1C+ и production запрещены. |
 | 0.2.0 | 2026-08-02 | Entry gate обновлён для `GLOBAL_SPEC` 0.4.0 и partner-authorized scope; письменное поручение владельца зафиксировано как разрешение начать 0B; добавлен отдельный completion gate 0B. |
 | 0.1.0 | 2026-08-02 | Предыдущий self-audit 0A.1 для версии 0.3.1; проверки `QG-001`–`087` впоследствии зарезервированы. |

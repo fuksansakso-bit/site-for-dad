@@ -4,14 +4,14 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Нормативная политика; Phase 1B.1 разрешает только source card prices/local base overrides без calculator |
-| Версия | 1.5.0 |
-| Дата | 2026-08-02, Europe/Moscow |
+| Статус | Нормативная политика; Phase 1B.2 разрешает full source card/base price snapshots and local overrides без dimensional calculator |
+| Версия | 1.6.0 |
+| Дата | 2026-08-03, Europe/Moscow |
 | Главный источник правды | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) |
 | Внешние источники | [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md) |
 | Будущая детализация | `PRICING_CALCULATOR_SPEC.md` и `TEST_STRATEGY.md`, запланированные в [SPEC_ROADMAP.md](SPEC_ROADMAP.md) |
 
-Политика задаёт происхождение, версии, подтверждение и деградацию цены. Phase 1B.1 MAY импортировать опубликованную карточную цену «от», её context/currency/date/version и separate local base override; формула, размеры, minimum 1500 и calculator остаются запрещены до Phase 1C.
+Политика задаёт происхождение, версии, подтверждение и деградацию цены. Phase 1B.2 MAY импортировать для полного доступного каталога опубликованные source/base/card prices, цену «от», price category, currency, context/date/source version и separate local price override; формула, размеры, minimum 1500 и calculator остаются запрещены до Phase 1C.
 
 ## 1. Основные требования владельца
 
@@ -28,6 +28,7 @@
 - **PRICING-SOURCE-011 — MUST:** Business Owner является decision authority для local price overrides и commercial conditions. Они хранятся отдельными versioned/audited слоями, не переписывают AMIGO base price и не активируются без применимых owner, financial и legal gates.
 - **PRICING-SOURCE-012 — MUST:** по `OWNER-DECISION-009` конфигуратор и расчёт MUST получать catalog/material/base-price inputs только из совместимых активных одобренных `CatalogVersion`/`PriceVersion` в PostgreSQL. Client request MUST NOT читать AMIGO, raw capture, staged candidate, cache/search source или неподтверждённую цену напрямую.
 - **PRICING-SOURCE-013 — MUST:** Phase 1B.1 хранит только decimal minor-unit source card price «от» с currency `RUB`, published regional/source context, capture/version/status и nullable verified `sourcePriceCategory`; отсутствующее/нулевое/неразбираемое значение получает `PRICE_ON_REQUEST`, а opaque DOM token не выдаётся за подтверждённую price category.
+- **PRICING-SOURCE-014 — MUST:** Phase 1B.2 расширяет `PRICING-SOURCE-013` на все discovered source entities. Каждая запись сохраняет source entity/link, captured date, source version, currency, context, nullable source/base/price-from amount и nullable source price category; неизвестное значение остаётся `PRICE_ON_REQUEST` и MUST NOT превращаться в `0 ₽`.
 
 ## 2. Приоритет источников и способ получения
 
@@ -44,6 +45,7 @@
 - **PRICING-SYNC-006 — MUST:** данные старше 7 дней получают `STALE_WARNING`; возраст более 30 дней блокирует публикацию изменённой цены или нового товара до обязательной административной проверки.
 - **PRICING-SYNC-004 — MUST:** город/регион AMIGO, используемый для базового сравнения, определяется `TBD-PRICE-SOURCE-001`; московский контекст не считается автоматически применимым к Чеченской Республике.
 - **PRICING-SYNC-005 — MUST NOT:** нельзя утверждать существование публичного официального API AMIGO только из факта партнёрства; конкретный transport/export/API подтверждается отдельно по `TBD-SOURCE-AMIGO-002`.
+- **PRICING-SYNC-007 — MUST:** full price diff перед OWNER/ADMIN activation показывает changed count, old/new values, absolute/percentage delta when both values exist, added/removed/`PRICE_ON_REQUEST`, source and date. Daily/manual sync never activates `PriceVersion` and never overwrites `LocalPriceOverride`.
 
 ## 3. Snapshot model и versioning
 
@@ -188,3 +190,4 @@ PricingProvider
 | 1.3.0 | 2026-08-02 | По `OWNER-DECISION-008` AMIGO base price отделена от Business Owner local overrides/commercial conditions и локальной PostgreSQL-проекции. |
 | 1.4.0 | 2026-08-02 | По `OWNER-DECISION-009` public calculations переведены на активные PostgreSQL `CatalogVersion`/`PriceVersion`; зафиксированы override precedence, staged diff, owner/admin activation, audit/source timestamps и отсутствие direct AMIGO runtime reads. |
 | 1.5.0 | 2026-08-02 | `OWNER-DECISION-010` разрешил Phase 1B.1 source card prices/PRICE_ON_REQUEST/local base overrides и daily diff, сохранив calculator/formulas/minimum rule для Phase 1C. |
+| 1.6.0 | 2026-08-03 | `OWNER-DECISION-012` разрешил full-catalog source/base/card/price-from/category snapshots, complete activation diff and persistent local overrides; dimensional calculator/formulas/minimum remain Phase 1C. |

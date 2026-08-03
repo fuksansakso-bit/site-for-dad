@@ -8,7 +8,9 @@
 
 Фаза **1A — FOUNDATION** завершена 2026-08-02 в ветке `phase/1a-foundation` от исходного commit `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`. Принятые ADR-0007–0010 реализованы и повторно проверены: созданы workspace, минимальные web/BFF и worker shells, PostgreSQL/Prisma migration foundation, Graphile Worker, S3-compatible storage port, synthetic identity/RBAC, observability, security baseline, тесты и provider-neutral CI.
 
-[Phase 1A Acceptance Gate](docs/00-global/SPEC_QUALITY_GATE.md#7-phase-1a-foundation-acceptance-gate) имеет статус `PASSED_PHASE_1A_FOUNDATION`. Отдельно разрешённая `OWNER-DECISION-010` **Phase 1B.1 — AMIGO CATALOG PILOT AND LOCAL PUBLICATION LAYER** завершена 2026-08-03 со статусом `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT`: опубликованы ровно 32 allowlisted AMIGO-материала, 59 локальных media assets, CatalogVersion/PriceVersion v1 и минимальные `/catalog`/`/admin/catalog`; storage/restart/idempotency/browser/CI gates прошли. Phase 1B.2/1C+, полный импорт, calculation/configurator/preview/AI/cart/order/WhatsApp/account/final landing и production deployment не разрешены.
+[Phase 1A Acceptance Gate](docs/00-global/SPEC_QUALITY_GATE.md#7-phase-1a-foundation-acceptance-gate) имеет статус `PASSED_PHASE_1A_FOUNDATION`. Отдельно разрешённая `OWNER-DECISION-010` **Phase 1B.1 — AMIGO CATALOG PILOT AND LOCAL PUBLICATION LAYER** завершена 2026-08-03 со статусом `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT`: опубликованы ровно 32 allowlisted AMIGO-материала, 59 локальных media assets, CatalogVersion/PriceVersion v1 и минимальные `/catalog`/`/admin/catalog`; storage/restart/idempotency/browser/CI gates прошли.
+
+`OWNER-DECISION-012` разрешает начать только **Phase 1B.2 — FULL AUTHORIZED AMIGO CATALOG EXPANSION** в ветке `phase/1b2-amigo-full-catalog` от commit `af8411d2b854e572b6b61b214d3e99a88b96cafc`. Цель — контролируемо расширить существующий importer до полного доступного разрешённого каталога, локальных media/base-price snapshots, diff/review/manual activation, bulk business overlays и масштабируемых public/admin surfaces. Phase 1C, dimensional calculator/configurator/preview/AI/cart/order/WhatsApp/account/final landing и production deployment не разрешены.
 
 ## С чего начать
 
@@ -31,7 +33,7 @@
 - `docs/specs/` содержит глобальную и 33 нормативные профильные спецификации product/domain/UX/technical.
 - `docs/00-global/` содержит управляющие и справочные документы: реестры, политики, roadmap, quality gate, допущения и открытые вопросы.
 - `docs/quality/` и `docs/evaluations/` содержат test/evaluation artifacts, а `docs/adr/` — десять принятых решений об устойчивых архитектурных границах.
-- `docs/06-plans/` содержит frozen MVP, critical-spec audit, implementation roadmap, technology evaluation, стабильные completed Phase 1A/Phase 1B.1 plans и [Phase 1B.1 completion report](docs/06-plans/completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md).
+- `docs/06-plans/` содержит frozen MVP, critical-spec audit, implementation roadmap, technology evaluation, стабильные completed Phase 1A/Phase 1B.1 plans, [Phase 1B.1 completion report](docs/06-plans/completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md) и активный [Phase 1B.2 plan](docs/06-plans/active/PHASE_1B2_FULL_AMIGO_CATALOG_PLAN.md).
 
 ## Референсы
 
@@ -74,4 +76,4 @@ pnpm.cmd test:catalog-pilot
 
 ## Текущая граница работы
 
-Phase 1B.1 завершена по [stable plan](docs/06-plans/active/PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN.md) и [completion report](docs/06-plans/completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md). Дальнейшая implementation work сейчас не разрешена: нерешённые full-export, calculation, compatibility, privacy, legal и production-provider TBD остаются видимыми, а Phase 1B.2/1C+ или production deployment требуют нового письменного решения Product Owner.
+Phase 1B.1 завершена по [stable plan](docs/06-plans/active/PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN.md) и [completion report](docs/06-plans/completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md). Сейчас разрешена только Phase 1B.2 по [active plan](docs/06-plans/active/PHASE_1B2_FULL_AMIGO_CATALOG_PLAN.md): неизвестные full-transport/inventory факты закрываются только фактическим discovery/import evidence, а calculation, compatibility для точного расчёта, privacy/legal production gates и production provider остаются видимыми TBD. Phase 1C+ и production deployment требуют нового письменного решения Product Owner.

@@ -732,23 +732,24 @@ model ProductFamily {
 }
 
 model ProductCategory {
-  id              String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  sourceEntityId  String?                @unique(map: "product_category_source_entity_key") @map("source_entity_id") @db.Uuid
-  familyId        String                 @map("family_id") @db.Uuid
-  parentId        String?                @map("parent_id") @db.Uuid
-  slug            String                 @unique(map: "product_category_slug_key") @db.VarChar(160)
-  name            String                 @db.VarChar(255)
-  sortOrder       Int                    @default(0) @map("sort_order")
-  createdAt       DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt       DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
-  sourceEntity    SourceEntity?          @relation(fields: [sourceEntityId], references: [id], onDelete: Restrict)
-  family          ProductFamily          @relation(fields: [familyId], references: [id], onDelete: Restrict)
-  parent          ProductCategory?       @relation("product_category_tree", fields: [parentId], references: [id], onDelete: Restrict)
-  children        ProductCategory[]      @relation("product_category_tree")
-  systems         ProductSystem[]
-  models          ProductModel[]
-  materials       Material[]
-  businessEntries BusinessCatalogEntry[]
+  id                String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sourceEntityId    String?                @unique(map: "product_category_source_entity_key") @map("source_entity_id") @db.Uuid
+  familyId          String                 @map("family_id") @db.Uuid
+  parentId          String?                @map("parent_id") @db.Uuid
+  slug              String                 @unique(map: "product_category_slug_key") @db.VarChar(160)
+  name              String                 @db.VarChar(255)
+  sortOrder         Int                    @default(0) @map("sort_order")
+  createdAt         DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
+  sourceEntity      SourceEntity?          @relation(fields: [sourceEntityId], references: [id], onDelete: Restrict)
+  family            ProductFamily          @relation(fields: [familyId], references: [id], onDelete: Restrict)
+  parent            ProductCategory?       @relation("product_category_tree", fields: [parentId], references: [id], onDelete: Restrict)
+  children          ProductCategory[]      @relation("product_category_tree")
+  systems           ProductSystem[]
+  models            ProductModel[]
+  materials         Material[]
+  sourceMediaAssets SourceMediaAsset[]
+  businessEntries   BusinessCatalogEntry[]
 
   @@index([familyId, sortOrder], map: "product_category_family_order_idx")
   @@map("product_category")
@@ -772,6 +773,7 @@ model ProductSystem {
   primaryVariants      MaterialVariant[]
   compatibilityRules   CompatibilityRule[]
   dimensionConstraints DimensionConstraint[]
+  sourceMediaAssets    SourceMediaAsset[]
   businessEntries      BusinessCatalogEntry[]
 
   @@index([familyId, sortOrder], map: "product_system_family_order_idx")
@@ -793,6 +795,7 @@ model ProductModel {
   system               ProductSystem?        @relation(fields: [systemId], references: [id], onDelete: Restrict)
   compatibilityRules   CompatibilityRule[]
   dimensionConstraints DimensionConstraint[]
+  sourceMediaAssets    SourceMediaAsset[]
 
   @@index([categoryId], map: "product_model_category_idx")
   @@index([systemId], map: "product_model_system_idx")
@@ -907,7 +910,10 @@ model SourceMediaAsset {
   id                   String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   catalogSourceId      String              @map("catalog_source_id") @db.Uuid
   sourceEntityId       String              @map("source_entity_id") @db.Uuid
-  materialVariantId    String              @map("material_variant_id") @db.Uuid
+  materialVariantId    String?             @map("material_variant_id") @db.Uuid
+  categoryId           String?             @map("category_id") @db.Uuid
+  systemId             String?             @map("system_id") @db.Uuid
+  modelId              String?             @map("model_id") @db.Uuid
   mediaAssetId         String?             @map("media_asset_id") @db.Uuid
   sourceType           CatalogSourceType   @map("source_type")
   sourceId             String              @map("source_id") @db.VarChar(255)
@@ -918,6 +924,7 @@ model SourceMediaAsset {
   sourceCapturedAt     DateTime            @map("source_captured_at") @db.Timestamptz(6)
   sourceLastVerifiedAt DateTime            @map("source_last_verified_at") @db.Timestamptz(6)
   role                 MediaAssetRole
+  sortOrder            Int                 @default(0) @map("sort_order")
   contentType          String?             @map("content_type") @db.VarChar(128)
   contentLength        Int?                @map("content_length")
   status               SourceEntityStatus  @default(ACTIVE)
@@ -925,12 +932,18 @@ model SourceMediaAsset {
   updatedAt            DateTime            @updatedAt @map("updated_at") @db.Timestamptz(6)
   catalogSource        CatalogSource       @relation(fields: [catalogSourceId], references: [id], onDelete: Restrict)
   sourceEntity         SourceEntity        @relation(fields: [sourceEntityId], references: [id], onDelete: Restrict)
-  materialVariant      MaterialVariant     @relation(fields: [materialVariantId], references: [id], onDelete: Restrict)
+  materialVariant      MaterialVariant?    @relation(fields: [materialVariantId], references: [id], onDelete: Restrict)
+  category             ProductCategory?    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  system               ProductSystem?      @relation(fields: [systemId], references: [id], onDelete: Restrict)
+  model                ProductModel?       @relation(fields: [modelId], references: [id], onDelete: Restrict)
   mediaAsset           MediaAsset?         @relation(fields: [mediaAssetId], references: [id], onDelete: Restrict)
   placement            MaterialMediaAsset?
 
   @@unique([catalogSourceId, sourceId], map: "source_media_asset_identity_key")
   @@index([materialVariantId, role], map: "source_media_asset_variant_role_idx")
+  @@index([categoryId, role], map: "source_media_asset_category_role_idx")
+  @@index([systemId, role], map: "source_media_asset_system_role_idx")
+  @@index([modelId, role], map: "source_media_asset_model_role_idx")
   @@map("source_media_asset")
 }
 

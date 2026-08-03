@@ -85,7 +85,7 @@ export interface CatalogJobServices {
     payload: CatalogMediaImportPayload,
     helpers: JobHelpers,
     signal: AbortSignal,
-  ): Promise<'CANCELLED' | 'COMPLETED'>;
+  ): Promise<'CANCELLED' | 'COMPLETED' | 'CONTINUE'>;
   normalize(
     payload: CatalogNormalizePayload,
     helpers: JobHelpers,
@@ -666,8 +666,9 @@ export function createCatalogJobServices(
         const source = await loadSource(helpers, payload.catalogSourceId);
         const adapter = await adapterFactory(source);
         const dependencies = await mediaDependenciesFactory();
-        await importCatalogMedia(payload, helpers, adapter, dependencies, signal);
-        return 'COMPLETED';
+        const result = await importCatalogMedia(payload, helpers, adapter, dependencies, signal);
+        if (result.cancelled) return await sealCancellation(payload, helpers);
+        return result.remainingCount > 0 ? 'CONTINUE' : 'COMPLETED';
       } catch (error) {
         if (error instanceof FoundationJobError) throw error;
         throw toCatalogPipelineError(error);

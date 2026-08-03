@@ -8,6 +8,8 @@ import {
   catalogActivateVersionPayloadSchema,
   catalogApproveVersionPayloadSchema,
   catalogJobIdentifiers,
+  catalogMediaBatchIdempotencyKey,
+  catalogMediaImportPayloadSchema,
   catalogRollbackVersionPayloadSchema,
   catalogSourceDiscoveryPayloadSchema,
   catalogSyncCancellationRequestSchema,
@@ -153,6 +155,76 @@ describe('catalog synchronization job contracts', () => {
         syncRunId: '00000000-0000-4000-8000-000000000301',
       }),
     ).toThrow();
+  });
+
+  it('uses a distinct bounded idempotency key for every media batch', () => {
+    const syncRunId = '00000000-0000-4000-8000-000000000301';
+    const firstKey = catalogMediaBatchIdempotencyKey(syncRunId, 1);
+    const secondKey = catalogMediaBatchIdempotencyKey(syncRunId, 2);
+
+    expect(firstKey).not.toBe(secondKey);
+    expect(
+      catalogMediaImportPayloadSchema.parse({
+        batchNumber: 2,
+        catalogSourceId,
+        correlationId: 'catalog-media-batch-unit-001',
+        idempotencyKey: secondKey,
+        schemaVersion: 1,
+        syncRunId,
+      }),
+    ).toMatchObject({ batchNumber: 2, idempotencyKey: secondKey });
+    expect(() => catalogMediaBatchIdempotencyKey(syncRunId, 0)).toThrow();
+    expect(() => catalogMediaBatchIdempotencyKey(syncRunId, 100_001)).toThrow();
+  });
+
+  it('enqueues the next media batch without advancing to diff', async () => {
+    const syncRunId = '00000000-0000-4000-8000-000000000301';
+    const payload = catalogMediaImportPayloadSchema.parse({
+      batchNumber: 2,
+      catalogSourceId,
+      correlationId: 'catalog-media-batch-unit-002',
+      idempotencyKey: catalogMediaBatchIdempotencyKey(syncRunId, 2),
+      schemaVersion: 1,
+      syncRunId,
+    });
+    const services = {
+      activateVersion: vi.fn(),
+      approveVersion: vi.fn(),
+      buildDiff: vi.fn(),
+      discoverSource: vi.fn(),
+      importMedia: vi.fn().mockResolvedValue('CONTINUE'),
+      normalize: vi.fn(),
+      rollbackVersion: vi.fn(),
+      synchronize: vi.fn(),
+    } satisfies CatalogJobServices;
+    const addJob = vi.fn().mockResolvedValue(undefined);
+    const digest = createHash('sha256').update(JSON.stringify(payload)).digest('hex');
+    const helpers = {
+      abortSignal: new AbortController().signal,
+      addJob,
+      job: { attempts: 1, max_attempts: 5 },
+      query: vi.fn(async (text: string) =>
+        text.includes('SELECT payload_digest, status')
+          ? { rows: [{ payload_digest: digest, status: 'IN_PROGRESS' }] }
+          : { rows: [] },
+      ),
+    } as unknown as JobHelpers;
+    const task = createCatalogTaskList(services, 1_000)[catalogJobIdentifiers.mediaImport];
+    if (task === undefined) throw new Error('Catalog media task is unavailable.');
+
+    await task(payload, helpers);
+
+    const nextKey = catalogMediaBatchIdempotencyKey(syncRunId, 3);
+    expect(addJob).toHaveBeenCalledTimes(1);
+    expect(addJob).toHaveBeenCalledWith(
+      catalogJobIdentifiers.mediaImport,
+      expect.objectContaining({ batchNumber: 3, idempotencyKey: nextKey }),
+      expect.objectContaining({
+        jobKey: `${catalogJobIdentifiers.mediaImport}:${nextKey}`,
+        queueName: 'catalog-full-sync',
+      }),
+    );
+    expect(services.buildDiff).not.toHaveBeenCalled();
   });
 
   it('binds approval, activation and rollback commands to explicit version pairs', () => {

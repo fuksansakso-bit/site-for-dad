@@ -25,6 +25,9 @@ const categorySourceId = 'jobs-category-roller';
 const materialSourceId = 'jobs-material-roller-1001';
 const modelSourceId = 'jobs-model-roller-ready-1001';
 const systemSourceId = 'jobs-system-mini';
+const categoryMediaUrl = 'https://fixture.invalid/media/jobs-category-roller.png';
+const modelMediaUrl = 'https://fixture.invalid/media/jobs-model-roller-ready-1001.png';
+const systemMediaUrl = 'https://fixture.invalid/media/jobs-system-mini.png';
 
 function identity(
   sourceEntityType: SourceIdentity['sourceEntityType'],
@@ -85,6 +88,7 @@ export function createJobsCatalogFixture(): FixtureCatalogDataset {
     family,
     identity: identity('CATEGORY', categorySourceId),
     materialSourceIds: [materialSourceId],
+    mediaSourceUrls: [categoryMediaUrl],
     modelSourceIds: [modelSourceId],
     name: 'Рулонные ткани',
     systemSourceIds: [systemSourceId],
@@ -93,6 +97,7 @@ export function createJobsCatalogFixture(): FixtureCatalogDataset {
     categorySourceId,
     family,
     identity: identity('SYSTEM', systemSourceId, categorySourceId),
+    mediaSourceUrl: systemMediaUrl,
     name: 'MINI',
   };
   const material: SourceMaterial = {
@@ -112,7 +117,7 @@ export function createJobsCatalogFixture(): FixtureCatalogDataset {
     categorySourceId,
     family,
     identity: identity('MODEL', modelSourceId, categorySourceId),
-    mediaSourceUrls: [],
+    mediaSourceUrls: [modelMediaUrl],
     name: 'Р“РѕС‚РѕРІР°СЏ СЂСѓР»РѕРЅРЅР°СЏ С€С‚РѕСЂР°',
     sourceAvailability: 'UNKNOWN',
     systemSourceId,
@@ -137,21 +142,26 @@ export function createJobsCatalogFixture(): FixtureCatalogDataset {
       },
     ],
   };
-  const mediaFile: SourceMediaFile = {
+  const mediaFile = (sourceUrl: string, originalFilename: string): SourceMediaFile => ({
     body: imageBody,
     capturedAt,
     contentHash: sha256(imageBody),
     contentType: 'image/png',
     httpStatus: 200,
-    originalFilename: 'jobs-material-roller-1001.png',
-    sourceUrl: mediaManifest.media[0]!.identity.sourceUrl,
-  };
+    originalFilename,
+    sourceUrl,
+  });
 
   return {
     categories: [captured(category)],
     materials: [captured(material)],
     mediaManifests: [captured(mediaManifest)],
-    mediaFiles: [mediaFile],
+    mediaFiles: [
+      mediaFile(mediaManifest.media[0]!.identity.sourceUrl, 'jobs-material-roller-1001.png'),
+      mediaFile(categoryMediaUrl, 'jobs-category-roller.png'),
+      mediaFile(systemMediaUrl, 'jobs-system-mini.png'),
+      mediaFile(modelMediaUrl, 'jobs-model-roller-ready-1001.png'),
+    ],
     models: [captured(model)],
     prices: [captured(price)],
     sourceVersion,

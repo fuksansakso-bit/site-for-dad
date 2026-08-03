@@ -57,4 +57,22 @@ describe('object storage boundary validation', () => {
       }),
     ).toMatchObject({ source: 'AMIGO_CATALOG_PILOT', zone: 'private' });
   });
+
+  it('preserves the full authorized AMIGO catalog provenance marker', () => {
+    const locator = { key: 'catalog/amigo/full/example.jpg', zone: 'private' } as const;
+    const metadata = createProviderMetadata(
+      'private',
+      4,
+      'c'.repeat(64),
+      'AMIGO_AUTHORIZED_CATALOG',
+    );
+
+    expect(
+      validateProviderMetadata(locator, {
+        ContentLength: 4,
+        ContentType: 'image/jpeg',
+        Metadata: metadata,
+      }),
+    ).toMatchObject({ source: 'AMIGO_AUTHORIZED_CATALOG', zone: 'private' });
+  });
 });

@@ -26,6 +26,7 @@ import {
 } from '../../src/adapter.js';
 import { catalogJobIdentifiers, catalogStageIdempotencyKey } from '../../src/catalog/contracts.js';
 import { failCatalogExecution } from '../../src/catalog/idempotency.js';
+import type { CatalogMediaStoragePort } from '../../src/catalog/media.js';
 import type { CatalogTaskLifecycleEvent } from '../../src/catalog/task.js';
 import { createCatalogJobServices } from '../../src/catalog/services.js';
 import {
@@ -53,7 +54,7 @@ const ownerActorId = randomUUID();
 const adminActorId = randomUUID();
 const services = createCatalogJobServices(
   () => new FixtureCatalogSourceAdapter(createJobsCatalogFixture()),
-  () => ({ maximumBytes: 1_048_576, objectStorage }),
+  () => ({ maximumBytes: 1_048_576, maximumItemsPerBatch: 2, objectStorage }),
 );
 const management = createCatalogManagementAdapter(databaseEnvironment);
 const versionHelpers = {
@@ -122,7 +123,8 @@ function changedJobsCatalogFixture(): FixtureCatalogDataset {
 async function runPipeline(
   idempotencySuffix: string,
   retryOfSyncRunId?: string,
-  expectedStatus: 'AWAITING_APPROVAL' | 'COMPLETED' = 'AWAITING_APPROVAL',
+  expectedStatus:
+    'AWAITING_APPROVAL' | 'COMPLETED' | 'FAILED' | 'IMPORTING_MEDIA' = 'AWAITING_APPROVAL',
   pipelineServices = services,
 ): Promise<string> {
   const uniqueSuffix = `${runTag}-${idempotencySuffix}`;
@@ -207,13 +209,18 @@ describe.sequential('catalog synchronization pipeline', () => {
       import_manifest_count: string;
       material_count: string;
       model_count: string;
+      category_media_count: string;
+      exact_target_media_count: string;
       media_reference_count: string;
       media_asset_count: string;
       media_audit_count: string;
+      media_batch_number: string;
       media_metadata_filename: string;
+      model_media_count: string;
       price_count: string;
       price_version_count: string;
       snapshot_count: string;
+      system_media_count: string;
     }>(
       `
         SELECT
@@ -248,6 +255,25 @@ describe.sequential('catalog synchronization pipeline', () => {
           ) AS model_count,
           (
             SELECT count(*)::text
+            FROM source_media_asset media
+            JOIN catalog_sync_item item ON item.source_entity_id = media.source_entity_id
+            WHERE item.sync_run_id = $1::uuid
+              AND media.category_id IS NOT NULL
+          ) AS category_media_count,
+          (
+            SELECT count(*)::text
+            FROM source_media_asset media
+            JOIN catalog_sync_item item ON item.source_entity_id = media.source_entity_id
+            WHERE item.sync_run_id = $1::uuid
+              AND num_nonnulls(
+                media.material_variant_id,
+                media.category_id,
+                media.system_id,
+                media.model_id
+              ) = 1
+          ) AS exact_target_media_count,
+          (
+            SELECT count(*)::text
             FROM source_media_asset
             WHERE catalog_source_id = '${catalogSourceId}'::uuid
               AND source_id = 'jobs-material-roller-1001:primary:1'
@@ -268,12 +294,31 @@ describe.sequential('catalog synchronization pipeline', () => {
               AND action = 'CATALOG_MEDIA_IMPORTED'
           ) AS media_audit_count,
           (
+            SELECT audit_context->>'mediaBatchNumber'
+            FROM catalog_sync_run
+            WHERE id = $1::uuid
+          ) AS media_batch_number,
+          (
             SELECT safe_metadata->>'originalFilename'
             FROM catalog_sync_item
             WHERE sync_run_id = $1::uuid
               AND source_type = 'MEDIA'
               AND source_id = 'jobs-material-roller-1001:primary:1'
           ) AS media_metadata_filename,
+          (
+            SELECT count(*)::text
+            FROM source_media_asset media
+            JOIN catalog_sync_item item ON item.source_entity_id = media.source_entity_id
+            WHERE item.sync_run_id = $1::uuid
+              AND media.model_id IS NOT NULL
+          ) AS model_media_count,
+          (
+            SELECT count(*)::text
+            FROM source_media_asset media
+            JOIN catalog_sync_item item ON item.source_entity_id = media.source_entity_id
+            WHERE item.sync_run_id = $1::uuid
+              AND media.system_id IS NOT NULL
+          ) AS system_media_count,
           (
             SELECT count(*)::text
             FROM source_price_record
@@ -287,19 +332,24 @@ describe.sequential('catalog synchronization pipeline', () => {
     expect(Number(counts.rows[0]?.catalog_difference_count ?? '0')).toBeGreaterThan(0);
     expect(counts.rows[0]).toMatchObject({
       audit_count: '4',
+      category_media_count: '1',
       catalog_version_count: '1',
       checkpoint_count: '8',
+      exact_target_media_count: '4',
       import_manifest_complete: true,
       import_manifest_count: '1',
       material_count: '1',
       model_count: '1',
       media_asset_count: '1',
-      media_audit_count: '1',
+      media_audit_count: '4',
+      media_batch_number: '2',
       media_metadata_filename: 'jobs-material-roller-1001.png',
       media_reference_count: '1',
+      model_media_count: '1',
       price_count: '1',
       price_version_count: '1',
       snapshot_count: '6',
+      system_media_count: '1',
     });
   });
 
@@ -831,6 +881,57 @@ describe.sequential('catalog synchronization pipeline', () => {
     expect(rollback.rows[0]).toEqual({
       active_id: firstRelease.catalogVersionId,
       changed_status: 'SUPERSEDED',
+    });
+  });
+
+  it('fails closed before diff when a previously linked private media object is missing', async () => {
+    if (firstSyncRunId === undefined) throw new Error('First catalog sync run is unavailable.');
+    const missingObjectStorage: CatalogMediaStoragePort = {
+      async head() {
+        const error = Object.assign(new Error('Synthetic linked object is missing.'), {
+          code: 'STORAGE_NOT_FOUND' as const,
+        });
+        error.name = 'StorageError';
+        throw error;
+      },
+      put: (input) => objectStorage.put(input),
+    };
+    const missingObjectServices = createCatalogJobServices(
+      () => new FixtureCatalogSourceAdapter(createJobsCatalogFixture()),
+      () => ({
+        maximumBytes: 1_048_576,
+        maximumItemsPerBatch: 2,
+        objectStorage: missingObjectStorage,
+      }),
+    );
+
+    const failedRunId = await runPipeline(
+      'pipeline-004-missing-linked-media',
+      firstSyncRunId,
+      'IMPORTING_MEDIA',
+      missingObjectServices,
+    );
+    const evidence = await pool.query<{
+      catalog_version_count: string;
+      error_code: string | null;
+      manifest_status: string | null;
+    }>(
+      `
+        SELECT
+          run.error_code,
+          manifest.status::text AS manifest_status,
+          (SELECT count(*)::text FROM catalog_version WHERE sync_run_id = run.id)
+            AS catalog_version_count
+        FROM catalog_sync_run run
+        LEFT JOIN catalog_import_manifest manifest ON manifest.sync_run_id = run.id
+        WHERE run.id = $1::uuid
+      `,
+      [failedRunId],
+    );
+    expect(evidence.rows[0]).toEqual({
+      catalog_version_count: '0',
+      error_code: null,
+      manifest_status: null,
     });
   });
 });

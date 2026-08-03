@@ -5,6 +5,7 @@ import {
   type SourceIdentity,
   type SourceMaterial,
   type SourceMediaManifest,
+  type SourceMediaReference,
   type SourceModel,
   type SourcePrice,
   type SourceSystem,
@@ -32,6 +33,12 @@ interface NormalizedReference {
   readonly id: string;
   readonly sourceEntityId: string;
 }
+
+type NormalizedMediaTarget =
+  | { readonly id: string; readonly kind: 'CATEGORY'; readonly sourceId: string }
+  | { readonly id: string; readonly kind: 'MATERIAL_VARIANT'; readonly sourceId: string }
+  | { readonly id: string; readonly kind: 'MODEL'; readonly sourceId: string }
+  | { readonly id: string; readonly kind: 'SYSTEM'; readonly sourceId: string };
 
 function derivedIdentity(
   base: SourceIdentity,
@@ -645,6 +652,158 @@ async function upsertPrice(
   );
 }
 
+function derivedMediaReferenceIdentity(
+  base: SourceIdentity,
+  target: NormalizedMediaTarget,
+  sourceUrl: string,
+  role: SourceMediaReference['role'],
+  sortOrder: number,
+): SourceIdentity {
+  const placement = {
+    role,
+    sortOrder,
+    targetKind: target.kind,
+    targetSourceId: target.sourceId,
+  } as const;
+  const stablePlacement = stableToken(placement);
+  return {
+    ...base,
+    sourceEntityType: 'MEDIA',
+    sourceHash: hashCanonicalSource({ ...placement, sourceUrl }),
+    sourceId: `media:${target.kind.toLowerCase()}:${stablePlacement}`,
+    sourceSlug: `amigo-${target.kind.toLowerCase()}-media-${stablePlacement}`,
+    sourceUrl,
+  };
+}
+
+async function upsertSourceMediaReference(
+  client: PoolClient,
+  payload: CatalogNormalizePayload,
+  input: {
+    readonly contentTypeHint?: string | undefined;
+    readonly identity: SourceIdentity;
+    readonly role: SourceMediaReference['role'];
+    readonly sortOrder: number;
+    readonly target: NormalizedMediaTarget;
+  },
+): Promise<void> {
+  const sourceEntity = await upsertSourceEntity(client, payload.catalogSourceId, input.identity, {
+    role: input.role,
+    sortOrder: input.sortOrder,
+    targetKind: input.target.kind,
+    targetSourceId: input.target.sourceId,
+  });
+  await recordSyncItem(client, payload, input.identity, sourceEntity);
+  const targetIds = {
+    categoryId: input.target.kind === 'CATEGORY' ? input.target.id : null,
+    materialVariantId: input.target.kind === 'MATERIAL_VARIANT' ? input.target.id : null,
+    modelId: input.target.kind === 'MODEL' ? input.target.id : null,
+    systemId: input.target.kind === 'SYSTEM' ? input.target.id : null,
+  };
+  const result = await client.query<{ id: string }>(
+    `
+      INSERT INTO source_media_asset (
+        catalog_source_id, source_entity_id, material_variant_id, category_id,
+        system_id, model_id, source_type, source_id, source_slug, source_url,
+        source_category, source_hash, source_captured_at, source_last_verified_at,
+        role, sort_order, content_type, status, updated_at
+      ) VALUES (
+        $1::uuid, $2::uuid, $3::uuid, $4::uuid,
+        $5::uuid, $6::uuid, $7::catalog_source_type, $8, $9, $10,
+        $11, $12, $13::timestamptz, $14::timestamptz,
+        $15::media_asset_role, $16, $17, 'ACTIVE', NOW()
+      )
+      ON CONFLICT (catalog_source_id, source_id) DO UPDATE
+      SET source_entity_id = EXCLUDED.source_entity_id,
+          source_slug = EXCLUDED.source_slug,
+          source_url = EXCLUDED.source_url,
+          source_category = EXCLUDED.source_category,
+          source_hash = EXCLUDED.source_hash,
+          source_captured_at = EXCLUDED.source_captured_at,
+          source_last_verified_at = EXCLUDED.source_last_verified_at,
+          role = EXCLUDED.role,
+          sort_order = EXCLUDED.sort_order,
+          media_asset_id = CASE
+            WHEN source_media_asset.source_hash = EXCLUDED.source_hash
+              AND source_media_asset.source_url = EXCLUDED.source_url
+            THEN source_media_asset.media_asset_id
+            ELSE NULL
+          END,
+          content_type = CASE
+            WHEN source_media_asset.source_hash = EXCLUDED.source_hash
+              AND source_media_asset.source_url = EXCLUDED.source_url
+              AND source_media_asset.media_asset_id IS NOT NULL
+            THEN source_media_asset.content_type
+            ELSE EXCLUDED.content_type
+          END,
+          content_length = CASE
+            WHEN source_media_asset.source_hash = EXCLUDED.source_hash
+              AND source_media_asset.source_url = EXCLUDED.source_url
+            THEN source_media_asset.content_length
+            ELSE NULL
+          END,
+          status = 'ACTIVE',
+          updated_at = NOW()
+      WHERE source_media_asset.material_variant_id IS NOT DISTINCT FROM EXCLUDED.material_variant_id
+        AND source_media_asset.category_id IS NOT DISTINCT FROM EXCLUDED.category_id
+        AND source_media_asset.system_id IS NOT DISTINCT FROM EXCLUDED.system_id
+        AND source_media_asset.model_id IS NOT DISTINCT FROM EXCLUDED.model_id
+      RETURNING id::text
+    `,
+    [
+      payload.catalogSourceId,
+      sourceEntity.id,
+      targetIds.materialVariantId,
+      targetIds.categoryId,
+      targetIds.systemId,
+      targetIds.modelId,
+      input.identity.sourceType,
+      input.identity.sourceId,
+      input.identity.sourceSlug,
+      input.identity.sourceUrl,
+      input.identity.sourceCategory ?? null,
+      input.identity.sourceHash,
+      input.identity.sourceCapturedAt,
+      input.identity.sourceLastVerifiedAt,
+      input.role,
+      input.sortOrder,
+      input.contentTypeHint ?? null,
+    ],
+  );
+  if (result.rows[0] === undefined) {
+    throw new CatalogPipelineError('CATALOG_PIPELINE_RESUME_CONFLICT');
+  }
+}
+
+async function upsertDiscoveredMediaUrls(
+  client: PoolClient,
+  payload: CatalogNormalizePayload,
+  baseIdentity: SourceIdentity,
+  sourceUrls: readonly string[],
+  target: NormalizedMediaTarget,
+  systemRole = false,
+): Promise<void> {
+  const seen = new Set<string>();
+  const roleCounts = new Map<SourceMediaReference['role'], number>();
+  for (const sourceUrl of sourceUrls) {
+    if (seen.has(sourceUrl)) continue;
+    seen.add(sourceUrl);
+    const role: SourceMediaReference['role'] = systemRole
+      ? 'SYSTEM'
+      : seen.size === 1
+        ? 'PRIMARY'
+        : 'DETAIL';
+    const sortOrder = roleCounts.get(role) ?? 0;
+    roleCounts.set(role, sortOrder + 1);
+    await upsertSourceMediaReference(client, payload, {
+      identity: derivedMediaReferenceIdentity(baseIdentity, target, sourceUrl, role, sortOrder),
+      role,
+      sortOrder,
+      target,
+    });
+  }
+}
+
 async function upsertMediaManifest(
   client: PoolClient,
   payload: CatalogNormalizePayload,
@@ -661,55 +820,21 @@ async function upsertMediaManifest(
     },
   );
   await recordSyncItem(client, payload, record.data.identity, manifestSourceEntity);
+  const roleCounts = new Map<SourceMediaReference['role'], number>();
   for (const media of record.data.media) {
-    const sourceEntity = await upsertSourceEntity(client, payload.catalogSourceId, media.identity, {
-      materialSourceId: record.data.materialSourceId,
+    const sortOrder = roleCounts.get(media.role) ?? 0;
+    roleCounts.set(media.role, sortOrder + 1);
+    await upsertSourceMediaReference(client, payload, {
+      contentTypeHint: media.contentTypeHint,
+      identity: media.identity,
       role: media.role,
+      sortOrder,
+      target: {
+        id: materialVariantId,
+        kind: 'MATERIAL_VARIANT',
+        sourceId: record.data.materialSourceId,
+      },
     });
-    await recordSyncItem(client, payload, media.identity, sourceEntity);
-    await client.query(
-      `
-        INSERT INTO source_media_asset (
-          catalog_source_id, source_entity_id, material_variant_id, source_type,
-          source_id, source_slug, source_url, source_category, source_hash,
-          source_captured_at, source_last_verified_at, role, content_type, status,
-          updated_at
-        ) VALUES (
-          $1::uuid, $2::uuid, $3::uuid, $4::catalog_source_type,
-          $5, $6, $7, $8, $9,
-          $10::timestamptz, $11::timestamptz, $12::media_asset_role,
-          $13, 'ACTIVE', NOW()
-        )
-        ON CONFLICT (catalog_source_id, source_id) DO UPDATE
-        SET source_entity_id = EXCLUDED.source_entity_id,
-            material_variant_id = EXCLUDED.material_variant_id,
-            source_slug = EXCLUDED.source_slug,
-            source_url = EXCLUDED.source_url,
-            source_category = EXCLUDED.source_category,
-            source_hash = EXCLUDED.source_hash,
-            source_captured_at = EXCLUDED.source_captured_at,
-            source_last_verified_at = EXCLUDED.source_last_verified_at,
-            role = EXCLUDED.role,
-            content_type = EXCLUDED.content_type,
-            status = 'ACTIVE',
-            updated_at = NOW()
-      `,
-      [
-        payload.catalogSourceId,
-        sourceEntity.id,
-        materialVariantId,
-        media.identity.sourceType,
-        media.identity.sourceId,
-        media.identity.sourceSlug,
-        media.identity.sourceUrl,
-        media.identity.sourceCategory ?? null,
-        media.identity.sourceHash,
-        media.identity.sourceCapturedAt,
-        media.identity.sourceLastVerifiedAt,
-        media.role,
-        media.contentTypeHint ?? null,
-      ],
-    );
   }
 }
 
@@ -773,6 +898,17 @@ export async function normalizeCatalogSnapshots(
             `,
             [normalizedCategory.id, parent?.id ?? null, category.data.sortOrder ?? 0],
           );
+          await upsertDiscoveredMediaUrls(
+            client,
+            payload,
+            category.data.identity,
+            category.data.mediaSourceUrls ?? [],
+            {
+              id: normalizedCategory.id,
+              kind: 'CATEGORY',
+              sourceId: category.data.identity.sourceId,
+            },
+          );
         }
 
         for (const system of batch.systems) {
@@ -781,9 +917,25 @@ export async function normalizeCatalogSnapshots(
           if (family === undefined || category === undefined) {
             throw new CatalogPipelineError('CATALOG_PIPELINE_PAYLOAD_INVALID');
           }
-          systems.set(
-            system.data.identity.sourceId,
-            await upsertSystem(client, payload, system, family.id, category.id),
+          const normalizedSystem = await upsertSystem(
+            client,
+            payload,
+            system,
+            family.id,
+            category.id,
+          );
+          systems.set(system.data.identity.sourceId, normalizedSystem);
+          await upsertDiscoveredMediaUrls(
+            client,
+            payload,
+            system.data.identity,
+            system.data.mediaSourceUrl === undefined ? [] : [system.data.mediaSourceUrl],
+            {
+              id: normalizedSystem.id,
+              kind: 'SYSTEM',
+              sourceId: system.data.identity.sourceId,
+            },
+            true,
           );
         }
 
@@ -799,9 +951,24 @@ export async function normalizeCatalogSnapshots(
           ) {
             throw new CatalogPipelineError('CATALOG_PIPELINE_PAYLOAD_INVALID');
           }
-          models.set(
-            model.data.identity.sourceId,
-            await upsertModel(client, payload, model, category.id, system?.id ?? null),
+          const normalizedModel = await upsertModel(
+            client,
+            payload,
+            model,
+            category.id,
+            system?.id ?? null,
+          );
+          models.set(model.data.identity.sourceId, normalizedModel);
+          await upsertDiscoveredMediaUrls(
+            client,
+            payload,
+            model.data.identity,
+            model.data.mediaSourceUrls,
+            {
+              id: normalizedModel.id,
+              kind: 'MODEL',
+              sourceId: model.data.identity.sourceId,
+            },
           );
         }
 

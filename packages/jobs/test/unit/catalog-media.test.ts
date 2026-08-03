@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { sha256 } from '@project-name/catalog';
 
-import { inspectCatalogImage } from '../../src/catalog/media.js';
+import { inspectCatalogImage, isCompatibleCatalogStorageSource } from '../../src/catalog/media.js';
 import { createJobsCatalogFixture } from '../support/catalog-fixture.js';
 
 describe('catalog media validation', () => {
@@ -43,5 +43,18 @@ describe('catalog media validation', () => {
         1024,
       ),
     ).toThrow();
+  });
+
+  it('accepts exact full-catalog provenance and only the verified legacy pilot marker', () => {
+    expect(
+      isCompatibleCatalogStorageSource('AMIGO_AUTHORIZED_CATALOG', 'AMIGO_AUTHORIZED_CATALOG'),
+    ).toBe(true);
+    expect(
+      isCompatibleCatalogStorageSource('AMIGO_CATALOG_PILOT', 'AMIGO_AUTHORIZED_CATALOG'),
+    ).toBe(true);
+    expect(isCompatibleCatalogStorageSource('SYNTHETIC_TEST', 'AMIGO_AUTHORIZED_CATALOG')).toBe(
+      false,
+    );
+    expect(isCompatibleCatalogStorageSource('AMIGO_CATALOG_PILOT', 'SYNTHETIC_TEST')).toBe(false);
   });
 });

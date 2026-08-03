@@ -6,6 +6,7 @@ export {
 } from './errors.js';
 export { createS3ObjectStorage, S3ObjectStorage } from './s3-object-storage.js';
 export {
+  amigoAuthorizedCatalogObjectSource,
   objectSources,
   objectZones,
   syntheticObjectSource,

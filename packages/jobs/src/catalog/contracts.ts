@@ -56,7 +56,9 @@ const syncStagePayloadShape = {
 
 export const catalogSyncRunPayloadSchema = z.object(syncStagePayloadShape).strict();
 export const catalogNormalizePayloadSchema = z.object(syncStagePayloadShape).strict();
-export const catalogMediaImportPayloadSchema = z.object(syncStagePayloadShape).strict();
+export const catalogMediaImportPayloadSchema = z
+  .object({ ...syncStagePayloadShape, batchNumber: z.number().int().min(1).max(100_000) })
+  .strict();
 export const catalogBuildDiffPayloadSchema = z.object(syncStagePayloadShape).strict();
 
 export const catalogSyncCancellationRequestSchema = z
@@ -207,6 +209,13 @@ export function catalogStageIdempotencyKey(
   syncRunId: string,
 ): string {
   return `catalog:${identifier}:${syncRunId}`;
+}
+
+export function catalogMediaBatchIdempotencyKey(syncRunId: string, batchNumber: number): string {
+  if (!Number.isSafeInteger(batchNumber) || batchNumber < 1 || batchNumber > 100_000) {
+    throw new Error('Catalog media batch number is invalid.');
+  }
+  return `${catalogStageIdempotencyKey(catalogJobIdentifiers.mediaImport, syncRunId)}:batch:${batchNumber}`;
 }
 
 export function automaticCatalogDiscoveryPayload(

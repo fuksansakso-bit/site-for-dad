@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A storage port and Phase 1B.1 pilot media use verified; production provider/region gated |
-| Версия | 0.5.0 |
+| Статус | Phase 1A storage port and Phase 1B.2 full-catalog media contract verified; real full intake remains a final acceptance step; production provider/region gated |
+| Версия | 0.6.0 |
 | Дата | 2026-08-03 |
 | Media pipeline | [ASSET_MEDIA_PIPELINE.md](ASSET_MEDIA_PIPELINE.md) |
 | Privacy/security | [SECURITY_PRIVACY.md](SECURITY_PRIVACY.md) |
@@ -59,6 +59,7 @@ Logical classes MAY map to separate buckets/accounts/projects/keys according to 
 - **STORAGE-SPEC-025 — MUST:** local S3/Admin/Web UI endpoints, when enabled, bind only to loopback; root credentials come only from environment, never enter repository/client/log/evidence, and are replaced with safe placeholders in `.env.example`.
 - **STORAGE-SPEC-026 — MUST:** before real media import, the adapter contract gate verifies byte equality, SHA-256, type/length/metadata, signed read/write, deletion, multipart complete/abort, idempotency/dedup/same-key safety, limits/checksum/MIME, concurrency, unavailable/timeout/retry and named-volume persistence for the approved size matrix and real AMIGO image.
 - **STORAGE-SPEC-027 — MUST:** VersityGW is a disposable local/CI adapter only. Production provider, region, encryption/key custody, retention and recovery remain gated by `TBD-INFRA-004`, `TBD-INFRA-010` and `TBD-PRIV-*` and require a future decision.
+- **STORAGE-SPEC-028 — MUST:** new Phase 1B.2 AMIGO originals carry the provider-neutral `AMIGO_AUTHORIZED_CATALOG` source marker. The historical `AMIGO_CATALOG_PILOT` marker remains a valid immutable legacy value for the already imported partner bytes and MAY satisfy deduplication only when zone, SHA-256, length and MIME all match exactly; metadata is never rewritten merely to rename the phase.
 
 ## 4. Object record and key strategy
 
@@ -164,3 +165,4 @@ Dependencies: media/AI/data/API/security/performance/observability/deployment/ev
 | 0.3.0 | 2026-08-02 | Authorized bounded Phase 1B.1 use of the provider-neutral local storage port without choosing production infrastructure. |
 | 0.4.0 | 2026-08-03 | Recorded `OWNER-DECISION-011`, private VersityGW Compose/named-volume contract and passed real-image/signed/multipart/restart gate. |
 | 0.5.0 | 2026-08-03 | Recorded 59-object real pilot import/public delivery, post-restart integrity, immutable same-key race regression and final CI evidence. |
+| 0.6.0 | 2026-08-03 | Added the full authorized catalog object-source marker while retaining exact-integrity reuse of immutable Phase 1B.1 partner objects. |

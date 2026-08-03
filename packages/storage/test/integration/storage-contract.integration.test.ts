@@ -91,7 +91,7 @@ describe('S3-compatible object storage contract', () => {
       const body = bodyForSize(size);
       const checksumSha256 = sha256(body);
       const contentType = size === 515_180 ? 'image/jpeg' : 'application/octet-stream';
-      const source = size === 515_180 ? 'AMIGO_CATALOG_PILOT' : 'SYNTHETIC_TEST';
+      const source = size === 515_180 ? 'AMIGO_AUTHORIZED_CATALOG' : 'SYNTHETIC_TEST';
       const locator = { key: `${gatePrefix}/matrix/${label}.bin`, zone: 'private' } as const;
 
       const putMetadata = await storage.put({ body, contentType, locator, source });

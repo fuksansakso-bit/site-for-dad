@@ -151,7 +151,7 @@ export class AmigoMediaTransport {
         const response = await this.#fetch(requestUrl, {
           headers: {
             accept: supportedMediaTypes.join(','),
-            'user-agent': 'PROJECT_NAME-partner-catalog-pilot/1.0 (owner-authorized; low-rate)',
+            'user-agent': 'PROJECT_NAME-authorized-catalog/1.0 (owner-authorized; low-rate)',
           },
           redirect: 'manual',
           signal: controller.signal,
@@ -167,7 +167,7 @@ export class AmigoMediaTransport {
         if (response.status === 401 || response.status === 403) {
           throw new CatalogSourceError(
             'SOURCE_CAPTCHA_OR_CHALLENGE',
-            'AMIGO media requires access that the pilot adapter does not bypass.',
+            'AMIGO media requires access that the authorized adapter does not bypass.',
           );
         }
         if (response.status === 408 || response.status === 429 || response.status >= 500) {

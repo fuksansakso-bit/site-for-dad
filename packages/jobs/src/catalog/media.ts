@@ -14,12 +14,14 @@ import {
   isCatalogStoragePortError,
   toCatalogPipelineError,
 } from './errors.js';
+import { catalogCancellationRequested } from './capture.js';
 
 const maximumImageDimension = 12_000;
 const maximumDecodedPixels = 40_000_000;
 
 export interface CatalogMediaImportDependencies {
   readonly maximumBytes: number;
+  readonly maximumItemsPerBatch?: number;
   readonly objectStorage: CatalogMediaStoragePort;
 }
 
@@ -40,13 +42,15 @@ export interface CatalogMediaStoragePort {
     readonly body: Uint8Array;
     readonly contentType: 'image/jpeg' | 'image/png' | 'image/webp';
     readonly locator: { readonly key: string; readonly zone: 'private' };
-    readonly source: 'AMIGO_CATALOG_PILOT' | 'SYNTHETIC_TEST';
+    readonly source: 'AMIGO_AUTHORIZED_CATALOG' | 'AMIGO_CATALOG_PILOT' | 'SYNTHETIC_TEST';
   }): Promise<CatalogMediaStorageMetadata>;
 }
 
 export interface CatalogMediaImportResult {
+  readonly cancelled: boolean;
   readonly failedCount: number;
   readonly importedCount: number;
+  readonly remainingCount: number;
   readonly reusedCount: number;
 }
 
@@ -63,14 +67,22 @@ interface CatalogImageMetadata {
 }
 
 interface PendingSourceMedia {
+  readonly asset_byte_size: number | null;
+  readonly asset_file_hash: string | null;
+  readonly asset_mime_type: string | null;
+  readonly asset_object_key: string | null;
+  readonly category_id: string | null;
   readonly id: string;
-  readonly material_variant_id: string;
+  readonly material_variant_id: string | null;
   readonly media_asset_id: string | null;
+  readonly model_id: string | null;
   readonly role: 'DETAIL' | 'PRIMARY' | 'SWATCH' | 'SYSTEM';
+  readonly sort_order: number;
   readonly source_id: string;
   readonly source_entity_id: string;
   readonly source_type: CatalogSourceType;
   readonly source_url: string;
+  readonly system_id: string | null;
 }
 
 function failMediaValidation(): never {
@@ -216,20 +228,33 @@ export function inspectCatalogImage(
   failMediaValidation();
 }
 
-function storageSource(sourceType: CatalogSourceType): 'AMIGO_CATALOG_PILOT' | 'SYNTHETIC_TEST' {
-  return sourceType === 'FIXTURE' ? 'SYNTHETIC_TEST' : 'AMIGO_CATALOG_PILOT';
+export type CatalogStorageSource =
+  'AMIGO_AUTHORIZED_CATALOG' | 'AMIGO_CATALOG_PILOT' | 'SYNTHETIC_TEST';
+
+export function isCompatibleCatalogStorageSource(
+  actualSource: string,
+  expectedSource: CatalogStorageSource,
+): boolean {
+  return (
+    actualSource === expectedSource ||
+    (expectedSource === 'AMIGO_AUTHORIZED_CATALOG' && actualSource === 'AMIGO_CATALOG_PILOT')
+  );
+}
+
+function storageSource(sourceType: CatalogSourceType): CatalogStorageSource {
+  return sourceType === 'FIXTURE' ? 'SYNTHETIC_TEST' : 'AMIGO_AUTHORIZED_CATALOG';
 }
 
 function assertStoredObject(
   metadata: CatalogMediaStorageMetadata,
   image: CatalogImageMetadata,
-  expectedSource: 'AMIGO_CATALOG_PILOT' | 'SYNTHETIC_TEST',
+  expectedSource: CatalogStorageSource,
 ): void {
   if (
     metadata.checksumSha256 !== image.fileHash ||
     metadata.contentLength !== image.byteSize ||
     metadata.contentType !== image.mimeType ||
-    metadata.source !== expectedSource ||
+    !isCompatibleCatalogStorageSource(metadata.source, expectedSource) ||
     metadata.zone !== 'private'
   ) {
     throw new CatalogPipelineError('CATALOG_PIPELINE_STORAGE_UNAVAILABLE', {
@@ -269,6 +294,48 @@ async function ensureStoredImage(
     assertStoredObject(existing, image, expectedSource);
     return { objectKey, reused: true };
   }
+}
+
+async function verifyLinkedStoredImage(
+  storage: CatalogMediaStoragePort,
+  sourceMedia: PendingSourceMedia,
+): Promise<void> {
+  const targetCount = [
+    sourceMedia.category_id,
+    sourceMedia.material_variant_id,
+    sourceMedia.model_id,
+    sourceMedia.system_id,
+  ].filter((value) => value !== null).length;
+  if (
+    sourceMedia.media_asset_id === null ||
+    sourceMedia.asset_object_key === null ||
+    sourceMedia.asset_file_hash === null ||
+    sourceMedia.asset_mime_type === null ||
+    sourceMedia.asset_byte_size === null ||
+    targetCount !== 1 ||
+    !/^[0-9a-f]{64}$/.test(sourceMedia.asset_file_hash) ||
+    !['image/jpeg', 'image/png', 'image/webp'].includes(sourceMedia.asset_mime_type) ||
+    !Number.isSafeInteger(sourceMedia.asset_byte_size) ||
+    sourceMedia.asset_byte_size < 1
+  ) {
+    throw new CatalogPipelineError('CATALOG_PIPELINE_DATABASE');
+  }
+  const metadata = await storage.head({ key: sourceMedia.asset_object_key, zone: 'private' });
+  assertStoredObject(
+    metadata,
+    {
+      byteSize: sourceMedia.asset_byte_size,
+      capturedAt: new Date(0).toISOString(),
+      extension: 'png',
+      fileHash: sourceMedia.asset_file_hash,
+      height: 1,
+      httpStatus: 200,
+      mimeType: sourceMedia.asset_mime_type as CatalogImageMetadata['mimeType'],
+      originalFilename: 'verified-existing-object',
+      width: 1,
+    },
+    storageSource(sourceMedia.source_type),
+  );
 }
 
 async function markMediaError(
@@ -374,24 +441,26 @@ async function persistMediaLink(
         `,
         [sourceMedia.id, mediaAssetId, image.mimeType, image.byteSize],
       );
-      await client.query(
-        `
-          INSERT INTO material_media_asset (
-            material_variant_id, media_asset_id, source_media_asset_id, role, sort_order
-          ) VALUES ($1::uuid, $2::uuid, $3::uuid, $4::media_asset_role, $5)
-          ON CONFLICT (source_media_asset_id) DO UPDATE
-          SET media_asset_id = EXCLUDED.media_asset_id,
-              role = EXCLUDED.role,
-              sort_order = EXCLUDED.sort_order
-        `,
-        [
-          sourceMedia.material_variant_id,
-          mediaAssetId,
-          sourceMedia.id,
-          sourceMedia.role,
-          sortOrder,
-        ],
-      );
+      if (sourceMedia.material_variant_id !== null) {
+        await client.query(
+          `
+            INSERT INTO material_media_asset (
+              material_variant_id, media_asset_id, source_media_asset_id, role, sort_order
+            ) VALUES ($1::uuid, $2::uuid, $3::uuid, $4::media_asset_role, $5)
+            ON CONFLICT (source_media_asset_id) DO UPDATE
+            SET media_asset_id = EXCLUDED.media_asset_id,
+                role = EXCLUDED.role,
+                sort_order = EXCLUDED.sort_order
+          `,
+          [
+            sourceMedia.material_variant_id,
+            mediaAssetId,
+            sourceMedia.id,
+            sourceMedia.role,
+            sortOrder,
+          ],
+        );
+      }
       await client.query(
         `
           UPDATE catalog_sync_item
@@ -445,30 +514,141 @@ export async function importCatalogMedia(
   dependencies: CatalogMediaImportDependencies,
   signal: AbortSignal,
 ): Promise<CatalogMediaImportResult> {
+  const maximumItemsPerBatch = dependencies.maximumItemsPerBatch ?? 100;
+  if (
+    !Number.isSafeInteger(maximumItemsPerBatch) ||
+    maximumItemsPerBatch < 1 ||
+    maximumItemsPerBatch > 250
+  ) {
+    throw new CatalogPipelineError('CATALOG_PIPELINE_PAYLOAD_INVALID');
+  }
+  const remainingMediaCount = async (): Promise<number> => {
+    const result = await helpers.query<{ count: string }>(
+      `
+        SELECT count(*)::text AS count
+        FROM source_media_asset media
+        JOIN catalog_sync_item item ON item.source_entity_id = media.source_entity_id
+        WHERE item.sync_run_id = $1::uuid
+          AND item.source_type = 'MEDIA'
+          AND item.status <> 'MEDIA_ERROR'
+          AND media.media_asset_id IS NULL
+      `,
+      [payload.syncRunId],
+    );
+    return Number(result.rows[0]?.count ?? '0');
+  };
+  let reusedCount = 0;
+  if (payload.batchNumber === 1) {
+    const linked = await helpers.query<PendingSourceMedia>(
+      `
+        SELECT
+          media.id::text, media.source_entity_id::text,
+          media.material_variant_id::text, media.category_id::text,
+          media.system_id::text, media.model_id::text, media.media_asset_id::text,
+          media.role::text, media.sort_order, media.source_id,
+          media.source_type::text, media.source_url,
+          asset.object_key AS asset_object_key, asset.file_hash AS asset_file_hash,
+          asset.mime_type AS asset_mime_type, asset.byte_size AS asset_byte_size
+        FROM source_media_asset media
+        JOIN catalog_sync_item item ON item.source_entity_id = media.source_entity_id
+        JOIN media_asset asset ON asset.id = media.media_asset_id
+        WHERE item.sync_run_id = $1::uuid
+          AND item.source_type = 'MEDIA'
+          AND item.status <> 'MEDIA_ERROR'
+          AND media.media_asset_id IS NOT NULL
+        ORDER BY media.source_id
+      `,
+      [payload.syncRunId],
+    );
+    for (let index = 0; index < linked.rows.length; index += 1) {
+      if (signal.aborted) {
+        throw new CatalogPipelineError('CATALOG_PIPELINE_SOURCE_UNAVAILABLE', {
+          retryable: true,
+        });
+      }
+      if (index % 25 === 0 && (await catalogCancellationRequested(helpers, payload.syncRunId))) {
+        return {
+          cancelled: true,
+          failedCount: 0,
+          importedCount: 0,
+          remainingCount: await remainingMediaCount(),
+          reusedCount,
+        };
+      }
+      const sourceMedia = linked.rows[index];
+      if (sourceMedia === undefined) {
+        throw new CatalogPipelineError('CATALOG_PIPELINE_DATABASE');
+      }
+      try {
+        await verifyLinkedStoredImage(dependencies.objectStorage, sourceMedia);
+      } catch (error) {
+        throw toCatalogPipelineError(error);
+      }
+      reusedCount += 1;
+    }
+    await helpers.query(
+      `
+        UPDATE catalog_sync_item item
+        SET safe_metadata = item.safe_metadata || jsonb_build_object(
+              'mediaObjectReverified', true,
+              'mediaObjectReverifiedAt', NOW()::text
+            ),
+            updated_at = NOW()
+        FROM source_media_asset media
+        WHERE item.sync_run_id = $1::uuid
+          AND item.source_entity_id = media.source_entity_id
+          AND media.media_asset_id IS NOT NULL
+      `,
+      [payload.syncRunId],
+    );
+  }
+
   const pending = await helpers.query<PendingSourceMedia>(
     `
       SELECT
-        media.id::text, media.source_entity_id::text, media.material_variant_id::text,
-        media.media_asset_id::text,
-        media.role::text, media.source_id, media.source_type::text, media.source_url
+        media.id::text, media.source_entity_id::text,
+        media.material_variant_id::text, media.category_id::text,
+        media.system_id::text, media.model_id::text, media.media_asset_id::text,
+        media.role::text, media.sort_order, media.source_id,
+        media.source_type::text, media.source_url,
+        asset.object_key AS asset_object_key, asset.file_hash AS asset_file_hash,
+        asset.mime_type AS asset_mime_type, asset.byte_size AS asset_byte_size
       FROM source_media_asset media
       JOIN catalog_sync_item item ON item.source_entity_id = media.source_entity_id
-      WHERE item.sync_run_id = $1::uuid AND item.source_type = 'MEDIA'
-      ORDER BY media.material_variant_id, media.role, media.source_id
+      LEFT JOIN media_asset asset ON asset.id = media.media_asset_id
+      WHERE item.sync_run_id = $1::uuid
+        AND item.source_type = 'MEDIA'
+        AND item.status <> 'MEDIA_ERROR'
+        AND media.media_asset_id IS NULL
+      ORDER BY COALESCE(
+        media.material_variant_id,
+        media.category_id,
+        media.system_id,
+        media.model_id
+      ), media.role, media.sort_order, media.source_id
+      LIMIT $2
     `,
-    [payload.syncRunId],
+    [payload.syncRunId, maximumItemsPerBatch],
   );
   let failedCount = 0;
   let importedCount = 0;
-  let reusedCount = 0;
-  const placements = new Map<string, number>();
 
-  for (const sourceMedia of pending.rows) {
+  for (let index = 0; index < pending.rows.length; index += 1) {
     if (signal.aborted)
       throw new CatalogPipelineError('CATALOG_PIPELINE_SOURCE_UNAVAILABLE', { retryable: true });
-    const placementKey = `${sourceMedia.material_variant_id}:${sourceMedia.role}`;
-    const sortOrder = placements.get(placementKey) ?? 0;
-    placements.set(placementKey, sortOrder + 1);
+    if (index % 25 === 0 && (await catalogCancellationRequested(helpers, payload.syncRunId))) {
+      return {
+        cancelled: true,
+        failedCount,
+        importedCount,
+        remainingCount: await remainingMediaCount(),
+        reusedCount,
+      };
+    }
+    const sourceMedia = pending.rows[index];
+    if (sourceMedia === undefined) {
+      throw new CatalogPipelineError('CATALOG_PIPELINE_DATABASE');
+    }
     try {
       const file = await adapter.fetchMedia(sourceMedia.source_url);
       if (signal.aborted || file.sourceUrl !== sourceMedia.source_url) {
@@ -483,11 +663,19 @@ export async function importCatalogMedia(
       );
       if (signal.aborted)
         throw new CatalogPipelineError('CATALOG_PIPELINE_SOURCE_UNAVAILABLE', { retryable: true });
-      await persistMediaLink(helpers, payload, sourceMedia, image, stored.objectKey, sortOrder);
+      await persistMediaLink(
+        helpers,
+        payload,
+        sourceMedia,
+        image,
+        stored.objectKey,
+        sourceMedia.sort_order,
+      );
       importedCount += 1;
       if (stored.reused || sourceMedia.media_asset_id !== null) reusedCount += 1;
     } catch (error) {
       if (error instanceof CatalogSourceError) {
+        if (error.retryable) throw toCatalogPipelineError(error);
         failedCount += 1;
         await markMediaError(helpers, payload, sourceMedia, error.code);
         continue;
@@ -504,13 +692,26 @@ export async function importCatalogMedia(
     }
   }
 
+  const remainingCount = await remainingMediaCount();
   await helpers.query(
     `
       UPDATE catalog_sync_run
-      SET status = 'BUILDING_DIFF', last_heartbeat_at = NOW(), updated_at = NOW()
+      SET status = CASE WHEN $2 = 0 THEN 'BUILDING_DIFF'::catalog_sync_status
+                        ELSE 'IMPORTING_MEDIA'::catalog_sync_status END,
+          last_heartbeat_at = NOW(), updated_at = NOW(),
+          audit_context = audit_context || jsonb_build_object(
+            'mediaBatchNumber', $3::integer,
+            'mediaRemainingCount', $2::integer
+          )
       WHERE id = $1::uuid
     `,
-    [payload.syncRunId],
+    [payload.syncRunId, remainingCount, payload.batchNumber],
   );
-  return { failedCount, importedCount, reusedCount };
+  return {
+    cancelled: false,
+    failedCount,
+    importedCount,
+    remainingCount,
+    reusedCount,
+  };
 }

@@ -15,6 +15,7 @@ import {
   catalogBuildDiffPayloadSchema,
   catalogJobIdentifiers,
   catalogJobQueueName,
+  catalogMediaBatchIdempotencyKey,
   catalogMediaImportPayloadSchema,
   catalogNormalizePayloadSchema,
   catalogRollbackVersionPayloadSchema,
@@ -67,7 +68,7 @@ async function enqueueStage(
 ): Promise<void> {
   await helpers.addJob(identifier, payload, {
     flags: ['catalog-full'],
-    jobKey: `${identifier}:${payload.syncRunId}`,
+    jobKey: `${identifier}:${payload.idempotencyKey}`,
     jobKeyMode: 'replace',
     maxAttempts: 5,
     queueName: catalogJobQueueName,
@@ -248,11 +249,11 @@ export function createCatalogTaskList(
         async (payload, signal) => {
           const result = await services.normalize(payload, helpers, signal);
           if (result === 'CANCELLED') return;
-          await enqueueStage(
-            helpers,
-            catalogJobIdentifiers.mediaImport,
-            nextStagePayload(payload, catalogJobIdentifiers.mediaImport),
-          );
+          await enqueueStage(helpers, catalogJobIdentifiers.mediaImport, {
+            ...nextStagePayload(payload, catalogJobIdentifiers.mediaImport),
+            batchNumber: 1,
+            idempotencyKey: catalogMediaBatchIdempotencyKey(payload.syncRunId, 1),
+          });
         },
       ),
     [catalogJobIdentifiers.mediaImport]: (candidate, helpers) =>
@@ -266,6 +267,15 @@ export function createCatalogTaskList(
         async (payload, signal) => {
           const result = await services.importMedia(payload, helpers, signal);
           if (result === 'CANCELLED') return;
+          if (result === 'CONTINUE') {
+            const batchNumber = payload.batchNumber + 1;
+            await enqueueStage(helpers, catalogJobIdentifiers.mediaImport, {
+              ...nextStagePayload(payload, catalogJobIdentifiers.mediaImport),
+              batchNumber,
+              idempotencyKey: catalogMediaBatchIdempotencyKey(payload.syncRunId, batchNumber),
+            });
+            return;
+          }
           await enqueueStage(
             helpers,
             catalogJobIdentifiers.buildDiff,

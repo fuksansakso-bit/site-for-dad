@@ -22,6 +22,7 @@ import {
 } from './contracts.js';
 import { CatalogPipelineError, toCatalogPipelineError } from './errors.js';
 import { normalizeCatalogSnapshots } from './normalizer.js';
+import { importCatalogMedia, type CatalogMediaImportDependencies } from './media.js';
 import {
   catalogSafeSnapshotPayloadSchema,
   emptyCatalogSafeSnapshotPayload,
@@ -38,6 +39,9 @@ interface CatalogSourceRecord {
 export type CatalogAdapterFactory = (
   source: CatalogSourceRecord,
 ) => CatalogSourceAdapter | Promise<CatalogSourceAdapter>;
+
+export type CatalogMediaDependenciesFactory = () =>
+  CatalogMediaImportDependencies | Promise<CatalogMediaImportDependencies>;
 
 export interface CatalogJobServices {
   activateVersion(
@@ -103,6 +107,10 @@ async function defaultAdapterFactory(source: CatalogSourceRecord): Promise<Catal
     throw new CatalogPipelineError('CATALOG_PIPELINE_SOURCE_INVALID');
   }
   return new AmigoCatalogSourceAdapter();
+}
+
+function defaultMediaDependenciesFactory(): CatalogMediaImportDependencies {
+  throw new CatalogPipelineError('CATALOG_PIPELINE_STORAGE_UNAVAILABLE', { retryable: true });
 }
 
 async function loadSource(
@@ -236,6 +244,7 @@ function logicalEntityCount(batch: CapturedCatalogBatch): number {
 
 export function createCatalogJobServices(
   adapterFactory: CatalogAdapterFactory = defaultAdapterFactory,
+  mediaDependenciesFactory: CatalogMediaDependenciesFactory = defaultMediaDependenciesFactory,
 ): CatalogJobServices {
   return {
     async discoverSource(payload, helpers, signal) {
@@ -264,7 +273,13 @@ export function createCatalogJobServices(
             payload.requestedByActorId ?? null,
             source.parser_version,
             source.mapping_version,
-            JSON.stringify({ schemaVersion: 1, trigger: payload.trigger }),
+            JSON.stringify({
+              ...(payload.retryOfSyncRunId === undefined
+                ? {}
+                : { retryOfSyncRunId: payload.retryOfSyncRunId }),
+              schemaVersion: 1,
+              trigger: payload.trigger,
+            }),
           ],
         );
         const syncRunId = syncRun.rows[0]?.id;
@@ -410,15 +425,16 @@ export function createCatalogJobServices(
     },
 
     async importMedia(payload, helpers, signal) {
-      assertRunning(signal);
-      await helpers.query(
-        `
-          UPDATE catalog_sync_run
-          SET status = 'BUILDING_DIFF', last_heartbeat_at = NOW(), updated_at = NOW()
-          WHERE id = $1::uuid
-        `,
-        [payload.syncRunId],
-      );
+      try {
+        assertRunning(signal);
+        const source = await loadSource(helpers, payload.catalogSourceId);
+        const adapter = await adapterFactory(source);
+        const dependencies = await mediaDependenciesFactory();
+        await importCatalogMedia(payload, helpers, adapter, dependencies, signal);
+      } catch (error) {
+        if (error instanceof FoundationJobError) throw error;
+        throw toCatalogPipelineError(error);
+      }
     },
 
     async buildDiff(payload, helpers, signal) {

@@ -1,5 +1,6 @@
 import {
   hashCanonicalSource,
+  sha256,
   type CapturedSource,
   type CatalogSourceVersion,
   type FixtureCatalogDataset,
@@ -8,9 +9,15 @@ import {
   type SourceIdentity,
   type SourceMaterial,
   type SourceMediaManifest,
+  type SourceMediaFile,
   type SourcePrice,
   type SourceSystem,
 } from '@project-name/catalog';
+
+import type {
+  CatalogMediaStorageMetadata,
+  CatalogMediaStoragePort,
+} from '../../src/catalog/media.js';
 
 const capturedAt = '2026-08-02T12:00:00.000Z';
 const categorySourceId = 'jobs-category-roller';
@@ -64,6 +71,13 @@ const sourceVersion: CatalogSourceVersion = {
   version: 'jobs-fixture-v1',
 };
 
+const imageBody = Uint8Array.from(
+  Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+    'base64',
+  ),
+);
+
 export function createJobsCatalogFixture(): FixtureCatalogDataset {
   const category: SourceCategory = {
     family,
@@ -105,19 +119,76 @@ export function createJobsCatalogFixture(): FixtureCatalogDataset {
     materialSourceId,
     media: [
       {
-        contentTypeHint: 'image/jpeg',
+        contentTypeHint: 'image/png',
         identity: identity('MEDIA', `${materialSourceId}:primary:1`, categorySourceId),
         role: 'PRIMARY',
       },
     ],
+  };
+  const mediaFile: SourceMediaFile = {
+    body: imageBody,
+    capturedAt,
+    contentHash: sha256(imageBody),
+    contentType: 'image/png',
+    httpStatus: 200,
+    originalFilename: 'jobs-material-roller-1001.png',
+    sourceUrl: mediaManifest.media[0]!.identity.sourceUrl,
   };
 
   return {
     categories: [captured(category)],
     materials: [captured(material)],
     mediaManifests: [captured(mediaManifest)],
+    mediaFiles: [mediaFile],
     prices: [captured(price)],
     sourceVersion,
     systems: [captured(system)],
+  };
+}
+
+class FixtureStorageError extends Error {
+  readonly code: 'STORAGE_CONFLICT' | 'STORAGE_NOT_FOUND';
+
+  constructor(code: 'STORAGE_CONFLICT' | 'STORAGE_NOT_FOUND') {
+    super(code);
+    this.name = 'StorageError';
+    this.code = code;
+  }
+}
+
+export function createMemoryCatalogStorage(): CatalogMediaStoragePort {
+  const objects = new Map<string, CatalogMediaStorageMetadata>();
+  const locatorKey = (locator: { readonly key: string; readonly zone: 'private' }) =>
+    `${locator.zone}:${locator.key}`;
+  const requireObject = (locator: {
+    readonly key: string;
+    readonly zone: 'private';
+  }): CatalogMediaStorageMetadata => {
+    const stored = objects.get(locatorKey(locator));
+    if (stored === undefined) {
+      throw new FixtureStorageError('STORAGE_NOT_FOUND');
+    }
+    return structuredClone(stored);
+  };
+
+  return {
+    async head(locator) {
+      return requireObject(locator);
+    },
+    async put(input): Promise<CatalogMediaStorageMetadata> {
+      const key = locatorKey(input.locator);
+      if (objects.has(key)) {
+        throw new FixtureStorageError('STORAGE_CONFLICT');
+      }
+      const metadata: CatalogMediaStorageMetadata = {
+        checksumSha256: sha256(input.body),
+        contentLength: input.body.byteLength,
+        contentType: input.contentType,
+        source: input.source,
+        zone: input.locator.zone,
+      };
+      objects.set(key, metadata);
+      return metadata;
+    },
   };
 }

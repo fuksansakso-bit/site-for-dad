@@ -14,8 +14,12 @@ import {
   runFoundationJobsOnce,
   verifyFoundationQueueSchema,
 } from '../../src/adapter.js';
+import type { CatalogTaskLifecycleEvent } from '../../src/catalog/task.js';
 import { createCatalogJobServices } from '../../src/catalog/services.js';
-import { createJobsCatalogFixture } from '../support/catalog-fixture.js';
+import {
+  createJobsCatalogFixture,
+  createMemoryCatalogStorage,
+} from '../support/catalog-fixture.js';
 
 const catalogSourceId = '00000000-0000-4000-8000-000000000103';
 const runTag = randomUUID().slice(0, 8);
@@ -25,28 +29,51 @@ const workerEnvironment: WorkerEnvironment = {
   WORKER_JOB_TIMEOUT_MS: 5_000,
 };
 const pool = createFoundationJobPool(databaseEnvironment, 4);
+const objectStorage = createMemoryCatalogStorage();
 const services = createCatalogJobServices(
   () => new FixtureCatalogSourceAdapter(createJobsCatalogFixture()),
+  () => ({ maximumBytes: 1_048_576, objectStorage }),
 );
 
-async function runPipeline(idempotencySuffix: string): Promise<string> {
+async function runPipeline(idempotencySuffix: string, retryOfSyncRunId?: string): Promise<string> {
   const uniqueSuffix = `${runTag}-${idempotencySuffix}`;
   const idempotencyKey = `catalog:test:${catalogSourceId}:${uniqueSuffix}`;
   await enqueueCatalogSourceDiscovery(pool, {
     catalogSourceId,
     correlationId: `catalog-integration-${uniqueSuffix}`,
     idempotencyKey,
+    ...(retryOfSyncRunId === undefined ? {} : { retryOfSyncRunId }),
     schemaVersion: 1,
     trigger: 'TEST',
   });
-  for (let stage = 0; stage < 5; stage += 1) {
-    await runFoundationJobsOnce(pool, workerEnvironment, undefined, undefined, undefined, services);
+  const lifecycleEvents: CatalogTaskLifecycleEvent[] = [];
+  let result:
+    | { rows: Array<{ id: string; retry_of_sync_run_id: string | null; status: string }> }
+    | undefined;
+  for (let stage = 0; stage < 12; stage += 1) {
+    await runFoundationJobsOnce(
+      pool,
+      workerEnvironment,
+      undefined,
+      undefined,
+      (event) => lifecycleEvents.push(event),
+      services,
+    );
+    result = await pool.query<{
+      id: string;
+      retry_of_sync_run_id: string | null;
+      status: string;
+    }>(
+      `SELECT id::text, status::text,
+              audit_context->>'retryOfSyncRunId' AS retry_of_sync_run_id
+       FROM catalog_sync_run WHERE idempotency_key = $1`,
+      [idempotencyKey],
+    );
+    if (['AWAITING_APPROVAL', 'FAILED'].includes(result.rows[0]?.status ?? '')) break;
   }
-  const result = await pool.query<{ id: string; status: string }>(
-    'SELECT id::text, status::text FROM catalog_sync_run WHERE idempotency_key = $1',
-    [idempotencyKey],
-  );
-  expect(result.rows[0]?.status).toBe('AWAITING_APPROVAL');
+  if (result === undefined) throw new Error('Catalog sync run was not inspected.');
+  expect(result.rows[0]?.status, JSON.stringify(lifecycleEvents)).toBe('AWAITING_APPROVAL');
+  expect(result.rows[0]?.retry_of_sync_run_id).toBe(retryOfSyncRunId ?? null);
   const syncRunId = result.rows[0]?.id;
   if (syncRunId === undefined) throw new Error('Catalog sync run was not created.');
   return syncRunId;
@@ -56,12 +83,18 @@ beforeAll(() => verifyFoundationQueueSchema(pool));
 afterAll(() => pool.end());
 
 describe.sequential('catalog synchronization pipeline', () => {
+  let firstSyncRunId: string | undefined;
+
   it('captures safe snapshots and normalizes the fixture through all pre-approval stages', async () => {
     const syncRunId = await runPipeline('pipeline-001');
+    firstSyncRunId = syncRunId;
     const counts = await pool.query<{
       audit_count: string;
       material_count: string;
       media_reference_count: string;
+      media_asset_count: string;
+      media_audit_count: string;
+      media_metadata_filename: string;
       price_count: string;
       snapshot_count: string;
     }>(
@@ -82,6 +115,28 @@ describe.sequential('catalog synchronization pipeline', () => {
               AND source_id = 'jobs-material-roller-1001:primary:1'
           ) AS media_reference_count,
           (
+            SELECT count(DISTINCT asset.id)::text
+            FROM media_asset asset
+            JOIN source_media_asset source_media ON source_media.media_asset_id = asset.id
+            WHERE source_media.catalog_source_id = '${catalogSourceId}'::uuid
+              AND source_media.source_id = 'jobs-material-roller-1001:primary:1'
+          ) AS media_asset_count,
+          (
+            SELECT count(*)::text
+            FROM audit_event
+            WHERE correlation_id = (
+              SELECT correlation_id FROM catalog_sync_run WHERE id = $1::uuid
+            )
+              AND action = 'CATALOG_MEDIA_IMPORTED'
+          ) AS media_audit_count,
+          (
+            SELECT safe_metadata->>'originalFilename'
+            FROM catalog_sync_item
+            WHERE sync_run_id = $1::uuid
+              AND source_type = 'MEDIA'
+            LIMIT 1
+          ) AS media_metadata_filename,
+          (
             SELECT count(*)::text
             FROM source_price_record
             WHERE catalog_source_id = '${catalogSourceId}'::uuid
@@ -94,6 +149,9 @@ describe.sequential('catalog synchronization pipeline', () => {
     expect(counts.rows[0]).toEqual({
       audit_count: '3',
       material_count: '1',
+      media_asset_count: '1',
+      media_audit_count: '1',
+      media_metadata_filename: 'jobs-material-roller-1001.png',
       media_reference_count: '1',
       price_count: '1',
       snapshot_count: '1',
@@ -101,9 +159,12 @@ describe.sequential('catalog synchronization pipeline', () => {
   });
 
   it('does not duplicate normalized identities or immutable source prices on a repeat import', async () => {
-    await runPipeline('pipeline-002');
+    if (firstSyncRunId === undefined) throw new Error('First catalog sync run is unavailable.');
+    await runPipeline('pipeline-002', firstSyncRunId);
     const counts = await pool.query<{
       material_count: string;
+      media_asset_count: string;
+      media_link_count: string;
       price_count: string;
       source_identity_count: string;
     }>(`
@@ -115,6 +176,20 @@ describe.sequential('catalog synchronization pipeline', () => {
           WHERE source.catalog_source_id = '${catalogSourceId}'::uuid
             AND source.source_id = 'jobs-material-roller-1001'
         ) AS material_count,
+        (
+          SELECT count(DISTINCT asset.id)::text
+          FROM media_asset asset
+          JOIN source_media_asset source_media ON source_media.media_asset_id = asset.id
+          WHERE source_media.catalog_source_id = '${catalogSourceId}'::uuid
+            AND source_media.source_id = 'jobs-material-roller-1001:primary:1'
+        ) AS media_asset_count,
+        (
+          SELECT count(*)::text
+          FROM material_media_asset material_media
+          JOIN source_media_asset source_media ON source_media.id = material_media.source_media_asset_id
+          WHERE source_media.catalog_source_id = '${catalogSourceId}'::uuid
+            AND source_media.source_id = 'jobs-material-roller-1001:primary:1'
+        ) AS media_link_count,
         (
           SELECT count(*)::text
           FROM source_price_record
@@ -131,6 +206,8 @@ describe.sequential('catalog synchronization pipeline', () => {
     `);
     expect(counts.rows[0]).toEqual({
       material_count: '1',
+      media_asset_count: '1',
+      media_link_count: '1',
       price_count: '1',
       source_identity_count: '1',
     });

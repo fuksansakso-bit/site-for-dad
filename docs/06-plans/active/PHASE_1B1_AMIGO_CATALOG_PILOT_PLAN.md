@@ -52,8 +52,8 @@ Allowlist содержит roller blackout (`49129`, `50772`), Zebra blackout (`
 | 3 | `CatalogSourceAdapter`, AMIGO parser и fixture adapter | COMPLETED | Contract/mapping/security tests прошли без domain selectors |
 | 4 | Graphile Worker sync, raw snapshots, normalization и idempotency | COMPLETED | Real pilot captured 6 snapshots, 32 variants, 59 media links and 32 prices; failed storage run retained historically |
 | 5 | Local storage recovery и mandatory contract gate | COMPLETED | RustFS inactive; VersityGW 15/15, signed/multipart/real JPEG/restart persistence, docs and logical commit passed |
-| 6 | Media import через storage abstraction | **IN_PROGRESS** | MIME/size/hash/dedup/private delivery/audit tests проходят; new run does not rewrite failed run |
-| 7 | Catalog/Price versioning, exact diff и activation | PENDING | OWNER/ADMIN-only atomic activation и rollback доказаны |
+| 6 | Media import через storage abstraction | COMPLETED | Runs `f9407db3-9e82-4174-9e21-87528bdd7092`/`642f2bc2-387b-44fe-9d52-e05cd78e374c`: 32/32 variants, 59/59 byte/SHA-verified private objects, zero item failures, retry lineage and restart persistence; failed run unchanged |
+| 7 | Catalog/Price versioning, exact diff и activation | **IN_PROGRESS** | OWNER/ADMIN-only atomic activation и rollback доказаны |
 | 8 | Business overlay и mutation APIs | PENDING | Availability/visibility/local price переживают sync и аудируются |
 | 9 | Минимальный `/admin/catalog` по design-system rules | PENDING | RBAC, bulk publication, status/history/diff и responsive flow проходят |
 | 10 | Минимальный PostgreSQL-only `/catalog` | PENDING | Search/filter/hidden/out-of-stock/outage scenarios проходят |
@@ -80,6 +80,8 @@ Allowlist содержит roller blackout (`49129`, `50772`), Zebra blackout (`
 Required evidence covers unit, adapter/storage/API/job contracts, PostgreSQL integration, real-source idempotency, source update/removal, overlay survival, media dedup, atomic version activation/rollback, audit, browser search/filter/admin/bulk publication, AMIGO/media/storage/database outages, worker restart/replay, lint/typecheck/build/security scans and full CI-equivalent execution.
 
 Storage recovery evidence 2026-08-03: VersityGW `v1.4.1` image digest `sha256:0400cb59f59da0f1cf9f7fd49505191abc348dfadf54509bf1988caaff4eb96f`; size matrix `1`, `65,536`, `131,072`, `159,099`, `262,144`, `515,180`, `1 MiB`, `5 MiB`, `6 MiB`; 15/15 tests passed with byte/SHA equality, signed read/write, multipart complete/abort, all-private negative access and graceful/Docker Desktop restart persistence. Existing run `798d5513-27b1-48e3-ab8e-389eeb672db4` remains `FAILED / CATALOG_PIPELINE_STORAGE_UNAVAILABLE`; media continuation must create a new run/correlation ID.
+
+Media recovery evidence 2026-08-03: primary run `f9407db3-9e82-4174-9e21-87528bdd7092` and idempotency repeat `642f2bc2-387b-44fe-9d52-e05cd78e374c` reached `AWAITING_APPROVAL` without publication or activation. All 32 pilot variants have at least one local image; 59 source media objects (8,340,101 bytes) passed full object-storage download and byte/SHA verification, including the 515,180-byte AMIGO JPEG with SHA-256 `ac86fc976afc2063cc97e1528611c978a348f357d26c8fe3c59b7c23f113d0cd`. The repeat created no duplicate source identities, variants, price records, media assets or links; `audit_context.retryOfSyncRunId` preserves the lineage back to failed run `798d5513-27b1-48e3-ab8e-389eeb672db4`.
 
 ## 7. Stop conditions
 

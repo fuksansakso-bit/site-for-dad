@@ -32,6 +32,7 @@ export const catalogSourceDiscoveryPayloadSchema = z
     ...commonPayload,
     catalogSourceId: z.uuid(),
     requestedByActorId: z.uuid().optional(),
+    retryOfSyncRunId: z.uuid().optional(),
     trigger: z.enum(['AUTOMATIC', 'MANUAL', 'TEST']),
   })
   .strict()

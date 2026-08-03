@@ -27,6 +27,7 @@ export {
   type SourceMaterial,
   type SourceMaterialProperty,
   type SourceMediaManifest,
+  type SourceMediaFile,
   type SourceMediaReference,
   type SourcePrice,
   type SourceSystem,

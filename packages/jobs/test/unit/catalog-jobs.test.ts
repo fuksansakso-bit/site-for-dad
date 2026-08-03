@@ -63,6 +63,19 @@ describe('catalog synchronization job contracts', () => {
     expect(JSON.stringify(payload)).not.toMatch(/password|secret|token/i);
   });
 
+  it('accepts an explicit safe retry link to a historical sync run', () => {
+    expect(
+      catalogSourceDiscoveryPayloadSchema.parse({
+        catalogSourceId,
+        correlationId: 'catalog-retry-unit-001',
+        idempotencyKey: `catalog:test:${catalogSourceId}:retry-unit-001`,
+        retryOfSyncRunId: '798d5513-27b1-48e3-ab8e-389eeb672db4',
+        schemaVersion: 1,
+        trigger: 'TEST',
+      }),
+    ).toMatchObject({ retryOfSyncRunId: '798d5513-27b1-48e3-ab8e-389eeb672db4' });
+  });
+
   it('accepts only safe structured snapshots and rejects raw HTML', () => {
     const payload = emptyCatalogSafeSnapshotPayload({
       capturedAt: '2026-08-02T12:00:00.000Z',

@@ -213,6 +213,9 @@ importers:
       '@project-name/observability':
         specifier: workspace:*
         version: link:../../packages/observability
+      '@project-name/storage':
+        specifier: workspace:*
+        version: link:../../packages/storage
     devDependencies:
       '@project-name/tooling':
         specifier: workspace:*

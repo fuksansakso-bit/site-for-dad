@@ -122,6 +122,16 @@ export interface SourceMediaManifest {
   readonly media: readonly SourceMediaReference[];
 }
 
+export interface SourceMediaFile {
+  readonly body: Uint8Array;
+  readonly capturedAt: string;
+  readonly contentHash: string;
+  readonly contentType: 'image/jpeg' | 'image/png' | 'image/webp';
+  readonly httpStatus: number;
+  readonly originalFilename: string;
+  readonly sourceUrl: string;
+}
+
 export interface CatalogSourceVersion {
   readonly capturedAt: string;
   readonly sourceType: CatalogSourceType;
@@ -139,6 +149,7 @@ export interface CatalogSourceAdapter {
   fetchCategory(sourceId: string): Promise<CapturedSource<SourceCategory>>;
   fetchMaterial(sourceId: string): Promise<CapturedSource<SourceMaterial>>;
   fetchMediaManifest(sourceId: string): Promise<CapturedSource<SourceMediaManifest>>;
+  fetchMedia(sourceUrl: string): Promise<SourceMediaFile>;
   fetchPrice(sourceId: string): Promise<CapturedSource<SourcePrice>>;
   fetchProduct(sourceId: string): Promise<CapturedSource<SourceSystem>>;
   getSourceVersion(): Promise<CatalogSourceVersion>;
@@ -150,6 +161,7 @@ export interface FixtureCatalogDataset {
   readonly healthy?: boolean;
   readonly materials: readonly CapturedSource<SourceMaterial>[];
   readonly mediaManifests: readonly CapturedSource<SourceMediaManifest>[];
+  readonly mediaFiles: readonly SourceMediaFile[];
   readonly prices: readonly CapturedSource<SourcePrice>[];
   readonly sourceVersion: CatalogSourceVersion;
   readonly systems: readonly CapturedSource<SourceSystem>[];

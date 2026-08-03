@@ -41,7 +41,14 @@ export {
   createCatalogJobServices,
   type CatalogAdapterFactory,
   type CatalogJobServices,
+  type CatalogMediaDependenciesFactory,
 } from './catalog/services.js';
+export {
+  importCatalogMedia,
+  inspectCatalogImage,
+  type CatalogMediaImportDependencies,
+  type CatalogMediaImportResult,
+} from './catalog/media.js';
 export {
   createCatalogTaskList,
   type CatalogTaskLifecycleEvent,

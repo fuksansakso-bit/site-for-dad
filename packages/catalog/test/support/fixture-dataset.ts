@@ -1,5 +1,6 @@
 import {
   hashCanonicalSource,
+  sha256,
   type CapturedSource,
   type CatalogSourceVersion,
   type FixtureCatalogDataset,
@@ -8,6 +9,7 @@ import {
   type SourceIdentity,
   type SourceMaterial,
   type SourceMediaManifest,
+  type SourceMediaFile,
   type SourcePrice,
   type SourceSystem,
 } from '../../src/index.js';
@@ -59,6 +61,13 @@ const sourceVersion: CatalogSourceVersion = {
   version: 'fixture-v1',
 };
 
+const imageBody = Uint8Array.from(
+  Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+    'base64',
+  ),
+);
+
 export function createFixtureDataset(): FixtureCatalogDataset {
   const category: SourceCategory = {
     family,
@@ -100,17 +109,27 @@ export function createFixtureDataset(): FixtureCatalogDataset {
     materialSourceId: 'material-1',
     media: [
       {
-        contentTypeHint: 'image/jpeg',
+        contentTypeHint: 'image/png',
         identity: identity('MEDIA', 'material-1:primary:1'),
         role: 'PRIMARY',
       },
     ],
+  };
+  const mediaFile: SourceMediaFile = {
+    body: imageBody,
+    capturedAt,
+    contentHash: sha256(imageBody),
+    contentType: 'image/png',
+    httpStatus: 200,
+    originalFilename: 'material-1.png',
+    sourceUrl: mediaManifest.media[0]!.identity.sourceUrl,
   };
 
   return {
     categories: [captured(category)],
     materials: [captured(material)],
     mediaManifests: [captured(mediaManifest)],
+    mediaFiles: [mediaFile],
     prices: [captured(price)],
     sourceVersion,
     systems: [captured(system)],

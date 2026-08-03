@@ -8,6 +8,7 @@ import {
   type SourceCategory,
   type SourceMaterial,
   type SourceMediaManifest,
+  type SourceMediaFile,
   type SourcePrice,
   type SourceSystem,
 } from '../types.js';
@@ -49,6 +50,7 @@ export class FixtureCatalogSourceAdapter implements CatalogSourceAdapter {
   readonly #categories: ReadonlyMap<string, CapturedSource<SourceCategory>>;
   readonly #dataset: FixtureCatalogDataset;
   readonly #materials: ReadonlyMap<string, CapturedSource<SourceMaterial>>;
+  readonly #mediaFiles: ReadonlyMap<string, SourceMediaFile>;
   readonly #mediaManifests: ReadonlyMap<string, CapturedSource<SourceMediaManifest>>;
   readonly #prices: ReadonlyMap<string, CapturedSource<SourcePrice>>;
   readonly #systems: ReadonlyMap<string, CapturedSource<SourceSystem>>;
@@ -60,6 +62,15 @@ export class FixtureCatalogSourceAdapter implements CatalogSourceAdapter {
     this.#materials = buildUniqueMap(dataset.materials, 'material');
     this.#prices = buildUniqueMap(dataset.prices, 'price');
     this.#mediaManifests = buildUniqueMap(dataset.mediaManifests, 'media-manifest');
+    this.#mediaFiles = new Map(
+      dataset.mediaFiles.map((file) => [file.sourceUrl, structuredClone(file)]),
+    );
+    if (this.#mediaFiles.size !== dataset.mediaFiles.length) {
+      throw new CatalogSourceError(
+        'SOURCE_CONTENT_INVALID',
+        'Fixture catalog contains a duplicate media URL.',
+      );
+    }
   }
 
   async discoverCategories(): Promise<readonly CapturedSource<SourceCategory>[]> {
@@ -76,6 +87,16 @@ export class FixtureCatalogSourceAdapter implements CatalogSourceAdapter {
 
   async fetchMediaManifest(sourceId: string): Promise<CapturedSource<SourceMediaManifest>> {
     return requireRecord(this.#mediaManifests, sourceId, 'media-manifest');
+  }
+
+  async fetchMedia(sourceUrl: string): Promise<SourceMediaFile> {
+    const file = this.#mediaFiles.get(sourceUrl);
+    if (file === undefined) {
+      throw new CatalogSourceError('SOURCE_ID_NOT_FOUND', 'Catalog media URL was not found.', {
+        safeDetails: { recordType: 'media-file' },
+      });
+    }
+    return structuredClone(file);
   }
 
   async fetchPrice(sourceId: string): Promise<CapturedSource<SourcePrice>> {

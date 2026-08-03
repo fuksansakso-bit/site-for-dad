@@ -298,14 +298,19 @@ CREATE ROLE foundation_runtime LOGIN PASSWORD '$runtimePassword'
         -FailureMessage 'Snapshot baseline resolve failed'
     Invoke-Pnpm -Arguments @('--filter', '@project-name/db', 'db:migrate:deploy') -FailureMessage 'Snapshot upgrade failed'
     $appliedUpgradeCount = & $psql -h '127.0.0.1' -p $port -U 'foundation_migrator' -d 'foundation_upgrade' -Atc "SELECT count(*) FROM _prisma_migrations WHERE finished_at IS NOT NULL AND rolled_back_at IS NULL;"
-    if ($LASTEXITCODE -ne 0 -or $appliedUpgradeCount -ne '3') {
-        throw 'Snapshot upgrade did not produce three applied migrations'
+    $appliedUpgradeExitCode = $LASTEXITCODE
+    $canonicalMigrations = Join-Path $resolvedRepositoryRoot 'packages\db\prisma\migrations'
+    $expectedMigrationCount = @(
+        Get-ChildItem -LiteralPath $canonicalMigrations -Directory |
+            Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName 'migration.sql') -PathType Leaf }
+    ).Count
+    if ($appliedUpgradeExitCode -ne 0 -or [int]$appliedUpgradeCount -ne $expectedMigrationCount) {
+        throw "Snapshot upgrade applied $appliedUpgradeCount of $expectedMigrationCount migrations"
     }
 
     Write-Output 'stage=failed-migration-recovery'
     $env:MIGRATION_DATABASE_URL = & $migrationUrlFor 'foundation_recovery'
     Invoke-Pnpm -Arguments @('--filter', '@project-name/db', 'db:migrate:deploy') -FailureMessage 'Recovery baseline deploy failed'
-    $canonicalMigrations = Join-Path $resolvedRepositoryRoot 'packages\db\prisma\migrations'
     Copy-Item -LiteralPath $canonicalMigrations -Destination $recoveryMigrations -Recurse
     $probeMigrationName = '20260802162000_recovery_probe'
     $probeMigrationDirectory = Assert-ChildPath -Candidate (Join-Path $recoveryMigrations $probeMigrationName) -Parent $runRoot

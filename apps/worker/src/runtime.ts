@@ -8,6 +8,7 @@ import type { FoundationMetrics } from '@project-name/observability/metrics';
 import {
   ensureDailyCatalogSourceDiscovery,
   startFoundationJobRuntime,
+  type CatalogJobServices,
   type CatalogTaskLifecycleEvent,
   type FoundationQueueLogEvent,
   type FoundationTaskLifecycleEvent,
@@ -72,6 +73,7 @@ export async function startWorkerProcess(
   workerEnvironment: WorkerEnvironment,
   eventSink: WorkerEventSink = writeWorkerEvent,
   telemetry?: WorkerRuntimeTelemetry,
+  catalogServices?: CatalogJobServices,
 ): Promise<RunningWorkerProcess> {
   let stopping = false;
   let stopped = false;
@@ -121,6 +123,7 @@ export async function startWorkerProcess(
       lifecycleLog,
       queueLog,
       lifecycleLog,
+      catalogServices,
     );
     await ensureDailyCatalogSourceDiscovery(jobRuntime.pool);
   } catch (error) {

@@ -15,6 +15,9 @@ async function exerciseAdapterContract(adapter: CatalogSourceAdapter): Promise<v
   expect((await adapter.fetchMaterial('material-1')).data.identity.sourceId).toBe('material-1');
   expect((await adapter.fetchPrice('material-1')).data.amountMinor).toBe(150_000);
   expect((await adapter.fetchMediaManifest('material-1')).data.media).toHaveLength(1);
+  expect(
+    (await adapter.fetchMedia('https://fixture.invalid/media/material-1:primary:1')).contentType,
+  ).toBe('image/png');
   expect((await adapter.getSourceVersion()).version).toBe('fixture-v1');
   expect((await adapter.healthCheck()).status).toBe('healthy');
 }

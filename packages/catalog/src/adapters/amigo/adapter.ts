@@ -10,6 +10,7 @@ import {
   type SourceIdentity,
   type SourceMaterial,
   type SourceMediaManifest,
+  type SourceMediaFile,
   type SourceMediaReference,
   type SourcePrice,
   type SourceSystem,
@@ -30,6 +31,7 @@ import {
   type ParsedAmigoSystem,
 } from './parser.js';
 import { validateAmigoUrl } from './security.js';
+import { AmigoMediaTransport, type AmigoMediaTransportOptions } from './media-transport.js';
 import {
   type AmigoHtmlPage,
   AmigoHttpTransport,
@@ -100,16 +102,19 @@ function systemProvenanceUrl(config: AmigoPilotSystemConfig): string {
   ).href;
 }
 
-export type AmigoCatalogSourceAdapterOptions = AmigoHttpTransportOptions;
+export type AmigoCatalogSourceAdapterOptions = AmigoHttpTransportOptions &
+  AmigoMediaTransportOptions;
 
 export class AmigoCatalogSourceAdapter implements CatalogSourceAdapter {
   readonly #categoryCache = new Map<string, Promise<ParsedCategoryCapture>>();
   readonly #pageCache = new Map<string, Promise<AmigoHtmlPage>>();
   readonly #systemCache = new Map<string, Promise<ParsedSystemCapture>>();
   readonly #transport: AmigoHttpTransport;
+  readonly #mediaTransport: AmigoMediaTransport;
 
   constructor(options: AmigoCatalogSourceAdapterOptions = {}) {
     this.#transport = new AmigoHttpTransport(options);
+    this.#mediaTransport = new AmigoMediaTransport(options);
   }
 
   async discoverCategories(): Promise<readonly CapturedSource<SourceCategory>[]> {
@@ -196,6 +201,10 @@ export class AmigoCatalogSourceAdapter implements CatalogSourceAdapter {
       materialSourceId: sourceId,
       media,
     });
+  }
+
+  fetchMedia(sourceUrl: string): Promise<SourceMediaFile> {
+    return this.#mediaTransport.fetchMedia(sourceUrl);
   }
 
   async fetchPrice(sourceId: string): Promise<CapturedSource<SourcePrice>> {

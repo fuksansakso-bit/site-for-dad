@@ -21,7 +21,9 @@ const publishedOverlay = {
   visibility: 'VISIBLE',
 };
 
-function manifest(overrides: Record<string, unknown> = {}) {
+function manifest(overrides: Record<string, unknown> = {}): {
+  composition: Array<Record<string, unknown>>;
+} {
   return {
     composition: [
       {
@@ -173,5 +175,37 @@ describe('public catalog projection', () => {
     >;
     variant['fileHash'] = 'not-a-checksum';
     expect(() => buildCatalogPublicSnapshot(input(corrupted))).toThrow(CatalogReadError);
+  });
+
+  it('fails closed for a category cycle and omits an orphaned subtree', () => {
+    const cyclic = manifest();
+    const rootEntity = (cyclic.composition[0] as Record<string, unknown>)['entity'] as Record<
+      string,
+      unknown
+    >;
+    const childId = '00000000-0000-4000-8000-000000000408';
+    rootEntity['parentId'] = childId;
+    cyclic.composition.unshift({
+      entity: {
+        id: childId,
+        name: 'Циклическая категория',
+        parentId: ids.category,
+        slug: 'ciklicheskaya-kategoriya',
+        sortOrder: 5,
+      },
+      entityType: 'CATEGORY',
+      overlay: publishedOverlay,
+    });
+    expect(() => buildCatalogPublicSnapshot(input(cyclic))).toThrow(CatalogReadError);
+
+    const orphaned = manifest();
+    const orphanedRoot = (orphaned.composition[0] as Record<string, unknown>)['entity'] as Record<
+      string,
+      unknown
+    >;
+    orphanedRoot['parentId'] = '00000000-0000-4000-8000-000000000499';
+    const snapshot = buildCatalogPublicSnapshot(input(orphaned));
+    expect(snapshot.categories).toEqual([]);
+    expect(snapshot.items).toEqual([]);
   });
 });

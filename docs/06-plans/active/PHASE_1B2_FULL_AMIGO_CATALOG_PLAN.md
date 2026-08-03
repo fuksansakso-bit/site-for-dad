@@ -71,8 +71,8 @@ Only one stage may be `IN_PROGRESS`.
 | 7 | Add bulk business catalog controls | COMPLETED | Exact category-subtree/filter/selected preview and OWNER apply are atomic, stale/partial/unauthorized/frozen-candidate safe and append-only/idempotent; source, price override and unrelated owner fields remain unchanged across clean 10-migration recovery and all 9 CI stages |
 | 8 | Expand `/admin/catalog` | COMPLETED | Full inventory hierarchy, bounded server filters/pages, safe manifest/run/diff/history, exact review/bulk/release actions and responsive keyboard states passed clean 10-migration integration and all 9 CI stages |
 | 9 | Expand `/catalog` | COMPLETED | Hierarchy, search, server filters/sort/cursors, detail/media/breadcrumb/share URL/loading/error/empty states passed without AMIGO; full CI 9/9 |
-| 10 | Verify full catalog expansion | IN_PROGRESS | Unit/contract/integration/browser/recovery suites cover required positive and negative scenarios |
-| 11 | Validate full catalog scale | PENDING | Synthetic dataset larger than real catalog verifies bounded memory, queries, no N+1, bulk and pagination performance |
+| 10 | Verify full catalog expansion | COMPLETED | 38 catalog, 6 contract and 20 web cases plus rollback public-state recovery passed; isolated active PostgreSQL/private-media catalog passed 5/5 browser profiles with zero runtime AMIGO; enclosing CI gate passed 9/9 with the 25/25 fail-closed baseline |
+| 11 | Validate full catalog scale | IN_PROGRESS | Synthetic dataset larger than real catalog verifies bounded memory, queries, no N+1, bulk and pagination performance |
 | 12 | Real import, acceptance documentation and stop | PENDING | Real manifest/no-op/resume/daily/bulk/persistence/public/perf/CI evidence recorded; report complete; tree clean; Phase 1C absent |
 
 ## 7. Commit sequence

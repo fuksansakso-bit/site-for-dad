@@ -31,6 +31,7 @@
     "security:secrets": "node tooling/scripts/scan-secrets.mjs",
     "test": "turbo run test",
     "test:browser": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tooling/scripts/browser-smoke.ps1",
+    "test:catalog-browser": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tooling/scripts/catalog-browser-acceptance.ps1",
     "test:catalog-pilot": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tooling/scripts/catalog-pilot-acceptance.ps1",
     "test:coverage": "turbo run test:coverage",
     "test:storage": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tooling/scripts/storage-integration.ps1",

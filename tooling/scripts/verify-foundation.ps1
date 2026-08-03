@@ -206,6 +206,15 @@ try {
         Invoke-Checked -Executable 'powershell.exe' -Arguments @(
             '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', (Join-Path $repositoryRoot 'tooling\scripts\browser-smoke.ps1'), '-SkipBuild'
         ) -FailureMessage 'Browser smoke failed'
+        Invoke-Checked -Executable 'powershell.exe' -Arguments @(
+            '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', (Join-Path $repositoryRoot 'tooling\scripts\catalog-browser-acceptance.ps1'),
+            '-NodeRoot', $NodeRoot,
+            '-PnpmRoot', $PnpmRoot,
+            '-PostgresRoot', $PostgresRoot,
+            '-DockerExecutable', $DockerExecutable,
+            '-CacheRoot', (Join-Path $IntegrationCacheRoot 'catalog-browser'),
+            '-SkipBuild'
+        ) -FailureMessage 'Active catalog browser acceptance failed'
     }
 
     Invoke-Stage -Name 'committed-secret-and-critical-advisory-scan' -Operation {

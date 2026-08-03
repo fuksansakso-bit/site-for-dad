@@ -1777,6 +1777,10 @@ describe.sequential('catalog synchronization pipeline', () => {
       active_id: firstRelease.catalogVersionId,
       changed_status: 'SUPERSEDED',
     });
+    const restoredPublic = await catalogRead.getPublicCatalog();
+    expect(restoredPublic?.catalogVersion.id).toBe(firstRelease.catalogVersionId);
+    expect(restoredPublic?.priceVersion.id).toBe(firstRelease.priceVersionId);
+    expect(restoredPublic?.items).toHaveLength(1);
   });
 
   it('fails closed before diff when a previously linked private media object is missing', async () => {

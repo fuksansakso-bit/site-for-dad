@@ -68,11 +68,12 @@ pnpm.cmd dev:status
 pnpm.cmd dev:stop
 pnpm.cmd test:storage
 pnpm.cmd test:catalog-pilot
+pnpm.cmd test:catalog-browser
 ```
 
 `pnpm.cmd dev` одной командой поднимает loopback-only PostgreSQL, применяет reviewed migrations, запускает Graphile Worker migrations, private-by-default VersityGW buckets, web и отдельный worker. S3 API слушает `127.0.0.1:4569`, Admin API — `127.0.0.1:4570`; object data, versioning и IAM хранятся в Docker named volumes `project_name_catalog_s3_data`, `project_name_catalog_s3_versioning`, `project_name_catalog_s3_iam`, без bind mount в NTFS. Состояние и диагностические журналы находятся только в игнорируемом `.local/foundation-environment/`; credentials генерируются локально и в вывод не попадают.
 
-Для проверки используйте `pnpm.cmd test:storage`, `pnpm.cmd test:catalog-pilot`, `pnpm.cmd check`, `pnpm.cmd test:coverage`, `pnpm.cmd test:browser` или полный `pnpm.cmd ci:verify`. Storage gate временно создаёт и удаляет свои точные containers/volumes; учётные данные в evidence и логи не пишутся. `pnpm.cmd dev:reset` безвозвратно удаляет только проверенные local PostgreSQL data/secrets и три проектных VersityGW named volumes; обычные `dev:stop`/`dev` и Docker restart сохраняют объекты.
+Для проверки используйте `pnpm.cmd test:storage`, `pnpm.cmd test:catalog-pilot`, `pnpm.cmd test:catalog-browser`, `pnpm.cmd check`, `pnpm.cmd test:coverage`, `pnpm.cmd test:browser` или полный `pnpm.cmd ci:verify`. `test:catalog-browser` поднимает изолированные PostgreSQL/VersityGW, публикует только синтетический вложенный каталог и проверяет public catalog во всех пяти browser profiles без runtime-запросов к AMIGO. Storage и catalog-browser gates временно создают и удаляют только свои точные disposable resources; учётные данные в evidence и логи не пишутся. `pnpm.cmd dev:reset` безвозвратно удаляет только проверенные local PostgreSQL data/secrets и три проектных VersityGW named volumes; обычные `dev:stop`/`dev` и Docker restart сохраняют объекты.
 
 Если запуск не удался, проверьте Docker Desktop, занятость loopback-портов web/metrics/PostgreSQL/S3/Admin (`3000`, `9464`, `55432`, `4569`, `4570`), точные версии runtime и журналы `.local/foundation-environment/logs`. Ручное изменение прав NTFS и bind mount object directory не требуются. Production credentials для локального запуска не нужны и использовать их запрещено.
 

@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A baseline executed; Phase 1B.1 real catalog/storage/publication acceptance and final CI-equivalent gate passed; later/production tests gated |
-| Версия | 0.6.0 |
+| Статус | Phase 1A and Phase 1B.1 gates passed; Phase 1B.2 isolated full-catalog verification in progress; scale, real acceptance and production tests gated |
+| Версия | 0.7.0 |
 | Дата | 2026-08-03 |
 | Requirements | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) and profile specs |
 | Acceptance | [ACCEPTANCE_CRITERIA.md](../specs/01-product/ACCEPTANCE_CRITERIA.md) |
@@ -36,6 +36,7 @@ Tests provide evidence for requirements and risk; they do not invent missing bus
 - **TEST-SPEC-019 — MUST:** the local/CI S3 contract gate covers `1`, `65,536`, `131,072`, `159,099`, `262,144`, `515,180`, `1 MiB`, `5 MiB` and a size above multipart threshold; every case verifies put/head/get, byte and SHA equality, type/length/metadata, scoped signed read/write, delete and missing head.
 - **TEST-SPEC-020 — MUST:** storage recovery coverage includes multipart complete/abort, immutable idempotence/content dedup/same-key concurrency, invalid MIME/oversize/checksum, timeout/retry/unavailable, concurrent files, graceful container restart, full Docker Desktop restart and named-volume persistence.
 - **TEST-SPEC-021 — MUST:** the real authorized AMIGO gate image is downloaded only through the bounded allowlisted transport, must be exactly 515,180 bytes and match SHA-256 after download from storage; any corruption, unsupported signed URL/multipart operation or persistence failure blocks media import.
+- **TEST-SPEC-022 — MUST:** Phase 1B.2 public-catalog browser acceptance uses disposable PostgreSQL/private object storage and synthetic nested catalog/media, pins one compatible active `CatalogVersion`/`PriceVersion`, covers hierarchy/search/filters/sort/cursors/detail/breadcrumb/share/conditional media/responsive/reduced-motion behavior in all five supported profiles, and proves zero runtime AMIGO requests and safe cleanup.
 
 ## 2. Test layers and ownership
 
@@ -168,6 +169,12 @@ Real manual run `9bd1a4f8-e456-4617-9e16-7f5604c1c65c` used a new correlation ID
 
 The final Windows CI-equivalent run passed 9/9 stages with Node `24.18.1`, pnpm `11.18.0`, PostgreSQL `18.4`, Docker Engine `29.6.2`, Playwright `1.62.1` and digest-pinned VersityGW `v1.4.1`. It included frozen installation, documentation/scope/boundary validation, lint, strict typecheck, coverage, fresh/upgrade/recovery database paths, the 15-case storage gate, production build, generated-canary artifact scan, 25/25 browser scenarios across Chromium/Firefox/WebKit/narrow/reduced-motion, committed-secret scan and a critical dependency advisory scan.
 
+### 13.3. Phase 1B.2 isolated active-catalog gate
+
+`pnpm test:catalog-browser` creates exact disposable PostgreSQL and digest-pinned private VersityGW resources, applies reviewed migrations, seeds only synthetic nested categories/materials and generated PNG bytes, activates a compatible catalog/price pair and starts the production build. Its browser suite covers hierarchy and counts, version/query-bound cursor pagination, descendant filtering, search and allowlisted sort, detail/breadcrumb/price/version context, local image bytes, copy-link success/fallback, ETag/304, narrow reflow and reduced motion across Chromium, Firefox, WebKit, narrow and reduced-motion profiles. The harness fails on runtime AMIGO access, credential leakage, startup failure or unsafe resource targeting; failed evidence is stopped and preserved, while successful disposable resources are removed.
+
+The 2026-08-03 Windows execution passed all 5/5 active-catalog browser profiles against four synthetic published materials, three nested categories, four private local media objects and compatible CatalogVersion/PriceVersion v7001; the harness reported zero runtime AMIGO requests and removed the successful disposable environment. The enclosing CI-equivalent gate passed 9/9 stages, including 25/25 fail-closed baseline browser scenarios plus the separate 5/5 active-catalog run, clean ten-migration/recovery paths, 15/15 storage cases, production build/artifact scans and repository secret/advisory checks. Catalog unit coverage passed 38/38 cases, catalog contracts 6/6 and web public API/read behavior 20/20; integration rollback additionally re-read and proved the restored public catalog/version pair.
+
 ## 14. Dependencies, risks and open questions
 
 Dependencies: all specs/ADRs/evaluations, implementation stack/environments, approved fixtures/business data/support matrix. Open: numeric budgets/thresholds, real price/source fixtures, browser/AT matrix, provider sandboxes, test tooling/owners, UAT roles, security test scope and retention of artifacts. Risks: fake fixtures mistaken production truth, flaky E2E, unlicensed media, provider dependence, automated a11y/AI false confidence and unsafe production testing.
@@ -182,3 +189,4 @@ Dependencies: all specs/ADRs/evaluations, implementation stack/environments, app
 | 0.4.0 | 2026-08-02 | Marked Phase 1B.1 pilot tests required/in progress after explicit owner authorization. |
 | 0.5.0 | 2026-08-03 | Added and recorded the passed VersityGW real-image/signed/multipart/failure/restart contract gate from `OWNER-DECISION-011`. |
 | 0.6.0 | 2026-08-03 | Recorded real 32-variant publication, 59-object byte/SHA verification, public delivery, graceful restart, historical failed-run preservation and no-op repeat evidence. |
+| 0.7.0 | 2026-08-03 | Added the isolated Phase 1B.2 active-catalog browser gate and its synthetic data, private storage, no-runtime-AMIGO, conditional delivery, responsive and recovery contract. |

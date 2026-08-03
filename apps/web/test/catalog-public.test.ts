@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 
-import type { CatalogPublicSnapshot } from '@project-name/catalog';
+import { CatalogReadError, type CatalogPublicSnapshot } from '@project-name/catalog';
 import {
   publicCatalogMaterialResponseSchema,
   publicCatalogResponseSchema,
@@ -272,6 +272,24 @@ describe('public catalog query projection', () => {
     ).toThrow(CatalogPublicQueryError);
   });
 
+  it('keeps unknown prices last in both price sort directions', () => {
+    const ascending = selectCatalogPublicPage(
+      snapshot,
+      parseCatalogPublicQuery(new URLSearchParams({ sort: 'price-asc' })),
+      signingKey,
+    );
+    const descending = selectCatalogPublicPage(
+      snapshot,
+      parseCatalogPublicQuery(new URLSearchParams({ sort: 'price-desc' })),
+      signingKey,
+    );
+
+    expect(ascending.items.map((item) => item.article)).toEqual(['49129', '49850']);
+    expect(descending.items.map((item) => item.article)).toEqual(['49129', '49850']);
+    expect(ascending.items.at(-1)?.price.status).toBe('PRICE_ON_REQUEST');
+    expect(descending.items.at(-1)?.price.status).toBe('PRICE_ON_REQUEST');
+  });
+
   it('selects one shareable active material without exposing its object locator', () => {
     const selected = selectCatalogPublicMaterial(snapshot, 'alfa-blackout-molochnyy');
 
@@ -319,11 +337,36 @@ describe('public catalog HTTP boundaries', () => {
     expect(publicCatalogMaterialResponseSchema.parse(JSON.parse(text)).item.article).toBe('49129');
     expect(text).not.toMatch(/objectKey|catalog\/private|sourceHash/);
 
+    const etag = response.headers.get('etag');
+    expect(etag).not.toBeNull();
+    const notModified = await handler(
+      new NextRequest('http://localhost/api/v1/catalog/materials/alfa-blackout-molochnyy', {
+        headers: { 'if-none-match': etag ?? '' },
+      }),
+      'alfa-blackout-molochnyy',
+    );
+    expect(notModified.status).toBe(304);
+    expect(await notModified.text()).toBe('');
+
     const missing = await handler(
       new NextRequest('http://localhost/api/v1/catalog/materials/not_valid'),
       'not_valid',
     );
     expect(missing.status).toBe(404);
+
+    const unavailableHandler = createPublicCatalogMaterialHandler(() => ({
+      read: {
+        getPublicCatalog: async () => {
+          throw new CatalogReadError('CATALOG_READ_DATABASE');
+        },
+      },
+    }));
+    const unavailable = await unavailableHandler(
+      new NextRequest('http://localhost/api/v1/catalog/materials/alfa-blackout-molochnyy'),
+      'alfa-blackout-molochnyy',
+    );
+    expect(unavailable.status).toBe(503);
+    expect(await unavailable.text()).not.toMatch(/CATALOG_READ_DATABASE|stack|postgresql:\/\//i);
   });
 
   it('streams only approved active-version media and verifies round-trip metadata', async () => {

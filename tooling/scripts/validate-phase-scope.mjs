@@ -157,6 +157,7 @@ for (const file of await collectFiles(migrationRoot)) {
 }
 
 const allowedRouteFiles = new Set([
+  'apps/web/app/api/v1/catalog/materials/[id]/route.ts',
   'apps/web/app/api/v1/catalog/materials/route.ts',
   'apps/web/app/api/v1/catalog/media/[id]/route.ts',
   'apps/web/app/api/v1/health/live/route.ts',
@@ -164,6 +165,7 @@ const allowedRouteFiles = new Set([
 ]);
 const allowedPageFiles = new Set([
   'apps/web/app/admin/catalog/page.tsx',
+  'apps/web/app/catalog/[slug]/page.tsx',
   'apps/web/app/catalog/page.tsx',
   'apps/web/app/page.tsx',
 ]);

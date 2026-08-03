@@ -77,9 +77,13 @@ test.describe('PLAN-1A-AC-002 Foundation browser smoke', () => {
     const response = await page.goto('/catalog');
 
     expect(response?.status()).toBe(200);
-    await expect(page.getByRole('heading', { level: 1 })).toContainText(
-      'Материалы, которые управляют светом',
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Свет сначала');
+    await expect(page.getByRole('navigation', { name: 'Иерархия категорий' })).toBeVisible();
+    await expect(page.locator('input[name="q"]')).toHaveAttribute(
+      'placeholder',
+      'Ткань, цвет или артикул',
     );
+    await expect(page.locator('select[name="sort"]')).toHaveValue('featured');
     await expect(page.locator('body')).toContainText('Каталог сейчас недоступен');
     await expect(page.locator('body')).not.toContainText('shop.amigo.ru');
     expect(
@@ -93,6 +97,14 @@ test.describe('PLAN-1A-AC-002 Foundation browser smoke', () => {
 
     const invalid = await request.get('/api/v1/catalog/materials?unsupported=true');
     expect(invalid.status()).toBe(400);
+
+    const invalidMaterial = await request.get('/api/v1/catalog/materials/invalid_slug');
+    expect(invalidMaterial.status()).toBe(404);
+    expect(await invalidMaterial.text()).not.toMatch(/objectKey|sourceHash|postgresql:\/\//i);
+
+    await page.goto('/catalog/invalid_slug');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Материал не найден');
+    await expect(page.getByRole('link', { name: 'Вернуться в каталог' })).toBeVisible();
 
     const admin = await page.goto('/admin/catalog');
     expect(admin?.status()).toBe(200);

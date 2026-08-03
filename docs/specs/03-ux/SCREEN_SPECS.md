@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1B.1 minimal catalog/admin screens implemented; later screens remain gated |
-| Версия | 0.2.0 |
+| Статус | Phase 1B.2 full catalog/admin screens implemented within the authorized slice; later screens remain gated |
+| Версия | 0.3.0 |
 | Дата | 2026-08-03 |
 | IA | [INFORMATION_ARCHITECTURE.md](INFORMATION_ARCHITECTURE.md) |
 | Design/responsive/a11y | [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md), [RESPONSIVE_SPEC.md](RESPONSIVE_SPEC.md), [ACCESSIBILITY_SPEC.md](ACCESSIBILITY_SPEC.md) |
@@ -28,7 +28,7 @@ Every screen declares identity/H1, purpose, primary CTA, secondary actions, data
 | ID / screen | Purpose / primary CTA | Required regions | Critical states |
 |---|---|---|---|
 | `S-HOME` | Explain value and start selection / `Подобрать жалюзи` | Skip/starfield, hero, partner trust, categories, how-it-works, standard+AI preview distinction, verified portfolio/examples, free services, contact | Returning/reduced/degraded intro; badge text fallback; no invented testimonials |
-| `S-CATALOG` | Browse dynamic categories / `Настроить` | Search, category cards, readiness, filters/sort if applicable, help/contact | Loading, zero search/filter, category inquiry-only, source stale/offline local |
+| `S-CATALOG` | Browse dynamic categories / `Открыть материал` in Phase 1B.2; configurator CTA remains gated | Search, hierarchy, active-version state, filters/sort, material cards/detail | Loading, zero search/filter, invalid/stale link, category inquiry-only, local dependency unavailable |
 | `S-FAMILY` | Understand family/systems / `Выбрать систему` | Breadcrumb, description, systems/models, materials/examples, compatibility/readiness, FAQ | No local-ready system; mixed price/availability; retired alias |
 | `S-SYSTEM` | Evaluate specific system / `Настроить изделие` | Exact source/local identity, product media, options/constraints where verified, preliminary price state, service CTA | Missing limits/price/assets; inquiry-only; no fake compatibility |
 | `S-MATERIALS` | Find material / `Использовать в конфигурации` | Search, facets/count, swatches, article/properties, selected configuration context | Unknown property, no compatible result, blocked asset, dynamic price category |
@@ -39,7 +39,10 @@ Every screen declares identity/H1, purpose, primary CTA, secondary actions, data
 | `S-CONTACT` | Provide confirmed contact / `Открыть WhatsApp` | Confirmed number, purpose choices, hours/SLA only if approved, privacy note | Deep-link unavailable; copyable number/reference |
 | `S-HELP` | Reduce configuration/measurement errors / contextual CTA | Search/topics, diagrams with rights, warnings, contact | Unknown technical answer links manager/TBD |
 
-The Phase 1B.1 `/catalog` implementation combines the bounded `S-CATALOG`/`S-MATERIALS` pilot surface: semantic server-rendered H1/main, active-version label, result count, search, populated category/system/color/availability facets, blackout/zebra toggles, approved local images, article, preliminary source/local-override price status and text availability. It provides explicit not-activated, zero-result, invalid/stale-cursor and dependency-unavailable states, remains usable without client JavaScript and has no configurator/order CTA. The responsive layout targets desktop, tablet and narrow mobile without horizontal document overflow; status meaning is textual rather than color-only.
+The Phase 1B.2 `/catalog` implementation combines the active full `S-CATALOG`/`S-MATERIALS` surface: semantic server-rendered H1/main, active-version label, result count, dynamic category hierarchy, shareable search, category/system/color/availability/property filters, allowlisted sort, opaque next cursor, approved local images, article, source/local-override price status and textual availability. `/catalog/{materialSlug}` adds canonical material detail, active category breadcrumbs, exact local media, safe facts, version notice and copy-current-link action. Both routes provide explicit not-activated, zero-result, invalid/stale-link, not-found, loading, unexpected-error and dependency-unavailable states, remain useful without client JavaScript apart from copy-to-clipboard enhancement, and have no configurator/order CTA.
+
+- **SCREEN-SPEC-009 — MUST:** the Phase 1B.2 catalog list keeps its full dynamic hierarchy, current category, query, filters and sort visible or recoverable in the URL, names active-version/readiness and price meaning in text, and provides a stable next-page link without document-level horizontal overflow at the supported narrow width.
+- **SCREEN-SPEC-010 — MUST:** a Phase 1B.2 material detail shows one H1, category breadcrumbs, approved local image, material/color/article, safe system/property/availability/price facts, active-version context, return-to-category and share-current-URL action. Missing, retired, invalid or dependency-failed material states do not expose AMIGO/storage internals and always offer catalog recovery.
 
 ## 3. Configurator screens
 
@@ -151,3 +154,4 @@ Dependencies: IA/design/motion/responsive/accessibility, product/domain specs, c
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Определены shared screen contract, 20+ public/task/account/admin surfaces, required regions/states and privacy/performance behavior. |
 | 0.2.0 | 2026-08-03 | Recorded the implemented Phase 1B.1 server-rendered `/catalog` pilot, populated facets, version/readiness labels and empty/error/responsive boundaries without later-phase CTAs. |
+| 0.3.0 | 2026-08-03 | Recorded the Phase 1B.2 full public hierarchy, shareable server filters/sort/cursor, material detail/breadcrumb/local media/share action and explicit loading/empty/not-found/degraded states without configurator or order scope. |

@@ -1,16 +1,21 @@
 import { createHash } from 'node:crypto';
 
 import type { CatalogPublicSnapshot } from '@project-name/catalog';
-import { publicCatalogResponseSchema } from '@project-name/contracts/catalog';
+import {
+  publicCatalogMaterialResponseSchema,
+  publicCatalogResponseSchema,
+} from '@project-name/contracts/catalog';
 import { StorageError } from '@project-name/storage';
 import { NextRequest } from 'next/server';
 import { describe, expect, it, vi } from 'vitest';
 
 import { createPublicCatalogMaterialsHandler } from '../app/api/v1/catalog/materials/route';
+import { createPublicCatalogMaterialHandler } from '../app/api/v1/catalog/materials/[id]/route';
 import { createPublicCatalogMediaHandler } from '../app/api/v1/catalog/media/[id]/route';
 import {
   CatalogPublicQueryError,
   parseCatalogPublicQuery,
+  selectCatalogPublicMaterial,
   selectCatalogPublicPage,
 } from '../lib/catalog-public';
 
@@ -28,14 +33,61 @@ const snapshot: CatalogPublicSnapshot = {
     id: versionId,
     versionNumber: 3,
   },
+  categories: [
+    {
+      depth: 0,
+      id: '00000000-0000-4000-8000-000000000504',
+      name: 'Рулонные жалюзи',
+      parentId: null,
+      path: [
+        {
+          id: '00000000-0000-4000-8000-000000000504',
+          name: 'Рулонные жалюзи',
+          slug: 'rulonnye-zhalyuzi',
+        },
+      ],
+      slug: 'rulonnye-zhalyuzi',
+      sortOrder: 1,
+    },
+    {
+      depth: 1,
+      id: '00000000-0000-4000-8000-000000000507',
+      name: 'Зебра',
+      parentId: '00000000-0000-4000-8000-000000000504',
+      path: [
+        {
+          id: '00000000-0000-4000-8000-000000000504',
+          name: 'Рулонные жалюзи',
+          slug: 'rulonnye-zhalyuzi',
+        },
+        {
+          id: '00000000-0000-4000-8000-000000000507',
+          name: 'Зебра',
+          slug: 'zebra',
+        },
+      ],
+      slug: 'zebra',
+      sortOrder: 2,
+    },
+  ],
   items: [
     {
       article: '49129',
       availability: 'IN_STOCK',
       category: {
+        depth: 0,
         id: '00000000-0000-4000-8000-000000000504',
         name: 'Рулонные жалюзи',
+        parentId: null,
+        path: [
+          {
+            id: '00000000-0000-4000-8000-000000000504',
+            name: 'Рулонные жалюзи',
+            slug: 'rulonnye-zhalyuzi',
+          },
+        ],
         slug: 'rulonnye-zhalyuzi',
+        sortOrder: 1,
       },
       color: { hex: '#EEE8DA', name: 'Молочный', slug: 'molochnyy' },
       description: null,
@@ -64,9 +116,11 @@ const snapshot: CatalogPublicSnapshot = {
       },
       slug: 'alfa-blackout-molochnyy',
       system: {
+        categoryId: '00000000-0000-4000-8000-000000000504',
         id: '00000000-0000-4000-8000-000000000506',
         name: 'Рулонная система',
         slug: 'rulonnaya-sistema',
+        sortOrder: 1,
       },
       widthMm: 2_000,
     },
@@ -74,9 +128,24 @@ const snapshot: CatalogPublicSnapshot = {
       article: '49850',
       availability: 'OUT_OF_STOCK',
       category: {
+        depth: 1,
         id: '00000000-0000-4000-8000-000000000507',
         name: 'Зебра',
+        parentId: '00000000-0000-4000-8000-000000000504',
+        path: [
+          {
+            id: '00000000-0000-4000-8000-000000000504',
+            name: 'Рулонные жалюзи',
+            slug: 'rulonnye-zhalyuzi',
+          },
+          {
+            id: '00000000-0000-4000-8000-000000000507',
+            name: 'Зебра',
+            slug: 'zebra',
+          },
+        ],
         slug: 'zebra',
+        sortOrder: 2,
       },
       color: { hex: '#62564A', name: 'Коричневый', slug: 'korichnevyy' },
       description: null,
@@ -105,9 +174,11 @@ const snapshot: CatalogPublicSnapshot = {
       },
       slug: 'savanna-korichnevyy',
       system: {
+        categoryId: '00000000-0000-4000-8000-000000000507',
         id: '00000000-0000-4000-8000-000000000510',
         name: 'Зебра система',
         slug: 'zebra-sistema',
+        sortOrder: 2,
       },
       widthMm: null,
     },
@@ -118,6 +189,22 @@ const snapshot: CatalogPublicSnapshot = {
     id: priceVersionId,
     versionNumber: 3,
   },
+  systems: [
+    {
+      categoryId: '00000000-0000-4000-8000-000000000504',
+      id: '00000000-0000-4000-8000-000000000506',
+      name: 'Рулонная система',
+      slug: 'rulonnaya-sistema',
+      sortOrder: 1,
+    },
+    {
+      categoryId: '00000000-0000-4000-8000-000000000507',
+      id: '00000000-0000-4000-8000-000000000510',
+      name: 'Зебра система',
+      slug: 'zebra-sistema',
+      sortOrder: 2,
+    },
+  ],
 };
 
 describe('public catalog query projection', () => {
@@ -163,6 +250,36 @@ describe('public catalog query projection', () => {
       value: 'OUT_OF_STOCK',
     });
   });
+
+  it('includes descendant materials in a parent category and keeps sort cursor-bound', () => {
+    const query = parseCatalogPublicQuery(
+      new URLSearchParams({ category: 'rulonnye-zhalyuzi', limit: '1', sort: 'name-asc' }),
+    );
+    const page = selectCatalogPublicPage(snapshot, query, signingKey);
+
+    expect(page.total).toBe(2);
+    expect(page.facets.categories).toEqual([
+      expect.objectContaining({ count: 2, depth: 0, value: 'rulonnye-zhalyuzi' }),
+      expect.objectContaining({ count: 1, depth: 1, value: 'zebra' }),
+    ]);
+    expect(page.items[0]?.article).toBe('49129');
+    expect(() =>
+      selectCatalogPublicPage(
+        snapshot,
+        { ...query, cursor: page.nextCursor ?? undefined, sort: 'price-desc' },
+        signingKey,
+      ),
+    ).toThrow(CatalogPublicQueryError);
+  });
+
+  it('selects one shareable active material without exposing its object locator', () => {
+    const selected = selectCatalogPublicMaterial(snapshot, 'alfa-blackout-molochnyy');
+
+    expect(selected?.item.category.path.map((segment) => segment.slug)).toEqual([
+      'rulonnye-zhalyuzi',
+    ]);
+    expect(JSON.stringify(selected)).not.toMatch(/objectKey|catalog\/private/);
+  });
 });
 
 describe('public catalog HTTP boundaries', () => {
@@ -185,6 +302,28 @@ describe('public catalog HTTP boundaries', () => {
       new NextRequest('http://localhost/api/v1/catalog/materials?unexpected=true'),
     );
     expect(invalid.status).toBe(400);
+  });
+
+  it('returns one active material by stable slug and neutral not-found for invalid input', async () => {
+    const handler = createPublicCatalogMaterialHandler(() => ({
+      read: { getPublicCatalog: async () => snapshot },
+    }));
+    const response = await handler(
+      new NextRequest('http://localhost/api/v1/catalog/materials/alfa-blackout-molochnyy'),
+      'alfa-blackout-molochnyy',
+    );
+    const text = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('x-catalog-version')).toBe(versionId);
+    expect(publicCatalogMaterialResponseSchema.parse(JSON.parse(text)).item.article).toBe('49129');
+    expect(text).not.toMatch(/objectKey|catalog\/private|sourceHash/);
+
+    const missing = await handler(
+      new NextRequest('http://localhost/api/v1/catalog/materials/not_valid'),
+      'not_valid',
+    );
+    expect(missing.status).toBe(404);
   });
 
   it('streams only approved active-version media and verifies round-trip metadata', async () => {

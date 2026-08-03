@@ -295,6 +295,7 @@ export const catalogPublicAvailabilityValues = [
   'INQUIRY_ONLY',
 ] as const;
 export type CatalogPublicAvailability = (typeof catalogPublicAvailabilityValues)[number];
+export const maximumPublicCatalogMaterialCount = 10_000;
 
 export interface CatalogPublicVersion {
   readonly activatedAt: string;
@@ -304,15 +305,27 @@ export interface CatalogPublicVersion {
 }
 
 export interface CatalogPublicCategory {
+  readonly depth: number;
+  readonly id: string;
+  readonly name: string;
+  readonly parentId: string | null;
+  readonly path: readonly CatalogPublicCategoryPathSegment[];
+  readonly slug: string;
+  readonly sortOrder: number;
+}
+
+export interface CatalogPublicCategoryPathSegment {
   readonly id: string;
   readonly name: string;
   readonly slug: string;
 }
 
 export interface CatalogPublicSystem {
+  readonly categoryId: string | null;
   readonly id: string;
   readonly name: string;
   readonly slug: string;
+  readonly sortOrder: number;
 }
 
 export interface CatalogPublicMedia {
@@ -359,8 +372,10 @@ export interface CatalogPublicMaterial {
 
 export interface CatalogPublicSnapshot {
   readonly catalogVersion: CatalogPublicVersion;
+  readonly categories: readonly CatalogPublicCategory[];
   readonly items: readonly CatalogPublicMaterial[];
   readonly priceVersion: CatalogPublicVersion;
+  readonly systems: readonly CatalogPublicSystem[];
 }
 
 export interface CatalogPublicSnapshotInput {
@@ -615,18 +630,100 @@ function mapPublicPrice(entry: JsonRecord, overlay: JsonRecord): CatalogPublicPr
   };
 }
 
-function mapPublishedReference(
-  entry: JsonRecord,
-  expectedType: 'CATEGORY' | 'SYSTEM',
-): CatalogPublicCategory | CatalogPublicSystem | null {
-  if (entry['entityType'] !== expectedType || publishedOverlay(entry) === null) return null;
+interface RawPublicCategory {
+  readonly id: string;
+  readonly name: string;
+  readonly parentId: string | null;
+  readonly slug: string;
+  readonly sortOrder: number;
+}
+
+function optionalNonnegativeInteger(record: JsonRecord, key: string): number {
+  const value = record[key];
+  return value === null || value === undefined ? 0 : requiredInteger(record, key);
+}
+
+function mapPublishedCategory(entry: JsonRecord): RawPublicCategory | null {
+  if (entry['entityType'] !== 'CATEGORY' || publishedOverlay(entry) === null) return null;
   const entity = asRecord(entry['entity']);
   if (entity === null) throw new CatalogReadError('CATALOG_READ_VALIDATION');
   return {
     id: requiredString(entity, 'id', 64),
     name: requiredString(entity, 'name', 256),
+    parentId: optionalString(entity, 'parentId', 64),
     slug: requiredString(entity, 'slug', 256),
+    sortOrder: optionalNonnegativeInteger(entity, 'sortOrder'),
   };
+}
+
+function mapPublishedSystem(entry: JsonRecord): CatalogPublicSystem | null {
+  if (entry['entityType'] !== 'SYSTEM' || publishedOverlay(entry) === null) return null;
+  const entity = asRecord(entry['entity']);
+  if (entity === null) throw new CatalogReadError('CATALOG_READ_VALIDATION');
+  return {
+    categoryId: optionalString(entity, 'categoryId', 64),
+    id: requiredString(entity, 'id', 64),
+    name: requiredString(entity, 'name', 256),
+    slug: requiredString(entity, 'slug', 256),
+    sortOrder: optionalNonnegativeInteger(entity, 'sortOrder'),
+  };
+}
+
+function resolvePublicCategories(
+  rawCategories: ReadonlyMap<string, RawPublicCategory>,
+): ReadonlyMap<string, CatalogPublicCategory> {
+  const resolved = new Map<string, CatalogPublicCategory>();
+  const visiting = new Set<string>();
+  const resolve = (id: string): CatalogPublicCategory | null => {
+    const existing = resolved.get(id);
+    if (existing !== undefined) return existing;
+    const category = rawCategories.get(id);
+    if (category === undefined) return null;
+    if (visiting.has(id)) throw new CatalogReadError('CATALOG_READ_VALIDATION');
+    visiting.add(id);
+    const parent = category.parentId === null ? null : resolve(category.parentId);
+    visiting.delete(id);
+    if (category.parentId !== null && parent === null) return null;
+    const segment = { id: category.id, name: category.name, slug: category.slug };
+    const mapped: CatalogPublicCategory = {
+      depth: parent?.path.length ?? 0,
+      id: category.id,
+      name: category.name,
+      parentId: category.parentId,
+      path: [...(parent?.path ?? []), segment],
+      slug: category.slug,
+      sortOrder: category.sortOrder,
+    };
+    resolved.set(id, mapped);
+    return mapped;
+  };
+  for (const id of rawCategories.keys()) resolve(id);
+  return resolved;
+}
+
+function orderPublicCategories(
+  categories: ReadonlyMap<string, CatalogPublicCategory>,
+): readonly CatalogPublicCategory[] {
+  const children = new Map<string | null, CatalogPublicCategory[]>();
+  for (const category of categories.values()) {
+    const siblings = children.get(category.parentId) ?? [];
+    siblings.push(category);
+    children.set(category.parentId, siblings);
+  }
+  const compare = (left: CatalogPublicCategory, right: CatalogPublicCategory) =>
+    left.sortOrder - right.sortOrder ||
+    left.name.localeCompare(right.name, 'ru') ||
+    left.id.localeCompare(right.id);
+  for (const siblings of children.values()) siblings.sort(compare);
+  const ordered: CatalogPublicCategory[] = [];
+  const append = (parentId: string | null): void => {
+    for (const category of children.get(parentId) ?? []) {
+      ordered.push(category);
+      append(category.id);
+    }
+  };
+  append(null);
+  return ordered;
 }
 
 function mapPublicMaterial(
@@ -691,14 +788,15 @@ export function buildCatalogPublicSnapshot(
     if (record === null) throw new CatalogReadError('CATALOG_READ_VALIDATION');
     return record;
   });
-  const categories = new Map<string, CatalogPublicCategory>();
+  const rawCategories = new Map<string, RawPublicCategory>();
   const systems = new Map<string, CatalogPublicSystem>();
   for (const entry of entries) {
-    const category = mapPublishedReference(entry, 'CATEGORY') as CatalogPublicCategory | null;
-    if (category !== null) categories.set(category.id, category);
-    const system = mapPublishedReference(entry, 'SYSTEM') as CatalogPublicSystem | null;
+    const category = mapPublishedCategory(entry);
+    if (category !== null) rawCategories.set(category.id, category);
+    const system = mapPublishedSystem(entry);
     if (system !== null) systems.set(system.id, system);
   }
+  const categories = resolvePublicCategories(rawCategories);
   const items = entries
     .map((entry) => mapPublicMaterial(entry, categories, systems))
     .filter((item): item is CatalogPublicMaterial => item !== null)
@@ -714,7 +812,14 @@ export function buildCatalogPublicSnapshot(
   }
   return {
     catalogVersion: input.catalogVersion,
+    categories: orderPublicCategories(categories),
     items,
     priceVersion: input.priceVersion,
+    systems: [...systems.values()].sort(
+      (left, right) =>
+        left.sortOrder - right.sortOrder ||
+        left.name.localeCompare(right.name, 'ru') ||
+        left.id.localeCompare(right.id),
+    ),
   };
 }

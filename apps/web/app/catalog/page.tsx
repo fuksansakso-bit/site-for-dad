@@ -1,5 +1,6 @@
 import { CatalogReadError } from '@project-name/catalog';
 import type {
+  PublicCatalogCategoryFacet,
   PublicCatalogFacetOption,
   PublicCatalogMaterial,
   PublicCatalogQuery,
@@ -20,7 +21,7 @@ import { getWebCatalogRead, getWebCatalogSigningKey } from '../../lib/catalog-ru
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  description: 'Пилотный каталог материалов жалюзи из активной проверенной локальной версии.',
+  description: 'Активный локальный каталог материалов и систем для оконного декора.',
   robots: { follow: false, index: false },
   title: 'Каталог материалов · PROJECT_NAME',
 };
@@ -35,14 +36,20 @@ const rubleFormatter = new Intl.NumberFormat('ru-RU', {
   style: 'currency',
 });
 
+const dateFormatter = new Intl.DateTimeFormat('ru-RU', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+
 function availabilityLabel(value: PublicCatalogMaterial['availability']): string {
   switch (value) {
     case 'IN_STOCK':
-      return 'Материал доступен';
+      return 'Есть в наличии';
     case 'OUT_OF_STOCK':
-      return 'Временно нет в наличии';
+      return 'Нет в наличии';
     case 'INQUIRY_ONLY':
-      return 'Наличие по запросу';
+      return 'Уточнить наличие';
   }
 }
 
@@ -56,7 +63,6 @@ function priceLabel(item: PublicCatalogMaterial): string {
 
 function facetOptions(
   options: readonly PublicCatalogFacetOption[],
-  selected: string | undefined,
   emptyLabel: string,
 ): React.JSX.Element {
   return (
@@ -65,68 +71,83 @@ function facetOptions(
       {options.map((option) => (
         <option key={option.value} value={option.value}>
           {option.label} · {option.count}
-          {selected === option.value ? ' ✓' : ''}
         </option>
       ))}
     </>
   );
 }
 
-function materialCard(item: PublicCatalogMaterial): React.JSX.Element {
+function categoryOptions(options: readonly PublicCatalogCategoryFacet[]): React.JSX.Element {
+  return (
+    <>
+      <option value="">Все категории</option>
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {`${'— '.repeat(option.depth)}${option.label} · ${option.count}`}
+        </option>
+      ))}
+    </>
+  );
+}
+
+function catalogHref(
+  query: PublicCatalogQuery,
+  overrides: Readonly<Record<string, string | undefined>>,
+): string {
+  const parameters = catalogPublicSearchParameters(query, overrides);
+  const value = parameters.toString();
+  return value.length === 0 ? '/catalog' : `/catalog?${value}`;
+}
+
+function materialCard(item: PublicCatalogMaterial, sequence: number): React.JSX.Element {
   return (
     <article className="catalog-card" key={item.id}>
-      <div className="catalog-card-image">
-        <Image
-          alt={`${item.materialName}, ${item.color?.name ?? item.name}`}
-          height={item.media.height}
-          sizes="(max-width: 720px) 100vw, (max-width: 1120px) 50vw, 33vw"
-          src={item.media.url}
-          unoptimized
-          width={item.media.width}
-        />
-        <div className="catalog-card-index" aria-hidden="true">
-          {item.article.slice(-4)}
-        </div>
-      </div>
-      <div className="catalog-card-copy">
-        <div className="catalog-card-kicker">
-          <span>{item.category.name}</span>
-          <span>{item.system?.name ?? 'Система уточняется'}</span>
-        </div>
-        <h2>{item.materialName}</h2>
-        <p className="catalog-card-variant">
-          {item.color?.name ?? item.name} · арт. {item.article}
-        </p>
-        {item.description === null ? null : (
-          <p className="catalog-card-description">{item.description}</p>
-        )}
-        <div className="catalog-card-tags" aria-label="Свойства материала">
-          {item.isBlackout ? <span>Blackout</span> : null}
-          {item.isZebra ? <span>Зебра</span> : null}
-          {item.widthMm === null ? null : <span>ширина {item.widthMm / 10} см</span>}
-        </div>
-        <div className="catalog-card-footer">
-          <div>
-            <strong>{priceLabel(item)}</strong>
-            <small>Базовая цена материала, не расчёт изделия</small>
-          </div>
+      <Link aria-label={`Открыть ${item.name}`} href={`/catalog/${item.slug}`}>
+        <div className="catalog-card-image">
+          <Image
+            alt={`${item.materialName}, ${item.color?.name ?? item.name}`}
+            height={item.media.height}
+            sizes="(max-width: 720px) 100vw, (max-width: 1120px) 50vw, 33vw"
+            src={item.media.url}
+            unoptimized
+            width={item.media.width}
+          />
+          <span className="catalog-card-index" aria-hidden="true">
+            {String(sequence).padStart(2, '0')}
+          </span>
           <span
             className={`catalog-availability catalog-availability-${item.availability.toLowerCase()}`}
           >
             {availabilityLabel(item.availability)}
           </span>
         </div>
-      </div>
+        <div className="catalog-card-copy">
+          <div className="catalog-card-kicker">
+            <span>{item.category.name}</span>
+            <span>{item.system?.name ?? 'Система уточняется'}</span>
+          </div>
+          <div className="catalog-card-title-row">
+            <div>
+              <h2>{item.materialName}</h2>
+              <p>
+                {item.color?.name ?? item.name} · арт. {item.article}
+              </p>
+            </div>
+            <span aria-hidden="true">↗</span>
+          </div>
+          <div className="catalog-card-tags" aria-label="Свойства материала">
+            {item.isBlackout ? <span>Blackout</span> : null}
+            {item.isZebra ? <span>День–ночь</span> : null}
+            {item.widthMm === null ? null : <span>ширина {item.widthMm / 10} см</span>}
+          </div>
+          <div className="catalog-card-footer">
+            <strong>{priceLabel(item)}</strong>
+            <small>Базовая цена материала, не расчёт изделия</small>
+          </div>
+        </div>
+      </Link>
     </article>
   );
-}
-
-function resetHref(): string {
-  return '/catalog';
-}
-
-function nextHref(query: PublicCatalogQuery, cursor: string): string {
-  return `/catalog?${catalogPublicSearchParameters(query, { cursor }).toString()}`;
 }
 
 function hasFilters(query: PublicCatalogQuery): boolean {
@@ -137,7 +158,8 @@ function hasFilters(query: PublicCatalogQuery): boolean {
     query.color !== undefined ||
     query.availability !== undefined ||
     query.blackout ||
-    query.zebra
+    query.zebra ||
+    query.sort !== 'featured'
   );
 }
 
@@ -166,166 +188,11 @@ function CatalogEmpty({ filtered }: { readonly filtered: boolean }): React.JSX.E
           : 'Здесь появятся только материалы из одобренной и активированной локальной версии.'}
       </p>
       {filtered ? (
-        <Link className="catalog-text-link" href={resetHref()}>
+        <Link className="catalog-text-link" href="/catalog">
           Сбросить фильтры
         </Link>
       ) : null}
     </section>
-  );
-}
-
-export default async function CatalogPage({
-  searchParams,
-}: CatalogPageProps): Promise<React.JSX.Element> {
-  const rawParameters = await searchParams;
-  let query: PublicCatalogQuery;
-  try {
-    query = parseCatalogPublicQuery(rawParameters);
-  } catch (error) {
-    if (!(error instanceof CatalogPublicQueryError)) throw error;
-    return (
-      <main className="catalog-shell">
-        <CatalogHeader />
-        <section className="catalog-state catalog-state-error">
-          <span>Некорректный запрос</span>
-          <h1>Фильтры не удалось применить</h1>
-          <p>Ссылка повреждена или устарела. Вернитесь к началу каталога.</p>
-          <Link className="catalog-text-link" href={resetHref()}>
-            Открыть каталог
-          </Link>
-        </section>
-      </main>
-    );
-  }
-
-  let page: CatalogPublicPage | null = null;
-  let unavailable = false;
-  try {
-    const snapshot = await getWebCatalogRead().getPublicCatalog();
-    page = selectCatalogPublicPage(snapshot, query, getWebCatalogSigningKey());
-  } catch (error) {
-    if (error instanceof CatalogPublicQueryError) {
-      return (
-        <main className="catalog-shell">
-          <CatalogHeader />
-          <section className="catalog-state catalog-state-error">
-            <span>Ссылка устарела</span>
-            <h1>Страница каталога изменилась</h1>
-            <p>Активная версия или набор фильтров обновились. Откройте каталог заново.</p>
-            <Link className="catalog-text-link" href={resetHref()}>
-              Обновить каталог
-            </Link>
-          </section>
-        </main>
-      );
-    }
-    if (error instanceof CatalogReadError) unavailable = true;
-    else throw error;
-  }
-
-  return (
-    <main className="catalog-shell">
-      <CatalogHeader />
-      <section className="catalog-hero" aria-labelledby="catalog-title">
-        <div>
-          <p className="catalog-eyebrow">Пилотная коллекция · AMIGO</p>
-          <h1 id="catalog-title">Материалы, которые управляют светом</h1>
-        </div>
-        <div className="catalog-hero-note">
-          <span>
-            {page?.version === null || page === null ? '—' : `v${page.version.versionNumber}`}
-          </span>
-          <p>
-            Только локально сохранённые изображения и проверенная активная версия — без hotlink и
-            live-запросов к поставщику.
-          </p>
-        </div>
-      </section>
-
-      <section className="catalog-filter-panel" aria-label="Поиск и фильтры каталога">
-        <form action="/catalog" className="catalog-filter-form" method="get">
-          <label className="catalog-search-field">
-            <span>Поиск</span>
-            <input
-              defaultValue={query.q}
-              maxLength={80}
-              name="q"
-              placeholder="Название, цвет или артикул"
-              type="search"
-            />
-          </label>
-          <label>
-            <span>Категория</span>
-            <select defaultValue={query.category ?? ''} name="category">
-              {facetOptions(page?.facets.categories ?? [], query.category, 'Все категории')}
-            </select>
-          </label>
-          <label>
-            <span>Система</span>
-            <select defaultValue={query.system ?? ''} name="system">
-              {facetOptions(page?.facets.systems ?? [], query.system, 'Все системы')}
-            </select>
-          </label>
-          <label>
-            <span>Цвет</span>
-            <select defaultValue={query.color ?? ''} name="color">
-              {facetOptions(page?.facets.colors ?? [], query.color, 'Все цвета')}
-            </select>
-          </label>
-          <label>
-            <span>Наличие</span>
-            <select defaultValue={query.availability ?? ''} name="availability">
-              {facetOptions(page?.facets.availability ?? [], query.availability, 'Любое наличие')}
-            </select>
-          </label>
-          <fieldset className="catalog-feature-field">
-            <legend>Особенности</legend>
-            <label>
-              <input defaultChecked={query.blackout} name="blackout" type="checkbox" value="true" />
-              Blackout
-            </label>
-            <label>
-              <input defaultChecked={query.zebra} name="zebra" type="checkbox" value="true" />
-              Зебра
-            </label>
-          </fieldset>
-          <button type="submit">Показать</button>
-          {hasFilters(query) ? (
-            <Link className="catalog-reset-link" href={resetHref()}>
-              Сбросить
-            </Link>
-          ) : null}
-        </form>
-      </section>
-
-      <div className="catalog-results-heading" aria-live="polite">
-        <p>
-          <strong>{page?.total ?? 0}</strong> {page?.total === 1 ? 'материал' : 'материалов'}
-        </p>
-        <span>Цена отображается только при наличии активной PriceVersion</span>
-      </div>
-
-      {unavailable ? <CatalogUnavailable /> : null}
-      {!unavailable && page !== null && page.items.length === 0 ? (
-        <CatalogEmpty filtered={page.version !== null && hasFilters(query)} />
-      ) : null}
-      {!unavailable && page !== null && page.items.length > 0 ? (
-        <section className="catalog-grid" aria-label="Материалы">
-          {page.items.map(materialCard)}
-        </section>
-      ) : null}
-
-      {page?.nextCursor === null || page?.nextCursor === undefined ? null : (
-        <nav className="catalog-pagination" aria-label="Пагинация каталога">
-          <Link href={nextHref(query, page.nextCursor)}>Следующие материалы</Link>
-        </nav>
-      )}
-
-      <footer className="catalog-footer">
-        <p>PROJECT_NAME · Phase 1B.1 catalog pilot</p>
-        <p>Публичная витрина не запускает расчёт, конфигуратор или оформление заказа.</p>
-      </footer>
-    </main>
   );
 }
 
@@ -340,5 +207,261 @@ function CatalogHeader(): React.JSX.Element {
       </Link>
       <span>Каталог материалов</span>
     </header>
+  );
+}
+
+function CatalogCategoryRail({
+  categories,
+  query,
+}: {
+  readonly categories: readonly PublicCatalogCategoryFacet[];
+  readonly query: PublicCatalogQuery;
+}): React.JSX.Element {
+  return (
+    <nav className="catalog-category-rail" aria-label="Иерархия категорий">
+      <div>
+        <span>Коллекции</span>
+        <strong>{categories.length}</strong>
+      </div>
+      <Link
+        aria-current={query.category === undefined ? 'page' : undefined}
+        href={catalogHref(query, { category: undefined, cursor: undefined })}
+      >
+        <span>Все материалы</span>
+      </Link>
+      {categories.map((category) => (
+        <Link
+          aria-current={query.category === category.value ? 'page' : undefined}
+          data-depth={Math.min(category.depth, 4)}
+          href={catalogHref(query, { category: category.value, cursor: undefined })}
+          key={category.value}
+        >
+          <span>{category.label}</span>
+          <small>{category.count}</small>
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
+function CatalogBreadcrumb({
+  category,
+  query,
+}: {
+  readonly category: PublicCatalogCategoryFacet | undefined;
+  readonly query: PublicCatalogQuery;
+}): React.JSX.Element | null {
+  if (category === undefined) return null;
+  return (
+    <nav className="catalog-breadcrumb" aria-label="Выбранная категория">
+      <Link href={catalogHref(query, { category: undefined, cursor: undefined })}>Каталог</Link>
+      {category.path.map((segment) => (
+        <span key={segment.id}>
+          <span aria-hidden="true">/</span>
+          <Link href={catalogHref(query, { category: segment.slug, cursor: undefined })}>
+            {segment.name}
+          </Link>
+        </span>
+      ))}
+    </nav>
+  );
+}
+
+function invalidCatalogRequest(title: string, copy: string): React.JSX.Element {
+  return (
+    <main className="catalog-shell">
+      <CatalogHeader />
+      <section className="catalog-state catalog-state-error">
+        <span>Ссылка не принята</span>
+        <h1>{title}</h1>
+        <p>{copy}</p>
+        <Link className="catalog-text-link" href="/catalog">
+          Открыть каталог
+        </Link>
+      </section>
+    </main>
+  );
+}
+
+export default async function CatalogPage({
+  searchParams,
+}: CatalogPageProps): Promise<React.JSX.Element> {
+  const rawParameters = await searchParams;
+  let query: PublicCatalogQuery;
+  try {
+    query = parseCatalogPublicQuery(rawParameters);
+  } catch (error) {
+    if (!(error instanceof CatalogPublicQueryError)) throw error;
+    return invalidCatalogRequest(
+      'Фильтры не удалось применить',
+      'Ссылка повреждена или содержит неподдерживаемый фильтр.',
+    );
+  }
+
+  let page: CatalogPublicPage | null = null;
+  let unavailable = false;
+  try {
+    const snapshot = await getWebCatalogRead().getPublicCatalog();
+    page = selectCatalogPublicPage(snapshot, query, getWebCatalogSigningKey());
+  } catch (error) {
+    if (error instanceof CatalogPublicQueryError) {
+      return invalidCatalogRequest(
+        'Страница каталога изменилась',
+        'Активная версия или набор фильтров обновились. Откройте каталог заново.',
+      );
+    }
+    if (error instanceof CatalogReadError) unavailable = true;
+    else throw error;
+  }
+
+  const selectedCategory = page?.facets.categories.find(
+    (category) => category.value === query.category,
+  );
+
+  return (
+    <main className="catalog-shell">
+      <CatalogHeader />
+      <section className="catalog-hero" aria-labelledby="catalog-title">
+        <div className="catalog-hero-copy">
+          <p className="catalog-eyebrow">Активная коллекция · AMIGO</p>
+          <h1 id="catalog-title">
+            Свет сначала —
+            <br />
+            материал потом
+          </h1>
+          <p>
+            Изучайте ткани, цвета и системы по задаче: мягко рассеять день, создать приватность или
+            затемнить комнату.
+          </p>
+        </div>
+        <aside className="catalog-hero-note" aria-label="Статус каталога">
+          <span>
+            {page?.version === null || page === null ? '—' : `v${page.version.versionNumber}`}
+          </span>
+          <strong>{page?.total ?? 0}</strong>
+          <small>материалов в текущей выборке</small>
+          <p>
+            {page?.version === null || page === null
+              ? 'Ожидается активация проверенной локальной версии.'
+              : `Версия от ${dateFormatter.format(new Date(page.version.activatedAt))}. Изображения хранятся локально.`}
+          </p>
+        </aside>
+      </section>
+
+      <section className="catalog-workbench" aria-label="Навигация и фильтры">
+        <CatalogCategoryRail categories={page?.facets.categories ?? []} query={query} />
+        <div className="catalog-filter-panel">
+          <div className="catalog-filter-heading">
+            <div>
+              <span>Фильтр коллекции</span>
+              <strong>Найдите свой материал</strong>
+            </div>
+            {hasFilters(query) ? (
+              <Link className="catalog-reset-link" href="/catalog">
+                Сбросить всё
+              </Link>
+            ) : null}
+          </div>
+          <form action="/catalog" className="catalog-filter-form" method="get">
+            <label className="catalog-search-field">
+              <span>Поиск</span>
+              <input
+                defaultValue={query.q}
+                maxLength={80}
+                name="q"
+                placeholder="Ткань, цвет или артикул"
+                type="search"
+              />
+            </label>
+            <label>
+              <span>Категория</span>
+              <select defaultValue={query.category ?? ''} name="category">
+                {categoryOptions(page?.facets.categories ?? [])}
+              </select>
+            </label>
+            <label>
+              <span>Система</span>
+              <select defaultValue={query.system ?? ''} name="system">
+                {facetOptions(page?.facets.systems ?? [], 'Все системы')}
+              </select>
+            </label>
+            <label>
+              <span>Цвет</span>
+              <select defaultValue={query.color ?? ''} name="color">
+                {facetOptions(page?.facets.colors ?? [], 'Все цвета')}
+              </select>
+            </label>
+            <label>
+              <span>Наличие</span>
+              <select defaultValue={query.availability ?? ''} name="availability">
+                {facetOptions(page?.facets.availability ?? [], 'Любое наличие')}
+              </select>
+            </label>
+            <label>
+              <span>Сортировка</span>
+              <select defaultValue={query.sort} name="sort">
+                <option value="featured">Сначала рекомендуемые</option>
+                <option value="name-asc">По названию</option>
+                <option value="price-asc">Цена: сначала ниже</option>
+                <option value="price-desc">Цена: сначала выше</option>
+              </select>
+            </label>
+            <fieldset className="catalog-feature-field">
+              <legend>Свойства</legend>
+              <label>
+                <input
+                  defaultChecked={query.blackout}
+                  name="blackout"
+                  type="checkbox"
+                  value="true"
+                />
+                Blackout
+              </label>
+              <label>
+                <input defaultChecked={query.zebra} name="zebra" type="checkbox" value="true" />
+                День–ночь
+              </label>
+            </fieldset>
+            <button type="submit">Показать</button>
+          </form>
+        </div>
+      </section>
+
+      <CatalogBreadcrumb category={selectedCategory} query={query} />
+
+      <div className="catalog-results-heading" aria-live="polite">
+        <div>
+          <span>{selectedCategory?.label ?? 'Все материалы'}</span>
+          <p>
+            <strong>{page?.total ?? 0}</strong> в активной версии
+          </p>
+        </div>
+        <p>Цена материала не является расчётом готового изделия.</p>
+      </div>
+
+      {unavailable ? <CatalogUnavailable /> : null}
+      {!unavailable && page !== null && page.items.length === 0 ? (
+        <CatalogEmpty filtered={page.version !== null && hasFilters(query)} />
+      ) : null}
+      {!unavailable && page !== null && page.items.length > 0 ? (
+        <section className="catalog-grid" aria-label="Материалы">
+          {page.items.map((item, index) => materialCard(item, index + 1))}
+        </section>
+      ) : null}
+
+      {page?.nextCursor === null || page?.nextCursor === undefined ? null : (
+        <nav className="catalog-pagination" aria-label="Пагинация каталога">
+          <span>В этой выборке есть ещё материалы</span>
+          <Link href={catalogHref(query, { cursor: page.nextCursor })}>
+            Следующая страница <span aria-hidden="true">→</span>
+          </Link>
+        </nav>
+      )}
+
+      <footer className="catalog-footer">
+        <p>PROJECT_NAME · Phase 1B.2 full catalog</p>
+        <p>Витрина не запускает расчёт, конфигуратор или оформление заказа.</p>
+      </footer>
+    </main>
   );
 }

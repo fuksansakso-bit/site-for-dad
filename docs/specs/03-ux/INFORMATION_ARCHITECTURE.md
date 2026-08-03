@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Draft 0B — route/content hierarchy defined |
-| Версия | 0.1.0 |
-| Дата | 2026-08-02 |
+| Статус | Phase 1B.2 public catalog route hierarchy refined; later destinations remain gated |
+| Версия | 0.2.0 |
+| Дата | 2026-08-03 |
 | Product flows | [USER_FLOWS.md](../01-product/USER_FLOWS.md) |
 | Screen detail | [SCREEN_SPECS.md](SCREEN_SPECS.md) |
 
@@ -28,15 +28,18 @@ IA makes catalog discovery, configuration, visualization and local contact under
 - **IA-SPEC-010 — MUST:** account/admin routes are clearly separate from public commerce navigation and require authorization.
 - **IA-SPEC-011 — MUST:** route change moves accessibility focus to meaningful page heading/main region and preserves intentional task state.
 - **IA-SPEC-012 — MUST:** all dynamic/filter/visual surfaces have loading, empty, error, offline/degraded and unauthorized states.
+- **IA-SPEC-013 — MUST:** during Phase 1B.2 an approved category subtree is a shareable `/catalog` query state and an approved material uses canonical `/catalog/{materialSlug}` detail. The slug is a public alias rather than authority; missing/retired aliases recover to the catalog, and future family/system routes MUST be introduced without silently changing an existing material-link meaning.
 
 ## 3. Public sitemap
 
 | Destination | Purpose | Primary CTA | Key child/state |
 |---|---|---|---|
 | `/` | Value, partner trust, category entry, local services | `Подобрать жалюзи` | Starfield skip → hero → categories → how it works → portfolio/examples → service/contact |
-| `/catalog` | Browse/search/filter dynamic assortment | `Настроить` | Category filters, readiness, zero results |
-| `/catalog/{family}` | Family overview and source-backed systems | `Выбрать систему` | Materials/examples/help |
-| `/catalog/{family}/{system}` | System/model detail | `Настроить изделие` | Compatibility/readiness/price status |
+| `/catalog` | Browse/search/filter dynamic active assortment | `Открыть материал` in Phase 1B.2 | Category hierarchy/query, readiness, sort/cursor, zero results |
+| `/catalog?category={categorySlug}` | Shareable approved category subtree | `Открыть материал` | Breadcrumb/current category, descendant results, filters |
+| `/catalog/{materialSlug}` | Active material variant detail | `Вернуться к категории` / copy link | Local media, article, safe facts, price/availability/version, not-found |
+| `/catalog/families/{family}` | Future family overview after its feature gate | `Выбрать систему` | Materials/examples/help; not implemented in Phase 1B.2 |
+| `/catalog/families/{family}/{system}` | Future system/model detail after its feature gate | `Настроить изделие` | Compatibility/readiness/price status; not implemented in Phase 1B.2 |
 | `/materials` | Cross-catalog material discovery where useful | `Использовать в конфигурации` | Search, facets, variant detail |
 | `/configurator/{draftRef?}` | Step-by-step configuration | `Рассчитать` / next step | Validation/manual review/price status |
 | `/preview/{projectRef?}` | Standard demonstration interior | `Добавить в проект` | Scene/product controls/export |
@@ -143,3 +146,4 @@ Dependencies: all product/domain specs, screen/responsive/accessibility/content/
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Созданы public/account/admin sitemaps, adaptive navigation, task paths, state/error IA and trust hierarchy. |
+| 0.2.0 | 2026-08-03 | Refined Phase 1B.2 catalog IA to shareable category-query states and canonical material detail links while namespacing still-gated future family/system routes. |

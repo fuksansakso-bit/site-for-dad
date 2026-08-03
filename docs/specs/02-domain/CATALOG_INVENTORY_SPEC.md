@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1B.2 full source review/activation, transactional overlays and full admin inventory projection implemented |
-| Версия | 0.9.0 |
+| Статус | Phase 1B.2 full source review/activation, transactional overlays and full admin/public inventory projections implemented |
+| Версия | 0.10.0 |
 | Дата | 2026-08-03 |
 | Sources | [EXTERNAL_SOURCES.md](../../00-global/EXTERNAL_SOURCES.md) |
 | Rights | [ASSET_RIGHTS_REGISTER.md](../../00-global/ASSET_RIGHTS_REGISTER.md) |
@@ -121,6 +121,7 @@ Dimension constraints use millimetres and square metres conceptually but exact n
 - **CAT-INV-031 — MUST:** catalog and price candidate approval requires an append-only, checksum-bound review history in which every applicable difference is explicitly `APPROVED`; `DEFERRED` or selected `REJECTED` results remain visible and block approval until a later explicit review resolves them, while all-scope `REJECTED` terminally rejects that candidate.
 - **CAT-INV-032 — MUST:** bulk category-subtree, typed-filter and explicit-selection commands MAY change only independently owned material-variant visibility, manual-review, availability and publication overlays before candidate composition. They revalidate exact source/run/candidate and current state, apply atomically with immutable before/after evidence, and never mutate source identity/data, base price, local description/order/notes or local price override.
 - **CAT-INV-033 — MUST:** the authorized administrative inventory projection represents the complete dynamic category hierarchy and all normalized source variants for its selected source independently of public activation and the historical Phase 1B.1 allowlist. It exposes source facts and Business Owner overlays as separate fields, uses bounded server-side filters/pages and never turns a staged, hidden, unreviewed or source-removed entity into public content.
+- **CAT-INV-034 — MUST:** the authorized public inventory projection exposes the complete hierarchy, linked systems and eligible material variants only from one compatible `ACTIVE/PUBLIC` immutable `CatalogVersion`/`PriceVersion` composition. Search, descendant-category filtering, system/color/availability/property filters, stable sort/cursor navigation, material detail and media delivery MUST resolve against that same composition; staged, hidden, unreviewed, unpublished, source-removed or runtime AMIGO data never enters the response.
 
 ## 9. Core flows and state transitions
 
@@ -172,7 +173,7 @@ Catalog public projection excludes partner credentials, internal notes, source t
 
 Primary AC: `AC-CATALOG-001`, `AC-CATALOG-DYNAMIC-001`, `AC-AMIGO-PARITY-001`, `AC-ASSET-MAP-001`, `AC-ADMIN-001`.
 
-Tests: unique IDs/aliases; parent cycle; new price category `X`; unknown property; rename/move/split/merge; publication readiness matrix; missing/wrong asset; compatibility conflict; dimension boundary tables; stale availability; source removal; concurrent edit; historical quote after retirement; source outage and rollback.
+Tests: unique IDs/aliases; parent cycle; new price category `X`; unknown property; rename/move/split/merge; publication readiness matrix; missing/wrong asset; compatibility conflict; dimension boundary tables; stale availability; source removal; concurrent edit; historical quote after retirement; source outage and rollback; active hierarchy/descendant filters; filter-bound cursors; material detail/media pinned to the exact active catalog and price pair.
 
 The active public baseline remains the reviewed Phase 1B.1 32-variant version until a complete Phase 1B.2 candidate independently passes manifest/coverage, local overlay review and explicit activation. Phase 1B.2 staging MAY contain the discovered 28-category/56-system/9-model/1655-variant source inventory, full typed media mappings and material/model price revisions without exposing any of it. The public projection excludes any entry unless visibility is `VISIBLE`, manual review is `APPROVED`, publication is `PUBLISHED`, availability is a known allowed state, price is explicit or safely `PRICE_ON_REQUEST`, and primary media has permitted rights plus `PUBLICATION_APPROVED`. Local override takes precedence only inside the pinned composition; source price history remains unchanged. Missing active version is an empty unpublished catalog, while database or object-integrity failure is a degraded state and never falls back to AMIGO/staging.
 
@@ -184,7 +185,7 @@ Risks: text-key merges, auto-publication, unknown-as-positive, mismapped images,
 
 ## 15. Связанные требования и история
 
-Links: `FR-CATALOG-*`, `FR-MATERIAL-*`, `FR-VARIANT-*`, `AMIGO-SYNC-*`, `ASSET-*`, `PRICING-*`, `CAT-INV-001`–`033`.
+Links: `FR-CATALOG-*`, `FR-MATERIAL-*`, `FR-VARIANT-*`, `AMIGO-SYNC-*`, `ASSET-*`, `PRICING-*`, `CAT-INV-001`–`034`.
 
 | Версия | Дата | Изменение |
 |---|---|---|
@@ -197,3 +198,4 @@ Links: `FR-CATALOG-*`, `FR-MATERIAL-*`, `FR-VARIANT-*`, `AMIGO-SYNC-*`, `ASSET-*
 | 0.7.0 | 2026-08-03 | Required missing-entry-only inquiry publication preparation, preservation of every existing Business Owner overlay and explicit checksum-bound review of all catalog/price differences before candidate approval. |
 | 0.8.0 | 2026-08-03 | Added exact candidate-bound category-subtree/filter/selected bulk local-overlay controls with atomic apply, stale-preview rejection and immutable per-target evidence while preserving source and other owner fields. |
 | 0.9.0 | 2026-08-03 | Required and recorded the complete dynamic admin inventory projection with hierarchy facets, bounded server filtering/pagination and strict separation from public activation and the historical pilot allowlist. |
+| 0.10.0 | 2026-08-03 | Required the complete active-only public hierarchy, descendant-aware filtering, stable sort/cursors and material detail/media to resolve from one compatible catalog/price composition without AMIGO or staging reads. |

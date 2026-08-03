@@ -25,15 +25,23 @@ function manifest(overrides: Record<string, unknown> = {}) {
   return {
     composition: [
       {
-        entity: { id: ids.category, name: 'Рулонные жалюзи', slug: 'rulonnye-zhalyuzi' },
+        entity: {
+          id: ids.category,
+          name: 'Рулонные жалюзи',
+          parentId: null,
+          slug: 'rulonnye-zhalyuzi',
+          sortOrder: 4,
+        },
         entityType: 'CATEGORY',
         overlay: publishedOverlay,
       },
       {
         entity: {
+          categoryId: ids.category,
           id: ids.system,
           name: 'Рулонная система',
           slug: 'rulonnaya-sistema',
+          sortOrder: 2,
         },
         entityType: 'SYSTEM',
         overlay: publishedOverlay,
@@ -105,6 +113,17 @@ describe('public catalog projection', () => {
     const snapshot = buildCatalogPublicSnapshot(input(manifest()));
 
     expect(snapshot.items).toHaveLength(1);
+    expect(snapshot.categories).toEqual([
+      {
+        depth: 0,
+        id: ids.category,
+        name: 'Рулонные жалюзи',
+        parentId: null,
+        path: [{ id: ids.category, name: 'Рулонные жалюзи', slug: 'rulonnye-zhalyuzi' }],
+        slug: 'rulonnye-zhalyuzi',
+        sortOrder: 4,
+      },
+    ]);
     expect(snapshot.items[0]).toMatchObject({
       availability: 'IN_STOCK',
       category: { id: ids.category },

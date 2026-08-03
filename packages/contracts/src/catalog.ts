@@ -19,6 +19,7 @@ export const publicCatalogQuerySchema = z
     cursor: z.string().min(16).max(1_024).optional(),
     limit: z.coerce.number().int().min(1).max(50).default(12),
     q: z.string().trim().max(80).default(''),
+    sort: z.enum(['featured', 'name-asc', 'price-asc', 'price-desc']).default('featured'),
     system: boundedSlugSchema.optional(),
     zebra: z
       .enum(['true'])
@@ -46,13 +47,42 @@ export const publicCatalogFacetOptionSchema = z
   .strict();
 export type PublicCatalogFacetOption = z.infer<typeof publicCatalogFacetOptionSchema>;
 
+export const publicCatalogCategoryPathSegmentSchema = z
+  .object({
+    id: z.uuid(),
+    name: z.string().min(1).max(256),
+    slug: boundedSlugSchema,
+  })
+  .strict();
+
+export const publicCatalogCategorySchema = z
+  .object({
+    depth: z.number().int().min(0).max(15),
+    id: z.uuid(),
+    name: z.string().min(1).max(256),
+    parentId: z.uuid().nullable(),
+    path: z.array(publicCatalogCategoryPathSegmentSchema).min(1).max(16),
+    slug: boundedSlugSchema,
+    sortOrder: z.number().int().nonnegative(),
+  })
+  .strict();
+
+export const publicCatalogCategoryFacetSchema = publicCatalogFacetOptionSchema
+  .extend({
+    depth: z.number().int().min(0).max(15),
+    parentValue: boundedSlugSchema.nullable(),
+    path: z.array(publicCatalogCategoryPathSegmentSchema).min(1).max(16),
+  })
+  .strict();
+export type PublicCatalogCategoryFacet = z.infer<typeof publicCatalogCategoryFacetSchema>;
+
 export const publicCatalogFacetsSchema = z
   .object({
     availability: z.array(publicCatalogFacetOptionSchema).max(3),
-    categories: z.array(publicCatalogFacetOptionSchema).max(32),
-    colors: z.array(publicCatalogFacetOptionSchema).max(64),
+    categories: z.array(publicCatalogCategoryFacetSchema).max(128),
+    colors: z.array(publicCatalogFacetOptionSchema).max(512),
     features: z.array(publicCatalogFacetOptionSchema).max(2),
-    systems: z.array(publicCatalogFacetOptionSchema).max(32),
+    systems: z.array(publicCatalogFacetOptionSchema).max(128),
   })
   .strict();
 export type PublicCatalogFacets = z.infer<typeof publicCatalogFacetsSchema>;
@@ -61,9 +91,7 @@ export const publicCatalogMaterialSchema = z
   .object({
     article: z.string().min(1).max(128),
     availability: z.enum(['IN_STOCK', 'OUT_OF_STOCK', 'INQUIRY_ONLY']),
-    category: z
-      .object({ id: z.uuid(), name: z.string().min(1).max(256), slug: boundedSlugSchema })
-      .strict(),
+    category: publicCatalogCategorySchema,
     color: z
       .object({
         hex: z
@@ -104,7 +132,13 @@ export const publicCatalogMaterialSchema = z
       .strict(),
     slug: boundedSlugSchema,
     system: z
-      .object({ id: z.uuid(), name: z.string().min(1).max(256), slug: boundedSlugSchema })
+      .object({
+        categoryId: z.uuid().nullable(),
+        id: z.uuid(),
+        name: z.string().min(1).max(256),
+        slug: boundedSlugSchema,
+        sortOrder: z.number().int().nonnegative(),
+      })
       .strict()
       .nullable(),
     widthMm: z.number().positive().nullable(),
@@ -125,3 +159,13 @@ export const publicCatalogResponseSchema = z
   })
   .strict();
 export type PublicCatalogResponse = z.infer<typeof publicCatalogResponseSchema>;
+
+export const publicCatalogMaterialResponseSchema = z
+  .object({
+    correlationId: z.string().min(8).max(128),
+    item: publicCatalogMaterialSchema,
+    priceVersion: publicCatalogVersionSchema,
+    version: publicCatalogVersionSchema,
+  })
+  .strict();
+export type PublicCatalogMaterialResponse = z.infer<typeof publicCatalogMaterialResponseSchema>;

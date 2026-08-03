@@ -1,11 +1,11 @@
 import {
   CatalogReadError,
   amigoPilotCatalogSourceId,
-  amigoPilotMaterialCount,
   assertCatalogAdminDifferenceQuery,
   assertCatalogAdminVariantQuery,
   buildCatalogPublicSnapshot,
   catalogReleaseStatuses,
+  maximumPublicCatalogMaterialCount,
   type CatalogActiveVersionSummary,
   type CatalogAdminBulkHistory,
   type CatalogAdminCategoryFacet,
@@ -657,7 +657,7 @@ export function createCatalogReadAdapter(environment: DatabaseEnvironment): Cata
             row.catalog_activated_at,
           ),
           manifest: row.source_manifest,
-          maximumMaterialCount: amigoPilotMaterialCount,
+          maximumMaterialCount: maximumPublicCatalogMaterialCount,
           priceVersion: mapPublicVersion(
             row.price_version_id,
             row.price_version_number,

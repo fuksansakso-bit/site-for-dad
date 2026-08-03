@@ -377,7 +377,9 @@ const compositionSql = `
         'id', category.id::text,
         'familyId', category.family_id::text,
         'name', category.name,
-        'slug', category.slug
+        'parentId', category.parent_id::text,
+        'slug', category.slug,
+        'sortOrder', category.sort_order
       ) AS entity_data
     FROM catalog_sync_item item
     JOIN source_entity source ON source.id = item.source_entity_id
@@ -395,7 +397,8 @@ const compositionSql = `
         'categoryId', system_row.category_id::text,
         'familyId', system_row.family_id::text,
         'name', system_row.name,
-        'slug', system_row.slug
+        'slug', system_row.slug,
+        'sortOrder', system_row.sort_order
       )
     FROM catalog_sync_item item
     JOIN source_entity source ON source.id = item.source_entity_id

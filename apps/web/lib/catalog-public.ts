@@ -4,9 +4,11 @@ import type { CatalogPublicMaterial, CatalogPublicSnapshot } from '@project-name
 import {
   publicCatalogMaterialSchema,
   publicCatalogQuerySchema,
+  type PublicCatalogCategoryFacet,
   type PublicCatalogFacetOption,
   type PublicCatalogFacets,
   type PublicCatalogMaterial,
+  type PublicCatalogMaterialResponse,
   type PublicCatalogQuery,
   type PublicCatalogResponse,
 } from '@project-name/contracts/catalog';
@@ -19,10 +21,18 @@ const allowedQueryKeys = new Set([
   'cursor',
   'limit',
   'q',
+  'sort',
   'system',
   'zebra',
 ]);
-const optionalEmptyQueryKeys = new Set(['availability', 'category', 'color', 'cursor', 'system']);
+const optionalEmptyQueryKeys = new Set([
+  'availability',
+  'category',
+  'color',
+  'cursor',
+  'sort',
+  'system',
+]);
 
 const availabilityLabels = {
   INQUIRY_ONLY: 'Наличие по запросу',
@@ -81,6 +91,7 @@ function normalizedQuery(query: PublicCatalogQuery): Record<string, boolean | nu
     color: query.color ?? '',
     limit: query.limit,
     q: query.q.toLocaleLowerCase('ru-RU'),
+    sort: query.sort,
     system: query.system ?? '',
     zebra: query.zebra,
   };
@@ -166,7 +177,7 @@ function matchesMaterial(
     return false;
   }
   if (skippedFilter !== 'category' && query.category !== undefined) {
-    if (item.category.slug !== query.category) return false;
+    if (!item.category.path.some((segment) => segment.slug === query.category)) return false;
   }
   if (skippedFilter !== 'system' && query.system !== undefined) {
     if (item.system?.slug !== query.system) return false;
@@ -205,10 +216,33 @@ function facetOptions(
     .sort((left, right) => left.label.localeCompare(right.label, 'ru'));
 }
 
-function publicFacets(
+function categoryFacets(
+  categories: CatalogPublicSnapshot['categories'],
   items: readonly CatalogPublicMaterial[],
+): PublicCatalogCategoryFacet[] {
+  const counts = new Map<string, number>();
+  for (const item of items) {
+    for (const segment of item.category.path) {
+      counts.set(segment.id, (counts.get(segment.id) ?? 0) + 1);
+    }
+  }
+  return categories
+    .filter((category) => (counts.get(category.id) ?? 0) > 0)
+    .map((category) => ({
+      count: counts.get(category.id) ?? 0,
+      depth: category.depth,
+      label: category.name,
+      parentValue: category.path.length < 2 ? null : (category.path.at(-2)?.slug ?? null),
+      path: [...category.path],
+      value: category.slug,
+    }));
+}
+
+function publicFacets(
+  snapshot: CatalogPublicSnapshot,
   query: PublicCatalogQuery,
 ): PublicCatalogFacets {
+  const items = snapshot.items;
   const forFacet = (skipped: Exclude<SkippedFilter, undefined>) =>
     items.filter((item) => matchesMaterial(item, query, skipped));
   const featureItems = forFacet('features');
@@ -229,10 +263,7 @@ function publicFacets(
       label: availabilityLabels[item.availability],
       value: item.availability,
     })),
-    categories: facetOptions(forFacet('category'), (item) => ({
-      label: item.category.name,
-      value: item.category.slug,
-    })),
+    categories: categoryFacets(snapshot.categories, forFacet('category')),
     colors: facetOptions(forFacet('color'), (item) =>
       item.color === null ? null : { label: item.color.name, value: item.color.slug },
     ),
@@ -241,6 +272,35 @@ function publicFacets(
       item.system === null ? null : { label: item.system.name, value: item.system.slug },
     ),
   };
+}
+
+function sortMaterials(
+  items: readonly CatalogPublicMaterial[],
+  sort: PublicCatalogQuery['sort'],
+): readonly CatalogPublicMaterial[] {
+  const stableFallback = (left: CatalogPublicMaterial, right: CatalogPublicMaterial) =>
+    left.name.localeCompare(right.name, 'ru') ||
+    left.article.localeCompare(right.article, 'ru') ||
+    left.id.localeCompare(right.id);
+  return [...items].sort((left, right) => {
+    switch (sort) {
+      case 'name-asc':
+        return stableFallback(left, right);
+      case 'price-asc':
+      case 'price-desc': {
+        const leftPrice = left.price.amountMinor;
+        const rightPrice = right.price.amountMinor;
+        if (leftPrice === null && rightPrice !== null) return 1;
+        if (leftPrice !== null && rightPrice === null) return -1;
+        if (leftPrice !== null && rightPrice !== null && leftPrice !== rightPrice) {
+          return sort === 'price-asc' ? leftPrice - rightPrice : rightPrice - leftPrice;
+        }
+        return stableFallback(left, right);
+      }
+      case 'featured':
+        return left.localOrder - right.localOrder || stableFallback(left, right);
+    }
+  });
 }
 
 function publicMaterial(item: CatalogPublicMaterial, versionId: string): PublicCatalogMaterial {
@@ -296,14 +356,17 @@ export function selectCatalogPublicPage(
     };
   }
   const fingerprint = queryFingerprint(snapshot, query);
-  const filteredItems = snapshot.items.filter((item) => matchesMaterial(item, query));
+  const filteredItems = sortMaterials(
+    snapshot.items.filter((item) => matchesMaterial(item, query)),
+    query.sort,
+  );
   const offset =
     query.cursor === undefined ? 0 : decodeCursor(query.cursor, fingerprint, signingKey);
   if (offset > filteredItems.length) throw new CatalogPublicQueryError();
   const pageItems = filteredItems.slice(offset, offset + query.limit);
   const nextOffset = offset + pageItems.length;
   return {
-    facets: publicFacets(snapshot.items, query),
+    facets: publicFacets(snapshot, query),
     items: pageItems.map((item) => publicMaterial(item, snapshot.catalogVersion.id)),
     limit: query.limit,
     nextCursor:
@@ -336,6 +399,7 @@ export function catalogPublicSearchParameters(
   if (query.availability !== undefined) parameters.set('availability', query.availability);
   if (query.blackout) parameters.set('blackout', 'true');
   if (query.zebra) parameters.set('zebra', 'true');
+  if (query.sort !== 'featured') parameters.set('sort', query.sort);
   if (query.limit !== 12) parameters.set('limit', String(query.limit));
   for (const [key, value] of Object.entries(overrides)) {
     if (!allowedQueryKeys.has(key)) throw new CatalogPublicQueryError();
@@ -343,6 +407,32 @@ export function catalogPublicSearchParameters(
     else parameters.set(key, value);
   }
   return parameters;
+}
+
+export type CatalogPublicMaterialPage = Omit<PublicCatalogMaterialResponse, 'correlationId'>;
+
+export function selectCatalogPublicMaterial(
+  snapshot: CatalogPublicSnapshot | null,
+  identifier: string,
+): CatalogPublicMaterialPage | null {
+  if (snapshot === null) return null;
+  const item = snapshot.items.find(
+    (candidate) => candidate.id === identifier || candidate.slug === identifier,
+  );
+  if (item === undefined) return null;
+  return {
+    item: publicMaterial(item, snapshot.catalogVersion.id),
+    priceVersion: {
+      activatedAt: snapshot.priceVersion.activatedAt,
+      id: snapshot.priceVersion.id,
+      versionNumber: snapshot.priceVersion.versionNumber,
+    },
+    version: {
+      activatedAt: snapshot.catalogVersion.activatedAt,
+      id: snapshot.catalogVersion.id,
+      versionNumber: snapshot.catalogVersion.versionNumber,
+    },
+  };
 }
 
 export function catalogPublicEtag(page: CatalogPublicPage): string {

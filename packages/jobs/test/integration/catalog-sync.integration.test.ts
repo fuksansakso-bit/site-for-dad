@@ -1229,6 +1229,28 @@ describe.sequential('catalog synchronization pipeline', () => {
           AS price_active
     `);
     expect(active.rows[0]).toEqual({ catalog_active: '1', price_active: '1' });
+    const publicSnapshot = await catalogRead.getPublicCatalog();
+    if (publicSnapshot === null) throw new Error('Active public catalog is unavailable.');
+    expect(publicSnapshot.categories).toEqual([
+      expect.objectContaining({
+        depth: 0,
+        parentId: null,
+        path: [expect.objectContaining({ slug: expect.stringMatching(/^amigo-category-/) })],
+        sortOrder: 0,
+      }),
+    ]);
+    expect(publicSnapshot.systems).toEqual([
+      expect.objectContaining({
+        categoryId: publicSnapshot.categories[0]?.id,
+        sortOrder: 0,
+      }),
+    ]);
+    expect(publicSnapshot.items).toEqual([
+      expect.objectContaining({
+        article: 'AMIGO-JOBS-1001',
+        category: expect.objectContaining({ path: [expect.any(Object)] }),
+      }),
+    ]);
   });
 
   it('does not duplicate normalized identities or immutable source prices on a repeat import', async () => {

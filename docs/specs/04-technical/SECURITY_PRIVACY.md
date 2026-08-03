@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A security baseline implemented; Phase 1B.1 non-PII catalog/media/RBAC controls authorized; user media/AI/production gated |
-| Версия | 0.4.0 |
+| Статус | Phase 1A baseline and Phase 1B.1 non-PII catalog/media/RBAC controls verified; user media/AI/production gated |
+| Версия | 0.5.0 |
 | Дата | 2026-08-03 |
 | Data model | [DATA_MODEL.md](DATA_MODEL.md) |
 | Roles | [ROLES_PERMISSIONS.md](../01-product/ROLES_PERMISSIONS.md) |
@@ -140,9 +140,11 @@ Primary: `AC-SEC-001`, `AC-PRIV-001`, `AC-AUTH-001`, `AC-AI-UPLOAD-001`, `AC-VIS
 
 Tests: full authz/IDOR matrix, CSRF/XSS/injection/SSRF, headers/CORS/cache, auth/session/recovery/rate, upload/parser/polyglot/bomb, storage/public policy/signed URLs, provider callback/replay/delete, job/event idempotency, secret/PII telemetry scan, consent/version/withdrawal, retention/delete/backup restore, role/approval separation, dependency outage, supply-chain/config and incident tabletop.
 
-## 18. Phase 1A implementation record
+## 18. Implementation record
 
-Implemented controls include typed server/public configuration, fail-fast secrets, secret/artifact scanning, nonce CSP and secure headers, exact-origin/CSRF/body-size/rate-limit boundaries, safe error contracts, redacted structured telemetry, private-by-default storage, deny-by-default server authorization and synthetic session revoke/expiry. Only generated test objects and identities are used; uploads, real PII, external auth and production credentials do not exist. Evidence: [Phase 1A report](../../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
+Phase 1A controls include typed server/public configuration, fail-fast secrets, secret/artifact scanning, nonce CSP and secure headers, exact-origin/CSRF/body-size/rate-limit boundaries, safe error contracts, redacted structured telemetry, private-by-default storage, deny-by-default server authorization and synthetic session revoke/expiry. Evidence: [Phase 1A report](../../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
+
+Phase 1B.1 used real partner catalog media but no customer PII, customer upload, external identity or production credential. The bounded source transport enforced allowlisted HTTPS paths, SSRF/redirect/rate/size/MIME/dimension/decompression controls and generated object keys. OWNER and ADMIN duties remained separate; admin tokens are HttpOnly/server-side, public DTOs omit raw/source/object/credential data, media delivery rechecks MIME/length/SHA, and storage/data outages fail closed without internal detail. Anonymous list/read/write remained denied, repository and 3,354-file generated-canary artifact scans passed, and 25/25 multi-browser degraded-state scenarios passed. Evidence: [Phase 1B.1 report](../../06-plans/completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md).
 
 ## 19. Dependencies, risks and open questions
 
@@ -156,3 +158,4 @@ Dependencies: all specs, legal review, provider/hosting/storage/auth/AI ADR/eval
 | 0.2.0 | 2026-08-02 | Recorded verified synthetic Foundation controls while retaining all PII/media/legal/provider production gates. |
 | 0.3.0 | 2026-08-02 | Added Phase 1B.1 non-PII catalog/media security boundary without enabling user media or production providers. |
 | 0.4.0 | 2026-08-03 | Applied local VersityGW loopback/all-private/environment-secret/log-redaction controls from `OWNER-DECISION-011`. |
+| 0.5.0 | 2026-08-03 | Recorded verified Phase 1B.1 SSRF/media integrity, role separation, fail-closed public delivery, secret scans and no-PII/no-production boundary. |

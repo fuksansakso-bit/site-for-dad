@@ -160,7 +160,7 @@ The provider-neutral `ci:verify` pipeline passed 9/9 stages in the working tree 
 
 ### 13.1. Phase 1B.1 storage gate evidence
 
-On Windows 11 with Docker Desktop 4.84.0 / Engine 29.6.2, digest-pinned VersityGW `v1.4.1` passed 15/15 automated contract cases (86.45 s, full harness exit 0). The size matrix passed byte-for-byte; real AMIGO JPEG SHA-256 was `ac86fc976afc2063cc97e1528611c978a348f357d26c8fe3c59b7c23f113d0cd`. Signed read/write, path-style SigV4, multipart completion/abort, negative anonymous access, timeout/retry/unavailable mapping, concurrency/idempotence/dedup, graceful restart, Docker Desktop auto-recovery and named-volume persistence passed. This gate permits continuation of the existing media WIP but does not itself claim media import or publication success.
+On Windows 11 with Docker Desktop 4.84.0 / Engine 29.6.2, digest-pinned VersityGW `v1.4.1` passed 15/15 automated contract cases (86.45 s, full harness exit 0). The size matrix passed byte-for-byte; real AMIGO JPEG SHA-256 was `ac86fc976afc2063cc97e1528611c978a348f357d26c8fe3c59b7c23f113d0cd`. Signed read/write, path-style SigV4, multipart completion/abort, negative anonymous access, timeout/retry/unavailable mapping, concurrency/idempotence/dedup, graceful restart, Docker Desktop auto-recovery and named-volume persistence passed. This storage gate permitted continuation of the media WIP; the separate real import/publication result is recorded below.
 
 ### 13.2. Phase 1B.1 real publication and recovery evidence
 

@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A local S3 port verified; Phase 1B.1 pilot catalog media use authorized; production provider/region gated |
-| Версия | 0.4.0 |
+| Статус | Phase 1A storage port and Phase 1B.1 pilot media use verified; production provider/region gated |
+| Версия | 0.5.0 |
 | Дата | 2026-08-03 |
 | Media pipeline | [ASSET_MEDIA_PIPELINE.md](ASSET_MEDIA_PIPELINE.md) |
 | Privacy/security | [SECURITY_PRIVACY.md](SECURITY_PRIVACY.md) |
@@ -149,6 +149,8 @@ Tests: bucket/policy public exposure negative; upload grant scope/type/size/repl
 
 RustFS `1.0.0-beta.11` was removed from active local/CI configuration after Windows 11 reproduced successful 65,536/131,072-byte writes but `HTTP 500 File access denied` at 159,099/262,144 bytes and on the real-media path. VersityGW `v1.4.1@sha256:0400cb59f59da0f1cf9f7fd49505191abc348dfadf54509bf1988caaff4eb96f` passed 15/15 automated contract tests for `1`, `65,536`, `131,072`, `159,099`, `262,144`, `515,180`, `1,048,576`, `5,242,880` and `6,291,456` bytes. The allowlisted 515,180-byte AMIGO JPEG round-tripped byte-for-byte with SHA-256 `ac86fc976afc2063cc97e1528611c978a348f357d26c8fe3c59b7c23f113d0cd`; signed read/write, multipart complete/abort, negative anonymous access, graceful container restart, Docker Desktop auto-recovery and named-volume persistence passed.
 
+The completed pilot then imported 59/59 allowlisted media assets (8,340,101 bytes) for 32/32 variants and re-read every object byte-for-byte before and after a graceful full-environment restart. The controlled public route delivered all 32 primary images only from active version-pinned composition and revalidated MIME, length and SHA-256; anonymous buckets, permanent signed URLs, client credentials and hotlinks were not introduced. A CI-discovered same-key race was fixed by serializing immutable writes per endpoint/bucket/key, and the 15-case concurrency/idempotency contract plus the full 9-stage CI gate passed afterward.
+
 ## 13. Dependencies, risks and open questions
 
 Dependencies: media/AI/data/API/security/performance/observability/deployment/evaluation and storage ADR. Open: vendor/region/residency, encryption/key, private delivery pattern, exact limits/TTLs, CDN, backup/RPO/RTO, replication, provider deletion and cost. Risks: accidental public bucket, signed URL leak, incomplete deletion, restore resurrection, broad prefix delete, prod-to-test data and egress cost.
@@ -161,3 +163,4 @@ Dependencies: media/AI/data/API/security/performance/observability/deployment/ev
 | 0.2.0 | 2026-08-02 | Clarified `OWNER-DECISION-008` boundary between AMIGO image authority, PostgreSQL metadata and object-storage binary content. |
 | 0.3.0 | 2026-08-02 | Authorized bounded Phase 1B.1 use of the provider-neutral local storage port without choosing production infrastructure. |
 | 0.4.0 | 2026-08-03 | Recorded `OWNER-DECISION-011`, private VersityGW Compose/named-volume contract and passed real-image/signed/multipart/restart gate. |
+| 0.5.0 | 2026-08-03 | Recorded 59-object real pilot import/public delivery, post-restart integrity, immutable same-key race regression and final CI evidence. |

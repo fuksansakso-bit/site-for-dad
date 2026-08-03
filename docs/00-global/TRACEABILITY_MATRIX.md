@@ -4,11 +4,11 @@
 
 | Поле | Значение |
 |---|---|
-| Фаза | Phase 1A passed; only Phase 1B.1 pilot authorized/in progress |
-| Версия | 1.7.0 |
+| Фаза | Phase 1A and Phase 1B.1 passed; no later phase authorized |
+| Версия | 1.8.0 |
 | Дата | 2026-08-03, Europe/Moscow |
 | Состояние покрытия | `COVERED_WITH_VISIBLE_TBD` |
-| Главный источник требований | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.11.0 |
+| Главный источник требований | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.12.0 |
 | Feature contract | [FEATURE_SPEC.md](../specs/01-product/FEATURE_SPEC.md) |
 | Stories | [USER_STORIES.md](../specs/01-product/USER_STORIES.md) |
 | Acceptance | [ACCEPTANCE_CRITERIA.md](../specs/01-product/ACCEPTANCE_CRITERIA.md) |
@@ -137,7 +137,7 @@
 | `OWNER-DECISION-007` | `TBD-INFRA-002` | performance/observability/deployment/tests | `TS-PERF-001`; Phase 1H |
 | `OWNER-DECISION-008` | Authority split clarified; `TBD-SOURCE-AMIGO-002`, `TBD-ASSORT-002`, `TBD-PRICE-001` and asset inventory remain open | `GLOBAL_SPEC`, glossary, external/pricing/rights policies, catalog/parity/pricing/admin/content, architecture/data/sync/media/storage specs | `TS-AMIGO-SYNC-001`, `TS-CATALOG-DYNAMIC-001`, `TS-PRICE-001`, `TS-PORTFOLIO-001`; Phase 1B/1C/1F |
 | `OWNER-DECISION-009` | No TBD closed: public-serving topology, approval/no-delete/override/audit/version rules resolved; `TBD-SOURCE-AMIGO-002`, `TBD-ASSORT-002`, `TBD-PRICE-001` and asset inventory remain open | `GLOBAL_SPEC`, feature/parity/pricing, glossary, external/pricing policies, architecture, data model, AMIGO sync, specification/implementation roadmaps, quality gate, test strategy and this matrix | `TS-AMIGO-SYNC-001`, `TS-SYNC-DIFF-001`, `TS-SYNC-ROLLBACK-001`, `TS-CATALOG-DYNAMIC-001`, `TS-PRICE-001`; Phase 1B/1C, not Phase 1A implementation evidence |
-| `OWNER-DECISION-010` | No TBD closed: authorizes only frozen Phase 1B.1 pilot; full-catalog/source/formula/provider TBD remain open | `GLOBAL_SPEC`, active Phase 1B.1 plan, dated transport discovery, quality gate and scope rules | `QG-169`–`176`; real 32-ID pilot acceptance in progress |
+| `OWNER-DECISION-010` | No full-catalog/formula/provider TBD closed: authorized frozen Phase 1B.1 pilot is complete | `GLOBAL_SPEC`, stable Phase 1B.1 plan, dated transport discovery, quality gate and completion report | `QG-169`–`176`, `QG-185`–`194`; real 32-ID pilot passed |
 | `OWNER-DECISION-011` | No production TBD closed; `TBD-INFRA-010` created to preserve provider selection gate | `GLOBAL_SPEC`, ADR-0009, architecture/storage/media/security/deployment/test specs, local/CI scripts, README and dependency baseline | `STORAGE-SPEC-022`–`027`, `TEST-SPEC-019`–`021`; VersityGW 15/15 contract and Docker restart persistence passed 2026-08-03 |
 
 ## 7. Phase 0C MVP and implementation traceability
@@ -181,7 +181,16 @@ Detailed runtime versions, commit list, skipped production-only checks and accep
 |---|---|---|
 | `OWNER-DECISION-011`, `ARCH-SPEC-029/030`, `DEPLOY-SPEC-022/023` | [VersityGW Compose](../../infrastructure/local/compose.storage.yml), [Windows lifecycle](../../tooling/scripts/foundation-environment.ps1) | Exact v1.4.1 digest, loopback S3/Admin, POSIX data/versioning/IAM named volumes, graceful shutdown and Docker Desktop auto-recovery passed |
 | `STORAGE-SPEC-022`–`027`, `TEST-SPEC-019`–`021` | [S3 adapter](../../packages/storage/src/s3-object-storage.ts), [contract suite](../../packages/storage/test/integration/storage-contract.integration.test.ts), [gate runner](../../tooling/scripts/storage-integration.ps1) | 15/15; all nine sizes byte/SHA-equal; signed read/write, multipart complete/abort, private buckets, failures/concurrency/idempotence and restart persistence passed |
-| `MEDIA-PIPE-024` | Real allowlisted AMIGO JPEG gate | 515,180 bytes, SHA-256 `ac86fc976afc2063cc97e1528611c978a348f357d26c8fe3c59b7c23f113d0cd`; media WIP unblocked but not yet claimed complete |
+| `MEDIA-PIPE-024` | Real allowlisted AMIGO JPEG gate and media importer | 515,180 bytes, SHA-256 `ac86fc976afc2063cc97e1528611c978a348f357d26c8fe3c59b7c23f113d0cd`; 59/59 allowlisted assets imported and reverified after restart |
+
+### 8.2. Phase 1B.1 pilot execution evidence
+
+| Gate / behavior | Implementation | Verification / result |
+|---|---|---|
+| `QG-185`–`188`, catalog/source/version/overlay requirements | Catalog adapters/jobs, PostgreSQL source/version/business models and admin commands | Run `9bd1a4f8-e456-4617-9e16-7f5604c1c65c` completed 275/275; 32 variants, 59 media, 32 prices and 40 composition entries; OWNER-approved/ADMIN-activated CatalogVersion/PriceVersion v1 |
+| `QG-189`, `FR-CATALOG-001/016`, public-serving requirements | `/admin/catalog`, `/catalog`, material API and controlled version-pinned media route | 32 public items/primary images; allowlisted search/facets, HMAC cursor, outage/stale/unknown rejection and no source/object/credential leak passed |
+| `QG-190/191`, idempotency/recovery/storage requirements | Full lifecycle restart plus `catalog-pilot-acceptance` runner | 59 objects/8,340,101 bytes verified; historical failed run unchanged; no-op repeat created zero versions/duplicates and changed no active pointer/count |
+| `QG-192`–`194`, final quality/scope requirements | Root CI, documentation/scope/boundary/security validators and completion report | 9/9 CI stages, VersityGW 15/15, Playwright 25/25, build/scans passed; Phase 1C and production remain absent |
 
 ## 9. Coverage metrics
 
@@ -200,13 +209,13 @@ Detailed runtime versions, commit list, skipped production-only checks and accep
 | P0 classification | 61 / 61 classified; 0 unclassified |
 | Phase 1A acceptance | 10 / 10 `PLAN-1A-AC-*`; QG-149–158 passed |
 | Phase 1A automated tests | 61 unit/contract + 19 integration/recovery + 20 browser |
-| Phase 1B.1 entry | QG-169–176 and local storage recovery gate passed; real 32-ID media/publication pilot acceptance still in progress |
+| Phase 1B.1 acceptance | QG-169–194 passed; real 32-ID/59-media publication pilot and final CI completed |
 
 ## 10. Completion conditions
 
 Покрытие считается валидным, если автоматическая проверка подтверждает существование всех linked files и каждого ID, stories сохраняют полный шаблон, acceptance содержит позитивное и негативное проверяемое поведение, test strategy содержит level/preconditions/input/expected result/status, а открытые TBD не обозначены как выполненные tests.
 
-Матрица отражает завершённую Phase 1A и отдельно разрешённую Phase 1B.1 по [active plan](../06-plans/active/PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN.md). Она не объявляет pilot завершённым и не разрешает Phase 1B.2/1C+, full import или production deployment.
+Матрица отражает завершённые Phase 1A и отдельно разрешённую Phase 1B.1 по [stable plan](../06-plans/active/PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN.md) и [completion report](../06-plans/completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md). Завершение пилота не разрешает Phase 1B.2/1C+, full import или production deployment.
 
 ## 11. История изменений
 
@@ -221,3 +230,4 @@ Detailed runtime versions, commit list, skipped production-only checks and accep
 | 1.5.0 | 2026-08-02 | Добавлена цепочка `OWNER-DECISION-009` для единственного PostgreSQL public-serving source, обязательных diff/owner/admin activation, no-auto-delete, override precedence, audit/version/rollback и существующих test chains; Phase 1B hold сохранён. |
 | 1.6.0 | 2026-08-02 | `OWNER-DECISION-010`, QG-169–176, active 32-ID plan и dated transport evidence связаны как Phase 1B.1 entry; later-phase hold и незавершённый acceptance сохранены. |
 | 1.7.0 | 2026-08-03 | `OWNER-DECISION-011` связан с provider-neutral VersityGW adapter, exact contract/restart evidence и новым `TBD-INFRA-010`; production storage и Phase 1C остаются gated. |
+| 1.8.0 | 2026-08-03 | Phase 1B.1 implementation, real run/version/media/public delivery, restart/no-op recovery, QG-185–194 and final 9/9 CI evidence linked; later-phase hold preserved. |

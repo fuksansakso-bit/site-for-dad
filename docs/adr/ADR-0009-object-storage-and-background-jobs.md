@@ -60,7 +60,7 @@ Job runner MAY be stopped and pending jobs preserved/replayed. Storage provider 
 
 ## Phase 1B.1 local adapter update
 
-`OWNER-DECISION-011` сохранил внешний `StoragePort` и заменил только local/CI adapter runtime. Gate прошёл 2026-08-03: 15/15 automated cases, exact nine-size byte/SHA matrix, real 515,180-byte AMIGO JPEG SHA-256 `ac86fc976afc2063cc97e1528611c978a348f357d26c8fe3c59b7c23f113d0cd`, signed read/write, path-style SigV4, multipart completion/abort, immutable/idempotent same-key behavior, all-private negative access, graceful container restart, full Docker Desktop auto-recovery и named-volume persistence. Media WIP теперь MAY продолжаться отдельным commit; production provider остаётся `TBD-INFRA-010`.
+`OWNER-DECISION-011` сохранил внешний `StoragePort` и заменил только local/CI adapter runtime. Gate прошёл 2026-08-03: 15/15 automated cases, exact nine-size byte/SHA matrix, real 515,180-byte AMIGO JPEG SHA-256 `ac86fc976afc2063cc97e1528611c978a348f357d26c8fe3c59b7c23f113d0cd`, signed read/write, path-style SigV4, multipart completion/abort, immutable/idempotent same-key behavior, all-private negative access, graceful container restart, full Docker Desktop auto-recovery и named-volume persistence. Последующий pilot импортировал и повторно проверил 59/59 allowlisted objects (8,340,101 bytes), сохранил их после полного restart и выдал 32/32 primary images через controlled version-pinned route. Production provider остаётся `TBD-INFRA-010`.
 
 ## История
 
@@ -70,3 +70,4 @@ Job runner MAY be stopped and pending jobs preserved/replayed. Storage provider 
 | 2026-08-02 | Accepted Product Owner для Phase 1A; подтверждены отдельный Graphile worker, Windows-compatible disposable emulator и provider replacement boundary. |
 | 2026-08-02 | Phase 1A conformance verified against disposable RustFS/PostgreSQL with no real media, business jobs or provider commitment. |
 | 2026-08-03 | `OWNER-DECISION-011` вывел RustFS из активной local/CI конфигурации после воспроизводимого Windows real-image failure и выбрал local-only VersityGW Docker/POSIX named-volume adapter без production commitment. |
+| 2026-08-03 | Phase 1B.1 conformance подтвердил provider-neutral adapter на 59 real assets, signed/multipart/restart/full CI и immutable same-key race regression; выбор production provider не сделан. |

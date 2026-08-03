@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A local/CI foundation implemented; production deployment and hosting remain forbidden/unselected |
-| Версия | 0.4.0 |
+| Статус | Phase 1A and Phase 1B.1 local/CI workflows verified; production deployment and hosting remain forbidden/unselected |
+| Версия | 0.5.0 |
 | Дата | 2026-08-03 |
 | Architecture | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | Quality gate | [SPEC_QUALITY_GATE.md](../../00-global/SPEC_QUALITY_GATE.md) |
@@ -142,6 +142,8 @@ Provider-neutral CI and Windows local lifecycle are implemented and verified, in
 
 On 2026-08-03 the top-level PowerShell lifecycle started PostgreSQL unchanged and replaced only local S3 runtime with digest-pinned VersityGW. Loopback S3/Admin health, three Docker named volumes, clean graceful shutdown, automatic recovery after a full Docker Desktop restart and checksum-preserving object persistence were verified. This evidence is local-only and does not authorize production deployment.
 
+The completed Phase 1B.1 workflow then verified a full `dev:stop` → `dev` restart with PostgreSQL, VersityGW, web and worker healthy; active CatalogVersion/PriceVersion IDs, historical failed run and all 59 object hashes remained unchanged. The final exact-toolchain `ci:verify` passed 9/9 stages with Node 24.18.1, pnpm 11.18.0, PostgreSQL 18.4, Docker Engine 29.6.2, VersityGW v1.4.1 and Playwright 1.62.1. No remote CI, hosting, domain, production secret, production storage provider or deployment configuration was created.
+
 ## 15. Dependencies, risks and open questions
 
 Dependencies: architecture/data/API/sync/media/AI/storage/security/performance/observability/test strategy/evaluations/ADRs. `TBD-INFRA-002` regional matrix is resolved; open: hosting/CI/CD/runtime, environments/domains, other applicable `TBD-INFRA-*`, RPO/RTO, owners/change windows, release cadence and artifact/signing/flag platforms. Risks: environment leak, irreversible migration, incompatible rollback, unobserved canary, provider prod call from test and data/version coupling.
@@ -154,3 +156,4 @@ Dependencies: architecture/data/API/sync/media/AI/storage/security/performance/o
 | 0.2.0 | 2026-08-02 | Phase 1A-only authorization and exact future regional production evidence matrix recorded; no production deployment authorized. |
 | 0.3.0 | 2026-08-02 | Recorded verified local/CI Foundation lifecycle; production topology, credentials and regional deployment checks remain outside authorization. |
 | 0.4.0 | 2026-08-03 | Replaced active local RustFS prerequisite with reproducible VersityGW Compose/named-volume Windows workflow and retained the production provider gate. |
+| 0.5.0 | 2026-08-03 | Recorded completed Phase 1B.1 full-environment restart/persistence and exact-toolchain 9/9 CI evidence without production deployment selection. |

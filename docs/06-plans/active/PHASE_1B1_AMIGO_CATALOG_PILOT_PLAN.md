@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Plan ID | `PLAN-1B1-001` |
-| Статус | **IN PROGRESS — AUTHORIZED** |
+| Статус | **COMPLETED — PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT** |
 | Ветка | `phase/1b-amigo-catalog-pilot` |
 | Исходный commit | `943d4a2efa5e05f0d05493633cf5eb549e072a22` |
 | Проверяемый результат | Идемпотентный реальный пилот AMIGO импортирует 32 разрешённых `MaterialVariant`, их цены «от» и ограниченные media assets в локальные PostgreSQL/object storage, создаёт diff и управляемую версию, а `/catalog` и `/admin/catalog` работают только через локальный published layer. |
@@ -57,8 +57,8 @@ Allowlist содержит roller blackout (`49129`, `50772`), Zebra blackout (`
 | 8 | Business overlay и mutation APIs | COMPLETED | Owner visibility/review, inquiry-only availability, publication and local override set/remove remain separate from source facts and are pinned into immutable composition |
 | 9 | Минимальный `/admin/catalog` по design-system rules | COMPLETED | OWNER/ADMIN HttpOnly sessions, exact bulk/approval/activation commands, source/local/active separation, 32-row allowlist, history/diff and responsive browser gate passed |
 | 10 | Минимальный PostgreSQL-only `/catalog` | COMPLETED | Active Catalog/PriceVersion-only projection, allowlisted search/facets, signed cursor, controlled media delivery, hidden/out-of-stock/empty/outage states and responsive server-rendered UI implemented |
-| 11 | Реальный pilot run и полный test/CI-equivalent gate | **IN_PROGRESS** | 32 real variants/media/prices imported; build/tests/CI clean |
-| 12 | Документация, completion report и остановка | PENDING | План completed, report создан, tree clean, Phase 1C не начата |
+| 11 | Реальный pilot run и полный test/CI-equivalent gate | COMPLETED | Run `9bd1a4f8-e456-4617-9e16-7f5604c1c65c`, no-op repeat, 59-object acceptance, 25 browser scenarios and 9/9 CI stages passed |
+| 12 | Документация, completion report и остановка | COMPLETED | План completed, report создан, финальный gate пройден, Phase 1C не начата |
 
 ## 5. Commit sequence
 
@@ -72,8 +72,9 @@ Allowlist содержит roller blackout (`49129`, `50772`), Zebra blackout (`
 8. `feat: add catalog business overlays`
 9. `feat: add admin catalog pilot`
 10. `feat: add public catalog pilot`
-11. `test: verify catalog synchronization and publication`
-12. `docs: complete Phase 1B.1 pilot`
+11. `fix: serialize immutable object writes`
+12. `test: verify catalog synchronization and publication`
+13. `docs: complete Phase 1B.1 pilot`
 
 ## 6. Verification and recovery
 
@@ -83,9 +84,11 @@ Storage recovery evidence 2026-08-03: VersityGW `v1.4.1` image digest `sha256:04
 
 Media recovery evidence 2026-08-03: primary run `f9407db3-9e82-4174-9e21-87528bdd7092` and idempotency repeat `642f2bc2-387b-44fe-9d52-e05cd78e374c` reached `AWAITING_APPROVAL` without publication or activation. All 32 pilot variants have at least one local image; 59 source media objects (8,340,101 bytes) passed full object-storage download and byte/SHA verification, including the 515,180-byte AMIGO JPEG with SHA-256 `ac86fc976afc2063cc97e1528611c978a348f357d26c8fe3c59b7c23f113d0cd`. The repeat created no duplicate source identities, variants, price records, media assets or links; `audit_context.retryOfSyncRunId` preserves the lineage back to failed run `798d5513-27b1-48e3-ab8e-389eeb672db4`.
 
-Versioning and overlay implementation evidence 2026-08-03: disposable PostgreSQL integration creates one immutable catalog candidate, one immutable price candidate and exact typed differences on the first fixture run; owner bulk publication then creates separate visibility/review, safe `INQUIRY_ONLY` availability, publication/media approval and immutable composition. A synthetic local override is set and removed without changing the source price; distinct OWNER approval and ADMIN activation switch both public pointers, an identical retry creates no versions, and a changed catalog candidate is activated and atomically rolled back to its verified predecessor. Real pilot activation remains intentionally pending until the same reviewed admin flow is applied to the 32 real variants.
+Versioning and overlay implementation evidence 2026-08-03: disposable PostgreSQL integration creates one immutable catalog candidate, one immutable price candidate and exact typed differences on the first fixture run; owner bulk publication then creates separate visibility/review, safe `INQUIRY_ONLY` availability, publication/media approval and immutable composition. A synthetic local override is set and removed without changing the source price; distinct OWNER approval and ADMIN activation switch both public pointers, an identical retry creates no versions, and a changed catalog candidate is activated and atomically rolled back to its verified predecessor. The real reviewed flow activated CatalogVersion `41b039a5-951d-4de3-873e-7565e2c7e9b0` and PriceVersion `ec19a7d7-c19a-45e1-86f9-269f01007fd0`; no-op repeat `aee135bd-855a-4fb6-a8e1-2fe60e61728a` created no new version and changed no active pointer or entity count.
 
 Public catalog implementation evidence 2026-08-03: `/catalog` and `GET /api/v1/catalog/materials` read only a compatible active immutable `CatalogVersion`/`PriceVersion` pair for the Phase 1B.1 source. Search and the category/system/color/availability/blackout/zebra facets are allowlisted and computed only from published verified values; pagination cursors are HMAC-bound to exact filters and version IDs. Public DTOs omit object keys, source hashes, credentials and raw snapshots. `GET /api/v1/catalog/media/{assetId}?v={catalogVersionId}` resolves only media present in the current active composition, then revalidates stored bytes against pinned MIME/length/SHA-256 before controlled same-origin delivery. No source URL, hotlink, anonymous bucket access or later-phase CTA is used.
+
+Final acceptance evidence 2026-08-03: manual run `9bd1a4f8-e456-4617-9e16-7f5604c1c65c` completed 275/275 operations with zero errors and published the exact 32-variant pilot through separate OWNER approval and ADMIN activation. All 59 allowlisted assets (8,340,101 bytes) and all 32 public primary images passed byte/SHA verification before and after a graceful full-environment restart. The historical failed run remains unchanged, the no-op repeat created no duplicates or versions, `pnpm.cmd test:catalog-pilot` passed, and the exact-toolchain `pnpm.cmd ci:verify` passed 9/9 stages including VersityGW 15/15 and Playwright 25/25. The immutable outcome is recorded in the completion report; Phase 1B.2/1C and production remain unauthorized.
 
 ## 7. Stop conditions
 

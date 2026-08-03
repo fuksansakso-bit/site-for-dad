@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1B.1 controlled pilot media import authorized; user media/production pipeline gated |
-| Версия | 0.4.0 |
+| Статус | Phase 1B.1 controlled pilot media import verified; user media/production pipeline gated |
+| Версия | 0.5.0 |
 | Дата | 2026-08-03 |
 | Rights | [ASSET_RIGHTS_REGISTER.md](../../00-global/ASSET_RIGHTS_REGISTER.md) |
 | Storage | [STORAGE_MEDIA.md](STORAGE_MEDIA.md) |
@@ -146,6 +146,10 @@ Primary: `AC-ASSET-MAP-001`, `AC-PORTFOLIO-001`, `AC-BADGE-001`, `AC-ASSET-REVOK
 
 Tests: signature/polyglot/bomb/malware/metadata; duplicate/hash; rights/status matrix; wrong variant/role; transform format/color/alpha/crop visual regression; badge restrictions; local-vs-partner labels; publication approval invalidation; revoke graph/cache/search/renderer/export; delete idempotency; no training/public client media; telemetry scan and performance derivatives.
 
+### Phase 1B.1 execution evidence (2026-08-03)
+
+The bounded AMIGO transport processed only the frozen 32-ID allowlist with concurrency `1`, redirect/SSRF policy, declared and detected MIME checks, size/dimension/decompression limits, SHA-256 and generated immutable keys. It created 59 mapped `PARTNER_LICENSE` assets for 32/32 variants, preserved source URLs/original filenames only as governed metadata, recorded audit/sync events and produced zero item-level failures. Separate asset publication approval preceded active composition; the public surface uses no hotlink and exposes no source URL/object key. Recovery and no-op repeats created no duplicate assets or links, and all stored bytes were reverified after restart.
+
 ## 14. Dependencies, risks and open questions
 
 Dependencies: rights/source/catalog/content/storage/admin/sync/AI/security/performance. Open: approved partner export/media transport, exact attribution/brand guidelines, asset inventory, formats/quality profiles, retention/cache purge, reviewers and color-management tolerances. Risks: wrong SKU image, license scope drift, metadata PII, parser exploit, color degradation, hotlink, incomplete revoke and training misuse.
@@ -158,3 +162,4 @@ Dependencies: rights/source/catalog/content/storage/admin/sync/AI/security/perfo
 | 0.2.0 | 2026-08-02 | Added AMIGO image authority, Business Owner portfolio authority and explicit PostgreSQL metadata/object-storage binary separation from `OWNER-DECISION-008`; no import was asserted. |
 | 0.3.0 | 2026-08-02 | Authorized controlled Phase 1B.1 pilot media intake while retaining rights/publication and later-phase gates. |
 | 0.4.0 | 2026-08-03 | Added mandatory pre-import VersityGW contract gate and exact SSRF/MIME/size/dimensions/hash/dedup/item-failure requirements from `OWNER-DECISION-011`. |
+| 0.5.0 | 2026-08-03 | Recorded completed 32-variant/59-asset media intake, zero failures, publication approval, no-hotlink public delivery, deduplication and restart verification. |

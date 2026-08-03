@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A passed; только Phase 1B.1 catalog pilot письменно разрешена и выполняется |
-| Версия | 0.11.0 |
+| Статус | Phase 1A passed; Phase 1B.1 catalog pilot completed and passed; no later phase authorized |
+| Версия | 0.12.0 |
 | Дата | 2026-08-03, Europe/Moscow |
 | Владелец документа | Product Owner — владелец проекта; Business Owner — отец владельца проекта (`OWNER-DECISION-001`) |
 | Продукт | `PROJECT_NAME` до отдельного решения о бренде |
@@ -31,6 +31,7 @@
 - [Specification readiness audit](../06-plans/SPEC_READINESS_AUDIT.md)
 - [Phase 1A Foundation plan](../06-plans/active/PHASE_1A_FOUNDATION_PLAN.md)
 - [Phase 1B.1 AMIGO catalog pilot plan](../06-plans/active/PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN.md)
+- [Phase 1B.1 completion report](../06-plans/completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md)
 - [Phase 1B.1 transport discovery](../research/AMIGO_PILOT_TRANSPORT_DISCOVERY_2026-08-02.md)
 - [Правила работы](../../AGENTS.md)
 - [История изменений](../../CHANGELOG.md)
@@ -52,6 +53,7 @@
 | 0.9.0 | 2026-08-02 | Зафиксировано `OWNER-DECISION-009` «LOCAL CATALOG AS PUBLIC SOURCE OF TRUTH»: публичный runtime использует только активную одобренную локальную версию в PostgreSQL, а AMIGO остаётся upstream authority. Добавлены обязательные diff/approval/override/audit/version/rollback границы без разрешения Phase 1B. |
 | 0.10.0 | 2026-08-02 | `OWNER-DECISION-010` отдельно разрешил только Phase 1B.1: реальный 32-material AMIGO pilot через ограниченный public-page transport, local publication layer, sync/diff/media/base-price/overlay и минимальные catalog/admin surfaces; Phase 1B.2/1C+ и production остаются запрещены. |
 | 0.11.0 | 2026-08-03 | `OWNER-DECISION-011` заменил только active local/CI RustFS adapter на digest-pinned VersityGW Docker/POSIX named-volume runtime после воспроизводимого Windows 11 real-image failure; provider-neutral `StoragePort`, PostgreSQL и выбор production storage не изменены. |
+| 0.12.0 | 2026-08-03 | Phase 1B.1 Pilot Acceptance Gate passed: the reviewed 32-variant AMIGO pilot, 59 local media assets, immutable CatalogVersion/PriceVersion v1, business overlays, admin/public catalog, restart/idempotency/recovery and 9/9 CI evidence are recorded without authorizing Phase 1B.2/1C or production. |
 
 ## 1. Нормативный язык и приоритет источников
 
@@ -100,7 +102,7 @@
 
 ### 2.2. Решения владельца для implementation governance и будущих feature gates
 
-Источник `OWNER-DECISION-*` — письменные решения Product Owner от 2026-08-02. Они задают бизнес- и архитектурные границы; implementation scope расширяется только явным transition decision. Phase 1A завершена; текущее отдельное разрешение ограничено Phase 1B.1.
+Источник `OWNER-DECISION-*` — письменные решения Product Owner от 2026-08-02. Они задают бизнес- и архитектурные границы; implementation scope расширяется только явным transition decision. Phase 1A и отдельно разрешённая Phase 1B.1 завершены; дальнейшая работа не разрешена без нового письменного решения.
 
 - **OWNER-DECISION-001 — MUST:** Product Owner — владелец проекта; Business Owner — отец владельца проекта. Product Owner утверждает продуктовые решения, UX, технические этапы, приоритеты и MVP. Business Owner утверждает цены, ассортимент, наличие, правила изготовления, гарантийные решения и коммерческие условия.
 - **OWNER-DECISION-002 — MUST:** новую `PriceVersion` может активировать только actor с ролью `OWNER` или `ADMIN`, после просмотра точного diff и явного подтверждения; каждая попытка и успешная активация MUST попадать в audit log.
@@ -940,8 +942,8 @@ Public Catalog (explicit administrator activation)
 2. **0A.1 — External source, pricing, warranty and asset governance update:** завершённая корректирующая документационная фаза; entry gate пройден 2026-08-02.
 3. **0B — Specialized specifications:** обязательный комплект создан; completion gate пройден 2026-08-02 без разрешения кода/import/media ingestion.
 4. **0C — Implementation readiness, MVP freeze and P0 TBD triage:** MVP, P0 classification, critical spec audit, sequence 1A–1H и Foundation plan подготовлены; итог gate не является implementation authorization.
-5. **1A — Foundation:** monorepo, web/BFF, data/storage/jobs, environment/CI/tests, auth/observability/security baseline без бизнес-функций.
-6. **1B — AMIGO catalog pilot:** authorized import of 20–50 verified materials, local media, diff/approval и public/admin catalog.
+5. **1A — Foundation:** завершённые monorepo, web/BFF, data/storage/jobs, environment/CI/tests, auth/observability/security baseline без бизнес-функций.
+6. **1B.1 — AMIGO catalog pilot:** завершённый allowlisted import 32 verified materials, 59 local media assets, diff/version/approval/overlays и минимальный public/admin catalog; Phase 1B.2/full import требуют нового письменного решения.
 7. **1C — Configurator and pricing:** compatibility, millimetres/quantity, versioned preliminary price, override/manual fallback и parity tests.
 8. **1D — Standard preview:** deterministic prepared-scene rendering for supported MVP profiles.
 9. **1E — Cart, WhatsApp and orders:** multi-item cart, guest/measurement lead, neutral installment request and saved calculation.

@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Версия gate | 1.7.0 |
-| Проверяемая входная база | Phase 0B baseline `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`; Phase 0C baseline `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; Phase 1A completion `943d4a2efa5e05f0d05493633cf5eb549e072a22`; Phase 1B.1 storage recovery from `d851647ab243e432641d650cb29e3d8132a92af1`; `GLOBAL_SPEC.md` 0.11.0 |
+| Версия gate | 1.8.0 |
+| Проверяемая входная база | Phase 0B baseline `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`; Phase 0C baseline `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; Phase 1A completion `943d4a2efa5e05f0d05493633cf5eb549e072a22`; Phase 1B.1 recovery baseline `d851647ab243e432641d650cb29e3d8132a92af1`; `GLOBAL_SPEC.md` 0.12.0 |
 | Дата entry self-audit | 2026-08-03, Europe/Moscow |
 | Решение по входу в 0B | **PASSED** |
 | Основание письменного решения | Приложенное владельцем задание «AUTHORIZED AMIGO FUNCTIONAL PARITY AND SPECIALIZED SPECS» и повторное указание «так приступай к работе» |
@@ -16,6 +16,7 @@
 | Post-Phase 1A Owner Decision Documentation Audit | **PASSED_DOCS_ONLY** — QG-159–168 закрыты 2026-08-02 как исторический pre-transition audit |
 | Phase 1B.1 Entry Gate | **AUTHORIZED_PHASE_1B1_IN_PROGRESS** — QG-169–176 закрыты 2026-08-02 |
 | Phase 1B.1 Local Storage Recovery Gate | **PASSED_PHASE_1B1_STORAGE_RECOVERY** — QG-177–184 закрыты 2026-08-03 |
+| Phase 1B.1 Pilot Acceptance Gate | **PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT** — QG-185–194 закрыты 2026-08-03 |
 | Разрешённая реализация | Только Phase 1B.1 catalog pilot/local publication layer; Phase 1B.2/1C+ и production запрещены |
 
 Entry gate подтверждает, что исправления 0A.1 внесены и письменное решение начать документную фазу 0B получено. Он не означает готовность ценовой формулы, импорта, приложения или запуска. Открытые TBD блокируют утверждение зависимой спецификации или функции, но не отменяют разрешение создавать документацию 0B с безопасным поведением.
@@ -294,7 +295,18 @@ Storage result: **PASSED_PHASE_1B1_STORAGE_RECOVERY**. Этот статус н�
 
 ### 8.3. Pilot acceptance gate
 
-Phase 1B.1 получит итоговый статус только после проверки реального импорта, idempotency, local media, ownership separation, overlay survival, source-removal tombstone, exact diff/activation/bulk publication, PostgreSQL-only public catalog, hidden filtering, required unit/contract/integration/browser/recovery tests, build/CI-equivalent, synchronized docs, clean tree и отсутствия Phase 1C work. До completion report этот gate имеет статус **IN PROGRESS**.
+- [x] **QG-185 — MUST:** исходный commit `d851647ab243e432641d650cb29e3d8132a92af1`, существующие четыре Phase 1B.1 commits, media WIP и historical run `798d5513-27b1-48e3-ab8e-389eeb672db4` сохранены без reset/rewrite; failed run остаётся `FAILED / CATALOG_PIPELINE_STORAGE_UNAVAILABLE`.
+- [x] **QG-186 — MUST:** новый recovery lineage создан; 32/32 allowlisted `MaterialVariant` имеют локальные изображения, 59/59 media assets (8,340,101 bytes) прошли byte/SHA/MIME/dimension/provenance validation с нулём item-level failures и без hotlink.
+- [x] **QG-187 — MUST:** реальный run `9bd1a4f8-e456-4617-9e16-7f5604c1c65c` завершил 275/275 операций с нулём ошибок и создал exact 40-entry catalog composition и 32-record price candidate без дубликатов source entities, variants, prices, assets или links.
+- [x] **QG-188 — MUST:** separate OWNER approval и ADMIN activation активировали immutable CatalogVersion `41b039a5-951d-4de3-873e-7565e2c7e9b0` и PriceVersion `ec19a7d7-c19a-45e1-86f9-269f01007fd0`; overlays, `INQUIRY_ONLY`, visibility, publication approvals и local override precedence не изменяют AMIGO source facts.
+- [x] **QG-189 — MUST:** `/admin/catalog`, `/catalog`, public material API и controlled media route читают только active PostgreSQL versions, поддерживают exact commands/search/filters/facets, скрывают staged/secret/object/source internals и fail closed при stale/invalid/unavailable storage/data.
+- [x] **QG-190 — MUST:** graceful full-environment restart сохранил database history, active pointers и все 59 objects; no-op repeat `aee135bd-855a-4fb6-a8e1-2fe60e61728a` завершил 275/275, создал zero versions и не изменил counts/pointers.
+- [x] **QG-191 — MUST:** `pnpm.cmd test:catalog-pilot` повторно проверил historical failure, lineage, versions/counts, 59 objects, 32 public primary images, signed read, 515,180-byte SHA, filters/errors and dedup; результат `PASSED`.
+- [x] **QG-192 — MUST:** exact-toolchain `pnpm.cmd ci:verify` прошёл 9/9 stages: Node 24.18.1/pnpm 11.18.0/PostgreSQL 18.4, coverage, migration/recovery, VersityGW 15/15, production build, artifact/repository secret scans, 25/25 Playwright scenarios and critical advisory scan.
+- [x] **QG-193 — MUST:** canonical specs, ADR-0009, test strategy, plan, traceability, open questions, README, changelog and completion report synchronized; production storage remains `TBD-INFRA-010`, and no production credential/provider/anonymous bucket was selected.
+- [x] **QG-194 — MUST:** final format/docs/scope/boundary/lint/type/test/build/security checks pass, tracked worktree is clean at handoff, and Phase 1B.2/1C/configurator/calculation/preview/cart/WhatsApp/AI/production work is absent.
+
+Gate result: **PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT**. Evidence is frozen in [PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md](../06-plans/completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md). This result completes only Phase 1B.1 and grants no permission to start Phase 1B.2, Phase 1C or production infrastructure selection.
 
 ## 9. История изменений
 
@@ -308,5 +320,6 @@ Phase 1B.1 получит итоговый статус только после 
 | 1.5.0 | 2026-08-02 | Добавлены QG-164–168 для `OWNER-DECISION-009`: PostgreSQL public-serving contract, diff/owner/admin activation, no-auto-delete, override/audit/version/rollback синхронизированы и проверены; Phase 1B hold сохранён. |
 | 1.6.0 | 2026-08-02 | `OWNER-DECISION-010` и QG-169–176 отдельно разрешили только Phase 1B.1 после real public-page transport/ID/media preflight; pilot acceptance оставлен `IN PROGRESS`, Phase 1B.2/1C+ запрещены. |
 | 1.7.0 | 2026-08-03 | QG-177–184 зафиксировали passed local VersityGW real-image/signed/multipart/restart recovery gate; media/pilot completion и production/Phase 1C остались gated. |
+| 1.8.0 | 2026-08-03 | QG-185–194 зафиксировали completed real 32-variant/59-media pilot, approved active catalog/price versions, restart/no-op recovery, public/admin surfaces and passed 9/9 CI gate; later phases and production remain unauthorized. |
 | 0.2.0 | 2026-08-02 | Entry gate обновлён для `GLOBAL_SPEC` 0.4.0 и partner-authorized scope; письменное поручение владельца зафиксировано как разрешение начать 0B; добавлен отдельный completion gate 0B. |
 | 0.1.0 | 2026-08-02 | Предыдущий self-audit 0A.1 для версии 0.3.1; проверки `QG-001`–`087` впоследствии зарезервированы. |

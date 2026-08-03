@@ -7,6 +7,7 @@
 
 ### Added
 
+- Добавлен воспроизводимый `test:catalog-pilot` и completion report Phase 1B.1: проверяются historical failed run/retry lineage, exact active versions/counts, все 59 объектов и 32 public primary images, signed read, 515,180-byte SHA, search/filter errors, restart persistence, no-op idempotency и отсутствие утечек object/source/credentials.
 - Добавлен минимальный PostgreSQL-only `/catalog` и `GET /api/v1/catalog/materials`: публичная проекция читает только совместимую пару активных immutable `CatalogVersion`/`PriceVersion`, поддерживает allowlisted search/filter/facets и HMAC-bound cursor, явно различает наличие/price-on-request и не раскрывает source snapshots, object keys или credentials. Approved media выдаются только через version-pinned same-origin route с повторной проверкой content type/length/SHA-256; AMIGO hotlink, staged data, anonymous bucket и configurator/cart flows не используются.
 - Добавлен минимальный `/admin/catalog`: provider-neutral bounded read model, AMIGO allowlist projection, роли OWNER/ADMIN через краткоживущую HttpOnly synthetic session, точные diff/checksum и run history, idempotent queued approval/activation, bulk composition с typed confirmation, отдельные availability/visibility/publication/local-price commands и безопасный Windows bootstrap без вывода token. Desktop/mobile browser gate подтвердил 32 pilot variants, сохранённый failed run, отсутствие console/CSP errors, token disclosure и horizontal overflow.
 - Добавлен отдельный owner-managed business layer для visibility, manual review, authoritative `INQUIRY_ONLY` availability, append-only publication decisions и version-pinned local price overrides без изменения AMIGO source prices. Bulk pilot publication проверяет exact candidate, variant/media/rights/price readiness, одобряет asset-level delivery, создаёт immutable composition и проходит integration-сценарий activation → changed release → atomic rollback.
@@ -62,6 +63,7 @@
 
 ### Changed
 
+- Phase 1B.1 завершена со статусом `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT`: run `9bd1a4f8-e456-4617-9e16-7f5604c1c65c` выполнил 275/275 операций без ошибок, OWNER/ADMIN активировали CatalogVersion/PriceVersion v1, опубликованы 32 variants и 59 approved media assets, graceful restart и no-op repeat сохранили history/counts/pointers, а final CI-equivalent прошёл 9/9 стадий с VersityGW 15/15 и Playwright 25/25. Phase 1B.2/1C и production не разрешены.
 - Active local/CI object storage переведён с Windows-native RustFS на VersityGW `v1.4.1@sha256:0400cb59f59da0f1cf9f7fd49505191abc348dfadf54509bf1988caaff4eb96f` в Linux Docker Compose: loopback-only S3/Admin, POSIX backend, three persistent named volumes, private buckets, typed environment, graceful shutdown и automatic Docker restart recovery. PostgreSQL, Prisma, Graphile Worker, catalog model и provider-neutral `StoragePort` не менялись.
 - Storage contract gate прошёл 15/15 на размерах 1/65,536/131,072/159,099/262,144/515,180/1 MiB/5 MiB/6 MiB: byte-for-byte/SHA-256, head/metadata/type/length, signed read/write, multipart complete/abort, idempotence/dedup/concurrency, invalid input/checksum/timeout/unavailable, delete, graceful restart и named-volume/Docker Desktop persistence. Реальный AMIGO JPEG подтверждён SHA-256 `ac86fc976afc2063cc97e1528611c978a348f357d26c8fe3c59b7c23f113d0cd`.
 - `GLOBAL_SPEC.md` обновлён до 0.11.0, storage/media/security/deployment/test specifications, ADR-0009, quality gate QG-177–184, traceability, active plan, Windows runbook и dependency baseline синхронизированы с `OWNER-DECISION-011`; `TBD-INFRA-010` сохраняет production provider невыбранным.
@@ -104,6 +106,7 @@
 
 ### Fixed
 
+- Устранена обнаруженная полным CI гонка двух immutable uploads одного object key: provider-neutral adapter сериализует записи по endpoint/bucket/key, сохраняет idempotent same-content behavior и возвращает `STORAGE_CONFLICT` для другого содержимого; повторный 15/15 storage gate и 9/9 CI прошли.
 - RustFS `1.0.0-beta.11` больше не блокирует real Phase 1B.1 media на Windows 11: исторический `HTTP 500 File access denied` при 159,099/262,144 байт и реальном media path устранён local-only adapter replacement без подмены failed sync history или media fixtures.
 - Docker Desktop restart recovery исправлен с `restart: unless-stopped` на `restart: always`: VersityGW корректно завершается по SIGTERM и автоматически восстанавливается с теми же named volumes и checksum-preserved objects.
 - Устранено противоречие приоритета источников: `GLOBAL_SPEC` → accepted ADR → approved specialized spec; dynamic AMIGO snapshot не может переписать нормативное поведение.

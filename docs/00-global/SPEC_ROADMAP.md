@@ -4,16 +4,17 @@
 
 | Поле | Значение |
 |---|---|
-| Состояние | Phase 1A complete; only Phase 1B.1 pilot authorized/in progress |
-| Версия roadmap | 1.6.0 |
-| Дата | 2026-08-02 |
+| Состояние | Phase 1A and Phase 1B.1 complete; later phases hold |
+| Версия roadmap | 1.7.0 |
+| Дата | 2026-08-03 |
 | Entry gate | `PASSED`, [QG-088–QG-111](SPEC_QUALITY_GATE.md) |
 | Обязательный комплект 0B | `PASSED`, [QG-112–QG-130](SPEC_QUALITY_GATE.md) |
 | Phase 0C readiness | `AUTHORIZED_FOR_PHASE_1A_FOUNDATION`, [QG-131–QG-148](SPEC_QUALITY_GATE.md) |
 | Phase 1A acceptance | `PASSED_PHASE_1A_FOUNDATION`, [QG-149–QG-158](SPEC_QUALITY_GATE.md) |
-| Разрешённая implementation | Только Phase 1B.1 по active plan; Phase 1B.2/1C+ и production запрещены |
+| Phase 1B.1 acceptance | `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT`, [QG-169–QG-194](SPEC_QUALITY_GATE.md) |
+| Разрешённая implementation | Нет новой implementation authorization; Phase 1B.2/1C+ и production запрещены |
 
-Глобальная база: [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.10.0, [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md), [ASSET_RIGHTS_REGISTER.md](ASSET_RIGHTS_REGISTER.md) и [PRICING_SOURCE_POLICY.md](PRICING_SOURCE_POLICY.md). `OWNER-DECISION-008/009` задают authority и PostgreSQL-only public runtime; `OWNER-DECISION-010` является отдельным transition decision только для bounded 32-ID Phase 1B.1 pilot. Full catalog/Phase 1B.2 и последующие фазы остаются gated.
+Глобальная база: [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.12.0, [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md), [ASSET_RIGHTS_REGISTER.md](ASSET_RIGHTS_REGISTER.md) и [PRICING_SOURCE_POLICY.md](PRICING_SOURCE_POLICY.md). `OWNER-DECISION-008/009` задают authority и PostgreSQL-only public runtime; bounded 32-ID Phase 1B.1, разрешённая `OWNER-DECISION-010`, завершена. Full catalog/Phase 1B.2 и последующие фазы остаются gated.
 
 Нормативные спецификации находятся только в `docs/specs/`. Gate, реестры, policies, quality strategy, evaluations и ADR остаются в профильных каталогах.
 
@@ -175,3 +176,4 @@ ADR принимают устойчивую границу, а не неподт
 | 1.4.0 | 2026-08-02 | Глобальная база обновлена до 0.8.0 с authority matrix `OWNER-DECISION-008`; Phase 1B entry/import evidence и transition hold не изменены. |
 | 1.5.0 | 2026-08-02 | Глобальная база обновлена до 0.9.0 с PostgreSQL public-serving contract `OWNER-DECISION-009`; Phase 1B entry/import evidence и transition hold не изменены. |
 | 1.6.0 | 2026-08-02 | `OWNER-DECISION-010` разрешил только Phase 1B.1 с dated transport evidence/32-ID plan; Phase 1B.2/1C+ и production сохранены на hold. |
+| 1.7.0 | 2026-08-03 | Phase 1B.1 completion report and QG-169–194 recorded; global source advanced to 0.12.0 and no-next-phase hold preserved. |

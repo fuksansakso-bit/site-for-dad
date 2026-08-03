@@ -4,10 +4,10 @@
 
 | Поле | Значение |
 |---|---|
-| Фаза документа | Phase 1A completed; only Phase 1B.1 pilot authorized/in progress |
-| Статус roadmap | **PHASE 1A PASSED / PHASE 1B.1 AUTHORIZED / LATER PHASES HOLD** |
+| Фаза документа | Phase 1A and Phase 1B.1 completed; later phases hold |
+| Статус roadmap | **PHASE 1A PASSED / PHASE 1B.1 PASSED / LATER PHASES HOLD** |
 | Scope | [MVP_SCOPE](MVP_SCOPE.md) |
-| Планы / evidence | [PHASE_1A_FOUNDATION_PLAN](active/PHASE_1A_FOUNDATION_PLAN.md), [PHASE_1A_FOUNDATION_REPORT](completed/PHASE_1A_FOUNDATION_REPORT.md), [PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN](active/PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN.md) |
+| Планы / evidence | [PHASE_1A_FOUNDATION_PLAN](active/PHASE_1A_FOUNDATION_PLAN.md), [PHASE_1A_FOUNDATION_REPORT](completed/PHASE_1A_FOUNDATION_REPORT.md), [PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN](active/PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN.md), [PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT](completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md) |
 
 - **ROADMAP-001 — MUST:** фазы выполняются по порядку 1A–1H; параллельный research MAY идти, но dependent implementation не обходит entry gate.
 - **ROADMAP-002 — MUST:** каждая возможность включается feature flag только после собственных acceptance/security/data gates; наличие кода не равно production activation.
@@ -48,6 +48,8 @@
 | Rollback | Atomically restore the previous active `CatalogVersion`, rebuild version-pinned projections, revoke affected derivative URLs and preserve immutable evidence/audit; migration compensation only through ADR-0008. |
 
 Phase 1B.2 (full authorized AMIGO catalog expansion) is a separate future transition. It requires the Phase 1B.1 Pilot Acceptance Gate plus confirmed full-catalog transport/export/schema and a new written Product Owner decision. It MUST NOT begin during this plan.
+
+Phase 1B.1 completed 2026-08-03 as `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT`; exact implementation, data/version IDs, recovery and CI evidence are in the completion report. Passing the gate satisfies a prerequisite for considering Phase 1B.2/1C but does not authorize either one.
 
 ## 3. PHASE 1C — CONFIGURATOR AND PRICING
 
@@ -161,3 +163,4 @@ Phase 1B.2 (full authorized AMIGO catalog expansion) is a separate future transi
 | 1.2.0 | 2026-08-02 | Phase 1B уточнена `OWNER-DECISION-008`: PostgreSQL хранит source/local revisions, object storage — media binaries; transport/manifest/evidence и отдельное transition decision остаются обязательными. |
 | 1.3.0 | 2026-08-02 | Phase 1B синхронизирована с `OWNER-DECISION-009`: active PostgreSQL `CatalogVersion` обслуживает public runtime после staged diff/Business Owner approval/admin activation; добавлены no-auto-delete, override/audit/version/projection/rollback gates без разрешения реализации. |
 | 1.4.0 | 2026-08-02 | `OWNER-DECISION-010` разрешил только Phase 1B.1 с 32-ID real pilot/public-page transport; full-catalog expansion выделен в отдельную Phase 1B.2 и остаётся на hold вместе с Phase 1C+. |
+| 1.5.0 | 2026-08-03 | Phase 1B.1 отмечена passed со ссылкой на 32-variant/59-media/version/restart/CI completion evidence; Phase 1B.2/1C+ hold сохранён. |

@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A verified; Phase 1B.1 catalog pilot topology authorized/in progress; later features/production gated |
-| Версия | 0.6.0 |
+| Статус | Phase 1A and Phase 1B.1 verified; later features/production gated |
+| Версия | 0.7.0 |
 | Дата | 2026-08-03 |
 | Global baseline | [GLOBAL_SPEC.md](../GLOBAL_SPEC.md) 0.11.0 |
 | Decisions | [docs/adr](../../adr/) |
@@ -201,11 +201,13 @@ Every request/job/command carries correlation/causation and safe version identif
 
 Architecture acceptance is covered by domain AC plus contract/component/integration/failure/recovery/security tests in `TEST_STRATEGY`. Required architecture tests: adapter outage, no live AMIGO/staging dependency, exact active-version pinning of public and derived reads, source-removal no-auto-delete, override precedence without source mutation, approval/activation authorization, version/audit completeness, rollback, outbox atomicity, job idempotency/cancel/delete, mixed-version rejection, cache invalidation, role/object checks, secret/private telemetry scan, rolling compatibility and backup/restore.
 
-## 17. Phase 1A implementation record
+## 17. Implementation record
 
-Implemented topology matches ADR-0007–0010: Next.js same-origin web/BFF, separate Node worker, PostgreSQL/Prisma, Graphile Worker, S3-compatible and identity ports, shared contracts/config/observability/testing packages and automated acyclic dependency direction. Only technical shell and synthetic Foundation behavior exist; no feature module or production topology was added. Evidence: [Phase 1A report](../../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
+Phase 1A topology matches ADR-0007–0010: Next.js same-origin web/BFF, separate Node worker, PostgreSQL/Prisma, Graphile Worker, S3-compatible and identity ports, shared contracts/config/observability/testing packages and automated acyclic dependency direction. Evidence: [Phase 1A report](../../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
 
 For Phase 1B.1, `OWNER-DECISION-011` replaced the unreliable Windows-native RustFS process only in local/CI infrastructure. The application port and trust-zone model did not change; Docker Compose now supplies digest-pinned VersityGW with three named volumes. The 2026-08-03 contract gate passed byte-for-byte real-image, signed URL, multipart, outage and restart-persistence scenarios without selecting production storage.
+
+The completed Phase 1B.1 slice adds source/normalized/business-overlay modules behind the established boundaries, separate worker synchronization/media stages, immutable PostgreSQL catalog/price versions, audited OWNER approval/ADMIN activation, and same-origin public/admin catalog surfaces. Real run `9bd1a4f8-e456-4617-9e16-7f5604c1c65c` activated an exact 40-entry/32-price composition; the public projection returned 32 items and 32 checksum-verified primary images without any live AMIGO/staging dependency. Restart and no-op repeat evidence preserved active pointers/history and produced no duplicate/version drift. No configurator, pricing engine, preview, cart, AI or production topology was added. Evidence: [Phase 1B.1 report](../../06-plans/completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md).
 
 ## 18. Dependencies, risks and open questions
 
@@ -221,3 +223,4 @@ Dependencies: all specs, ADR/evaluations, data/API/sync/media/AI/storage/securit
 | 0.4.0 | 2026-08-02 | Applied `OWNER-DECISION-009`: active approved PostgreSQL `CatalogVersion` is the only public-serving runtime truth; added version-pinned derived projections, mandatory source→diff→owner/admin activation, no-auto-delete, override precedence, audit and rollback boundaries. |
 | 0.5.0 | 2026-08-02 | Added the authorized Phase 1B.1 catalog pilot topology and preserved all later-phase boundaries. |
 | 0.6.0 | 2026-08-03 | Applied local-only `OWNER-DECISION-011`: VersityGW Docker/POSIX named-volume adapter replaced active RustFS while `StoragePort`, catalog/media boundaries and production-provider gate remained neutral. |
+| 0.7.0 | 2026-08-03 | Recorded completed Phase 1B.1 source/version/overlay/worker/admin/public topology, active real pilot versions and restart/idempotency evidence without starting later domains or production. |

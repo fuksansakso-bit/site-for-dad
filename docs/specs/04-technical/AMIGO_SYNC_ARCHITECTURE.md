@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1B.2 full discovery/import/media/price review, activation and bulk local controls implemented; admin expansion in progress |
-| Версия | 0.11.0 |
+| Статус | Phase 1B.2 full discovery/import/media/price review, activation, bulk local controls and safe admin projection implemented |
+| Версия | 0.12.0 |
 | Дата | 2026-08-03 |
 | Source registry | [EXTERNAL_SOURCES.md](../../00-global/EXTERNAL_SOURCES.md) |
 | Pricing policy | [PRICING_SOURCE_POLICY.md](../../00-global/PRICING_SOURCE_POLICY.md) |
@@ -79,6 +79,7 @@ Public browser research and volatile customizer DOM/iframe are not a production 
 - **SYNC-ARCH-048 — MUST:** every catalog or price difference review is an append-only batch bound to the exact source, run, candidate version and difference checksum. It records `ALL` or an explicit bounded ID selection, `APPROVED`/`DEFERRED`/`REJECTED`, actor, safe reason, correlation and idempotency evidence; candidate approval is blocked until every applicable difference is explicitly `APPROVED` by such review evidence.
 - **SYNC-ARCH-049 — MUST:** publication preparation initializes safe inquiry-only business state only for previously missing local entries and MUST NOT rewrite an existing visibility, review, availability, publication, note, order or price override. Activation and rollback validate the same catalog source, approved exact checksums and predecessor lineage, then switch the selected catalog/price pointers atomically and idempotently.
 - **SYNC-ARCH-050 — MUST:** a bulk local-overlay command runs only after explicit publication preparation and before immutable candidate composition. It is bound to the exact source/run/candidate and checksum-resolved current state, affects only Business Owner visibility/review/availability/publication fields in one transaction, and records append-only per-target before/after evidence; source facts, source/base price and unrelated local overlays remain unchanged.
+- **SYNC-ARCH-051 — MUST:** the authorized admin read projection exposes human-readable safe manifest counts, durable run/checkpoint/stage progress, bounded catalog/price differences and immutable review/bulk histories for the complete selected source. It MUST NOT expose raw snapshots, parser-internal diagnostics, source hashes, storage locators or credentials, and it MUST NOT reuse staged admin visibility as a public-serving path.
 
 ## 4. Pipeline stages
 
@@ -228,3 +229,4 @@ Dependencies: catalog/pricing/media/admin/data/API/security/observability/deploy
 | 0.9.0 | 2026-08-03 | Implemented full material/model price capture accounting, exact typed targets, semantic-version-pinned append-only revisions and current-run-only manifest/diff/version links while preserving local overrides. |
 | 0.10.0 | 2026-08-03 | Implemented checksum-bound append-only catalog/price difference review, explicit approve/defer/reject decisions, approval completeness, source-bound atomic activation/rollback and preservation of existing local overlays during publication preparation. |
 | 0.11.0 | 2026-08-03 | Bound Phase 1B.2 category/filter/selection bulk local-overlay changes to the exact prepared mutable candidate with stale-state rejection, atomic apply and immutable per-target evidence before composition. |
+| 0.12.0 | 2026-08-03 | Added the safe full-source admin read projection for human-readable manifests, durable stage progress, bounded differences and immutable review/bulk histories while retaining raw-evidence redaction and active-version-only public serving. |

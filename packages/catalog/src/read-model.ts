@@ -25,31 +25,78 @@ export interface CatalogActiveVersionSummary {
   readonly activatedAt: string;
   readonly differenceChecksum: string;
   readonly id: string;
+  readonly rollbackTargetId: string | null;
   readonly versionNumber: number;
 }
 
+export interface CatalogAdminManifestCounts {
+  readonly categories: number;
+  readonly differences: number;
+  readonly duplicates: number;
+  readonly failures: number;
+  readonly materialVariants: number;
+  readonly mediaImported: number;
+  readonly mediaReferences: number;
+  readonly models: number;
+  readonly normalizedItems: number;
+  readonly pages: number;
+  readonly priceRecords: number;
+  readonly resumedSnapshots: number;
+  readonly skips: number;
+  readonly sourceRemoved: number;
+  readonly systems: number;
+  readonly warnings: number;
+}
+
+export interface CatalogAdminManifestSummary {
+  readonly complete: boolean;
+  readonly counts: CatalogAdminManifestCounts;
+  readonly sealedAt: string;
+  readonly status: 'CANCELLED' | 'COMPLETE' | 'PARTIAL_FAILED';
+}
+
 export interface CatalogAdminRelease {
+  readonly catalogDifferenceCount: number;
   readonly catalogDifferenceChecksum: string | null;
   readonly catalogSourceId: string;
   readonly catalogStatus: CatalogReleaseStatus | null;
   readonly catalogVersionId: string | null;
   readonly catalogVersionNumber: number | null;
+  readonly catalogUnapprovedDifferenceCount: number;
+  readonly bulkCommandCount: number;
   readonly compositionCount: number;
   readonly createdAt: string;
   readonly differenceCount: number;
   readonly failedItemCount: number;
+  readonly manifest: CatalogAdminManifestSummary | null;
   readonly pendingDifferenceCount: number;
+  readonly priceDifferenceCount: number;
+  readonly priceUnapprovedDifferenceCount: number;
   readonly priceDifferenceChecksum: string | null;
   readonly priceStatus: CatalogReleaseStatus | null;
   readonly priceVersionId: string | null;
   readonly priceVersionNumber: number | null;
+  readonly publicationPrepared: boolean;
+  readonly reviewBatchCount: number;
   readonly sourceVersion: string | null;
   readonly syncRunId: string;
   readonly syncStatus: string;
   readonly variantCount: number;
 }
 
+export interface CatalogAdminSyncStage {
+  readonly completedAt: string | null;
+  readonly errorCount: number;
+  readonly expectedCount: number;
+  readonly partitionKey: string;
+  readonly processedCount: number;
+  readonly resumeCount: number;
+  readonly stage: string;
+  readonly status: string;
+}
+
 export interface CatalogAdminSyncRun {
+  readonly cancelRequestedAt: string | null;
   readonly completedAt: string | null;
   readonly correlationId: string;
   readonly createdAt: string;
@@ -60,6 +107,7 @@ export interface CatalogAdminSyncRun {
   readonly processedCount: number;
   readonly retryOfSyncRunId: string | null;
   readonly sourceVersion: string | null;
+  readonly stages: readonly CatalogAdminSyncStage[];
   readonly status: string;
   readonly trigger: string;
 }
@@ -67,16 +115,43 @@ export interface CatalogAdminSyncRun {
 export interface CatalogAdminSummary {
   readonly approvedMediaCount: number;
   readonly businessEntryCount: number;
+  readonly categoryCount: number;
   readonly materialVariantCount: number;
+  readonly modelCount: number;
   readonly publishedEntryCount: number;
   readonly sourcePriceCount: number;
+  readonly sourceRemovedCount: number;
+  readonly systemCount: number;
+}
+
+export interface CatalogAdminReviewHistory {
+  readonly affectedCount: number;
+  readonly createdAt: string;
+  readonly id: string;
+  readonly resolution: string;
+  readonly safeReason: string;
+  readonly scope: 'CATALOG' | 'PRICE';
+  readonly selectionMode: 'ALL' | 'SELECTED';
+  readonly syncRunId: string;
+}
+
+export interface CatalogAdminBulkHistory {
+  readonly affectedCount: number;
+  readonly createdAt: string;
+  readonly id: string;
+  readonly matchedCount: number;
+  readonly safeReason: string;
+  readonly selectorMode: 'CATEGORY' | 'FILTER' | 'SELECTED';
+  readonly syncRunId: string;
 }
 
 export interface CatalogAdminOverview {
   readonly activeCatalogVersion: CatalogActiveVersionSummary | null;
   readonly activePriceVersion: CatalogActiveVersionSummary | null;
+  readonly bulkHistory: readonly CatalogAdminBulkHistory[];
   readonly generatedAt: string;
   readonly releases: readonly CatalogAdminRelease[];
+  readonly reviewHistory: readonly CatalogAdminReviewHistory[];
   readonly runs: readonly CatalogAdminSyncRun[];
   readonly summary: CatalogAdminSummary;
 }
@@ -85,36 +160,132 @@ export interface CatalogAdminVariant {
   readonly article: string;
   readonly availabilityStatus: string;
   readonly businessCatalogEntryId: string | null;
+  readonly categoryId: string;
   readonly categoryName: string;
+  readonly categoryPath: string;
   readonly colorHex: string | null;
   readonly colorName: string | null;
   readonly currency: string | null;
   readonly id: string;
+  readonly isBlackout: boolean;
+  readonly isZebra: boolean;
   readonly localPriceAmountMinor: number | null;
   readonly manualReviewState: string;
   readonly mediaApproved: boolean;
   readonly mediaCount: number;
+  readonly materialName: string;
   readonly name: string;
+  readonly primarySystemId: string | null;
   readonly primarySystemName: string | null;
   readonly publicationStatus: string;
   readonly rightsReady: boolean;
   readonly sourceCapturedAt: string | null;
   readonly sourceId: string;
   readonly sourcePriceAmountMinor: number | null;
+  readonly sourcePriceStatus: 'AVAILABLE' | 'MISSING' | 'PRICE_ON_REQUEST';
   readonly sourceStatus: string;
   readonly sourceUrl: string;
   readonly visibility: string;
+  readonly widthMm: number | null;
+}
+
+export interface CatalogAdminFacet {
+  readonly count: number;
+  readonly id: string;
+  readonly label: string;
+}
+
+export interface CatalogAdminCategoryFacet extends CatalogAdminFacet {
+  readonly depth: number;
+  readonly parentId: string | null;
+  readonly path: string;
 }
 
 export interface CatalogAdminVariantQuery {
+  readonly availability?:
+    'ALL' | 'AVAILABLE' | 'HIDDEN' | 'INQUIRY_ONLY' | 'OUT_OF_STOCK' | 'UNREVIEWED';
+  readonly categoryId?: string;
   readonly limit?: number;
+  readonly media?: 'ALL' | 'BLOCKED' | 'MISSING' | 'READY';
+  readonly offset?: number;
+  readonly price?: 'ALL' | 'AVAILABLE' | 'LOCAL_OVERRIDE' | 'MISSING' | 'PRICE_ON_REQUEST';
+  readonly publication?: 'ALL' | 'ARCHIVED' | 'DRAFT' | 'HIDDEN' | 'PUBLISHED' | 'UNREVIEWED';
   readonly query?: string;
+  readonly review?: 'ALL' | 'APPROVED' | 'NEEDS_REVIEW' | 'REJECTED' | 'UNREVIEWED';
+  readonly sourceStatus?: 'ACTIVE' | 'ALL' | 'SOURCE_REMOVED';
   readonly state?: 'ALL' | 'BLOCKED' | 'PUBLISHED';
+  readonly systemId?: string;
+  readonly visibility?: 'ALL' | 'HIDDEN' | 'VISIBLE';
 }
 
 export interface CatalogAdminVariantPage {
+  readonly categories: readonly CatalogAdminCategoryFacet[];
   readonly items: readonly CatalogAdminVariant[];
   readonly limit: number;
+  readonly offset: number;
+  readonly systems: readonly CatalogAdminFacet[];
+  readonly total: number;
+}
+
+export const catalogAdminDifferenceTypes = [
+  'ARTICLE_CHANGED',
+  'COLOR_CHANGED',
+  'NEW_CATEGORY',
+  'NEW_MATERIAL',
+  'NEW_MEDIA',
+  'NEW_MODEL',
+  'NEW_SYSTEM',
+  'PARSE_ERROR',
+  'PRICE_CHANGED',
+  'PROPERTY_CHANGED',
+  'SOURCE_REMOVED',
+] as const;
+export type CatalogAdminDifferenceType = (typeof catalogAdminDifferenceTypes)[number];
+
+export const catalogAdminDifferenceResolutions = [
+  'APPROVED',
+  'ARCHIVE',
+  'DEFERRED',
+  'HIDE',
+  'KEEP',
+  'PENDING',
+  'REJECTED',
+  'REPLACE',
+  'RESTORE',
+] as const;
+export type CatalogAdminDifferenceResolution = (typeof catalogAdminDifferenceResolutions)[number];
+
+export interface CatalogAdminDifference {
+  readonly absoluteChangeMinor: number | null;
+  readonly afterSummary: string | null;
+  readonly beforeSummary: string | null;
+  readonly currency: string | null;
+  readonly entityName: string;
+  readonly entityType: string;
+  readonly id: string;
+  readonly newPriceMinor: number | null;
+  readonly oldPriceMinor: number | null;
+  readonly resolution: CatalogAdminDifferenceResolution;
+  readonly scope: 'CATALOG' | 'PRICE';
+  readonly sourceCapturedAt: string | null;
+  readonly sourceId: string | null;
+  readonly sourceUrl: string | null;
+  readonly type: CatalogAdminDifferenceType;
+}
+
+export interface CatalogAdminDifferenceQuery {
+  readonly limit?: number;
+  readonly offset?: number;
+  readonly resolution?: 'ALL' | CatalogAdminDifferenceResolution;
+  readonly scope?: 'ALL' | 'CATALOG' | 'PRICE';
+  readonly syncRunId?: string;
+  readonly type?: 'ALL' | CatalogAdminDifferenceType;
+}
+
+export interface CatalogAdminDifferencePage {
+  readonly items: readonly CatalogAdminDifference[];
+  readonly limit: number;
+  readonly offset: number;
   readonly total: number;
 }
 
@@ -203,27 +374,106 @@ export interface CatalogReadPort {
   close(): Promise<void>;
   getAdminOverview(): Promise<CatalogAdminOverview>;
   getPublicCatalog(): Promise<CatalogPublicSnapshot | null>;
+  listAdminDifferences(query?: CatalogAdminDifferenceQuery): Promise<CatalogAdminDifferencePage>;
   listAdminVariants(query?: CatalogAdminVariantQuery): Promise<CatalogAdminVariantPage>;
 }
 
 export function assertCatalogAdminVariantQuery(query: CatalogAdminVariantQuery): {
+  readonly availability: NonNullable<CatalogAdminVariantQuery['availability']>;
+  readonly categoryId: string | null;
   readonly limit: number;
+  readonly media: NonNullable<CatalogAdminVariantQuery['media']>;
+  readonly offset: number;
+  readonly price: NonNullable<CatalogAdminVariantQuery['price']>;
+  readonly publication: NonNullable<CatalogAdminVariantQuery['publication']>;
   readonly query: string;
+  readonly review: NonNullable<CatalogAdminVariantQuery['review']>;
+  readonly sourceStatus: NonNullable<CatalogAdminVariantQuery['sourceStatus']>;
   readonly state: 'ALL' | 'BLOCKED' | 'PUBLISHED';
+  readonly systemId: string | null;
+  readonly visibility: NonNullable<CatalogAdminVariantQuery['visibility']>;
 } {
   const limit = query.limit ?? 50;
+  const offset = query.offset ?? 0;
   const search = query.query?.trim() ?? '';
   const state = query.state ?? 'ALL';
+  const availability = query.availability ?? 'ALL';
+  const media = query.media ?? 'ALL';
+  const price = query.price ?? 'ALL';
+  const publication = query.publication ?? 'ALL';
+  const review = query.review ?? 'ALL';
+  const sourceStatus = query.sourceStatus ?? 'ALL';
+  const visibility = query.visibility ?? 'ALL';
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   if (
     !Number.isSafeInteger(limit) ||
     limit < 1 ||
     limit > 50 ||
+    !Number.isSafeInteger(offset) ||
+    offset < 0 ||
+    offset > 100_000 ||
     search.length > 128 ||
-    !['ALL', 'BLOCKED', 'PUBLISHED'].includes(state)
+    !['ALL', 'BLOCKED', 'PUBLISHED'].includes(state) ||
+    !['ALL', 'AVAILABLE', 'HIDDEN', 'INQUIRY_ONLY', 'OUT_OF_STOCK', 'UNREVIEWED'].includes(
+      availability,
+    ) ||
+    !['ALL', 'BLOCKED', 'MISSING', 'READY'].includes(media) ||
+    !['ALL', 'AVAILABLE', 'LOCAL_OVERRIDE', 'MISSING', 'PRICE_ON_REQUEST'].includes(price) ||
+    !['ALL', 'ARCHIVED', 'DRAFT', 'HIDDEN', 'PUBLISHED', 'UNREVIEWED'].includes(publication) ||
+    !['ALL', 'APPROVED', 'NEEDS_REVIEW', 'REJECTED', 'UNREVIEWED'].includes(review) ||
+    !['ACTIVE', 'ALL', 'SOURCE_REMOVED'].includes(sourceStatus) ||
+    !['ALL', 'HIDDEN', 'VISIBLE'].includes(visibility) ||
+    (query.categoryId !== undefined && !uuidPattern.test(query.categoryId)) ||
+    (query.systemId !== undefined && !uuidPattern.test(query.systemId))
   ) {
     throw new CatalogReadError('CATALOG_READ_VALIDATION');
   }
-  return { limit, query: search, state };
+  return {
+    availability,
+    categoryId: query.categoryId ?? null,
+    limit,
+    media,
+    offset,
+    price,
+    publication,
+    query: search,
+    review,
+    sourceStatus,
+    state,
+    systemId: query.systemId ?? null,
+    visibility,
+  };
+}
+
+export function assertCatalogAdminDifferenceQuery(query: CatalogAdminDifferenceQuery): {
+  readonly limit: number;
+  readonly offset: number;
+  readonly resolution: 'ALL' | CatalogAdminDifferenceResolution;
+  readonly scope: 'ALL' | 'CATALOG' | 'PRICE';
+  readonly syncRunId: string | null;
+  readonly type: 'ALL' | CatalogAdminDifferenceType;
+} {
+  const limit = query.limit ?? 50;
+  const offset = query.offset ?? 0;
+  const resolution = query.resolution ?? 'ALL';
+  const scope = query.scope ?? 'ALL';
+  const type = query.type ?? 'ALL';
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (
+    !Number.isSafeInteger(limit) ||
+    limit < 1 ||
+    limit > 100 ||
+    !Number.isSafeInteger(offset) ||
+    offset < 0 ||
+    offset > 100_000 ||
+    !['ALL', 'CATALOG', 'PRICE'].includes(scope) ||
+    (resolution !== 'ALL' && !catalogAdminDifferenceResolutions.includes(resolution)) ||
+    (type !== 'ALL' && !catalogAdminDifferenceTypes.includes(type)) ||
+    (query.syncRunId !== undefined && !uuidPattern.test(query.syncRunId))
+  ) {
+    throw new CatalogReadError('CATALOG_READ_VALIDATION');
+  }
+  return { limit, offset, resolution, scope, syncRunId: query.syncRunId ?? null, type };
 }
 
 type JsonRecord = Record<string, unknown>;

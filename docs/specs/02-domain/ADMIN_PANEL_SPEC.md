@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1B.2 catalog governance and transactional bulk command layer implemented; expanded `/admin/catalog` in progress |
-| Версия | 0.6.0 |
+| Статус | Phase 1B.2 full-catalog `/admin/catalog` control room implemented; verification in progress |
+| Версия | 0.7.0 |
 | Дата | 2026-08-02 |
 | Permissions | [ROLES_PERMISSIONS.md](../01-product/ROLES_PERMISSIONS.md) |
 | Source flows | Catalog, pricing, media, sync and order specs |
@@ -64,6 +64,8 @@ Out of scope: unrestricted database editor, arbitrary code/expression execution,
 - **ADMIN-SPEC-030 — MUST:** image screens distinguish AMIGO source identity, PostgreSQL metadata/provenance/mapping/status and object-storage binary/derivatives; a database record or source URL alone never enables publication.
 - **ADMIN-SPEC-031 — MUST:** a Phase 1B.2 local-overlay bulk preview resolves only material-variant business entries from one exact mutable catalog candidate by category subtree, allowlisted typed filter or explicit bounded selection. It returns every affected stable ID with before/after state, matched/affected counts, a checksum bound to selector/current state/patch and exact confirmation text; no hidden cross-page target is inferred at apply time.
 - **ADMIN-SPEC-032 — MUST:** bulk apply is `OWNER`-authorized and re-resolves the same source/run/candidate under one transaction. A stale count/checksum/confirmation, missing selected ID, changed/frozen candidate or conflicting idempotency key fails without mutation; success is all-or-none and persists one append-only command with selector, patch, exact target IDs, per-target before/after, actor, reason, correlation and idempotency evidence. It MUST NOT alter AMIGO source fields, base prices, local descriptions, owner notes or local price overrides.
+- **ADMIN-SPEC-033 — MUST:** the Phase 1B.2 catalog control room reads the complete normalized inventory for the selected source, not the historical pilot allowlist. Hierarchy/system facets, inventory and diff lists use bounded server-side allowlisted filters and pagination with stable identities; run stages/checkpoints, safe manifest counts, active/rollback pointers and immutable review/bulk history remain readable without returning raw snapshots, object locators, hashes, credentials or parser-internal payloads.
+- **ADMIN-SPEC-034 — MUST:** every Phase 1B.2 control-room mutation re-authenticates and authorizes the server-side actor at submission time and remains a typed domain command. Preparation, bulk preview/apply, composition, catalog/price difference review, approval, activation, rollback, run cancellation and retry are separate explicit steps bound to exact source/run/version/checksum/count state; browser selection, query parameters or a rendered role never grant authority.
 
 ## 4. Information architecture
 
@@ -164,9 +166,9 @@ Tests: full role/capability matrix; object/environment scope; stale edit; approv
 
 ## 13. Phase 1B implementation record
 
-The implemented local-only `/admin/catalog` uses a bounded PostgreSQL read adapter pinned to the 32-ID AMIGO pilot allowlist. It displays immutable source identity separately from local visibility, availability, publication and price override state; exact candidate/diff checksums, active pointers and historical failed runs remain visible. OWNER and ADMIN authenticate through separate short-lived synthetic sessions in an HttpOnly SameSite cookie. Bulk preparation, OWNER approval and ADMIN activation require exact target IDs/checksums, typed impact confirmation, correlation/idempotency keys and server-side role re-evaluation. Local session tokens remain only under ignored `.local` state and can be copied through a PowerShell helper without terminal disclosure. No generic database editor, production auth provider or Phase 1C module was introduced.
+The local-only Phase 1B.1 `/admin/catalog` established the 32-ID bounded PostgreSQL read model, separate source/local state and short-lived synthetic OWNER/ADMIN sessions in an HttpOnly SameSite cookie. Phase 1B.2 now expands only the authorized staff projection to the full normalized source inventory: a readable category hierarchy, server-filtered/paginated variants and diffs, safe sealed-manifest counts, durable stage/checkpoint progress, active and rollback pointers, and immutable review/bulk history. Raw snapshots, source hashes, parser internals, object keys and credentials stay outside the page. Local session tokens remain only under ignored `.local` state and can be copied through a PowerShell helper without terminal disclosure.
 
-The Phase 1B.2 command layer adds a separate two-step preview/apply contract for material-variant local overlays. Category means the selected normalized category plus its descendants; filters are limited to exact category/system/current visibility/review/availability/publication/source-price status, and manual selection accepts at most 500 explicit business-entry IDs. Category/filter resolution has a defensive 10,000-target transaction cap; these are implementation safety bounds, not assortment or business-policy limits. Only rows whose requested state differs are affected. Replays return the original immutable result, while a new command against a stale preview fails closed. The expanded human-facing controls and large-list interaction remain the next `/admin/catalog` stage.
+The Phase 1B.2 command layer exposes the two-step preview/apply contract for material-variant local overlays in the control room. Category means the selected normalized category plus its descendants; filters are limited to exact category/system/current visibility/review/availability/publication/source-price status, and manual selection accepts at most 500 explicit business-entry IDs. Category/filter resolution has a defensive 10,000-target transaction cap; these are implementation safety bounds, not assortment or business-policy limits. Only rows whose requested state differs are affected. Replays return the original immutable result, while a new command against a stale preview fails closed. Catalog/price review, preparation, composition, approval, activation, rollback, cancellation and retry remain separate server-authorized actions. The responsive layout preserves visible focus, keyboard operation, 44px control targets and narrow-screen containment without introducing a generic database editor, production auth provider or Phase 1C module.
 
 ## 14. Dependencies, risks and open questions
 
@@ -174,7 +176,7 @@ Dependencies: all domain modules, RBAC/auth, sync/media/storage/data/API/securit
 
 ## 15. Связанные требования and history
 
-Links: `FR-ADMIN-*`, `RBAC-*`, `NFR-AUDIT-*`, `ADMIN-SPEC-001`–`032`.
+Links: `FR-ADMIN-*`, `RBAC-*`, `NFR-AUDIT-*`, `ADMIN-SPEC-001`–`034`.
 
 | Версия | Дата | Изменение |
 |---|---|---|
@@ -183,3 +185,4 @@ Links: `FR-ADMIN-*`, `RBAC-*`, `NFR-AUDIT-*`, `ADMIN-SPEC-001`–`032`.
 | 0.3.0 | 2026-08-02 | Добавлены authority-aware read-only AMIGO fields, отдельные Business Owner commands и явное разделение PostgreSQL media metadata/object-storage binaries по `OWNER-DECISION-008`. |
 | 0.5.0 | 2026-08-03 | Зафиксирован реализованный local-only `/admin/catalog`: 32-ID bounded read model, OWNER/ADMIN HttpOnly sessions, exact diff/bulk/approval/activation и отдельные overlay/override commands. |
 | 0.6.0 | 2026-08-03 | Implemented the Phase 1B.2 exact category-subtree/filter/selected bulk preview and atomic OWNER apply contract with stale-preview rejection, immutable before/after evidence and idempotent replay; expanded admin UI remains the next stage. |
+| 0.7.0 | 2026-08-03 | Expanded `/admin/catalog` to the full normalized inventory with server filters/pages, hierarchy facets, safe manifest and durable-run progress, paginated diff review, immutable histories and the exact review/bulk/composition/activation/rollback workflow in a responsive keyboard-operable control room. |

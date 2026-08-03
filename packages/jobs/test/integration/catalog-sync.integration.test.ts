@@ -12,7 +12,7 @@ import {
   parseWorkerEnvironment,
   type WorkerEnvironment,
 } from '@project-name/config/server';
-import { createCatalogManagementAdapter } from '@project-name/db';
+import { createCatalogManagementAdapter, createCatalogReadAdapter } from '@project-name/db';
 import type { JobHelpers } from 'graphile-worker';
 import { Pool, type PoolClient, type QueryResult, type QueryResultRow } from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -58,6 +58,7 @@ const services = createCatalogJobServices(
   () => ({ maximumBytes: 1_048_576, maximumItemsPerBatch: 2, objectStorage }),
 );
 const management = createCatalogManagementAdapter(databaseEnvironment);
+const catalogRead = createCatalogReadAdapter(databaseEnvironment);
 const versionHelpers = {
   query: <T extends QueryResultRow>(text: string, values?: unknown[]): Promise<QueryResult<T>> =>
     pool.query<T>(text, values),
@@ -239,6 +240,7 @@ beforeAll(async () => {
   );
 });
 afterAll(async () => {
+  await catalogRead.close();
   await management.close();
   await pool.end();
   await migrationPool.end();
@@ -1056,6 +1058,72 @@ describe.sequential('catalog synchronization pipeline', () => {
       },
       versionHelpers,
     );
+    const adminOverview = await catalogRead.getAdminOverview();
+    const adminRelease = adminOverview.releases.find(
+      (release) => release.syncRunId === firstSyncRunId,
+    );
+    expect(adminRelease?.bulkCommandCount).toBe(3);
+    expect(adminRelease?.catalogUnapprovedDifferenceCount).toBe(0);
+    expect(adminRelease?.compositionCount).toBe(3);
+    expect(adminRelease?.manifest).toMatchObject({
+      complete: true,
+      counts: {
+        categories: 1,
+        materialVariants: 1,
+        models: 1,
+        systems: 1,
+      },
+      status: 'COMPLETE',
+    });
+    expect(adminRelease?.priceUnapprovedDifferenceCount).toBe(0);
+    expect(adminRelease?.publicationPrepared).toBe(true);
+    expect(adminRelease?.reviewBatchCount).toBe(2);
+    expect(adminRelease?.variantCount).toBe(1);
+    expect(adminOverview.summary).toMatchObject({
+      categoryCount: 1,
+      materialVariantCount: 1,
+      modelCount: 1,
+      sourceRemovedCount: 0,
+      systemCount: 1,
+    });
+    expect(
+      adminOverview.runs.find((run) => run.id === firstSyncRunId)?.stages.length,
+    ).toBeGreaterThanOrEqual(8);
+    expect(adminOverview.reviewHistory).toHaveLength(2);
+    expect(adminOverview.bulkHistory).toHaveLength(3);
+
+    const adminVariants = await catalogRead.listAdminVariants({
+      availability: 'INQUIRY_ONLY',
+      media: 'READY',
+      price: 'AVAILABLE',
+      publication: 'PUBLISHED',
+      review: 'APPROVED',
+      sourceStatus: 'ACTIVE',
+      visibility: 'VISIBLE',
+    });
+    expect(adminVariants).toMatchObject({
+      limit: 50,
+      offset: 0,
+      total: 1,
+    });
+    expect(adminVariants.items[0]).toMatchObject({
+      categoryPath: 'Рулонные ткани',
+      sourcePriceStatus: 'AVAILABLE',
+    });
+    const adminCategoryId = adminVariants.categories[0]?.id;
+    if (adminCategoryId === undefined) throw new Error('Admin category facet is unavailable.');
+    await expect(
+      catalogRead.listAdminVariants({ categoryId: adminCategoryId, limit: 1, offset: 0 }),
+    ).resolves.toMatchObject({ total: 1 });
+
+    await expect(
+      catalogRead.listAdminDifferences({
+        limit: 1,
+        offset: 0,
+        scope: 'PRICE',
+        syncRunId: firstSyncRunId,
+      }),
+    ).resolves.toMatchObject({ limit: 1, offset: 0, total: 2 });
     await expect(
       pool.query(
         `UPDATE catalog_difference_review_batch SET safe_reason = 'forbidden runtime mutation'

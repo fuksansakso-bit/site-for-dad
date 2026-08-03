@@ -96,7 +96,15 @@ test.describe('PLAN-1A-AC-002 Foundation browser smoke', () => {
 
     const admin = await page.goto('/admin/catalog');
     expect(admin?.status()).toBe(200);
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      'Редакция полного каталога',
+    );
     await expect(page.locator('input[name="token"]')).toHaveAttribute('type', 'password');
     await expect(page.locator('body')).not.toContainText('798d5513');
+    await page.keyboard.press('Tab');
+    await expect(page.locator('input[name="token"]')).toBeFocused();
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+    ).toBe(true);
   });
 });

@@ -1,11 +1,18 @@
 'use server';
 
-import { amigoPilotCatalogSourceId } from '@project-name/catalog';
+import {
+  amigoPilotCatalogSourceId,
+  type CatalogBusinessBulkPreview,
+  type CatalogBusinessBulkResult,
+} from '@project-name/catalog';
 import { IdentityError } from '@project-name/identity';
 import {
   enqueueCatalogSourceDiscovery,
+  enqueueCatalogDifferenceReview,
   enqueueCatalogVersionActivation,
   enqueueCatalogVersionApproval,
+  enqueueCatalogVersionRollback,
+  requestCatalogSyncCancellation,
 } from '@project-name/jobs';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
@@ -14,12 +21,18 @@ import { randomUUID } from 'node:crypto';
 import {
   activateReleaseFormSchema,
   approveReleaseFormSchema,
+  type CatalogBulkPreparedRequest,
+  composePublicationFormSchema,
   formDataRecord,
   localPriceOverrideFormSchema,
   overlayFormSchema,
+  parseCatalogBulkPreviewForm,
+  parseReviewDifferencesForm,
   preparePublicationFormSchema,
   removeLocalPriceOverrideFormSchema,
+  rollbackReleaseFormSchema,
   rublesToMinorUnits,
+  syncRunCommandFormSchema,
 } from '../../../lib/catalog-admin-command';
 import {
   clearCatalogAdminSession,
@@ -116,7 +129,15 @@ export async function prepareCatalogPublication(formData: FormData): Promise<nev
       expectedVariantCount: input.expectedVariantCount,
       syncRunId: input.syncRunId,
     });
-    await management.composeCatalogVersion({
+  }, 'CATALOG_PUBLICATION_PREPARED');
+}
+
+export async function composeCatalogPublication(formData: FormData): Promise<never> {
+  return finishAdminCommand(async () => {
+    const input = composePublicationFormSchema.parse(formDataRecord(formData));
+    const principal = await requireCatalogAdminPrincipal('OWNER');
+    const { correlationId } = commandIdentity('compose-publication');
+    await getWebCatalogManagement().composeCatalogVersion({
       actorId: principal.actorId,
       catalogSourceId: input.catalogSourceId,
       catalogVersionId: input.catalogVersionId,
@@ -125,7 +146,35 @@ export async function prepareCatalogPublication(formData: FormData): Promise<nev
       expectedVariantCount: input.expectedVariantCount,
       syncRunId: input.syncRunId,
     });
-  }, 'CATALOG_PUBLICATION_PREPARED');
+  }, 'CATALOG_COMPOSITION_FIXED');
+}
+
+export async function reviewCatalogDifferences(formData: FormData): Promise<never> {
+  return finishAdminCommand(async () => {
+    const input = parseReviewDifferencesForm(formData);
+    const principal = await requireCatalogAdminPrincipal('OWNER');
+    const command = commandIdentity('review-differences');
+    await enqueueCatalogDifferenceReview(getWebCatalogJobPool(), {
+      catalogSourceId: input.catalogSourceId,
+      ...(input.scope === 'CATALOG'
+        ? { catalogVersionId: input.catalogVersionId }
+        : { priceVersionId: input.priceVersionId as string }),
+      correlationId: command.correlationId,
+      differenceIds: input.differenceIds,
+      expectedDifferenceChecksum:
+        input.scope === 'CATALOG'
+          ? input.catalogDifferenceChecksum
+          : (input.priceDifferenceChecksum as string),
+      idempotencyKey: command.idempotencyKey,
+      resolution: input.resolution,
+      reviewedByActorId: principal.actorId,
+      reviewReason: input.reason,
+      schemaVersion: 1,
+      scope: input.scope,
+      selectionMode: input.selectionMode,
+      syncRunId: input.syncRunId,
+    });
+  }, 'CATALOG_REVIEW_ACCEPTED');
 }
 
 export async function approveCatalogRelease(formData: FormData): Promise<never> {
@@ -224,4 +273,144 @@ export async function removeCatalogLocalPriceOverride(formData: FormData): Promi
       reason: input.reason,
     });
   }, 'CATALOG_PRICE_OVERRIDE_REMOVED');
+}
+
+export async function cancelCatalogSync(formData: FormData): Promise<never> {
+  return finishAdminCommand(async () => {
+    const input = syncRunCommandFormSchema.parse(formDataRecord(formData));
+    if (input.confirmation !== 'ОСТАНОВИТЬ') throw new Error('CATALOG_ADMIN_VALIDATION');
+    const principal = await requireCatalogAdminPrincipal('OWNER');
+    const { correlationId } = commandIdentity('cancel-sync');
+    await requestCatalogSyncCancellation(getWebCatalogJobPool(), {
+      actorId: principal.actorId,
+      catalogSourceId: input.catalogSourceId,
+      correlationId,
+      reason: input.reason,
+      syncRunId: input.syncRunId,
+    });
+  }, 'CATALOG_SYNC_CANCELLATION_ACCEPTED');
+}
+
+export async function retryCatalogSync(formData: FormData): Promise<never> {
+  return finishAdminCommand(async () => {
+    const input = syncRunCommandFormSchema.parse(formDataRecord(formData));
+    if (input.confirmation !== 'ПОВТОРИТЬ') throw new Error('CATALOG_ADMIN_VALIDATION');
+    const principal = await requireCatalogAdminPrincipal('OWNER');
+    const command = commandIdentity('retry-sync');
+    await enqueueCatalogSourceDiscovery(getWebCatalogJobPool(), {
+      catalogSourceId: input.catalogSourceId,
+      correlationId: command.correlationId,
+      idempotencyKey: command.idempotencyKey,
+      requestedByActorId: principal.actorId,
+      retryOfSyncRunId: input.syncRunId,
+      schemaVersion: 1,
+      trigger: 'MANUAL',
+    });
+  }, 'CATALOG_SYNC_RETRY_ACCEPTED');
+}
+
+export async function rollbackCatalogRelease(formData: FormData): Promise<never> {
+  return finishAdminCommand(async () => {
+    const input = rollbackReleaseFormSchema.parse(formDataRecord(formData));
+    const principal = await requireCatalogAdminPrincipal('OWNER');
+    const command = commandIdentity('rollback-release');
+    await enqueueCatalogVersionRollback(getWebCatalogJobPool(), {
+      approvedByActorId: principal.actorId,
+      catalogSourceId: amigoPilotCatalogSourceId,
+      ...(input.catalogRollbackTargetId === undefined
+        ? {}
+        : {
+            catalogRollbackTargetId: input.catalogRollbackTargetId,
+            expectedActiveCatalogVersionId: input.expectedActiveCatalogVersionId as string,
+          }),
+      correlationId: command.correlationId,
+      idempotencyKey: command.idempotencyKey,
+      ...(input.priceRollbackTargetId === undefined
+        ? {}
+        : {
+            expectedActivePriceVersionId: input.expectedActivePriceVersionId as string,
+            priceRollbackTargetId: input.priceRollbackTargetId,
+          }),
+      rollbackReason: input.reason,
+      rolledBackByActorId: principal.actorId,
+      schemaVersion: 1,
+    });
+  }, 'CATALOG_ROLLBACK_ACCEPTED');
+}
+
+export interface CatalogBulkApplyToken {
+  readonly correlationId: string;
+  readonly expectedSelectionChecksum: string;
+  readonly expectedTargetCount: number;
+  readonly idempotencyKey: string;
+  readonly request: CatalogBulkPreparedRequest;
+}
+
+export type CatalogBulkPreviewActionState =
+  | { readonly notice: string; readonly status: 'ERROR' }
+  | {
+      readonly applyToken: CatalogBulkApplyToken;
+      readonly notice: 'CATALOG_BULK_PREVIEW_READY';
+      readonly preview: CatalogBusinessBulkPreview;
+      readonly status: 'PREVIEW';
+    };
+
+export type CatalogBulkApplyActionState =
+  | { readonly notice: string; readonly status: 'ERROR' }
+  | {
+      readonly notice: 'CATALOG_BULK_APPLIED';
+      readonly result: CatalogBusinessBulkResult;
+      readonly status: 'APPLIED';
+    };
+
+export async function previewCatalogBusinessBulk(
+  formData: FormData,
+): Promise<CatalogBulkPreviewActionState> {
+  try {
+    const request = parseCatalogBulkPreviewForm(formData);
+    const principal = await requireCatalogAdminPrincipal('OWNER');
+    const command = commandIdentity('bulk-apply');
+    const preview = await getWebCatalogManagement().previewBusinessOverlayBulk({
+      ...request,
+      actorId: principal.actorId,
+      correlationId: command.correlationId,
+    });
+    return {
+      applyToken: {
+        correlationId: command.correlationId,
+        expectedSelectionChecksum: preview.selectionChecksum,
+        expectedTargetCount: preview.targetCount,
+        idempotencyKey: command.idempotencyKey,
+        request,
+      },
+      notice: 'CATALOG_BULK_PREVIEW_READY',
+      preview,
+      status: 'PREVIEW',
+    };
+  } catch (error) {
+    return { notice: safeFailureCode(error), status: 'ERROR' };
+  }
+}
+
+export async function applyCatalogBusinessBulk(
+  token: CatalogBulkApplyToken,
+  confirmation: string,
+): Promise<CatalogBulkApplyActionState> {
+  try {
+    const principal = await requireCatalogAdminPrincipal('OWNER');
+    const result = await getWebCatalogManagement().applyBusinessOverlayBulk({
+      ...token.request,
+      actorId: principal.actorId,
+      confirmation,
+      correlationId: token.correlationId,
+      expectedSelectionChecksum: token.expectedSelectionChecksum,
+      expectedTargetCount: token.expectedTargetCount,
+      idempotencyKey: token.idempotencyKey,
+    });
+    revalidatePath('/admin/catalog');
+    revalidatePath('/catalog');
+    return { notice: 'CATALOG_BULK_APPLIED', result, status: 'APPLIED' };
+  } catch (error) {
+    return { notice: safeFailureCode(error), status: 'ERROR' };
+  }
 }

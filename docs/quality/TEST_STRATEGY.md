@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A baseline executed; Phase 1B.1 catalog pilot tests authorized/in progress; later/production tests gated |
-| Версия | 0.5.0 |
+| Статус | Phase 1A baseline executed; Phase 1B.1 real catalog/storage/publication acceptance and final CI-equivalent gate passed; later/production tests gated |
+| Версия | 0.6.0 |
 | Дата | 2026-08-03 |
 | Requirements | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) and profile specs |
 | Acceptance | [ACCEPTANCE_CRITERIA.md](../specs/01-product/ACCEPTANCE_CRITERIA.md) |
@@ -162,6 +162,12 @@ The provider-neutral `ci:verify` pipeline passed 9/9 stages in the working tree 
 
 On Windows 11 with Docker Desktop 4.84.0 / Engine 29.6.2, digest-pinned VersityGW `v1.4.1` passed 15/15 automated contract cases (86.45 s, full harness exit 0). The size matrix passed byte-for-byte; real AMIGO JPEG SHA-256 was `ac86fc976afc2063cc97e1528611c978a348f357d26c8fe3c59b7c23f113d0cd`. Signed read/write, path-style SigV4, multipart completion/abort, negative anonymous access, timeout/retry/unavailable mapping, concurrency/idempotence/dedup, graceful restart, Docker Desktop auto-recovery and named-volume persistence passed. This gate permits continuation of the existing media WIP but does not itself claim media import or publication success.
 
+### 13.2. Phase 1B.1 real publication and recovery evidence
+
+Real manual run `9bd1a4f8-e456-4617-9e16-7f5604c1c65c` used a new correlation ID, processed 275/275 items with zero failures, produced exact 32-variant/40-entry catalog composition and 32-record price version, then passed separate OWNER approval and ADMIN activation as CatalogVersion/PriceVersion v1. The public API returned 32 items from those exact active IDs, rejected unknown filters/stale media references and delivered 32/32 primary images with response-body SHA equal to ETag. Provider-neutral storage re-read all 59 allowlisted assets (8,340,101 bytes) byte-for-byte; the 515,180-byte AMIGO JPEG matched `ac86fc…d0cd` through both StoragePort and signed read. Graceful full-environment restart preserved the active versions, database history and all objects. No-op manual repeat `aee135bd-855a-4fb6-a8e1-2fe60e61728a` completed 275/275 with zero failures, created no catalog/price version and left entity/price/media/link counts and active pointers unchanged. Historical run `798d5513-27b1-48e3-ab8e-389eeb672db4` remains `FAILED / CATALOG_PIPELINE_STORAGE_UNAVAILABLE`; recovery lineage remains recorded through `f9407db3-9e82-4174-9e21-87528bdd7092`. Machine evidence is regenerated locally by `pnpm test:catalog-pilot` without logging credentials or object keys.
+
+The final Windows CI-equivalent run passed 9/9 stages with Node `24.18.1`, pnpm `11.18.0`, PostgreSQL `18.4`, Docker Engine `29.6.2`, Playwright `1.62.1` and digest-pinned VersityGW `v1.4.1`. It included frozen installation, documentation/scope/boundary validation, lint, strict typecheck, coverage, fresh/upgrade/recovery database paths, the 15-case storage gate, production build, generated-canary artifact scan, 25/25 browser scenarios across Chromium/Firefox/WebKit/narrow/reduced-motion, committed-secret scan and a critical dependency advisory scan.
+
 ## 14. Dependencies, risks and open questions
 
 Dependencies: all specs/ADRs/evaluations, implementation stack/environments, approved fixtures/business data/support matrix. Open: numeric budgets/thresholds, real price/source fixtures, browser/AT matrix, provider sandboxes, test tooling/owners, UAT roles, security test scope and retention of artifacts. Risks: fake fixtures mistaken production truth, flaky E2E, unlicensed media, provider dependence, automated a11y/AI false confidence and unsafe production testing.
@@ -175,3 +181,4 @@ Dependencies: all specs/ADRs/evaluations, implementation stack/environments, app
 | 0.3.0 | 2026-08-02 | Added executed Phase 1A counts and clean-clone CI evidence without claiming any gated business/production scenario passed. |
 | 0.4.0 | 2026-08-02 | Marked Phase 1B.1 pilot tests required/in progress after explicit owner authorization. |
 | 0.5.0 | 2026-08-03 | Added and recorded the passed VersityGW real-image/signed/multipart/failure/restart contract gate from `OWNER-DECISION-011`. |
+| 0.6.0 | 2026-08-03 | Recorded real 32-variant publication, 59-object byte/SHA verification, public delivery, graceful restart, historical failed-run preservation and no-op repeat evidence. |

@@ -22,6 +22,7 @@ const allowedQueryKeys = new Set([
   'system',
   'zebra',
 ]);
+const optionalEmptyQueryKeys = new Set(['availability', 'category', 'color', 'cursor', 'system']);
 
 const availabilityLabels = {
   INQUIRY_ONLY: 'Наличие по запросу',
@@ -50,7 +51,9 @@ function rawQuery(parameters: SearchParameters): Record<string, string> {
         throw new CatalogPublicQueryError();
       }
       const value = values[0];
-      if (value !== undefined) result[key] = value;
+      if (value !== undefined && !(value === '' && optionalEmptyQueryKeys.has(key))) {
+        result[key] = value;
+      }
     }
     return result;
   }
@@ -59,7 +62,7 @@ function rawQuery(parameters: SearchParameters): Record<string, string> {
     if (!allowedQueryKeys.has(key) || typeof value !== 'string') {
       throw new CatalogPublicQueryError();
     }
-    result[key] = value;
+    if (!(value === '' && optionalEmptyQueryKeys.has(key))) result[key] = value;
   }
   return result;
 }

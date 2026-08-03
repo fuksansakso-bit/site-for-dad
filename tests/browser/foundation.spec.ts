@@ -69,4 +69,34 @@ test.describe('PLAN-1A-AC-002 Foundation browser smoke', () => {
       ).toBe(true);
     }
   });
+
+  test('keeps the catalog fail closed without an active local data plane', async ({
+    page,
+    request,
+  }) => {
+    const response = await page.goto('/catalog');
+
+    expect(response?.status()).toBe(200);
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      'Материалы, которые управляют светом',
+    );
+    await expect(page.locator('body')).toContainText('Каталог сейчас недоступен');
+    await expect(page.locator('body')).not.toContainText('shop.amigo.ru');
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+    ).toBe(true);
+
+    const unavailable = await request.get('/api/v1/catalog/materials');
+    expect(unavailable.status()).toBe(503);
+    const unavailableText = await unavailable.text();
+    expect(unavailableText).not.toMatch(/objectKey|sourceHash|password|postgresql:\/\//i);
+
+    const invalid = await request.get('/api/v1/catalog/materials?unsupported=true');
+    expect(invalid.status()).toBe(400);
+
+    const admin = await page.goto('/admin/catalog');
+    expect(admin?.status()).toBe(200);
+    await expect(page.locator('input[name="token"]')).toHaveAttribute('type', 'password');
+    await expect(page.locator('body')).not.toContainText('798d5513');
+  });
 });

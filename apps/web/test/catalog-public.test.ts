@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 
 import type { CatalogPublicSnapshot } from '@project-name/catalog';
 import { publicCatalogResponseSchema } from '@project-name/contracts/catalog';
+import { StorageError } from '@project-name/storage';
 import { NextRequest } from 'next/server';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -120,6 +121,14 @@ const snapshot: CatalogPublicSnapshot = {
 };
 
 describe('public catalog query projection', () => {
+  it('treats empty optional HTML select values as absent filters', () => {
+    expect(
+      parseCatalogPublicQuery(
+        new URLSearchParams({ availability: '', category: '', color: '', q: '49129', system: '' }),
+      ),
+    ).toMatchObject({ q: '49129' });
+  });
+
   it('filters only verified facets and binds pagination cursor to version and query', () => {
     const query = parseCatalogPublicQuery(new URLSearchParams({ limit: '1' }));
     const first = selectCatalogPublicPage(snapshot, query, signingKey);
@@ -234,5 +243,20 @@ describe('public catalog HTTP boundaries', () => {
       assetId,
     );
     expect(corrupted.status).toBe(503);
+
+    const unavailableHandler = createPublicCatalogMediaHandler(() => ({
+      read: { getPublicCatalog: async () => snapshot },
+      storage: {
+        get: async () => {
+          throw new StorageError('STORAGE_DEPENDENCY_UNAVAILABLE', 'storage unavailable');
+        },
+      },
+    }));
+    const unavailable = await unavailableHandler(
+      new NextRequest(`http://localhost/api/v1/catalog/media/${assetId}?v=${versionId}`),
+      assetId,
+    );
+    expect(unavailable.status).toBe(503);
+    expect(await unavailable.text()).not.toMatch(/storage unavailable|objectKey|catalog\/private/);
   });
 });

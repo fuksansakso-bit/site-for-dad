@@ -1,0 +1,45 @@
+{
+  "name": "@project-name/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev --hostname 127.0.0.1 --port 3000",
+    "lint": "eslint . --max-warnings=0",
+    "start": "next start --hostname 127.0.0.1 --port 3000",
+    "test": "vitest run --config vitest.config.ts",
+    "test:coverage": "vitest run --coverage --config vitest.config.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@project-name/catalog": "workspace:*",
+    "@project-name/config": "workspace:*",
+    "@project-name/contracts": "workspace:*",
+    "@project-name/db": "workspace:*",
+    "@project-name/identity": "workspace:*",
+    "@project-name/jobs": "workspace:*",
+    "@project-name/observability": "workspace:*",
+    "@project-name/storage": "workspace:*",
+    "next": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@project-name/tooling": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "eslint-config-next": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "projectName": {
+    "layer": "app",
+    "responsibility": "Minimal same-origin web/BFF shell and safe technical health surfaces.",
+    "publicInterface": [
+      "HTTP application"
+    ]
+  }
+}

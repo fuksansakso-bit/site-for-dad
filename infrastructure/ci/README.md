@@ -1,0 +1,5 @@
+# Provider-neutral verification pipeline
+
+`pipeline.json` is the fail-closed stage contract. `pnpm ci:verify` executes it on a Windows 11 runner without a hosting-vendor dependency, deployment or paid services. The Phase 1B.1 storage contract additionally runs through `pnpm test:storage` against the exact digest-pinned VersityGW Compose service and one allowlisted AMIGO gate image.
+
+The runner needs pinned Node.js, pnpm and PostgreSQL plus Docker with Linux containers, Compose and network access to the package advisory registry, Playwright browser distribution, the pinned VersityGW image and the exact allowlisted gate image. Storage tests allocate unique containers and three unique Docker named volumes, verify them, then remove only those exact disposable resources. Generated root credentials and signed URLs are never written to logs/evidence. General evidence remains under ignored `.local/verification/`; storage-gate evidence remains under the ignored per-user cache and can be collected by any future CI provider.

@@ -1,0 +1,55 @@
+{
+  "name": "@project-name/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "import": "./dist/client.js"
+    }
+  },
+  "scripts": {
+    "build": "prisma generate --config prisma.config.ts && tsc -p tsconfig.build.json",
+    "db:generate": "prisma generate --config prisma.config.ts",
+    "db:migrate:deploy": "prisma migrate deploy --config prisma.config.ts",
+    "db:migrate:diff": "prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code --config prisma.config.ts",
+    "db:migrate:resolve": "prisma migrate resolve --config prisma.config.ts",
+    "db:migrate:status": "prisma migrate status --config prisma.config.ts",
+    "db:validate": "prisma validate --config prisma.config.ts",
+    "lint": "eslint . --max-warnings=0",
+    "test": "prisma generate --config prisma.config.ts && vitest run --config vitest.config.ts",
+    "test:coverage": "prisma generate --config prisma.config.ts && vitest run --coverage --config vitest.config.ts",
+    "test:integration": "prisma generate --config prisma.config.ts && vitest run --config vitest.integration.config.ts",
+    "test:scale": "prisma generate --config prisma.config.ts && vitest run --config vitest.scale.config.ts",
+    "typecheck": "prisma generate --config prisma.config.ts && tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "catalog:",
+    "@prisma/client": "catalog:",
+    "@project-name/config": "workspace:*",
+    "@project-name/catalog": "workspace:*",
+    "@project-name/observability": "workspace:*",
+    "pg": "catalog:"
+  },
+  "devDependencies": {
+    "@project-name/tooling": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/pg": "catalog:",
+    "prisma": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "projectName": {
+    "layer": "db",
+    "responsibility": "PostgreSQL adapter, Phase 1B.2 catalog source/normalized/overlay schema, migration tooling, and readiness checks.",
+    "publicInterface": [
+      ".",
+      "./client"
+    ]
+  }
+}

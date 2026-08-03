@@ -46,6 +46,28 @@ const bucketsForEnvironment = (environment: StorageEnvironment): Record<ObjectZo
   quarantine: environment.S3_BUCKET_QUARANTINE,
 });
 
+const immutableWriteTails = new Map<string, Promise<void>>();
+
+async function withImmutableWriteLock<T>(key: string, operation: () => Promise<T>): Promise<T> {
+  const preceding = immutableWriteTails.get(key) ?? Promise.resolve();
+  let release = (): void => undefined;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const tail = preceding.then(() => gate);
+  immutableWriteTails.set(key, tail);
+
+  await preceding;
+  try {
+    return await operation();
+  } finally {
+    release();
+    if (immutableWriteTails.get(key) === tail) {
+      immutableWriteTails.delete(key);
+    }
+  }
+}
+
 function sha256Hex(value: Uint8Array): string {
   return createHash('sha256').update(value).digest('hex');
 }
@@ -285,16 +307,19 @@ export class S3ObjectStorage implements ObjectStorage {
     assertContentType(input.contentType);
     assertContentLength(input.body.byteLength, this.#environment.S3_MAX_OBJECT_BYTES);
     const checksumSha256 = sha256Hex(input.body);
-    try {
-      if (input.body.byteLength > this.#environment.S3_MULTIPART_THRESHOLD_BYTES) {
-        await this.#putMultipart(input, bucket, checksumSha256);
-      } else {
-        await this.#putSingle(input, bucket, checksumSha256);
+    const lockKey = `${this.#environment.S3_ENDPOINT}\u0000${bucket}\u0000${input.locator.key}`;
+    return withImmutableWriteLock(lockKey, async () => {
+      try {
+        if (input.body.byteLength > this.#environment.S3_MULTIPART_THRESHOLD_BYTES) {
+          await this.#putMultipart(input, bucket, checksumSha256);
+        } else {
+          await this.#putSingle(input, bucket, checksumSha256);
+        }
+        return await this.head(input.locator);
+      } catch (error) {
+        return this.#resolveIdempotentConflict(input, checksumSha256, error);
       }
-      return await this.head(input.locator);
-    } catch (error) {
-      return this.#resolveIdempotentConflict(input, checksumSha256, error);
-    }
+    });
   }
 
   async head(locator: ObjectLocator): Promise<StorageObjectMetadata> {

@@ -16,22 +16,32 @@ export {
 export {
   automaticCatalogDiscoveryPayload,
   catalogActivateVersionPayloadSchema,
+  catalogApproveVersionPayloadSchema,
   catalogBuildDiffPayloadSchema,
   catalogJobIdentifiers,
   catalogJobQueueName,
   catalogMediaImportPayloadSchema,
   catalogNormalizePayloadSchema,
+  catalogRollbackVersionPayloadSchema,
   catalogSourceDiscoveryPayloadSchema,
   catalogStageIdempotencyKey,
   catalogSyncRunPayloadSchema,
   type CatalogActivateVersionPayload,
+  type CatalogApproveVersionPayload,
   type CatalogBuildDiffPayload,
   type CatalogJobIdentifier,
   type CatalogMediaImportPayload,
   type CatalogNormalizePayload,
+  type CatalogRollbackVersionPayload,
   type CatalogSourceDiscoveryPayload,
   type CatalogSyncRunPayload,
 } from './catalog/contracts.js';
+export {
+  activateCatalogVersions,
+  approveCatalogVersions,
+  buildCatalogVersionDiff,
+  rollbackCatalogVersions,
+} from './catalog/versioning.js';
 export {
   CatalogPipelineError,
   catalogPipelineErrorCodes,

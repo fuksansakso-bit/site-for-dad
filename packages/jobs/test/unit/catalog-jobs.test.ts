@@ -2,7 +2,10 @@ import { describe, expect, it, vi } from 'vitest';
 
 import {
   automaticCatalogDiscoveryPayload,
+  catalogActivateVersionPayloadSchema,
+  catalogApproveVersionPayloadSchema,
   catalogJobIdentifiers,
+  catalogRollbackVersionPayloadSchema,
   catalogSourceDiscoveryPayloadSchema,
 } from '../../src/catalog/contracts.js';
 import {
@@ -15,13 +18,15 @@ import { createCatalogTaskList } from '../../src/catalog/task.js';
 const catalogSourceId = '00000000-0000-4000-8000-000000000103';
 
 describe('catalog synchronization job contracts', () => {
-  it('registers exactly the six owner-authorized Phase 1B.1 jobs', () => {
+  it('registers exactly the owner-authorized Phase 1B.1 jobs', () => {
     const services = {
       activateVersion: vi.fn(),
+      approveVersion: vi.fn(),
       buildDiff: vi.fn(),
       discoverSource: vi.fn(),
       importMedia: vi.fn(),
       normalize: vi.fn(),
+      rollbackVersion: vi.fn(),
       synchronize: vi.fn(),
     } satisfies CatalogJobServices;
 
@@ -74,6 +79,48 @@ describe('catalog synchronization job contracts', () => {
         trigger: 'TEST',
       }),
     ).toMatchObject({ retryOfSyncRunId: '798d5513-27b1-48e3-ab8e-389eeb672db4' });
+  });
+
+  it('binds approval, activation and rollback commands to explicit version pairs', () => {
+    const common = {
+      catalogSourceId,
+      correlationId: 'catalog-governance-unit-001',
+      idempotencyKey: 'catalog:governance:unit-001',
+      schemaVersion: 1,
+      syncRunId: '00000000-0000-4000-8000-000000000301',
+    } as const;
+    const catalogVersionId = '00000000-0000-4000-8000-000000000302';
+    const checksum = 'a'.repeat(64);
+
+    expect(() =>
+      catalogApproveVersionPayloadSchema.parse({
+        ...common,
+        approvedByActorId: '00000000-0000-4000-8000-000000000201',
+        approvalReason: 'Reviewed exact pilot diff.',
+        catalogVersionId,
+      }),
+    ).toThrow();
+    expect(
+      catalogActivateVersionPayloadSchema.parse({
+        ...common,
+        activatedByActorId: '00000000-0000-4000-8000-000000000202',
+        activationReason: 'Activate the approved pilot release.',
+        catalogVersionId,
+        expectedCatalogDifferenceChecksum: checksum,
+      }),
+    ).toMatchObject({ catalogVersionId, expectedCatalogDifferenceChecksum: checksum });
+    expect(() =>
+      catalogRollbackVersionPayloadSchema.parse({
+        catalogSourceId,
+        correlationId: 'catalog-rollback-unit-001',
+        idempotencyKey: 'catalog:rollback:unit-001',
+        schemaVersion: 1,
+        approvedByActorId: '00000000-0000-4000-8000-000000000201',
+        rolledBackByActorId: '00000000-0000-4000-8000-000000000202',
+        rollbackReason: 'Recovery test.',
+        expectedActiveCatalogVersionId: catalogVersionId,
+      }),
+    ).toThrow();
   });
 
   it('accepts only safe structured snapshots and rejects raw HTML', () => {

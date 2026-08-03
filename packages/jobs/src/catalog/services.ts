@@ -14,15 +14,23 @@ import type { JobHelpers } from 'graphile-worker';
 import { FoundationJobError } from '../errors.js';
 import {
   type CatalogActivateVersionPayload,
+  type CatalogApproveVersionPayload,
   type CatalogBuildDiffPayload,
   type CatalogMediaImportPayload,
   type CatalogNormalizePayload,
+  type CatalogRollbackVersionPayload,
   type CatalogSourceDiscoveryPayload,
   type CatalogSyncRunPayload,
 } from './contracts.js';
 import { CatalogPipelineError, toCatalogPipelineError } from './errors.js';
 import { normalizeCatalogSnapshots } from './normalizer.js';
 import { importCatalogMedia, type CatalogMediaImportDependencies } from './media.js';
+import {
+  activateCatalogVersions,
+  approveCatalogVersions,
+  buildCatalogVersionDiff,
+  rollbackCatalogVersions,
+} from './versioning.js';
 import {
   catalogSafeSnapshotPayloadSchema,
   emptyCatalogSafeSnapshotPayload,
@@ -49,6 +57,11 @@ export interface CatalogJobServices {
     helpers: JobHelpers,
     signal: AbortSignal,
   ): Promise<void>;
+  approveVersion(
+    payload: CatalogApproveVersionPayload,
+    helpers: JobHelpers,
+    signal: AbortSignal,
+  ): Promise<void>;
   buildDiff(
     payload: CatalogBuildDiffPayload,
     helpers: JobHelpers,
@@ -66,6 +79,11 @@ export interface CatalogJobServices {
   ): Promise<void>;
   normalize(
     payload: CatalogNormalizePayload,
+    helpers: JobHelpers,
+    signal: AbortSignal,
+  ): Promise<void>;
+  rollbackVersion(
+    payload: CatalogRollbackVersionPayload,
     helpers: JobHelpers,
     signal: AbortSignal,
   ): Promise<void>;
@@ -439,19 +457,22 @@ export function createCatalogJobServices(
 
     async buildDiff(payload, helpers, signal) {
       assertRunning(signal);
-      await helpers.query(
-        `
-          UPDATE catalog_sync_run
-          SET status = 'AWAITING_APPROVAL', completed_at = NOW(),
-              last_heartbeat_at = NOW(), updated_at = NOW()
-          WHERE id = $1::uuid
-        `,
-        [payload.syncRunId],
-      );
+      await buildCatalogVersionDiff(payload, helpers);
     },
 
-    async activateVersion(_payload, _helpers, _signal) {
-      throw new CatalogPipelineError('CATALOG_PIPELINE_AUTHORIZATION');
+    async approveVersion(payload, helpers, signal) {
+      assertRunning(signal);
+      await approveCatalogVersions(payload, helpers);
+    },
+
+    async activateVersion(payload, helpers, signal) {
+      assertRunning(signal);
+      await activateCatalogVersions(payload, helpers);
+    },
+
+    async rollbackVersion(payload, helpers, signal) {
+      assertRunning(signal);
+      await rollbackCatalogVersions(payload, helpers);
     },
   };
 }

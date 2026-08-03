@@ -99,7 +99,10 @@ export async function failCatalogExecution(
         `,
         [identifier, payload.idempotencyKey],
       );
-      if (payload.syncRunId !== undefined) {
+      if (
+        payload.syncRunId !== undefined &&
+        !['catalog-activate-version', 'catalog-approve-version'].includes(identifier)
+      ) {
         await client.query(
           `
             UPDATE catalog_sync_run

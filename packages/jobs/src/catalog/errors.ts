@@ -28,6 +28,8 @@ export const catalogPipelineErrorCodes = [
   'CATALOG_PIPELINE_SOURCE_INVALID',
   'CATALOG_PIPELINE_SOURCE_UNAVAILABLE',
   'CATALOG_PIPELINE_STORAGE_UNAVAILABLE',
+  'CATALOG_PIPELINE_VERSION_CONFLICT',
+  'CATALOG_PIPELINE_VERSION_NOT_READY',
 ] as const;
 
 export type CatalogPipelineErrorCode = (typeof catalogPipelineErrorCodes)[number];

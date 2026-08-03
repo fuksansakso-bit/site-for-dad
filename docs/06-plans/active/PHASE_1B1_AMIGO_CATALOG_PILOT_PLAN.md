@@ -83,6 +83,8 @@ Storage recovery evidence 2026-08-03: VersityGW `v1.4.1` image digest `sha256:04
 
 Media recovery evidence 2026-08-03: primary run `f9407db3-9e82-4174-9e21-87528bdd7092` and idempotency repeat `642f2bc2-387b-44fe-9d52-e05cd78e374c` reached `AWAITING_APPROVAL` without publication or activation. All 32 pilot variants have at least one local image; 59 source media objects (8,340,101 bytes) passed full object-storage download and byte/SHA verification, including the 515,180-byte AMIGO JPEG with SHA-256 `ac86fc976afc2063cc97e1528611c978a348f357d26c8fe3c59b7c23f113d0cd`. The repeat created no duplicate source identities, variants, price records, media assets or links; `audit_context.retryOfSyncRunId` preserves the lineage back to failed run `798d5513-27b1-48e3-ab8e-389eeb672db4`.
 
+Versioning implementation evidence 2026-08-03: disposable PostgreSQL integration creates one immutable catalog candidate, one immutable price candidate and exact typed differences on the first fixture run; an identical retry reaches `COMPLETED` by artifact checksum and leaves the combined version count at two. Separate OWNER approval, ADMIN/OWNER activation and OWNER-approved rollback commands are fail-closed, checksum-bound and audited; real activation remains intentionally blocked until Phase 1B.1 business overlays and publication composition are created and reviewed.
+
 ## 7. Stop conditions
 
 Work stops if stable public IDs disappear, access requires credentials/CAPTCHA/bypass, source pages prohibit the selected transport, pilot prices cannot be captured, permitted media cannot pass storage validation, Phase 1A foundation fails, or completion would require configurator/calculator/AI/Phase 1B.2+. Fixtures never substitute for the real pilot.

@@ -10,20 +10,24 @@ import { type z } from 'zod';
 import { runWithJobTimeout } from '../timeout.js';
 import {
   catalogActivateVersionPayloadSchema,
+  catalogApproveVersionPayloadSchema,
   automaticCatalogDiscoveryPayload,
   catalogBuildDiffPayloadSchema,
   catalogJobIdentifiers,
   catalogJobQueueName,
   catalogMediaImportPayloadSchema,
   catalogNormalizePayloadSchema,
+  catalogRollbackVersionPayloadSchema,
   catalogSourceDiscoveryPayloadSchema,
   catalogStageIdempotencyKey,
   catalogSyncRunPayloadSchema,
   type CatalogActivateVersionPayload,
+  type CatalogApproveVersionPayload,
   type CatalogBuildDiffPayload,
   type CatalogJobIdentifier,
   type CatalogMediaImportPayload,
   type CatalogNormalizePayload,
+  type CatalogRollbackVersionPayload,
   type CatalogSourceDiscoveryPayload,
   type CatalogSyncRunPayload,
   type CatalogSyncStagePayload,
@@ -48,9 +52,11 @@ export type CatalogTaskLifecycleSink = (event: CatalogTaskLifecycleEvent) => voi
 
 type AnyCatalogPayload =
   | CatalogActivateVersionPayload
+  | CatalogApproveVersionPayload
   | CatalogBuildDiffPayload
   | CatalogMediaImportPayload
   | CatalogNormalizePayload
+  | CatalogRollbackVersionPayload
   | CatalogSourceDiscoveryPayload
   | CatalogSyncRunPayload;
 
@@ -274,6 +280,16 @@ export function createCatalogTaskList(
         lifecycle,
         (payload, signal) => services.buildDiff(payload, helpers, signal),
       ),
+    [catalogJobIdentifiers.approveVersion]: (candidate, helpers) =>
+      executeTask(
+        catalogJobIdentifiers.approveVersion,
+        catalogApproveVersionPayloadSchema,
+        candidate,
+        helpers,
+        timeoutMilliseconds,
+        lifecycle,
+        (payload, signal) => services.approveVersion(payload, helpers, signal),
+      ),
     [catalogJobIdentifiers.activateVersion]: (candidate, helpers) =>
       executeTask(
         catalogJobIdentifiers.activateVersion,
@@ -283,6 +299,16 @@ export function createCatalogTaskList(
         timeoutMilliseconds,
         lifecycle,
         (payload, signal) => services.activateVersion(payload, helpers, signal),
+      ),
+    [catalogJobIdentifiers.rollbackVersion]: (candidate, helpers) =>
+      executeTask(
+        catalogJobIdentifiers.rollbackVersion,
+        catalogRollbackVersionPayloadSchema,
+        candidate,
+        helpers,
+        timeoutMilliseconds,
+        lifecycle,
+        (payload, signal) => services.rollbackVersion(payload, helpers, signal),
       ),
   };
 }

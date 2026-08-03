@@ -1,6 +1,7 @@
 export {
   createFoundationJobPool,
   enqueueCatalogSourceDiscovery,
+  enqueueCatalogDifferenceReview,
   enqueueCatalogVersionActivation,
   enqueueCatalogVersionApproval,
   enqueueCatalogVersionRollback,
@@ -28,6 +29,7 @@ export {
   catalogMediaBatchIdempotencyKey,
   catalogMediaImportPayloadSchema,
   catalogNormalizePayloadSchema,
+  catalogReviewDifferencesPayloadSchema,
   catalogRollbackVersionPayloadSchema,
   catalogSourceDiscoveryPayloadSchema,
   catalogStageIdempotencyKey,
@@ -39,6 +41,7 @@ export {
   type CatalogJobIdentifier,
   type CatalogMediaImportPayload,
   type CatalogNormalizePayload,
+  type CatalogReviewDifferencesPayload,
   type CatalogRollbackVersionPayload,
   type CatalogSourceDiscoveryPayload,
   type CatalogSyncRunPayload,
@@ -48,7 +51,9 @@ export {
   activateCatalogVersions,
   approveCatalogVersions,
   buildCatalogVersionDiff,
+  reviewCatalogDifferences,
   rollbackCatalogVersions,
+  type CatalogDifferenceReviewResult,
 } from './catalog/versioning.js';
 export {
   CatalogPipelineError,

@@ -12,7 +12,7 @@ const releaseFields = {
   catalogDifferenceChecksum: checksum,
   catalogSourceId: uuid,
   catalogVersionId: uuid,
-  expectedVariantCount: z.coerce.number().int().min(1).max(50),
+  expectedVariantCount: z.coerce.number().int().min(1).max(100_000),
   priceDifferenceChecksum: z.preprocess(optionalFormString, checksum.optional()),
   priceVersionId: z.preprocess(optionalFormString, uuid.optional()),
   syncRunId: uuid,

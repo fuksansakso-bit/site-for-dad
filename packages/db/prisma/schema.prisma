@@ -180,6 +180,7 @@ enum CatalogDifferenceType {
 
 enum CatalogDifferenceResolution {
   PENDING
+  DEFERRED
   KEEP
   HIDE
   ARCHIVE
@@ -189,6 +190,20 @@ enum CatalogDifferenceResolution {
   REJECTED
 
   @@map("catalog_difference_resolution")
+}
+
+enum CatalogDifferenceReviewScope {
+  CATALOG
+  PRICE
+
+  @@map("catalog_difference_review_scope")
+}
+
+enum CatalogDifferenceSelectionMode {
+  ALL
+  SELECTED
+
+  @@map("catalog_difference_selection_mode")
 }
 
 enum CatalogVersionStatus {
@@ -319,6 +334,7 @@ model ActorIdentity {
   grantsAuthored RoleGrant[]        @relation("role_granter")
   sessions       SyntheticSession[]
   auditEvents    AuditEvent[]
+  catalogDifferenceReviews CatalogDifferenceReviewBatch[]
 
   @@unique([provider, subject], map: "actor_identity_provider_subject_key")
   @@map("actor_identity")
@@ -583,6 +599,7 @@ model CatalogSyncRun {
   snapshots                SourceSnapshot[]
   items                    CatalogSyncItem[]
   differences              CatalogSyncDifference[]
+  differenceReviewBatches  CatalogDifferenceReviewBatch[]
   checkpoints              CatalogSyncCheckpoint[]
   importManifest           CatalogImportManifest?
   catalogVersions          CatalogVersion[]
@@ -684,6 +701,33 @@ model CatalogSyncDifference {
   @@map("catalog_sync_difference")
 }
 
+model CatalogDifferenceReviewBatch {
+  id                         String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  syncRunId                  String                         @map("sync_run_id") @db.Uuid
+  catalogVersionId           String?                        @map("catalog_version_id") @db.Uuid
+  priceVersionId             String?                        @map("price_version_id") @db.Uuid
+  scope                      CatalogDifferenceReviewScope
+  resolution                 CatalogDifferenceResolution
+  selectionMode              CatalogDifferenceSelectionMode @map("selection_mode")
+  selectedDifferenceIds      Json                           @map("selected_difference_ids") @db.JsonB
+  selectionChecksum          String                         @map("selection_checksum") @db.Char(64)
+  requestChecksum            String                         @map("request_checksum") @db.Char(64)
+  expectedDifferenceChecksum String                         @map("expected_difference_checksum") @db.Char(64)
+  affectedCount              Int                            @map("affected_count")
+  reviewedByActorId          String                         @map("reviewed_by_actor_id") @db.Uuid
+  safeReason                 String                         @map("safe_reason") @db.VarChar(512)
+  correlationId              String                         @map("correlation_id") @db.VarChar(128)
+  idempotencyKey             String                         @unique(map: "catalog_difference_review_idempotency_key") @map("idempotency_key") @db.VarChar(255)
+  createdAt                  DateTime                       @default(now()) @map("created_at") @db.Timestamptz(6)
+  syncRun                    CatalogSyncRun                 @relation(fields: [syncRunId], references: [id], onDelete: Restrict)
+  catalogVersion             CatalogVersion?                @relation(fields: [catalogVersionId], references: [id], onDelete: Restrict)
+  priceVersion               PriceVersion?                  @relation(fields: [priceVersionId], references: [id], onDelete: Restrict)
+  reviewedByActor            ActorIdentity                  @relation(fields: [reviewedByActorId], references: [id], onDelete: Restrict)
+
+  @@index([syncRunId, scope, createdAt], map: "catalog_difference_review_run_scope_idx")
+  @@map("catalog_difference_review_batch")
+}
+
 model CatalogVersion {
   id                 String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   versionNumber      Int                   @unique(map: "catalog_version_number_key") @map("version_number")
@@ -709,6 +753,7 @@ model CatalogVersion {
   rollbackTarget     CatalogVersion?       @relation("catalog_version_rollback", fields: [rollbackTargetId], references: [id], onDelete: Restrict)
   rollbackSources    CatalogVersion[]      @relation("catalog_version_rollback")
   entries            CatalogVersionEntry[]
+  differenceReviews  CatalogDifferenceReviewBatch[]
 
   @@index([status, createdAt], map: "catalog_version_status_idx")
   @@map("catalog_version")
@@ -1059,6 +1104,7 @@ model PriceVersion {
   rollbackTarget     PriceVersion?        @relation("price_version_rollback", fields: [rollbackTargetId], references: [id], onDelete: Restrict)
   rollbackSources    PriceVersion[]       @relation("price_version_rollback")
   records            PriceVersionRecord[]
+  differenceReviews  CatalogDifferenceReviewBatch[]
 
   @@index([status, createdAt], map: "price_version_status_idx")
   @@map("price_version")

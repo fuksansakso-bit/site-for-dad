@@ -18,6 +18,7 @@ import {
   catalogMediaBatchIdempotencyKey,
   catalogMediaImportPayloadSchema,
   catalogNormalizePayloadSchema,
+  catalogReviewDifferencesPayloadSchema,
   catalogRollbackVersionPayloadSchema,
   catalogSourceDiscoveryPayloadSchema,
   catalogStageIdempotencyKey,
@@ -28,6 +29,7 @@ import {
   type CatalogJobIdentifier,
   type CatalogMediaImportPayload,
   type CatalogNormalizePayload,
+  type CatalogReviewDifferencesPayload,
   type CatalogRollbackVersionPayload,
   type CatalogSourceDiscoveryPayload,
   type CatalogSyncRunPayload,
@@ -57,6 +59,7 @@ type AnyCatalogPayload =
   | CatalogBuildDiffPayload
   | CatalogMediaImportPayload
   | CatalogNormalizePayload
+  | CatalogReviewDifferencesPayload
   | CatalogRollbackVersionPayload
   | CatalogSourceDiscoveryPayload
   | CatalogSyncRunPayload;
@@ -304,6 +307,16 @@ export function createCatalogTaskList(
         timeoutMilliseconds,
         lifecycle,
         (payload, signal) => services.approveVersion(payload, helpers, signal),
+      ),
+    [catalogJobIdentifiers.reviewDifferences]: (candidate, helpers) =>
+      executeTask(
+        catalogJobIdentifiers.reviewDifferences,
+        catalogReviewDifferencesPayloadSchema,
+        candidate,
+        helpers,
+        timeoutMilliseconds,
+        lifecycle,
+        (payload, signal) => services.reviewDifferences(payload, helpers, signal),
       ),
     [catalogJobIdentifiers.activateVersion]: (candidate, helpers) =>
       executeTask(

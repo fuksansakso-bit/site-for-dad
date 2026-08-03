@@ -15,6 +15,7 @@ import {
   type CatalogBuildDiffPayload,
   type CatalogMediaImportPayload,
   type CatalogNormalizePayload,
+  type CatalogReviewDifferencesPayload,
   type CatalogRollbackVersionPayload,
   type CatalogSourceDiscoveryPayload,
   type CatalogSyncRunPayload,
@@ -38,6 +39,7 @@ import {
   activateCatalogVersions,
   approveCatalogVersions,
   buildCatalogVersionDiff,
+  reviewCatalogDifferences,
   rollbackCatalogVersions,
 } from './versioning.js';
 import {
@@ -91,6 +93,11 @@ export interface CatalogJobServices {
     helpers: JobHelpers,
     signal: AbortSignal,
   ): Promise<'CANCELLED' | 'COMPLETED'>;
+  reviewDifferences(
+    payload: CatalogReviewDifferencesPayload,
+    helpers: JobHelpers,
+    signal: AbortSignal,
+  ): Promise<void>;
   rollbackVersion(
     payload: CatalogRollbackVersionPayload,
     helpers: JobHelpers,
@@ -697,6 +704,11 @@ export function createCatalogJobServices(
     async activateVersion(payload, helpers, signal) {
       assertRunning(signal);
       await activateCatalogVersions(payload, helpers);
+    },
+
+    async reviewDifferences(payload, helpers, signal) {
+      assertRunning(signal);
+      await reviewCatalogDifferences(payload, helpers);
     },
 
     async rollbackVersion(payload, helpers, signal) {

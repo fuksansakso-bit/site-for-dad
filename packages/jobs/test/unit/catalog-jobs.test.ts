@@ -10,6 +10,7 @@ import {
   catalogJobIdentifiers,
   catalogMediaBatchIdempotencyKey,
   catalogMediaImportPayloadSchema,
+  catalogReviewDifferencesPayloadSchema,
   catalogRollbackVersionPayloadSchema,
   catalogSourceDiscoveryPayloadSchema,
   catalogSyncCancellationRequestSchema,
@@ -33,6 +34,7 @@ describe('catalog synchronization job contracts', () => {
       discoverSource: vi.fn(),
       importMedia: vi.fn(),
       normalize: vi.fn(),
+      reviewDifferences: vi.fn(),
       rollbackVersion: vi.fn(),
       synchronize: vi.fn(),
     } satisfies CatalogJobServices;
@@ -91,6 +93,7 @@ describe('catalog synchronization job contracts', () => {
       ),
       importMedia: vi.fn(),
       normalize: vi.fn(),
+      reviewDifferences: vi.fn(),
       rollbackVersion: vi.fn(),
       synchronize: vi.fn(),
     } satisfies CatalogJobServices;
@@ -194,6 +197,7 @@ describe('catalog synchronization job contracts', () => {
       discoverSource: vi.fn(),
       importMedia: vi.fn().mockResolvedValue('CONTINUE'),
       normalize: vi.fn(),
+      reviewDifferences: vi.fn(),
       rollbackVersion: vi.fn(),
       synchronize: vi.fn(),
     } satisfies CatalogJobServices;
@@ -265,6 +269,45 @@ describe('catalog synchronization job contracts', () => {
         rolledBackByActorId: '00000000-0000-4000-8000-000000000202',
         rollbackReason: 'Recovery test.',
         expectedActiveCatalogVersionId: catalogVersionId,
+      }),
+    ).toThrow();
+  });
+
+  it('binds selected/all diff review to one exact candidate checksum', () => {
+    const common = {
+      catalogSourceId,
+      catalogVersionId: '00000000-0000-4000-8000-000000000302',
+      correlationId: 'catalog-review-unit-001',
+      expectedDifferenceChecksum: 'b'.repeat(64),
+      idempotencyKey: 'catalog:review:differences-unit-001',
+      resolution: 'APPROVED',
+      reviewedByActorId: '00000000-0000-4000-8000-000000000201',
+      reviewReason: 'Reviewed the exact catalog differences.',
+      schemaVersion: 1,
+      scope: 'CATALOG',
+      syncRunId: '00000000-0000-4000-8000-000000000301',
+    } as const;
+    expect(
+      catalogReviewDifferencesPayloadSchema.parse({
+        ...common,
+        differenceIds: [],
+        selectionMode: 'ALL',
+      }),
+    ).toMatchObject({ scope: 'CATALOG', selectionMode: 'ALL' });
+    expect(() =>
+      catalogReviewDifferencesPayloadSchema.parse({
+        ...common,
+        differenceIds: ['00000000-0000-4000-8000-000000000303'],
+        selectionMode: 'ALL',
+      }),
+    ).toThrow();
+    expect(() =>
+      catalogReviewDifferencesPayloadSchema.parse({
+        ...common,
+        catalogVersionId: undefined,
+        differenceIds: [],
+        priceVersionId: '00000000-0000-4000-8000-000000000304',
+        selectionMode: 'ALL',
       }),
     ).toThrow();
   });

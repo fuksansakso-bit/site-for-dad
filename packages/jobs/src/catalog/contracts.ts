@@ -5,6 +5,7 @@ export const catalogJobIdentifiers = {
   activateVersion: 'catalog-activate-version',
   approveVersion: 'catalog-approve-version',
   buildDiff: 'catalog-build-diff',
+  reviewDifferences: 'catalog-review-differences',
   mediaImport: 'catalog-media-import',
   normalize: 'catalog-normalize',
   rollbackVersion: 'catalog-rollback-version',
@@ -73,6 +74,52 @@ export const catalogSyncCancellationRequestSchema = z
 
 const checksumSchema = z.string().regex(/^[0-9a-f]{64}$/);
 const governanceReasonSchema = z.string().trim().min(3).max(512);
+
+export const catalogReviewDifferencesPayloadSchema = z
+  .object({
+    ...syncStagePayloadShape,
+    catalogVersionId: z.uuid().optional(),
+    differenceIds: z.array(z.uuid()).max(500),
+    expectedDifferenceChecksum: checksumSchema,
+    priceVersionId: z.uuid().optional(),
+    resolution: z.enum(['APPROVED', 'DEFERRED', 'REJECTED']),
+    reviewedByActorId: z.uuid(),
+    reviewReason: governanceReasonSchema,
+    scope: z.enum(['CATALOG', 'PRICE']),
+    selectionMode: z.enum(['ALL', 'SELECTED']),
+  })
+  .strict()
+  .superRefine((payload, context) => {
+    const catalogTarget = payload.catalogVersionId !== undefined;
+    const priceTarget = payload.priceVersionId !== undefined;
+    if (
+      (payload.scope === 'CATALOG' && (!catalogTarget || priceTarget)) ||
+      (payload.scope === 'PRICE' && (!priceTarget || catalogTarget))
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'review scope requires exactly one matching version target',
+        path: ['scope'],
+      });
+    }
+    if (
+      (payload.selectionMode === 'ALL' && payload.differenceIds.length !== 0) ||
+      (payload.selectionMode === 'SELECTED' && payload.differenceIds.length === 0)
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'review selection mode does not match difference ids',
+        path: ['differenceIds'],
+      });
+    }
+    if (new Set(payload.differenceIds).size !== payload.differenceIds.length) {
+      context.addIssue({
+        code: 'custom',
+        message: 'review difference ids must be unique',
+        path: ['differenceIds'],
+      });
+    }
+  });
 
 const versionSelectionShape = {
   catalogVersionId: z.uuid().optional(),
@@ -197,6 +244,7 @@ export type CatalogSyncCancellationRequest = z.infer<typeof catalogSyncCancellat
 export type CatalogApproveVersionPayload = z.infer<typeof catalogApproveVersionPayloadSchema>;
 export type CatalogActivateVersionPayload = z.infer<typeof catalogActivateVersionPayloadSchema>;
 export type CatalogRollbackVersionPayload = z.infer<typeof catalogRollbackVersionPayloadSchema>;
+export type CatalogReviewDifferencesPayload = z.infer<typeof catalogReviewDifferencesPayloadSchema>;
 
 export type CatalogSyncStagePayload =
   | CatalogBuildDiffPayload

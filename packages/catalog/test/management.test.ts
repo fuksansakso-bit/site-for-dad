@@ -23,7 +23,7 @@ describe('catalog business management contracts', () => {
         entityType: 'MATERIAL_VARIANT',
         localOrder: 10,
         manualReviewState: 'APPROVED',
-        publicationReason: 'Owner-approved Phase 1B.1 pilot.',
+        publicationReason: 'Owner-approved Phase 1B.2 catalog composition.',
         publicationStatus: 'PUBLISHED',
         visibility: 'VISIBLE',
       }),
@@ -43,14 +43,24 @@ describe('catalog business management contracts', () => {
     ).toThrow(CatalogManagementError);
   });
 
-  it('keeps the pilot version command within the 50-item scope ceiling', () => {
+  it('accepts the discovered full catalog while retaining a defensive upper bound', () => {
     expect(() =>
       assertCatalogVersionCommand({
         ...context,
         catalogSourceId: '00000000-0000-4000-8000-000000000103',
         catalogVersionId: '00000000-0000-4000-8000-000000000302',
         expectedCatalogDifferenceChecksum: 'a'.repeat(64),
-        expectedVariantCount: 51,
+        expectedVariantCount: 1_655,
+        syncRunId: '00000000-0000-4000-8000-000000000301',
+      }),
+    ).not.toThrow();
+    expect(() =>
+      assertCatalogVersionCommand({
+        ...context,
+        catalogSourceId: '00000000-0000-4000-8000-000000000103',
+        catalogVersionId: '00000000-0000-4000-8000-000000000302',
+        expectedCatalogDifferenceChecksum: 'a'.repeat(64),
+        expectedVariantCount: 100_001,
         syncRunId: '00000000-0000-4000-8000-000000000301',
       }),
     ).toThrow(CatalogManagementError);

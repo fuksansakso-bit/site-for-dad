@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1B.2 full discovery/resumable import/media/price snapshots implemented; review/activation in progress |
-| Версия | 0.9.0 |
+| Статус | Phase 1B.2 full discovery/import/media/price review and activation implemented; bulk controls in progress |
+| Версия | 0.10.0 |
 | Дата | 2026-08-03 |
 | Source registry | [EXTERNAL_SOURCES.md](../../00-global/EXTERNAL_SOURCES.md) |
 | Pricing policy | [PRICING_SOURCE_POLICY.md](../../00-global/PRICING_SOURCE_POLICY.md) |
@@ -76,6 +76,8 @@ Public browser research and volatile customizer DOM/iframe are not a production 
 - **SYNC-ARCH-045 — MUST:** normalization preserves the discovered category parent/order hierarchy and every typed `ProductModel`. A model always retains its evidence-backed category and links to a system only when the source supplies that relationship; missing referenced categories/systems fail closed instead of inventing or silently dropping the relation.
 - **SYNC-ARCH-046 — MUST:** a complete price partition contains the union of discovered material and model source IDs with no collision. Normalization creates one exact typed `SourcePriceRecord` target (`MaterialVariant` xor `ProductModel`) per identity; missing amount becomes `PRICE_ON_REQUEST`, while a missing, duplicate or ambiguous target fails closed.
 - **SYNC-ARCH-047 — MUST:** source-price revisions are append-only and pinned by semantic source version. Manifest, diff, composition and `PriceVersionRecord` join only the revision matching the current run's `sourceVersion`; exact same-version retry is idempotent, a conflict is blocking, and sync never mutates `LocalPriceOverride`.
+- **SYNC-ARCH-048 — MUST:** every catalog or price difference review is an append-only batch bound to the exact source, run, candidate version and difference checksum. It records `ALL` or an explicit bounded ID selection, `APPROVED`/`DEFERRED`/`REJECTED`, actor, safe reason, correlation and idempotency evidence; candidate approval is blocked until every applicable difference is explicitly `APPROVED` by such review evidence.
+- **SYNC-ARCH-049 — MUST:** publication preparation initializes safe inquiry-only business state only for previously missing local entries and MUST NOT rewrite an existing visibility, review, availability, publication, note, order or price override. Activation and rollback validate the same catalog source, approved exact checksums and predecessor lineage, then switch the selected catalog/price pointers atomically and idempotently.
 
 ## 4. Pipeline stages
 
@@ -149,7 +151,7 @@ Validation emits per-record codes/severity and aggregate blocking/nonblocking re
 
 ## 8. Difference model
 
-`CatalogSyncDifference`: entity/mapping IDs, type (`ADD`, `MODIFY`, `RENAME`, `MOVE`, `REMOVE`, `CONFLICT`, `UNCHANGED`), field/relationship, before/after source/local refs, normalized/raw values safe, severity, affected capabilities/states/history, recommended action, resolution/status/actor/reason and validation links.
+`CatalogSyncDifference`: entity/mapping IDs, type (`ADD`, `MODIFY`, `RENAME`, `MOVE`, `REMOVE`, `CONFLICT`, `UNCHANGED`), field/relationship, before/after source/local refs, normalized/raw values safe, severity, affected capabilities/states/history, recommended action, resolution/status/actor/reason and validation links. Each manual resolution is additionally retained in an immutable review batch tied to the exact candidate checksum; selection may cover all differences in one scope or an explicit bounded set.
 
 Summary counts never replace full diff. Price/media/rights changes are flagged critical. A large removal percentage or schema/category explosion triggers mandatory review without hardcoded unapproved threshold; threshold is configurable/ADR/policy.
 
@@ -163,7 +165,7 @@ Approval matrix:
 - partner scope → owner;
 - security/schema/transport changes → technical/security owner/ADR.
 
-Business Owner approval determines local public composition/visibility. The administrator publication action records an actor with the exact activation capability; the same human MAY satisfy both only when both governance authority and system permission are independently present and audited. Approval binds exact candidate/diff checksums; any change invalidates approval. Activation command lists pointers/entities/version/effective time/rollback target, actor/approvals and idempotency. It uses transaction or equivalent strongly consistent cutover and publishes version-pinned cache/search/filter/analytics rebuild events afterward.
+Business Owner approval determines local public composition/visibility. The administrator publication action records an actor with the exact activation capability; the same human MAY satisfy both only when both governance authority and system permission are independently present and audited. Approval binds exact candidate/diff checksums; any change invalidates approval. Approval cannot infer acceptance from a default resolution: all applicable catalog or price differences need checksum-bound review evidence and an explicit `APPROVED` resolution, while `DEFERRED` or `REJECTED` blocks approval. Activation command lists pointers/entities/version/effective time/rollback target, actor/approvals and idempotency. It uses one transaction for the selected approved catalog/price pair, verifies the catalog source and predecessor lineage, and publishes version-pinned cache/search/filter/analytics rebuild events afterward. Rollback uses the same source-bound atomic pointer contract and retains review/audit history.
 
 ## 10. Price synchronization boundary
 
@@ -223,3 +225,4 @@ Dependencies: catalog/pricing/media/admin/data/API/security/observability/deploy
 | 0.7.0 | 2026-08-03 | Defined deterministic append-only capture keys, PostgreSQL stage checkpoints, same-source-version resume, durable cancellation versus graceful retry, and one sealed checksummed full-run import manifest. |
 | 0.8.0 | 2026-08-03 | Required full category hierarchy and typed model normalization with evidence-backed optional system links; missing referenced nodes fail closed. |
 | 0.9.0 | 2026-08-03 | Implemented full material/model price capture accounting, exact typed targets, semantic-version-pinned append-only revisions and current-run-only manifest/diff/version links while preserving local overrides. |
+| 0.10.0 | 2026-08-03 | Implemented checksum-bound append-only catalog/price difference review, explicit approve/defer/reject decisions, approval completeness, source-bound atomic activation/rollback and preservation of existing local overlays during publication preparation. |

@@ -245,8 +245,8 @@ async function initializeBusinessEntries(
   client: PoolClient,
   syncRunId: string,
   catalogSourceId: string,
-): Promise<void> {
-  await client.query(
+): Promise<readonly string[]> {
+  const categories = await client.query<{ id: string }>(
     `
       INSERT INTO business_catalog_entry (entity_type, category_id, updated_at)
       SELECT 'CATEGORY', category.id, NOW()
@@ -257,10 +257,11 @@ async function initializeBusinessEntries(
         AND source.catalog_source_id = $2::uuid
         AND item.source_type = 'CATEGORY'
       ON CONFLICT (category_id) DO NOTHING
+      RETURNING id::text
     `,
     [syncRunId, catalogSourceId],
   );
-  await client.query(
+  const systems = await client.query<{ id: string }>(
     `
       INSERT INTO business_catalog_entry (entity_type, system_id, updated_at)
       SELECT 'SYSTEM', system_row.id, NOW()
@@ -271,10 +272,11 @@ async function initializeBusinessEntries(
         AND source.catalog_source_id = $2::uuid
         AND item.source_type = 'SYSTEM'
       ON CONFLICT (system_id) DO NOTHING
+      RETURNING id::text
     `,
     [syncRunId, catalogSourceId],
   );
-  await client.query(
+  const variants = await client.query<{ id: string }>(
     `
       INSERT INTO business_catalog_entry (entity_type, material_variant_id, updated_at)
       SELECT 'MATERIAL_VARIANT', variant.id, NOW()
@@ -285,9 +287,11 @@ async function initializeBusinessEntries(
         AND source.catalog_source_id = $2::uuid
         AND item.source_type = 'MATERIAL_VARIANT'
       ON CONFLICT (material_variant_id) DO NOTHING
+      RETURNING id::text
     `,
     [syncRunId, catalogSourceId],
   );
+  return [...categories.rows, ...systems.rows, ...variants.rows].map((row) => row.id);
 }
 
 async function targetBusinessEntryIds(
@@ -854,7 +858,11 @@ export function createCatalogManagementAdapter(
           throw new CatalogManagementError('CATALOG_MANAGEMENT_NOT_READY');
         }
 
-        await initializeBusinessEntries(client, input.syncRunId, input.catalogSourceId);
+        const newBusinessIds = await initializeBusinessEntries(
+          client,
+          input.syncRunId,
+          input.catalogSourceId,
+        );
         const businessIds = await targetBusinessEntryIds(
           client,
           input.syncRunId,
@@ -868,42 +876,34 @@ export function createCatalogManagementAdapter(
         ) {
           throw new CatalogManagementError('CATALOG_MANAGEMENT_NOT_READY');
         }
-        await client.query(
-          `UPDATE business_catalog_entry
-           SET visibility = 'VISIBLE', manual_review_state = 'APPROVED', updated_at = NOW()
-           WHERE id = ANY($1::uuid[])`,
-          [businessIds],
-        );
-        await client.query(
-          `UPDATE availability_record SET ended_at = NOW()
-           WHERE business_catalog_entry_id = ANY($1::uuid[]) AND ended_at IS NULL`,
-          [businessIds],
-        );
-        await client.query(
-          `UPDATE publication_record SET ended_at = NOW()
-           WHERE business_catalog_entry_id = ANY($1::uuid[]) AND ended_at IS NULL`,
-          [businessIds],
-        );
-        await client.query(
-          `
-            INSERT INTO availability_record (
-              business_catalog_entry_id, status, reason, decided_by_actor_id
-            ) SELECT id, 'INQUIRY_ONLY',
-                     'Availability requires current manager confirmation.', $2::uuid
-              FROM unnest($1::uuid[]) AS id
-          `,
-          [businessIds, input.actorId],
-        );
-        await client.query(
-          `
-            INSERT INTO publication_record (
-              business_catalog_entry_id, status, reason, decided_by_actor_id
-            ) SELECT id, 'PUBLISHED',
-                     'Owner-approved controlled Phase 1B.1 pilot publication.', $2::uuid
-              FROM unnest($1::uuid[]) AS id
-          `,
-          [businessIds, input.actorId],
-        );
+        if (newBusinessIds.length > 0) {
+          await client.query(
+            `UPDATE business_catalog_entry
+             SET visibility = 'VISIBLE', manual_review_state = 'APPROVED', updated_at = NOW()
+             WHERE id = ANY($1::uuid[])`,
+            [newBusinessIds],
+          );
+          await client.query(
+            `
+              INSERT INTO availability_record (
+                business_catalog_entry_id, status, reason, decided_by_actor_id
+              ) SELECT id, 'INQUIRY_ONLY',
+                       'Availability requires current manager confirmation.', $2::uuid
+                FROM unnest($1::uuid[]) AS id
+            `,
+            [newBusinessIds, input.actorId],
+          );
+          await client.query(
+            `
+              INSERT INTO publication_record (
+                business_catalog_entry_id, status, reason, decided_by_actor_id
+              ) SELECT id, 'PUBLISHED',
+                       'Owner-approved controlled Phase 1B.2 catalog publication.', $2::uuid
+                FROM unnest($1::uuid[]) AS id
+            `,
+            [newBusinessIds, input.actorId],
+          );
+        }
         const mediaApproval = await client.query<{ id: string }>(
           `
             UPDATE media_asset asset
@@ -917,16 +917,17 @@ export function createCatalogManagementAdapter(
               WHERE item.sync_run_id = $1::uuid
                 AND source.catalog_source_id = $2::uuid
                 AND asset.rights_status = 'PARTNER_LICENSE'
+                AND asset.publication_status = 'PENDING'
             )
             RETURNING asset.id::text
           `,
           [input.syncRunId, input.catalogSourceId],
         );
         await appendAudit(client, {
-          action: 'CATALOG_PILOT_BULK_PUBLICATION_SET',
+          action: 'CATALOG_PUBLICATION_PREPARED',
           actorId: input.actorId,
           correlationId: input.correlationId,
-          reasonCode: 'OWNER_APPROVED_PHASE_1B1_PILOT',
+          reasonCode: 'OWNER_REVIEWED_PHASE_1B2_COMPOSITION',
           targetId: input.catalogVersionId,
           targetType: 'CATALOG_VERSION',
         });
@@ -945,6 +946,7 @@ export function createCatalogManagementAdapter(
                 'categoryCount', $3::int,
                 'expectedVariantCount', $4::int,
                 'mediaApprovedCount', $5::int,
+                'newBusinessEntryCount', $9::int,
                 'recordedAt', NOW(),
                 'sourceDifferenceChecksum', $6::text,
                 'systemCount', $7::int,
@@ -962,6 +964,7 @@ export function createCatalogManagementAdapter(
             input.expectedCatalogDifferenceChecksum,
             publicationResult.systemCount,
             publicationResult.variantCount,
+            newBusinessIds.length,
           ],
         );
         return publicationResult;

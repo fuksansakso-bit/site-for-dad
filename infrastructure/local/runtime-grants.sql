@@ -42,6 +42,7 @@ TO foundation_runtime;
 GRANT SELECT, INSERT ON
     source_snapshot,
     catalog_import_manifest,
+    catalog_difference_review_batch,
     source_price_record,
     price_version_record,
     catalog_version_entry

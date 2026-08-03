@@ -146,7 +146,7 @@ export function assertCatalogVersionCommand(
     !checksumPattern.test(input.expectedCatalogDifferenceChecksum) ||
     !Number.isSafeInteger(input.expectedVariantCount) ||
     input.expectedVariantCount < 1 ||
-    input.expectedVariantCount > 50
+    input.expectedVariantCount > 100_000
   ) {
     throw new CatalogManagementError('CATALOG_MANAGEMENT_VALIDATION');
   }

@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1B.2 full source catalog capture/import authorized and in progress; local publication/orderability remain reviewed decisions |
-| Версия | 0.6.0 |
+| Статус | Phase 1B.2 full source review/activation implemented; local publication/orderability remain explicit reviewed decisions |
+| Версия | 0.7.0 |
 | Дата | 2026-08-03 |
 | Sources | [EXTERNAL_SOURCES.md](../../00-global/EXTERNAL_SOURCES.md) |
 | Rights | [ASSET_RIGHTS_REGISTER.md](../../00-global/ASSET_RIGHTS_REGISTER.md) |
@@ -117,6 +117,8 @@ Dimension constraints use millimetres and square metres conceptually but exact n
 - **CAT-INV-027 — MUST:** PostgreSQL stores immutable captures, normalized local catalog projections, readiness overlays and active pointers. A database row is operational state, not evidence that its value came from the correct authority.
 - **CAT-INV-028 — MUST:** every sync/import field has declared authority (`AMIGO_SOURCE` or `BUSINESS_OWNER_LOCAL`); missing/ambiguous ownership or an attempted cross-layer update blocks the affected candidate instead of using last-write-wins.
 - **CAT-INV-029 — MUST:** PostgreSQL stores catalog-image metadata, provenance, exact entity mapping, rights/publication state and object reference; image binary originals/derivatives are stored in managed object storage under media policy.
+- **CAT-INV-030 — MUST:** an explicit publication-preparation operation MAY create missing local business entries with reviewed `VISIBLE`, `APPROVED`, `INQUIRY_ONLY` and `PUBLISHED` defaults only after its readiness checks. It MUST NOT overwrite any pre-existing local description, order, note, visibility, review, availability, publication or price override, and source import alone never performs this transition.
+- **CAT-INV-031 — MUST:** catalog and price candidate approval requires an append-only, checksum-bound review history in which every applicable difference is explicitly `APPROVED`; `DEFERRED` or selected `REJECTED` results remain visible and block approval until a later explicit review resolves them, while all-scope `REJECTED` terminally rejects that candidate.
 
 ## 9. Core flows and state transitions
 
@@ -180,7 +182,7 @@ Risks: text-key merges, auto-publication, unknown-as-positive, mismapped images,
 
 ## 15. Связанные требования и история
 
-Links: `FR-CATALOG-*`, `FR-MATERIAL-*`, `FR-VARIANT-*`, `AMIGO-SYNC-*`, `ASSET-*`, `PRICING-*`, `CAT-INV-001`–`029`.
+Links: `FR-CATALOG-*`, `FR-MATERIAL-*`, `FR-VARIANT-*`, `AMIGO-SYNC-*`, `ASSET-*`, `PRICING-*`, `CAT-INV-001`–`031`.
 
 | Версия | Дата | Изменение |
 |---|---|---|
@@ -190,3 +192,4 @@ Links: `FR-CATALOG-*`, `FR-MATERIAL-*`, `FR-VARIANT-*`, `AMIGO-SYNC-*`, `ASSET-*
 | 0.4.0 | 2026-08-02 | Phase 1B.1 32-variant source/overlay pilot authorized while full inventory remained gated. |
 | 0.5.0 | 2026-08-03 | Recorded the active-version-only public projection, explicit readiness/price/media gates, normalized pilot facets and safe empty/degraded behavior. |
 | 0.6.0 | 2026-08-03 | Synchronized the authorized Phase 1B.2 full source capture/import boundary while retaining independent local publication, availability, pricing, orderability and accepted-manifest gates. |
+| 0.7.0 | 2026-08-03 | Required missing-entry-only inquiry publication preparation, preservation of every existing Business Owner overlay and explicit checksum-bound review of all catalog/price differences before candidate approval. |

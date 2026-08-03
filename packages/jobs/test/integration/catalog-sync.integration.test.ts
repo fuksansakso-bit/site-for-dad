@@ -32,6 +32,7 @@ import { createCatalogJobServices } from '../../src/catalog/services.js';
 import {
   activateCatalogVersions,
   approveCatalogVersions,
+  reviewCatalogDifferences,
   rollbackCatalogVersions,
 } from '../../src/catalog/versioning.js';
 import {
@@ -777,16 +778,117 @@ describe.sequential('catalog synchronization pipeline', () => {
       ...firstRelease,
       catalogDifferenceChecksum: composition.differenceChecksum,
     };
+    await reviewCatalogDifferences(
+      {
+        catalogSourceId,
+        catalogVersionId: row.catalog_version_id,
+        correlationId: `catalog-review-all-${runTag}`,
+        differenceIds: [],
+        expectedDifferenceChecksum: composition.differenceChecksum,
+        idempotencyKey: `catalog:review:${runTag}:fixture-catalog-all`,
+        resolution: 'APPROVED',
+        reviewedByActorId: ownerActorId,
+        reviewReason: 'Owner accepted every catalog difference in the exact fixture candidate.',
+        schemaVersion: 1,
+        scope: 'CATALOG',
+        selectionMode: 'ALL',
+        syncRunId: firstSyncRunId,
+      },
+      versionHelpers,
+    );
+    await reviewCatalogDifferences(
+      {
+        catalogSourceId,
+        correlationId: `price-review-all-${runTag}`,
+        differenceIds: [],
+        expectedDifferenceChecksum: row.price_difference_checksum,
+        idempotencyKey: `catalog:review:${runTag}:fixture-price-all`,
+        priceVersionId: row.price_version_id,
+        resolution: 'APPROVED',
+        reviewedByActorId: ownerActorId,
+        reviewReason: 'Owner accepted every price difference in the exact fixture candidate.',
+        schemaVersion: 1,
+        scope: 'PRICE',
+        selectionMode: 'ALL',
+        syncRunId: firstSyncRunId,
+      },
+      versionHelpers,
+    );
+    await expect(
+      pool.query(
+        `UPDATE catalog_difference_review_batch SET safe_reason = 'forbidden runtime mutation'
+         WHERE idempotency_key = $1`,
+        [`catalog:review:${runTag}:fixture-catalog-all`],
+      ),
+    ).rejects.toMatchObject({ code: '42501' });
+    await expect(
+      migrationPool.query(
+        `UPDATE catalog_difference_review_batch SET safe_reason = 'forbidden owner mutation'
+         WHERE idempotency_key = $1`,
+        [`catalog:review:${runTag}:fixture-catalog-all`],
+      ),
+    ).rejects.toMatchObject({ code: '55000' });
     await approveCatalogVersions(
       {
         approvedByActorId: ownerActorId,
-        approvalReason: 'Owner reviewed the exact fixture composition.',
+        approvalReason: 'Owner reviewed the exact fixture catalog composition.',
         catalogSourceId,
         catalogVersionId: row.catalog_version_id,
-        correlationId: `catalog-approval-${runTag}`,
+        correlationId: `catalog-approval-catalog-${runTag}`,
         expectedCatalogDifferenceChecksum: composition.differenceChecksum,
+        idempotencyKey: `catalog:approval:${runTag}:fixture-catalog`,
+        schemaVersion: 1,
+        syncRunId: firstSyncRunId,
+      },
+      versionHelpers,
+    );
+    await expect(
+      activateCatalogVersions(
+        {
+          activatedByActorId: adminActorId,
+          activationReason: 'This pair must remain inactive until both candidates are approved.',
+          catalogSourceId,
+          catalogVersionId: row.catalog_version_id,
+          correlationId: `catalog-activation-blocked-${runTag}`,
+          expectedCatalogDifferenceChecksum: composition.differenceChecksum,
+          expectedPriceDifferenceChecksum: row.price_difference_checksum,
+          idempotencyKey: `catalog:activation:${runTag}:fixture-blocked-pair`,
+          priceVersionId: row.price_version_id,
+          schemaVersion: 1,
+          syncRunId: firstSyncRunId,
+        },
+        versionHelpers,
+      ),
+    ).rejects.toMatchObject({ code: 'CATALOG_PIPELINE_VERSION_CONFLICT' });
+    const blockedPair = await pool.query<{
+      catalog_active: string;
+      catalog_status: string;
+      price_active: string;
+      price_status: string;
+    }>(
+      `SELECT
+         (SELECT count(*)::text FROM catalog_version WHERE activation_key = 'PUBLIC')
+           AS catalog_active,
+         (SELECT status::text FROM catalog_version WHERE id = $1::uuid) AS catalog_status,
+         (SELECT count(*)::text FROM price_version WHERE activation_key = 'PUBLIC')
+           AS price_active,
+         (SELECT status::text FROM price_version WHERE id = $2::uuid) AS price_status`,
+      [row.catalog_version_id, row.price_version_id],
+    );
+    expect(blockedPair.rows[0]).toEqual({
+      catalog_active: '0',
+      catalog_status: 'APPROVED',
+      price_active: '0',
+      price_status: 'AWAITING_APPROVAL',
+    });
+    await approveCatalogVersions(
+      {
+        approvedByActorId: ownerActorId,
+        approvalReason: 'Owner reviewed the exact fixture price candidate.',
+        catalogSourceId,
+        correlationId: `catalog-approval-price-${runTag}`,
         expectedPriceDifferenceChecksum: row.price_difference_checksum,
-        idempotencyKey: `catalog:approval:${runTag}:fixture-release`,
+        idempotencyKey: `catalog:approval:${runTag}:fixture-price`,
         priceVersionId: row.price_version_id,
         schemaVersion: 1,
         syncRunId: firstSyncRunId,
@@ -886,7 +988,9 @@ describe.sequential('catalog synchronization pipeline', () => {
   });
 
   it('versions full model and material prices without changing an active local override', async () => {
-    if (firstSyncRunId === undefined) throw new Error('First catalog sync run is unavailable.');
+    if (firstSyncRunId === undefined || firstRelease === undefined) {
+      throw new Error('First active release is unavailable.');
+    }
     const business = await pool.query<{ id: string }>(
       `
         SELECT id::text
@@ -922,6 +1026,8 @@ describe.sequential('catalog synchronization pipeline', () => {
 
     const candidate = await pool.query<{
       catalog_version_count: string;
+      price_difference_checksum: string;
+      price_version_id: string;
       price_version_count: string;
       price_version_record_count: string;
     }>(
@@ -933,15 +1039,21 @@ describe.sequential('catalog synchronization pipeline', () => {
            WHERE sync_run_id = $1::uuid) AS price_version_count,
           (SELECT count(*)::text FROM price_version_record record
            JOIN price_version version ON version.id = record.price_version_id
-           WHERE version.sync_run_id = $1::uuid) AS price_version_record_count
+           WHERE version.sync_run_id = $1::uuid) AS price_version_record_count,
+          (SELECT id::text FROM price_version
+           WHERE sync_run_id = $1::uuid) AS price_version_id,
+          (SELECT difference_checksum FROM price_version
+           WHERE sync_run_id = $1::uuid) AS price_difference_checksum
       `,
       [syncRunId],
     );
-    expect(candidate.rows[0]).toEqual({
+    expect(candidate.rows[0]).toMatchObject({
       catalog_version_count: '0',
       price_version_count: '1',
       price_version_record_count: '2',
     });
+    const priceCandidate = candidate.rows[0];
+    if (priceCandidate === undefined) throw new Error('Price candidate is unavailable.');
 
     const priceRows = await pool.query<{
       amount_minor: number | null;
@@ -988,13 +1100,15 @@ describe.sequential('catalog synchronization pipeline', () => {
     const differences = await pool.query<{
       absolute_change_minor: number | null;
       after_status: string;
+      id: string;
       new_price_minor: number | null;
       old_price_minor: number | null;
       percentage_change: string | null;
       source_id: string;
     }>(
       `
-        SELECT source.source_id, difference.old_price_minor, difference.new_price_minor,
+        SELECT difference.id::text, source.source_id,
+               difference.old_price_minor, difference.new_price_minor,
                difference.absolute_change_minor,
                difference.percentage_change::text,
                difference.after_value #>> '{attachment,status}' AS after_status
@@ -1006,7 +1120,7 @@ describe.sequential('catalog synchronization pipeline', () => {
       `,
       [syncRunId],
     );
-    expect(differences.rows).toEqual([
+    expect(differences.rows).toMatchObject([
       {
         absolute_change_minor: 25_000,
         after_status: 'AVAILABLE',
@@ -1025,6 +1139,142 @@ describe.sequential('catalog synchronization pipeline', () => {
       },
     ]);
 
+    const firstDifferenceId = differences.rows[0]?.id;
+    if (firstDifferenceId === undefined) throw new Error('Price difference is unavailable.');
+    const deferred = await reviewCatalogDifferences(
+      {
+        catalogSourceId,
+        correlationId: `price-review-defer-${runTag}`,
+        differenceIds: [firstDifferenceId],
+        expectedDifferenceChecksum: priceCandidate.price_difference_checksum,
+        idempotencyKey: `catalog:review:${runTag}:price-selected-defer`,
+        priceVersionId: priceCandidate.price_version_id,
+        resolution: 'DEFERRED',
+        reviewedByActorId: ownerActorId,
+        reviewReason: 'Owner deferred one price difference for an explicit second look.',
+        schemaVersion: 1,
+        scope: 'PRICE',
+        selectionMode: 'SELECTED',
+        syncRunId,
+      },
+      versionHelpers,
+    );
+    await expect(
+      reviewCatalogDifferences(
+        {
+          catalogSourceId,
+          correlationId: `price-review-defer-${runTag}`,
+          differenceIds: [firstDifferenceId],
+          expectedDifferenceChecksum: priceCandidate.price_difference_checksum,
+          idempotencyKey: `catalog:review:${runTag}:price-selected-defer`,
+          priceVersionId: priceCandidate.price_version_id,
+          resolution: 'DEFERRED',
+          reviewedByActorId: ownerActorId,
+          reviewReason: 'Owner deferred one price difference for an explicit second look.',
+          schemaVersion: 1,
+          scope: 'PRICE',
+          selectionMode: 'SELECTED',
+          syncRunId,
+        },
+        versionHelpers,
+      ),
+    ).resolves.toEqual(deferred);
+    await expect(
+      approveCatalogVersions(
+        {
+          approvedByActorId: ownerActorId,
+          approvalReason: 'This approval must remain blocked while review is incomplete.',
+          catalogSourceId,
+          correlationId: `price-approval-blocked-${runTag}`,
+          expectedPriceDifferenceChecksum: priceCandidate.price_difference_checksum,
+          idempotencyKey: `catalog:approval:${runTag}:price-blocked`,
+          priceVersionId: priceCandidate.price_version_id,
+          schemaVersion: 1,
+          syncRunId,
+        },
+        versionHelpers,
+      ),
+    ).rejects.toMatchObject({ code: 'CATALOG_PIPELINE_VERSION_NOT_READY' });
+    await reviewCatalogDifferences(
+      {
+        catalogSourceId,
+        correlationId: `price-review-reject-${runTag}`,
+        differenceIds: [firstDifferenceId],
+        expectedDifferenceChecksum: priceCandidate.price_difference_checksum,
+        idempotencyKey: `catalog:review:${runTag}:price-selected-reject`,
+        priceVersionId: priceCandidate.price_version_id,
+        resolution: 'REJECTED',
+        reviewedByActorId: ownerActorId,
+        reviewReason: 'Owner recorded a rejected selected price decision before reconsideration.',
+        schemaVersion: 1,
+        scope: 'PRICE',
+        selectionMode: 'SELECTED',
+        syncRunId,
+      },
+      versionHelpers,
+    );
+    const accepted = await reviewCatalogDifferences(
+      {
+        catalogSourceId,
+        correlationId: `price-review-accept-${runTag}`,
+        differenceIds: [],
+        expectedDifferenceChecksum: priceCandidate.price_difference_checksum,
+        idempotencyKey: `catalog:review:${runTag}:price-all-accept`,
+        priceVersionId: priceCandidate.price_version_id,
+        resolution: 'APPROVED',
+        reviewedByActorId: ownerActorId,
+        reviewReason: 'Owner accepted the complete price diff after reconsideration.',
+        schemaVersion: 1,
+        scope: 'PRICE',
+        selectionMode: 'ALL',
+        syncRunId,
+      },
+      versionHelpers,
+    );
+    expect(accepted).toMatchObject({ affectedCount: 2, remainingUnapprovedCount: 0 });
+    await approveCatalogVersions(
+      {
+        approvedByActorId: ownerActorId,
+        approvalReason: 'Owner approved the exact fully reviewed price candidate.',
+        catalogSourceId,
+        correlationId: `price-approval-${runTag}`,
+        expectedPriceDifferenceChecksum: priceCandidate.price_difference_checksum,
+        idempotencyKey: `catalog:approval:${runTag}:price-release`,
+        priceVersionId: priceCandidate.price_version_id,
+        schemaVersion: 1,
+        syncRunId,
+      },
+      versionHelpers,
+    );
+    await activateCatalogVersions(
+      {
+        activatedByActorId: adminActorId,
+        activationReason: 'Administrator activated the reviewed price candidate.',
+        catalogSourceId,
+        correlationId: `price-activation-${runTag}`,
+        expectedPriceDifferenceChecksum: priceCandidate.price_difference_checksum,
+        idempotencyKey: `catalog:activation:${runTag}:price-release`,
+        priceVersionId: priceCandidate.price_version_id,
+        schemaVersion: 1,
+        syncRunId,
+      },
+      versionHelpers,
+    );
+    await rollbackCatalogVersions(
+      {
+        approvedByActorId: ownerActorId,
+        catalogSourceId,
+        correlationId: `price-rollback-${runTag}`,
+        expectedActivePriceVersionId: priceCandidate.price_version_id,
+        idempotencyKey: `catalog:rollback:${runTag}:price-release`,
+        priceRollbackTargetId: firstRelease.priceVersionId,
+        rollbackReason: 'Restore the compatible verified price predecessor.',
+        rolledBackByActorId: adminActorId,
+        schemaVersion: 1,
+      },
+      versionHelpers,
+    );
+
     const override = await pool.query<{ amount_minor: number; status: string }>(
       `SELECT amount_minor, status::text FROM local_price_override WHERE id = $1::uuid`,
       [overrideId],
@@ -1042,6 +1292,26 @@ describe.sequential('catalog synchronization pipeline', () => {
     if (firstSyncRunId === undefined || firstRelease === undefined) {
       throw new Error('First active release is unavailable.');
     }
+    const localTarget = await pool.query<{ id: string }>(
+      `SELECT id::text FROM material_variant ORDER BY created_at LIMIT 1`,
+    );
+    const localTargetId = localTarget.rows[0]?.id;
+    if (localTargetId === undefined) throw new Error('Local overlay target is unavailable.');
+    await management.setBusinessOverlay({
+      actorId: ownerActorId,
+      availabilityReason: 'Manager confirmation remains required after every source sync.',
+      availabilityStatus: 'INQUIRY_ONLY',
+      correlationId: `catalog-overlay-persistence-${runTag}`,
+      entityId: localTargetId,
+      entityType: 'MATERIAL_VARIANT',
+      localDescription: 'Owner-authored description that the source sync must preserve.',
+      localOrder: 41,
+      manualReviewState: 'APPROVED',
+      ownerNotes: 'Owner-only note retained outside AMIGO authority.',
+      publicationReason: 'Keep the reviewed local material visible.',
+      publicationStatus: 'PUBLISHED',
+      visibility: 'VISIBLE',
+    });
     const changedServices = createCatalogJobServices(
       () => new FixtureCatalogSourceAdapter(changedJobsCatalogFixture()),
       () => ({ maximumBytes: 1_048_576, objectStorage }),
@@ -1071,6 +1341,56 @@ describe.sequential('catalog synchronization pipeline', () => {
     } as const;
     await management.publishPilot(command);
     const composition = await management.composeCatalogVersion(command);
+    const preserved = await pool.query<{
+      availability_status: string;
+      local_description: string;
+      local_order: number;
+      owner_notes: string;
+      publication_status: string;
+      visibility: string;
+    }>(
+      `
+        SELECT business.visibility::text, business.local_description,
+               business.local_order, business.owner_notes,
+               availability.status::text AS availability_status,
+               publication.status::text AS publication_status
+        FROM business_catalog_entry business
+        JOIN availability_record availability
+          ON availability.business_catalog_entry_id = business.id
+         AND availability.ended_at IS NULL
+        JOIN publication_record publication
+          ON publication.business_catalog_entry_id = business.id
+         AND publication.ended_at IS NULL
+        WHERE business.material_variant_id = $1::uuid
+      `,
+      [localTargetId],
+    );
+    expect(preserved.rows[0]).toEqual({
+      availability_status: 'INQUIRY_ONLY',
+      local_description: 'Owner-authored description that the source sync must preserve.',
+      local_order: 41,
+      owner_notes: 'Owner-only note retained outside AMIGO authority.',
+      publication_status: 'PUBLISHED',
+      visibility: 'VISIBLE',
+    });
+    await reviewCatalogDifferences(
+      {
+        catalogSourceId,
+        catalogVersionId: changed.id,
+        correlationId: `catalog-changed-review-${runTag}`,
+        differenceIds: [],
+        expectedDifferenceChecksum: composition.differenceChecksum,
+        idempotencyKey: `catalog:review:${runTag}:changed-catalog-all`,
+        resolution: 'APPROVED',
+        reviewedByActorId: ownerActorId,
+        reviewReason: 'Owner accepted every changed catalog difference.',
+        schemaVersion: 1,
+        scope: 'CATALOG',
+        selectionMode: 'ALL',
+        syncRunId: changedRunId,
+      },
+      versionHelpers,
+    );
     await approveCatalogVersions(
       {
         approvedByActorId: ownerActorId,

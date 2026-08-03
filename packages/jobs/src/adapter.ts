@@ -22,11 +22,13 @@ import {
   catalogApproveVersionPayloadSchema,
   catalogJobIdentifiers,
   catalogJobQueueName,
+  catalogReviewDifferencesPayloadSchema,
   catalogRollbackVersionPayloadSchema,
   catalogSourceDiscoveryPayloadSchema,
   catalogSyncCancellationRequestSchema,
   type CatalogActivateVersionPayload,
   type CatalogApproveVersionPayload,
+  type CatalogReviewDifferencesPayload,
   type CatalogRollbackVersionPayload,
   type CatalogSourceDiscoveryPayload,
   type CatalogSyncCancellationRequest,
@@ -59,6 +61,7 @@ export interface EnqueuedCatalogGovernanceJob {
   readonly taskIdentifier:
     | typeof catalogJobIdentifiers.activateVersion
     | typeof catalogJobIdentifiers.approveVersion
+    | typeof catalogJobIdentifiers.reviewDifferences
     | typeof catalogJobIdentifiers.rollbackVersion;
 }
 
@@ -453,6 +456,10 @@ async function enqueueCatalogGovernanceJob(
         readonly payload: CatalogApproveVersionPayload;
       }
     | {
+        readonly identifier: typeof catalogJobIdentifiers.reviewDifferences;
+        readonly payload: CatalogReviewDifferencesPayload;
+      }
+    | {
         readonly identifier: typeof catalogJobIdentifiers.rollbackVersion;
         readonly payload: CatalogRollbackVersionPayload;
       },
@@ -515,6 +522,19 @@ export function enqueueCatalogVersionApproval(
   return enqueueCatalogGovernanceJob(
     pool,
     { identifier: catalogJobIdentifiers.approveVersion, payload },
+    maxAttempts,
+  );
+}
+
+export function enqueueCatalogDifferenceReview(
+  pool: Pool,
+  candidatePayload: CatalogReviewDifferencesPayload,
+  maxAttempts = 3,
+): Promise<EnqueuedCatalogGovernanceJob> {
+  const payload = catalogReviewDifferencesPayloadSchema.parse(candidatePayload);
+  return enqueueCatalogGovernanceJob(
+    pool,
+    { identifier: catalogJobIdentifiers.reviewDifferences, payload },
     maxAttempts,
   );
 }

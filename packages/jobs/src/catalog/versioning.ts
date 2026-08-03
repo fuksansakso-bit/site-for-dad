@@ -6,6 +6,7 @@ import type {
   CatalogActivateVersionPayload,
   CatalogApproveVersionPayload,
   CatalogBuildDiffPayload,
+  CatalogReviewDifferencesPayload,
   CatalogRollbackVersionPayload,
 } from './contracts.js';
 import { CatalogPipelineError, toCatalogPipelineError } from './errors.js';
@@ -159,6 +160,14 @@ interface CandidateDifference {
 interface ActorAccessRow {
   readonly actor_id: string;
   readonly roles: string[];
+}
+
+export interface CatalogDifferenceReviewResult {
+  readonly affectedCount: number;
+  readonly batchId: string;
+  readonly remainingUnapprovedCount: number;
+  readonly resolution: CatalogReviewDifferencesPayload['resolution'];
+  readonly scope: CatalogReviewDifferencesPayload['scope'];
 }
 
 function iso(value: Date | string): string {
@@ -755,7 +764,7 @@ export async function buildCatalogVersionDiff(
               ) SELECT
                 COALESCE(MAX(version_number), 0) + 1, 'AWAITING_APPROVAL', $1::uuid,
                 $2::jsonb, $3, $4, $5, $6::uuid, $6::uuid,
-                'Staged Phase 1B.1 source candidate; publication requires separate composition, approval and activation.'
+                'Staged Phase 1B.2 source candidate; publication requires complete diff review, composition, approval and activation.'
               FROM catalog_version
               RETURNING id::text
             `,
@@ -905,6 +914,295 @@ export async function buildCatalogVersionDiff(
   }
 }
 
+export async function reviewCatalogDifferences(
+  payload: CatalogReviewDifferencesPayload,
+  helpers: JobHelpers,
+): Promise<CatalogDifferenceReviewResult> {
+  const versionId = payload.scope === 'CATALOG' ? payload.catalogVersionId : payload.priceVersionId;
+  if (versionId === undefined) {
+    throw new CatalogPipelineError('CATALOG_PIPELINE_VERSION_CONFLICT');
+  }
+  await authorizeGovernanceActor(helpers, {
+    actorId: payload.reviewedByActorId,
+    allowedRoles: ['OWNER'],
+    correlationId: payload.correlationId,
+    requestedAction: 'CATALOG_DIFFERENCE_REVIEW_REQUESTED',
+    targetId: versionId,
+    targetType: payload.scope === 'CATALOG' ? 'CATALOG_VERSION' : 'PRICE_VERSION',
+  });
+  const requestChecksum = hashCanonicalSource({
+    catalogSourceId: payload.catalogSourceId,
+    catalogVersionId: payload.catalogVersionId ?? null,
+    differenceIds: [...payload.differenceIds].sort(),
+    expectedDifferenceChecksum: payload.expectedDifferenceChecksum,
+    priceVersionId: payload.priceVersionId ?? null,
+    resolution: payload.resolution,
+    reviewReason: payload.reviewReason,
+    reviewedByActorId: payload.reviewedByActorId,
+    scope: payload.scope,
+    selectionMode: payload.selectionMode,
+    syncRunId: payload.syncRunId,
+  });
+  try {
+    return await helpers.withPgClient(async (client) => {
+      await client.query('BEGIN');
+      try {
+        await client.query("SELECT pg_advisory_xact_lock(hashtext('catalog-version-governance'))");
+        const existing = await client.query<{
+          affected_count: number;
+          id: string;
+          request_checksum: string;
+        }>(
+          `SELECT id::text, request_checksum, affected_count
+           FROM catalog_difference_review_batch
+           WHERE idempotency_key = $1`,
+          [payload.idempotencyKey],
+        );
+        const existingBatch = existing.rows[0];
+        if (existingBatch !== undefined) {
+          if (existingBatch.request_checksum !== requestChecksum) {
+            throw new CatalogPipelineError('CATALOG_PIPELINE_VERSION_CONFLICT');
+          }
+          const remaining = await client.query<{ count: string }>(
+            `SELECT count(*)::text AS count
+             FROM catalog_sync_difference
+             WHERE sync_run_id = $1::uuid
+               AND ${payload.scope === 'CATALOG' ? "entity_type <> 'PRICE'" : "entity_type = 'PRICE'"}
+               AND resolution <> 'APPROVED'`,
+            [payload.syncRunId],
+          );
+          await client.query('COMMIT');
+          return {
+            affectedCount: existingBatch.affected_count,
+            batchId: existingBatch.id,
+            remainingUnapprovedCount: Number(remaining.rows[0]?.count ?? '0'),
+            resolution: payload.resolution,
+            scope: payload.scope,
+          };
+        }
+
+        const versionTable = payload.scope === 'CATALOG' ? 'catalog_version' : 'price_version';
+        const version = await client.query<{
+          difference_checksum: string;
+          status: string;
+          sync_run_id: string;
+        }>(
+          `
+            SELECT version.status::text, version.difference_checksum,
+                   version.sync_run_id::text
+            FROM ${versionTable} version
+            JOIN catalog_sync_run run ON run.id = version.sync_run_id
+            WHERE version.id = $1::uuid
+              AND version.sync_run_id = $2::uuid
+              AND run.catalog_source_id = $3::uuid
+            FOR UPDATE
+          `,
+          [versionId, payload.syncRunId, payload.catalogSourceId],
+        );
+        const candidate = version.rows[0];
+        if (
+          candidate === undefined ||
+          candidate.status !== 'AWAITING_APPROVAL' ||
+          candidate.difference_checksum !== payload.expectedDifferenceChecksum
+        ) {
+          throw new CatalogPipelineError('CATALOG_PIPELINE_VERSION_CONFLICT');
+        }
+
+        const selectionClause =
+          payload.selectionMode === 'SELECTED' ? 'AND id = ANY($2::uuid[])' : '';
+        const selectionParameters: unknown[] =
+          payload.selectionMode === 'SELECTED'
+            ? [payload.syncRunId, payload.differenceIds]
+            : [payload.syncRunId];
+        const differences = await client.query<{ difference_key: string; id: string }>(
+          `
+            SELECT id::text, difference_key
+            FROM catalog_sync_difference
+            WHERE sync_run_id = $1::uuid
+              AND ${payload.scope === 'CATALOG' ? "entity_type <> 'PRICE'" : "entity_type = 'PRICE'"}
+              ${selectionClause}
+            ORDER BY difference_key, id
+            FOR UPDATE
+          `,
+          selectionParameters,
+        );
+        if (
+          differences.rows.length === 0 ||
+          (payload.selectionMode === 'SELECTED' &&
+            differences.rows.length !== payload.differenceIds.length)
+        ) {
+          throw new CatalogPipelineError('CATALOG_PIPELINE_VERSION_CONFLICT');
+        }
+        const selectedIds = differences.rows.map((difference) => difference.id);
+        const selectionChecksum = hashCanonicalSource(
+          differences.rows.map((difference) => ({
+            differenceKey: difference.difference_key,
+            id: difference.id,
+          })),
+        );
+        await client.query(
+          `
+            UPDATE catalog_sync_difference
+            SET resolution = $2::catalog_difference_resolution,
+                resolved_by_actor_id = $3::uuid,
+                resolved_at = NOW(), safe_resolution_comment = $4
+            WHERE id = ANY($1::uuid[])
+          `,
+          [selectedIds, payload.resolution, payload.reviewedByActorId, payload.reviewReason],
+        );
+        const batch = await client.query<{ id: string }>(
+          `
+            INSERT INTO catalog_difference_review_batch (
+              sync_run_id, catalog_version_id, price_version_id, scope, resolution,
+              selection_mode, selected_difference_ids, selection_checksum,
+              request_checksum, expected_difference_checksum, affected_count,
+              reviewed_by_actor_id, safe_reason, correlation_id, idempotency_key
+            ) VALUES (
+              $1::uuid, $2::uuid, $3::uuid, $4::catalog_difference_review_scope,
+              $5::catalog_difference_resolution, $6::catalog_difference_selection_mode,
+              $7::jsonb, $8, $9, $10, $11, $12::uuid, $13, $14, $15
+            ) RETURNING id::text
+          `,
+          [
+            payload.syncRunId,
+            payload.catalogVersionId ?? null,
+            payload.priceVersionId ?? null,
+            payload.scope,
+            payload.resolution,
+            payload.selectionMode,
+            JSON.stringify(payload.selectionMode === 'SELECTED' ? selectedIds : []),
+            selectionChecksum,
+            requestChecksum,
+            payload.expectedDifferenceChecksum,
+            selectedIds.length,
+            payload.reviewedByActorId,
+            payload.reviewReason,
+            payload.correlationId,
+            payload.idempotencyKey,
+          ],
+        );
+        const batchId = batch.rows[0]?.id;
+        if (batchId === undefined) {
+          throw new CatalogPipelineError('CATALOG_PIPELINE_DATABASE');
+        }
+        if (payload.selectionMode === 'ALL' && payload.resolution === 'REJECTED') {
+          await client.query(
+            `
+              UPDATE ${versionTable}
+              SET status = 'REJECTED',
+                  source_manifest = source_manifest || jsonb_build_object(
+                    'governance', COALESCE(source_manifest->'governance', '{}'::jsonb) ||
+                      jsonb_build_object(
+                        'rejection', jsonb_build_object(
+                          'actorId', $2::text, 'reason', $3::text, 'recordedAt', NOW()
+                        )
+                      )
+                  )
+              WHERE id = $1::uuid
+            `,
+            [versionId, payload.reviewedByActorId, payload.reviewReason],
+          );
+        }
+        const remaining = await client.query<{ count: string }>(
+          `SELECT count(*)::text AS count
+           FROM catalog_sync_difference
+           WHERE sync_run_id = $1::uuid
+             AND ${payload.scope === 'CATALOG' ? "entity_type <> 'PRICE'" : "entity_type = 'PRICE'"}
+             AND resolution <> 'APPROVED'`,
+          [payload.syncRunId],
+        );
+        await appendAudit(client, {
+          action:
+            payload.scope === 'CATALOG'
+              ? 'CATALOG_DIFFERENCES_REVIEWED'
+              : 'PRICE_DIFFERENCES_REVIEWED',
+          actorId: payload.reviewedByActorId,
+          correlationId: payload.correlationId,
+          reasonCode: `DIFFERENCES_${payload.resolution}`,
+          targetId: versionId,
+          targetType: payload.scope === 'CATALOG' ? 'CATALOG_VERSION' : 'PRICE_VERSION',
+        });
+        await client.query('COMMIT');
+        return {
+          affectedCount: selectedIds.length,
+          batchId,
+          remainingUnapprovedCount: Number(remaining.rows[0]?.count ?? '0'),
+          resolution: payload.resolution,
+          scope: payload.scope,
+        };
+      } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+      }
+    });
+  } catch (error) {
+    await recordGovernanceEvent(helpers, {
+      action: 'CATALOG_DIFFERENCE_REVIEW_FAILED',
+      actorId: payload.reviewedByActorId,
+      correlationId: payload.correlationId,
+      outcome: 'FAILED',
+      reasonCode: error instanceof CatalogPipelineError ? error.code : 'CATALOG_PIPELINE_DATABASE',
+      targetId: versionId,
+      targetType: payload.scope === 'CATALOG' ? 'CATALOG_VERSION' : 'PRICE_VERSION',
+    });
+    throw toCatalogPipelineError(error);
+  }
+}
+
+async function assertDifferenceReviewComplete(
+  client: PoolClient,
+  input: {
+    readonly expectedDifferenceChecksum: string;
+    readonly scope: 'CATALOG' | 'PRICE';
+    readonly syncRunId: string;
+    readonly versionId: string;
+  },
+): Promise<void> {
+  const state = await client.query<{
+    evidenced_approved_count: string;
+    total_count: string;
+  }>(
+    `
+      SELECT
+        count(*)::text AS total_count,
+        count(*) FILTER (
+          WHERE difference.resolution = 'APPROVED'
+            AND EXISTS (
+              SELECT 1
+              FROM catalog_difference_review_batch review
+              WHERE review.sync_run_id = $1::uuid
+                AND review.scope = $2::catalog_difference_review_scope
+                AND review.resolution = 'APPROVED'
+                AND review.expected_difference_checksum = $3
+                AND (
+                  ($2 = 'CATALOG' AND review.catalog_version_id = $4::uuid)
+                  OR ($2 = 'PRICE' AND review.price_version_id = $4::uuid)
+                )
+                AND (
+                  review.selection_mode = 'ALL'
+                  OR review.selected_difference_ids ? difference.id::text
+                )
+            )
+        )::text AS evidenced_approved_count
+      FROM catalog_sync_difference difference
+      WHERE difference.sync_run_id = $1::uuid
+        AND (
+          ($2 = 'CATALOG' AND difference.entity_type <> 'PRICE')
+          OR ($2 = 'PRICE' AND difference.entity_type = 'PRICE')
+        )
+    `,
+    [input.syncRunId, input.scope, input.expectedDifferenceChecksum, input.versionId],
+  );
+  const review = state.rows[0];
+  if (
+    review === undefined ||
+    Number(review.total_count) === 0 ||
+    Number(review.evidenced_approved_count) !== Number(review.total_count)
+  ) {
+    throw new CatalogPipelineError('CATALOG_PIPELINE_VERSION_NOT_READY');
+  }
+}
+
 export async function approveCatalogVersions(
   payload: CatalogApproveVersionPayload,
   helpers: JobHelpers,
@@ -934,11 +1232,15 @@ export async function approveCatalogVersions(
             sync_run_id: string;
           }>(
             `
-              SELECT status::text, difference_checksum, sync_run_id::text,
-                     approved_by_actor_id::text
-              FROM catalog_version WHERE id = $1::uuid FOR UPDATE
+              SELECT version.status::text, version.difference_checksum,
+                     version.sync_run_id::text, version.approved_by_actor_id::text
+              FROM catalog_version version
+              JOIN catalog_sync_run run ON run.id = version.sync_run_id
+              WHERE version.id = $1::uuid
+                AND run.catalog_source_id = $2::uuid
+              FOR UPDATE
             `,
-            [payload.catalogVersionId],
+            [payload.catalogVersionId, payload.catalogSourceId],
           );
           const version = catalog.rows[0];
           if (
@@ -951,6 +1253,12 @@ export async function approveCatalogVersions(
           ) {
             throw new CatalogPipelineError('CATALOG_PIPELINE_VERSION_CONFLICT');
           }
+          await assertDifferenceReviewComplete(client, {
+            expectedDifferenceChecksum: payload.expectedCatalogDifferenceChecksum,
+            scope: 'CATALOG',
+            syncRunId: payload.syncRunId,
+            versionId: payload.catalogVersionId,
+          });
           const readiness = await client.query<{ composition_count: string; entry_count: string }>(
             `
               SELECT
@@ -986,16 +1294,6 @@ export async function approveCatalogVersions(
               `,
               [payload.catalogVersionId, payload.approvedByActorId, payload.approvalReason],
             );
-            await client.query(
-              `
-                UPDATE catalog_sync_difference
-                SET resolution = 'APPROVED', resolved_by_actor_id = $2::uuid,
-                    resolved_at = NOW(), safe_resolution_comment = $3
-                WHERE sync_run_id = $1::uuid AND entity_type <> 'PRICE'
-                  AND resolution = 'PENDING'
-              `,
-              [payload.syncRunId, payload.approvedByActorId, payload.approvalReason],
-            );
           }
           await appendAudit(client, {
             action: 'CATALOG_VERSION_APPROVED',
@@ -1018,11 +1316,15 @@ export async function approveCatalogVersions(
             sync_run_id: string;
           }>(
             `
-              SELECT status::text, difference_checksum, sync_run_id::text,
-                     approved_by_actor_id::text
-              FROM price_version WHERE id = $1::uuid FOR UPDATE
+              SELECT version.status::text, version.difference_checksum,
+                     version.sync_run_id::text, version.approved_by_actor_id::text
+              FROM price_version version
+              JOIN catalog_sync_run run ON run.id = version.sync_run_id
+              WHERE version.id = $1::uuid
+                AND run.catalog_source_id = $2::uuid
+              FOR UPDATE
             `,
-            [payload.priceVersionId],
+            [payload.priceVersionId, payload.catalogSourceId],
           );
           const version = price.rows[0];
           if (
@@ -1034,6 +1336,20 @@ export async function approveCatalogVersions(
               version.approved_by_actor_id !== payload.approvedByActorId)
           ) {
             throw new CatalogPipelineError('CATALOG_PIPELINE_VERSION_CONFLICT');
+          }
+          await assertDifferenceReviewComplete(client, {
+            expectedDifferenceChecksum: payload.expectedPriceDifferenceChecksum,
+            scope: 'PRICE',
+            syncRunId: payload.syncRunId,
+            versionId: payload.priceVersionId,
+          });
+          const readiness = await client.query<{ count: string }>(
+            `SELECT count(*)::text AS count FROM price_version_record
+             WHERE price_version_id = $1::uuid`,
+            [payload.priceVersionId],
+          );
+          if (Number(readiness.rows[0]?.count ?? '0') === 0) {
+            throw new CatalogPipelineError('CATALOG_PIPELINE_VERSION_NOT_READY');
           }
           if (version.status === 'AWAITING_APPROVAL') {
             await client.query(
@@ -1052,16 +1368,6 @@ export async function approveCatalogVersions(
                 WHERE id = $1::uuid
               `,
               [payload.priceVersionId, payload.approvedByActorId, payload.approvalReason],
-            );
-            await client.query(
-              `
-                UPDATE catalog_sync_difference
-                SET resolution = 'APPROVED', resolved_by_actor_id = $2::uuid,
-                    resolved_at = NOW(), safe_resolution_comment = $3
-                WHERE sync_run_id = $1::uuid AND entity_type = 'PRICE'
-                  AND resolution = 'PENDING'
-              `,
-              [payload.syncRunId, payload.approvedByActorId, payload.approvalReason],
             );
           }
           await appendAudit(client, {
@@ -1188,11 +1494,16 @@ export async function activateCatalogVersions(
             sync_run_id: string;
           }>(
             `
-              SELECT status::text, difference_checksum, predecessor_id::text, sync_run_id::text,
-                     activated_by_actor_id::text
-              FROM catalog_version WHERE id = $1::uuid FOR UPDATE
+              SELECT version.status::text, version.difference_checksum,
+                     version.predecessor_id::text, version.sync_run_id::text,
+                     version.activated_by_actor_id::text
+               FROM catalog_version version
+               JOIN catalog_sync_run run ON run.id = version.sync_run_id
+               WHERE version.id = $1::uuid
+                 AND run.catalog_source_id = $2::uuid
+               FOR UPDATE
             `,
-            [payload.catalogVersionId],
+            [payload.catalogVersionId, payload.catalogSourceId],
           );
           const candidate = candidateResult.rows[0];
           if (
@@ -1282,11 +1593,16 @@ export async function activateCatalogVersions(
             sync_run_id: string;
           }>(
             `
-              SELECT status::text, difference_checksum, predecessor_id::text, sync_run_id::text,
-                     activated_by_actor_id::text
-              FROM price_version WHERE id = $1::uuid FOR UPDATE
+              SELECT version.status::text, version.difference_checksum,
+                     version.predecessor_id::text, version.sync_run_id::text,
+                     version.activated_by_actor_id::text
+               FROM price_version version
+               JOIN catalog_sync_run run ON run.id = version.sync_run_id
+               WHERE version.id = $1::uuid
+                 AND run.catalog_source_id = $2::uuid
+               FOR UPDATE
             `,
-            [payload.priceVersionId],
+            [payload.priceVersionId, payload.catalogSourceId],
           );
           const candidate = candidateResult.rows[0];
           if (
@@ -1439,21 +1755,27 @@ export async function rollbackCatalogVersions(
             sync_run_id: string;
           }>(
             `
-              SELECT rollback_target_id::text, status::text, activation_key,
-                     sync_run_id::text
-              FROM catalog_version
-              WHERE id = $1::uuid
+              SELECT version.rollback_target_id::text, version.status::text,
+                     version.activation_key, version.sync_run_id::text
+              FROM catalog_version version
+              JOIN catalog_sync_run run ON run.id = version.sync_run_id
+              WHERE version.id = $1::uuid
+                AND run.catalog_source_id = $2::uuid
               FOR UPDATE
             `,
-            [payload.expectedActiveCatalogVersionId],
+            [payload.expectedActiveCatalogVersionId, payload.catalogSourceId],
           );
           const target = await client.query<{ activation_key: string | null; status: string }>(
             `
-              SELECT status::text, activation_key FROM catalog_version
-              WHERE id = $1::uuid AND approved_by_actor_id IS NOT NULL
+              SELECT version.status::text, version.activation_key
+              FROM catalog_version version
+              JOIN catalog_sync_run run ON run.id = version.sync_run_id
+              WHERE version.id = $1::uuid
+                AND version.approved_by_actor_id IS NOT NULL
+                AND run.catalog_source_id = $2::uuid
               FOR UPDATE
             `,
-            [payload.catalogRollbackTargetId],
+            [payload.catalogRollbackTargetId, payload.catalogSourceId],
           );
           const currentVersion = current.rows[0];
           const targetVersion = target.rows[0];
@@ -1526,21 +1848,27 @@ export async function rollbackCatalogVersions(
             sync_run_id: string;
           }>(
             `
-              SELECT rollback_target_id::text, status::text, activation_key,
-                     sync_run_id::text
-              FROM price_version
-              WHERE id = $1::uuid
+              SELECT version.rollback_target_id::text, version.status::text,
+                     version.activation_key, version.sync_run_id::text
+              FROM price_version version
+              JOIN catalog_sync_run run ON run.id = version.sync_run_id
+              WHERE version.id = $1::uuid
+                AND run.catalog_source_id = $2::uuid
               FOR UPDATE
             `,
-            [payload.expectedActivePriceVersionId],
+            [payload.expectedActivePriceVersionId, payload.catalogSourceId],
           );
           const target = await client.query<{ activation_key: string | null; status: string }>(
             `
-              SELECT status::text, activation_key FROM price_version
-              WHERE id = $1::uuid AND approved_by_actor_id IS NOT NULL
+              SELECT version.status::text, version.activation_key
+              FROM price_version version
+              JOIN catalog_sync_run run ON run.id = version.sync_run_id
+              WHERE version.id = $1::uuid
+                AND version.approved_by_actor_id IS NOT NULL
+                AND run.catalog_source_id = $2::uuid
               FOR UPDATE
             `,
-            [payload.priceRollbackTargetId],
+            [payload.priceRollbackTargetId, payload.catalogSourceId],
           );
           const currentVersion = current.rows[0];
           const targetVersion = target.rows[0];

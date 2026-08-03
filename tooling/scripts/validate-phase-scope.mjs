@@ -149,10 +149,16 @@ for (const file of await collectFiles(migrationRoot)) {
 }
 
 const allowedRouteFiles = new Set([
+  'apps/web/app/api/v1/catalog/materials/route.ts',
+  'apps/web/app/api/v1/catalog/media/[id]/route.ts',
   'apps/web/app/api/v1/health/live/route.ts',
   'apps/web/app/api/v1/health/ready/route.ts',
 ]);
-const allowedPageFiles = new Set(['apps/web/app/admin/catalog/page.tsx', 'apps/web/app/page.tsx']);
+const allowedPageFiles = new Set([
+  'apps/web/app/admin/catalog/page.tsx',
+  'apps/web/app/catalog/page.tsx',
+  'apps/web/app/page.tsx',
+]);
 for (const file of await collectFiles(join(repositoryRoot, 'apps', 'web', 'app'))) {
   const repositoryPath = relative(repositoryRoot, file).replaceAll('\\', '/');
   if (file.endsWith('route.ts') && !allowedRouteFiles.has(repositoryPath)) {

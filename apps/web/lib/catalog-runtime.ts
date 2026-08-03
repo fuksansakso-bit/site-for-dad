@@ -1,4 +1,8 @@
-import { parseDatabaseEnvironment, parseIdentityEnvironment } from '@project-name/config/server';
+import {
+  parseDatabaseEnvironment,
+  parseIdentityEnvironment,
+  parseStorageEnvironment,
+} from '@project-name/config/server';
 import {
   createCatalogManagementAdapter,
   createCatalogReadAdapter,
@@ -9,11 +13,13 @@ import {
   type SyntheticIdentityAdapter,
 } from '@project-name/identity/synthetic';
 import { createFoundationJobPool } from '@project-name/jobs';
+import { createS3ObjectStorage } from '@project-name/storage';
 
 let catalogManagement: CatalogManagementAdapter | undefined;
 let catalogRead: ReturnType<typeof createCatalogReadAdapter> | undefined;
 let identity: SyntheticIdentityAdapter | undefined;
 let jobPool: ReturnType<typeof createFoundationJobPool> | undefined;
+let objectStorage: ReturnType<typeof createS3ObjectStorage> | undefined;
 
 function databaseEnvironment() {
   return parseDatabaseEnvironment(process.env);
@@ -40,4 +46,13 @@ export function getWebIdentity(): SyntheticIdentityAdapter {
 export function getWebCatalogJobPool(): ReturnType<typeof createFoundationJobPool> {
   jobPool ??= createFoundationJobPool(databaseEnvironment(), 2);
   return jobPool;
+}
+
+export function getWebCatalogSigningKey(): string {
+  return parseIdentityEnvironment(process.env).SESSION_SIGNING_KEY;
+}
+
+export function getWebObjectStorage(): ReturnType<typeof createS3ObjectStorage> {
+  objectStorage ??= createS3ObjectStorage(parseStorageEnvironment(process.env));
+  return objectStorage;
 }

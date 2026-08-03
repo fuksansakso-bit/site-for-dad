@@ -2,9 +2,11 @@ import {
   CatalogReadError,
   amigoPilotCategorySourceIds,
   amigoPilotCatalogSourceId,
+  amigoPilotMaterialCount,
   amigoPilotMaterialSourceIds,
   amigoPilotSystemSourceIds,
   assertCatalogAdminVariantQuery,
+  buildCatalogPublicSnapshot,
   catalogReleaseStatuses,
   type CatalogActiveVersionSummary,
   type CatalogAdminOverview,
@@ -13,6 +15,7 @@ import {
   type CatalogAdminVariant,
   type CatalogAdminVariantPage,
   type CatalogAdminVariantQuery,
+  type CatalogPublicVersion,
   type CatalogReadPort,
   type CatalogReleaseStatus,
 } from '@project-name/catalog';
@@ -70,6 +73,18 @@ interface SummaryRow {
   readonly source_price_count: string;
 }
 
+interface PublicCatalogRow {
+  readonly catalog_activated_at: Date;
+  readonly catalog_difference_checksum: string;
+  readonly catalog_version_id: string;
+  readonly catalog_version_number: number;
+  readonly price_activated_at: Date;
+  readonly price_difference_checksum: string;
+  readonly price_version_id: string;
+  readonly price_version_number: number;
+  readonly source_manifest: unknown;
+}
+
 interface VariantRow {
   readonly article: string;
   readonly availability_status: string | null;
@@ -116,6 +131,20 @@ function mapActiveVersion(row: ActiveVersionRow | undefined): CatalogActiveVersi
         id: row.id,
         versionNumber: row.version_number,
       };
+}
+
+function mapPublicVersion(
+  id: string,
+  versionNumber: number,
+  differenceChecksum: string,
+  activatedAt: Date,
+): CatalogPublicVersion {
+  return {
+    activatedAt: activatedAt.toISOString(),
+    differenceChecksum,
+    id,
+    versionNumber,
+  };
 }
 
 export function createCatalogReadAdapter(environment: DatabaseEnvironment): CatalogReadPort {
@@ -314,6 +343,61 @@ export function createCatalogReadAdapter(environment: DatabaseEnvironment): Cata
             sourcePriceCount: Number(summaryRow.source_price_count),
           },
         };
+      } catch (error) {
+        throw mapDatabaseError(error);
+      }
+    },
+
+    async getPublicCatalog() {
+      try {
+        const result = await pool.query<PublicCatalogRow>(
+          `
+            SELECT
+              catalog.id::text AS catalog_version_id,
+              catalog.version_number AS catalog_version_number,
+              catalog.difference_checksum AS catalog_difference_checksum,
+              catalog.activated_at AS catalog_activated_at,
+              catalog.source_manifest,
+              price.id::text AS price_version_id,
+              price.version_number AS price_version_number,
+              price.difference_checksum AS price_difference_checksum,
+              price.activated_at AS price_activated_at
+            FROM catalog_version catalog
+            JOIN catalog_sync_run run ON run.id = catalog.sync_run_id
+            JOIN price_version price ON price.sync_run_id = catalog.sync_run_id
+              AND price.status = 'ACTIVE'
+              AND price.activation_key = 'PUBLIC'
+              AND price.approved_by_actor_id IS NOT NULL
+              AND price.activated_by_actor_id IS NOT NULL
+              AND price.activated_at IS NOT NULL
+            WHERE catalog.status = 'ACTIVE'
+              AND catalog.activation_key = 'PUBLIC'
+              AND catalog.approved_by_actor_id IS NOT NULL
+              AND catalog.activated_by_actor_id IS NOT NULL
+              AND catalog.activated_at IS NOT NULL
+              AND run.catalog_source_id = $1::uuid
+            LIMIT 1
+          `,
+          [amigoPilotCatalogSourceId],
+        );
+        const row = result.rows[0];
+        if (row === undefined) return null;
+        return buildCatalogPublicSnapshot({
+          catalogVersion: mapPublicVersion(
+            row.catalog_version_id,
+            row.catalog_version_number,
+            row.catalog_difference_checksum,
+            row.catalog_activated_at,
+          ),
+          manifest: row.source_manifest,
+          maximumMaterialCount: amigoPilotMaterialCount,
+          priceVersion: mapPublicVersion(
+            row.price_version_id,
+            row.price_version_number,
+            row.price_difference_checksum,
+            row.price_activated_at,
+          ),
+        });
       } catch (error) {
         throw mapDatabaseError(error);
       }

@@ -5,8 +5,8 @@
 | Поле | Значение |
 |---|---|
 | Статус | Phase 1A health/error contracts implemented; Phase 1B.1 catalog routes authorized; other business routes gated |
-| Версия | 0.5.0 |
-| Дата | 2026-08-02 |
+| Версия | 0.6.0 |
+| Дата | 2026-08-03 |
 | Architecture/data | [ARCHITECTURE.md](ARCHITECTURE.md), [DATA_MODEL.md](DATA_MODEL.md) |
 | Security | [SECURITY_PRIVACY.md](SECURITY_PRIVACY.md) |
 
@@ -175,7 +175,9 @@ Contract tests cover schemas/unknown fields as policy, auth/object matrix, idemp
 
 ## 14. Phase 1A / Phase 1B.1 implementation record
 
-Phase 1A concrete routes remain `GET /api/v1/health/live` and `GET /api/v1/health/ready`. Phase 1B.1 additionally implements the server-authorized `/admin/catalog` slice through Next.js Server Actions rather than a generic CRUD route. The admin read model is bounded to the exact 32-ID AMIGO allowlist and redacts object keys, credentials and raw snapshots. OWNER commands prepare immutable composition, set separate overlays/local price overrides and enqueue checksum-bound approval; ADMIN enqueues activation of the already approved exact release. Commands carry generated correlation/idempotency keys, typed impact confirmation and immutable audit/outbox evidence. Local synthetic session tokens are short-lived, stored only in an HttpOnly SameSite cookie and never rendered or logged. Public catalog HTTP contracts remain gated until the PostgreSQL-only active-version route is implemented in the next Phase 1B.1 step.
+Phase 1A concrete routes remain `GET /api/v1/health/live` and `GET /api/v1/health/ready`. Phase 1B.1 additionally implements the server-authorized `/admin/catalog` slice through Next.js Server Actions rather than a generic CRUD route. The admin read model is bounded to the exact 32-ID AMIGO allowlist and redacts object keys, credentials and raw snapshots. OWNER commands prepare immutable composition, set separate overlays/local price overrides and enqueue checksum-bound approval; ADMIN enqueues activation of the already approved exact release. Commands carry generated correlation/idempotency keys, typed impact confirmation and immutable audit/outbox evidence. Local synthetic session tokens are short-lived, stored only in an HttpOnly SameSite cookie and never rendered or logged.
+
+The public pilot implements `GET /api/v1/catalog/materials` with strict unknown-field rejection, a maximum page size of 50, allowlisted search/category/system/color/availability/blackout/zebra filters and an opaque HMAC cursor bound to the exact filters plus active catalog and price version IDs. A response exists only from a compatible `ACTIVE/PUBLIC` immutable `CatalogVersion` and `PriceVersion` pair for the pilot source; no active pair yields a safe empty catalog and no staging/source fallback. DTOs expose safe display fields, explicit availability/price status and same-origin media references but no object key, source hash, raw snapshot or storage credential. `GET /api/v1/catalog/media/{assetId}?v={catalogVersionId}` accepts only a media asset pinned in the current active composition with approved rights/publication, loads through the provider-neutral storage port and verifies MIME, byte length and SHA-256 again before delivery. Stale version/asset references are neutral `404`; storage/integrity failure is safe `503`; no signed provider URL or anonymous bucket is exposed.
 
 ## 15. Dependencies, risks and open questions
 
@@ -189,3 +191,4 @@ Dependencies: all domain/technical specs, auth/provider/hosting ADRs. Next.js sa
 | 0.2.0 | 2026-08-02 | Fixed the eight Phase 1A safe error codes, HTTP mapping, correlation/validation envelope and prohibited disclosures. |
 | 0.3.0 | 2026-08-02 | Recorded the two implemented health routes and verified that no business API or mutation route entered Phase 1A. |
 | 0.5.0 | 2026-08-03 | Recorded the implemented Phase 1B.1 catalog-admin Server Actions, exact role/checksum/idempotency boundaries and token/object-key redaction; public catalog routes remain gated. |
+| 0.6.0 | 2026-08-03 | Recorded the active-version-only public catalog/material-media routes, allowlisted facets, version-bound HMAC cursor, safe empty/degraded behavior and byte/MIME/SHA delivery checks without object-locator disclosure. |

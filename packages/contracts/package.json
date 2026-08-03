@@ -12,6 +12,10 @@
       "types": "./dist/error.d.ts",
       "import": "./dist/error.js"
     },
+    "./catalog": {
+      "types": "./dist/catalog.d.ts",
+      "import": "./dist/catalog.js"
+    },
     "./health": {
       "types": "./dist/health.d.ts",
       "import": "./dist/health.js"
@@ -38,6 +42,7 @@
     "responsibility": "Versioned runtime-safe HTTP, error, and health contracts.",
     "publicInterface": [
       ".",
+      "./catalog",
       "./error",
       "./health"
     ]

@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A infrastructure schema implemented; Phase 1B.1 catalog/source/overlay aggregates authorized for physical schema |
-| Версия | 0.5.0 |
-| Дата | 2026-08-02 |
+| Статус | Phase 1A infrastructure and authorized Phase 1B.2 source/catalog/media/price/overlay schema implemented; full activation remains gated |
+| Версия | 0.6.0 |
+| Дата | 2026-08-03 |
 | Architecture | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | Glossary | [GLOSSARY.md](../../00-global/GLOSSARY.md) |
 
@@ -36,6 +36,8 @@ This specification defines aggregate ownership, entities, keys/revisions, relati
 - **DATA-SPEC-020 — MUST:** source removal records a source tombstone/difference and MUST NOT cascade-delete, clear, hide or retire local entities, local-only records, `BUSINESS_OWNER_LOCAL` overlays or historical references; a later local transition is separate, authorized and audited.
 - **DATA-SPEC-021 — MUST:** the composed public value resolves an applicable approved local override before the source-backed default while preserving both records. Precedence uses explicit type/scope/effective interval, never column overwrite or latest-write-wins.
 - **DATA-SPEC-022 — MUST:** every catalog capture/import/validation/diff/local edit/override/approval/activation/rejection/hide/archive/rollback/projection rebuild has an append-only audit reference with actor/workload, time, reason, before/after version references and correlation ID.
+- **DATA-SPEC-023 — MUST:** every source price revision targets exactly one normalized `MaterialVariant` or `ProductModel`, stores its semantic `sourceVersion` and remains append-only. A retry may reuse only an exact revision for the same `(catalogSourceId, sourceId, sourceVersion)`; `PriceVersionRecord` pins its exact immutable ID.
+- **DATA-SPEC-024 — MUST:** a run manifest, diff, composition and `PriceVersion` select source prices by both the run item/hash and the run-pinned `sourceVersion`. Historical revisions with an equal hash cannot be joined as current, and no source-price operation mutates `LocalPriceOverride`.
 
 ## 2. Aggregate boundaries
 
@@ -93,7 +95,7 @@ ValidationRun stores configuration revision, rule versions, per-rule outcomes/co
 
 ## 7. Pricing model
 
-PriceVersion owns immutable rules/category mappings/overrides/effective state/checksum/approvals. PriceRule applicability is normalized or an approved declarative expression with version. Quote stores exact input snapshot, version/rules/components/amount/currency/status/disclosure/checksum.
+`SourcePriceRecord` stores immutable AMIGO-origin material/model card/base/price-from facts in integer minor units with currency, status, dynamic source category, context, provenance dates/hash and semantic source version. `PRICE_ON_REQUEST` has a null amount and never zero. `PriceVersion` owns an immutable manifest and exact `PriceVersionRecord` links; local overrides remain separate audited business records. Future PriceRule applicability is normalized or an approved declarative expression with version. Quote stores exact input snapshot, version/rules/components/amount/currency/status/disclosure/checksum.
 
 Historical quote does not foreign-key only to mutable current configuration or active pointer; it pins necessary revisions. Recalculation links `supersedesQuoteId` but preserves both. Source value and override remain separate.
 
@@ -162,13 +164,13 @@ Schema changes use additive/read-old-write-new/dual-compatible evolution, backfi
 
 Tests: ID uniqueness, optimistic concurrency, effective interval overlap, hierarchy cycles, reference integrity, readiness matrix, exact money, historical replay, source rename/split/merge/removal, preservation of local data/overlays on removal, dynamic category, catalog-version source/timestamp/approval completeness, single active pointer, public/derived version pinning, override precedence without source mutation, ownership/IDOR, private graph deletion/late job, rights revoke, active pointer rollback, event/job deduplication, catalog-change audit coverage, audit schema redaction, backup restore revocation and migration compatibility.
 
-## 17. Phase 1A physical schema record
+## 17. Physical schema record through Phase 1B.2
 
-The only physical Phase 1A tables are `actor_identity`, `role_grant`, `synthetic_session`, `audit_event`, `outbox_event`, `idempotency_record` and `service_heartbeat`, plus Prisma/Graphile migration metadata. Three reviewed migrations implement identity/audit, delivery/health and workload audit context. No product, material, price, quote, order, visualization or customer-photo table exists. Evidence: [schema and report](../../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
+The seven Phase 1A identity/audit/delivery tables remain unchanged. Reviewed Phase 1B.1/1B.2 migrations additionally physicalize only the authorized partner/source, resumable sync/manifest, normalized catalog hierarchy, typed media mapping, immutable source-price/price-version and separate business-overlay/publication aggregates. `SourcePriceRecord` now has an exact-one `materialVariantId`/`modelId` target and required semantic `sourceVersion`; its append-only trigger remains active after migration backfill. No calculator formula/rule engine, quote, configurator, client-photo, cart, order, installment, account or production-provider aggregate is introduced. Evidence remains the Prisma schema, migration boundary/recovery checks, the completed Phase 1A/1B.1 reports and the active Phase 1B.2 plan.
 
 ## 18. Dependencies, risks and open questions
 
-Dependencies: all domain specs, API/storage/security/deployment, ADRs and `OWNER-DECISION-008/009/010`. PostgreSQL/Prisma is fixed; Phase 1B.1 MAY physicalize only catalog/source/version/overlay/media-reference/audit entities. Production storage/index/search, PII/legal/order aggregates and Phase 1C+ remain gated. Risks: over-normalization vs opaque blobs, revision explosion, accidental cascade deletion, mutable history, projection drift, enum lock-in and private data in generic metadata.
+Dependencies: all domain specs, API/storage/security/deployment, ADRs and `OWNER-DECISION-008/009/010/012`. PostgreSQL/Prisma is fixed; Phase 1B.2 MAY physicalize only the authorized catalog/source/version/overlay/media/price/audit entities described above. Production storage/index/search, PII/legal/commercial workflow aggregates and Phase 1C+ remain gated. Risks: over-normalization vs opaque blobs, revision explosion, accidental cascade deletion, mutable history, projection drift, enum lock-in and private data in generic metadata.
 
 ## 19. History
 
@@ -178,3 +180,5 @@ Dependencies: all domain specs, API/storage/security/deployment, ADRs and `OWNER
 | 0.2.0 | 2026-08-02 | Recorded the seven-table Phase 1A infrastructure schema and confirmed that logical business aggregates were not implemented. |
 | 0.3.0 | 2026-08-02 | Added field authority classes, PostgreSQL operational-system semantics and object-storage image binary boundary from `OWNER-DECISION-008`; physical business schema remains unimplemented. |
 | 0.4.0 | 2026-08-02 | Added `OWNER-DECISION-009` immutable `CatalogVersion`, active pointer, source/timestamp/approval/audit metadata, no-auto-delete, local-override precedence and version-pinned public/derived read semantics without creating business tables. |
+| 0.5.0 | 2026-08-03 | Recorded the implemented Phase 1B.1 source/normalized/business-overlay, immutable catalog/price version and managed media-reference schema. |
+| 0.6.0 | 2026-08-03 | Recorded Phase 1B.2 resumable import/media schema and exact material/model source-price revisions pinned by semantic source version without calculator or Phase 1C aggregates. |

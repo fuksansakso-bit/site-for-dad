@@ -438,6 +438,7 @@ const compositionSql = `
       'kind', price.kind::text,
       'sourceHash', price.source_hash,
       'sourcePriceCategory', price.source_price_category,
+      'sourceVersion', price.source_version,
       'status', price.status::text
     ) END AS source_price_data,
     media.id::text AS primary_media_asset_id,
@@ -482,6 +483,8 @@ const compositionSql = `
     SELECT source_price.* FROM source_price_record source_price
     JOIN catalog_sync_item price_item ON price_item.source_entity_id = source_price.source_entity_id
                                       AND price_item.after_hash = source_price.source_hash
+    JOIN catalog_sync_run price_run ON price_run.id = price_item.sync_run_id
+                                    AND price_run.source_version = source_price.source_version
     WHERE target.entity_type = 'MATERIAL_VARIANT'
       AND source_price.material_variant_id = target.entity_id
       AND price_item.sync_run_id = $1::uuid
@@ -820,6 +823,9 @@ export function createCatalogManagementAdapter(
                 JOIN catalog_sync_item price_item
                   ON price_item.source_entity_id = price.source_entity_id
                  AND price_item.after_hash = price.source_hash
+                JOIN catalog_sync_run price_run
+                  ON price_run.id = price_item.sync_run_id
+                 AND price_run.source_version = price.source_version
                 WHERE price.material_variant_id = variant.id
                   AND price_item.sync_run_id = $1::uuid
               ))::text AS missing_price_count,

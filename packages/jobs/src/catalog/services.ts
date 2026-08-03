@@ -453,6 +453,7 @@ export function createCatalogJobServices(
             materialVariants: discovery.materialSourceIds.length,
             models: discovery.modelSourceIds.length,
             pages: discovery.pages.length,
+            prices: discovery.materialSourceIds.length + discovery.modelSourceIds.length,
             systems: discovery.systemSourceIds.length,
           },
           diagnostics: discovery.diagnostics.map((diagnostic) => ({
@@ -502,6 +503,10 @@ export function createCatalogJobServices(
             },
           };
         });
+        const priceSourceIds = [...discovery.materialSourceIds, ...discovery.modelSourceIds];
+        if (new Set(priceSourceIds).size !== priceSourceIds.length) {
+          throw new CatalogPipelineError('CATALOG_PIPELINE_PAYLOAD_INVALID');
+        }
         const partitions: CapturePartitionDefinition[] = [
           {
             failureSourceType: 'CATEGORY',
@@ -550,7 +555,7 @@ export function createCatalogJobServices(
           },
           {
             failureSourceType: 'PRICE',
-            items: discovery.materialSourceIds.map((sourceId) =>
+            items: priceSourceIds.map((sourceId) =>
               fetchedRecordItem(sourceId, 'price', 'prices', discovery.sourceVersion, (id) =>
                 adapter.fetchPrice(id),
               ),
@@ -588,7 +593,7 @@ export function createCatalogJobServices(
           familyCount +
           discovery.categories.length +
           discovery.systemSourceIds.length +
-          discovery.modelSourceIds.length +
+          discovery.modelSourceIds.length * 2 +
           discovery.materialSourceIds.length * 3;
         const captureErrorCount = results.reduce(
           (total, result) => total + result.errorCount,

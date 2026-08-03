@@ -66,8 +66,8 @@ Only one stage may be `IN_PROGRESS`.
 | 2 | Expand existing AMIGO source discovery | COMPLETED | Existing adapter completed 114 real pages: 28 categories, 56 systems, 9 models, 1655 variants, semantic source hash, 0 failures; regression suite passed in `177c83c` |
 | 3 | Add resumable full catalog import | COMPLETED | Append-only snapshots, 8 durable checkpoints, verified-key skip/resume, hierarchy/model normalization, cancellation, daily self-schedule and COMPLETE/PARTIAL_FAILED manifests passed clean migration/recovery, 12 integration scenarios and 9/9 CI stages |
 | 4 | Import full catalog media | COMPLETED | Exact material/category/system/model mappings, verified private SHA dedup, bounded continuation/cancellation, retry isolation, restart revalidation and missing-object fail-closed behavior passed 13 job scenarios, 15 storage cases and the 9/9 CI gate |
-| 5 | Add full catalog price snapshots | IN_PROGRESS | Source price/price-from/category/currency/context/version imported; unknown values become `PRICE_ON_REQUEST`; overrides persist |
-| 6 | Add full catalog review and activation | PENDING | Complete diff/review actions and atomic manual CatalogVersion/PriceVersion activation/rollback pass |
+| 5 | Add full catalog price snapshots | COMPLETED | Run-version-pinned material/model price revisions, exact typed targets, price-from/category/currency/context, `PRICE_ON_REQUEST`, price-only diffs and persistent local overrides passed clean 8-migration recovery, integration coverage and all 9 CI stages |
+| 6 | Add full catalog review and activation | IN_PROGRESS | Complete diff/review actions and atomic manual CatalogVersion/PriceVersion activation/rollback pass |
 | 7 | Add bulk business catalog controls | PENDING | Confirmed transactional idempotent category/filter/selection actions produce actor/correlation audit |
 | 8 | Expand `/admin/catalog` | PENDING | Human-readable full catalog, filters, manifest/sync/diff/history and mobile/keyboard states pass |
 | 9 | Expand `/catalog` | PENDING | Hierarchy, search, server filters/sort/cursors, detail/media/breadcrumb/share URL/loading/error/empty states pass without AMIGO |

@@ -20,6 +20,7 @@ describe('Phase 1B.2 migration boundary', () => {
       '20260803001000_amigo_pilot_source_registry',
       '20260803133000_phase_1b2_resumable_catalog_import',
       '20260803170000_phase_1b2_full_catalog_media',
+      '20260803190000_phase_1b2_full_catalog_prices',
     ]);
 
     const tables = new Set<string>();
@@ -126,5 +127,17 @@ describe('Phase 1B.2 migration boundary', () => {
     expect(fullMediaSql).toContain('category_id');
     expect(fullMediaSql).toContain('system_id');
     expect(fullMediaSql).toContain('model_id');
+
+    const fullPriceSql = await readFile(
+      new URL(
+        '../../prisma/migrations/20260803190000_phase_1b2_full_catalog_prices/migration.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    );
+    expect(fullPriceSql).toContain('source_price_record_exact_target_check');
+    expect(fullPriceSql).toContain('source_version');
+    expect(fullPriceSql).toContain('model_id');
+    expect(fullPriceSql).toContain('source_price_record_append_only');
   });
 });

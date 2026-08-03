@@ -240,7 +240,8 @@ export function createCatalogReadAdapter(environment: DatabaseEnvironment): Cata
                  JOIN source_entity source ON source.id = variant.source_entity_id
                  WHERE source.catalog_source_id = $1::uuid
                    AND source.source_id = ANY($2::text[])) AS material_variant_count,
-                (SELECT count(*)::text FROM source_price_record price
+                (SELECT count(DISTINCT price.material_variant_id)::text
+                 FROM source_price_record price
                  JOIN material_variant variant ON variant.id = price.material_variant_id
                  JOIN source_entity source ON source.id = variant.source_entity_id
                  WHERE price.catalog_source_id = $1::uuid

@@ -114,8 +114,58 @@ function changedJobsCatalogFixture(): FixtureCatalogDataset {
       },
     ],
     mediaManifests: fixture.mediaManifests.map(updateCapture),
+    models: (fixture.models ?? []).map(updateCapture),
     prices: fixture.prices.map(updateCapture),
     sourceVersion: { ...fixture.sourceVersion, version: 'jobs-fixture-v2' },
+    systems: fixture.systems.map(updateCapture),
+  };
+}
+
+function priceChangedJobsCatalogFixture(): FixtureCatalogDataset {
+  const fixture = createJobsCatalogFixture();
+  const contentHash = hashCanonicalSource({ fixture: 'jobs-catalog-prices-v3' });
+  const template = fixture.materials[0];
+  if (template === undefined) throw new Error('Fixture material is unavailable.');
+  const sourceVersion = 'jobs-fixture-v3';
+  const updateCapture = <T extends { readonly capture: typeof template.capture }>(
+    record: T,
+  ): T => ({
+    ...record,
+    capture: { ...record.capture, contentHash, sourceVersion },
+  });
+  return {
+    ...fixture,
+    categories: fixture.categories.map(updateCapture),
+    materials: fixture.materials.map(updateCapture),
+    mediaManifests: fixture.mediaManifests.map(updateCapture),
+    models: (fixture.models ?? []).map(updateCapture),
+    prices: fixture.prices.map((record) => {
+      const isMaterial = record.data.identity.sourceId === 'jobs-material-roller-1001';
+      const amountMinor = isMaterial ? 175_000 : 249_900;
+      const status = 'AVAILABLE' as const;
+      return updateCapture({
+        ...record,
+        data: {
+          ...record.data,
+          amountMinor,
+          identity: {
+            ...record.data.identity,
+            sourceHash: hashCanonicalSource({
+              amountMinor,
+              kind: record.data.kind,
+              sourceId: record.data.identity.sourceId,
+              status,
+            }),
+          },
+          sourceContext: {
+            ...record.data.sourceContext,
+            label: isMaterial ? 'от 1 750 ₽' : '2 499 ₽',
+          },
+          status,
+        },
+      });
+    }),
+    sourceVersion: { ...fixture.sourceVersion, version: sourceVersion },
     systems: fixture.systems.map(updateCapture),
   };
 }
@@ -217,7 +267,11 @@ describe.sequential('catalog synchronization pipeline', () => {
       media_batch_number: string;
       media_metadata_filename: string;
       model_media_count: string;
+      exact_target_price_count: string;
+      model_price_count: string;
       price_count: string;
+      price_on_request_count: string;
+      price_version_record_count: string;
       price_version_count: string;
       snapshot_count: string;
       system_media_count: string;
@@ -325,6 +379,39 @@ describe.sequential('catalog synchronization pipeline', () => {
             WHERE catalog_source_id = '${catalogSourceId}'::uuid
               AND source_id = 'jobs-material-roller-1001'
           ) AS price_count,
+          (
+            SELECT count(*)::text
+            FROM source_price_record price
+            JOIN catalog_sync_item item ON item.source_entity_id = price.source_entity_id
+            JOIN catalog_sync_run price_run ON price_run.id = item.sync_run_id
+                                            AND price_run.source_version = price.source_version
+            WHERE item.sync_run_id = $1::uuid
+              AND num_nonnulls(price.material_variant_id, price.model_id) = 1
+          ) AS exact_target_price_count,
+          (
+            SELECT count(*)::text
+            FROM source_price_record price
+            JOIN catalog_sync_item item ON item.source_entity_id = price.source_entity_id
+            JOIN catalog_sync_run price_run ON price_run.id = item.sync_run_id
+                                            AND price_run.source_version = price.source_version
+            WHERE item.sync_run_id = $1::uuid AND price.model_id IS NOT NULL
+          ) AS model_price_count,
+          (
+            SELECT count(*)::text
+            FROM source_price_record price
+            JOIN catalog_sync_item item ON item.source_entity_id = price.source_entity_id
+            JOIN catalog_sync_run price_run ON price_run.id = item.sync_run_id
+                                            AND price_run.source_version = price.source_version
+            WHERE item.sync_run_id = $1::uuid
+              AND price.status = 'PRICE_ON_REQUEST'
+              AND price.amount_minor IS NULL
+          ) AS price_on_request_count,
+          (
+            SELECT count(*)::text
+            FROM price_version_record record
+            JOIN price_version version ON version.id = record.price_version_id
+            WHERE version.sync_run_id = $1::uuid
+          ) AS price_version_record_count,
           (SELECT count(*)::text FROM audit_event WHERE target_id = $1::text) AS audit_count
       `,
       [syncRunId],
@@ -336,6 +423,7 @@ describe.sequential('catalog synchronization pipeline', () => {
       catalog_version_count: '1',
       checkpoint_count: '8',
       exact_target_media_count: '4',
+      exact_target_price_count: '2',
       import_manifest_complete: true,
       import_manifest_count: '1',
       material_count: '1',
@@ -346,9 +434,12 @@ describe.sequential('catalog synchronization pipeline', () => {
       media_metadata_filename: 'jobs-material-roller-1001.png',
       media_reference_count: '1',
       model_media_count: '1',
+      model_price_count: '1',
       price_count: '1',
+      price_on_request_count: '1',
+      price_version_record_count: '2',
       price_version_count: '1',
-      snapshot_count: '6',
+      snapshot_count: '7',
       system_media_count: '1',
     });
   });
@@ -444,9 +535,9 @@ describe.sequential('catalog synchronization pipeline', () => {
     expect(resumed.rows[0]).toEqual({
       completed_checkpoints: '8',
       resume_count: '4',
-      snapshot_count: '6',
+      snapshot_count: '7',
     });
-    expect(fetchCounts).toEqual({ material: 1, media: 1, model: 1, price: 2, system: 1 });
+    expect(fetchCounts).toEqual({ material: 1, media: 1, model: 1, price: 3, system: 1 });
   });
 
   it('durably cancels an in-flight run and seals retained evidence without a candidate', async () => {
@@ -766,7 +857,6 @@ describe.sequential('catalog synchronization pipeline', () => {
           SELECT count(*)::text
           FROM source_price_record
           WHERE catalog_source_id = '${catalogSourceId}'::uuid
-            AND source_id = 'jobs-material-roller-1001'
         ) AS price_count,
         (
           SELECT count(*)::text
@@ -789,9 +879,162 @@ describe.sequential('catalog synchronization pipeline', () => {
       material_count: '1',
       media_asset_count: '1',
       media_link_count: '1',
-      price_count: '1',
+      price_count: '2',
       source_identity_count: '1',
       version_count: '2',
+    });
+  });
+
+  it('versions full model and material prices without changing an active local override', async () => {
+    if (firstSyncRunId === undefined) throw new Error('First catalog sync run is unavailable.');
+    const business = await pool.query<{ id: string }>(
+      `
+        SELECT id::text
+        FROM business_catalog_entry
+        WHERE entity_type = 'MATERIAL_VARIANT'
+        ORDER BY created_at
+        LIMIT 1
+      `,
+    );
+    const businessCatalogEntryId = business.rows[0]?.id;
+    if (businessCatalogEntryId === undefined) {
+      throw new Error('Business overlay is unavailable.');
+    }
+    const overrideId = await management.setLocalPriceOverride({
+      actorId: ownerActorId,
+      amountMinor: 199_900,
+      businessCatalogEntryId,
+      correlationId: `catalog-price-override-${runTag}`,
+      currency: 'RUB',
+      effectiveFrom: '2026-08-03T00:00:00.000Z',
+      reason: 'Synthetic price-sync overlay persistence verification.',
+    });
+    const priceServices = createCatalogJobServices(
+      () => new FixtureCatalogSourceAdapter(priceChangedJobsCatalogFixture()),
+      () => ({ maximumBytes: 1_048_576, objectStorage }),
+    );
+    const syncRunId = await runPipeline(
+      'pipeline-002-price-changed',
+      firstSyncRunId,
+      'AWAITING_APPROVAL',
+      priceServices,
+    );
+
+    const candidate = await pool.query<{
+      catalog_version_count: string;
+      price_version_count: string;
+      price_version_record_count: string;
+    }>(
+      `
+        SELECT
+          (SELECT count(*)::text FROM catalog_version
+           WHERE sync_run_id = $1::uuid) AS catalog_version_count,
+          (SELECT count(*)::text FROM price_version
+           WHERE sync_run_id = $1::uuid) AS price_version_count,
+          (SELECT count(*)::text FROM price_version_record record
+           JOIN price_version version ON version.id = record.price_version_id
+           WHERE version.sync_run_id = $1::uuid) AS price_version_record_count
+      `,
+      [syncRunId],
+    );
+    expect(candidate.rows[0]).toEqual({
+      catalog_version_count: '0',
+      price_version_count: '1',
+      price_version_record_count: '2',
+    });
+
+    const priceRows = await pool.query<{
+      amount_minor: number | null;
+      kind: string;
+      source_id: string;
+      source_price_category: string | null;
+      source_version: string;
+      status: string;
+      target_type: string;
+    }>(
+      `
+        SELECT price.source_id, price.source_version, price.status::text,
+               price.kind::text, price.amount_minor, price.source_price_category,
+               CASE WHEN price.material_variant_id IS NOT NULL
+                    THEN 'MATERIAL_VARIANT' ELSE 'MODEL' END AS target_type
+        FROM source_price_record price
+        WHERE price.catalog_source_id = $1::uuid
+          AND price.source_version = 'jobs-fixture-v3'
+        ORDER BY price.source_id
+      `,
+      [catalogSourceId],
+    );
+    expect(priceRows.rows).toEqual([
+      {
+        amount_minor: 175_000,
+        kind: 'FROM',
+        source_id: 'jobs-material-roller-1001',
+        source_price_category: '1',
+        source_version: 'jobs-fixture-v3',
+        status: 'AVAILABLE',
+        target_type: 'MATERIAL_VARIANT',
+      },
+      {
+        amount_minor: 249_900,
+        kind: 'BASE',
+        source_id: 'jobs-model-roller-ready-1001',
+        source_price_category: 'Готовые изделия',
+        source_version: 'jobs-fixture-v3',
+        status: 'AVAILABLE',
+        target_type: 'MODEL',
+      },
+    ]);
+
+    const differences = await pool.query<{
+      absolute_change_minor: number | null;
+      after_status: string;
+      new_price_minor: number | null;
+      old_price_minor: number | null;
+      percentage_change: string | null;
+      source_id: string;
+    }>(
+      `
+        SELECT source.source_id, difference.old_price_minor, difference.new_price_minor,
+               difference.absolute_change_minor,
+               difference.percentage_change::text,
+               difference.after_value #>> '{attachment,status}' AS after_status
+        FROM catalog_sync_difference difference
+        JOIN source_entity source ON source.id = difference.source_entity_id
+        WHERE difference.sync_run_id = $1::uuid
+          AND difference.type = 'PRICE_CHANGED'
+        ORDER BY source.source_id
+      `,
+      [syncRunId],
+    );
+    expect(differences.rows).toEqual([
+      {
+        absolute_change_minor: 25_000,
+        after_status: 'AVAILABLE',
+        new_price_minor: 175_000,
+        old_price_minor: 150_000,
+        percentage_change: '16.6667',
+        source_id: 'jobs-material-roller-1001',
+      },
+      {
+        absolute_change_minor: null,
+        after_status: 'AVAILABLE',
+        new_price_minor: 249_900,
+        old_price_minor: null,
+        percentage_change: null,
+        source_id: 'jobs-model-roller-ready-1001',
+      },
+    ]);
+
+    const override = await pool.query<{ amount_minor: number; status: string }>(
+      `SELECT amount_minor, status::text FROM local_price_override WHERE id = $1::uuid`,
+      [overrideId],
+    );
+    expect(override.rows[0]).toEqual({ amount_minor: 199_900, status: 'ACTIVE' });
+    await management.removeLocalPriceOverride({
+      actorId: ownerActorId,
+      businessCatalogEntryId,
+      correlationId: `catalog-price-override-remove-${runTag}`,
+      reason: 'Synthetic price-sync overlay cleanup.',
     });
   });
 

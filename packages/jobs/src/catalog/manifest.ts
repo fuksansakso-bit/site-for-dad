@@ -174,6 +174,8 @@ export async function sealCatalogImportManifest(
               SELECT count(*)::text
               FROM source_price_record price
               JOIN catalog_sync_item item ON item.source_entity_id = price.source_entity_id
+              JOIN catalog_sync_run price_run ON price_run.id = item.sync_run_id
+                                              AND price_run.source_version = price.source_version
               WHERE item.sync_run_id = $1::uuid
             ) AS price_record_count
         `,

@@ -40,6 +40,10 @@ type NormalizedMediaTarget =
   | { readonly id: string; readonly kind: 'MODEL'; readonly sourceId: string }
   | { readonly id: string; readonly kind: 'SYSTEM'; readonly sourceId: string };
 
+type NormalizedPriceTarget =
+  | { readonly id: string; readonly kind: 'MATERIAL_VARIANT' }
+  | { readonly id: string; readonly kind: 'MODEL' };
+
 function derivedIdentity(
   base: SourceIdentity,
   input: {
@@ -90,8 +94,16 @@ function mergePayloads(payloads: readonly CatalogSafeSnapshotPayload[]): {
   readonly mediaManifests: readonly CapturedSource<SourceMediaManifest>[];
   readonly models: readonly CapturedSource<SourceModel>[];
   readonly prices: readonly CapturedSource<SourcePrice>[];
+  readonly sourceVersion: CatalogSafeSnapshotPayload['sourceVersion'];
   readonly systems: readonly CapturedSource<SourceSystem>[];
 } {
+  const sourceVersion = payloads[0]?.sourceVersion;
+  if (
+    sourceVersion === undefined ||
+    new Set(payloads.map((payload) => hashCanonicalSource(payload.sourceVersion))).size !== 1
+  ) {
+    throw new CatalogPipelineError('CATALOG_PIPELINE_RESUME_CONFLICT');
+  }
   return {
     categories: deduplicate(
       payloads.flatMap((payload) => payload.categories) as CapturedSource<SourceCategory>[],
@@ -115,6 +127,7 @@ function mergePayloads(payloads: readonly CatalogSafeSnapshotPayload[]): {
       payloads.flatMap((payload) => payload.prices) as CapturedSource<SourcePrice>[],
       'price',
     ),
+    sourceVersion,
     systems: deduplicate(
       payloads.flatMap((payload) => payload.systems) as CapturedSource<SourceSystem>[],
       'system',
@@ -606,7 +619,8 @@ async function upsertPrice(
   client: PoolClient,
   payload: CatalogNormalizePayload,
   record: CapturedSource<SourcePrice>,
-  materialVariantId: string,
+  sourceVersion: string,
+  target: NormalizedPriceTarget,
 ): Promise<void> {
   const sourceEntity = await upsertSourceEntity(
     client,
@@ -615,27 +629,32 @@ async function upsertPrice(
     record.data,
   );
   await recordSyncItem(client, payload, record.data.identity, sourceEntity);
-  await client.query(
+  const materialVariantId = target.kind === 'MATERIAL_VARIANT' ? target.id : null;
+  const modelId = target.kind === 'MODEL' ? target.id : null;
+  const inserted = await client.query<{ id: string }>(
     `
       INSERT INTO source_price_record (
-        catalog_source_id, source_entity_id, material_variant_id, source_type,
-        source_id, source_slug, source_url, source_category, source_hash,
+        catalog_source_id, source_entity_id, material_variant_id, model_id, source_type,
+        source_id, source_version, source_slug, source_url, source_category, source_hash,
         source_captured_at, source_last_verified_at, status, kind, amount_minor,
         currency, source_price_category, source_context
       ) VALUES (
-        $1::uuid, $2::uuid, $3::uuid, $4::catalog_source_type,
-        $5, $6, $7, $8, $9,
-        $10::timestamptz, $11::timestamptz, $12::price_status,
-        $13::price_record_kind, $14, $15, $16, $17::jsonb
+        $1::uuid, $2::uuid, $3::uuid, $4::uuid, $5::catalog_source_type,
+        $6, $7, $8, $9, $10, $11,
+        $12::timestamptz, $13::timestamptz, $14::price_status,
+        $15::price_record_kind, $16, $17, $18, $19::jsonb
       )
-      ON CONFLICT (catalog_source_id, source_id, source_hash) DO NOTHING
+      ON CONFLICT (catalog_source_id, source_id, source_version) DO NOTHING
+      RETURNING id::text
     `,
     [
       payload.catalogSourceId,
       sourceEntity.id,
       materialVariantId,
+      modelId,
       record.data.identity.sourceType,
       record.data.identity.sourceId,
+      sourceVersion,
       record.data.identity.sourceSlug,
       record.data.identity.sourceUrl,
       record.data.identity.sourceCategory ?? null,
@@ -650,6 +669,53 @@ async function upsertPrice(
       JSON.stringify(record.data.sourceContext),
     ],
   );
+  if (inserted.rows[0] !== undefined) return;
+
+  const exactExisting = await client.query<{ id: string }>(
+    `
+      SELECT id::text
+      FROM source_price_record
+      WHERE catalog_source_id = $1::uuid
+        AND source_entity_id = $2::uuid
+        AND material_variant_id IS NOT DISTINCT FROM $3::uuid
+        AND model_id IS NOT DISTINCT FROM $4::uuid
+        AND source_type = $5::catalog_source_type
+        AND source_id = $6
+        AND source_version = $7
+        AND source_slug = $8
+        AND source_url = $9
+        AND source_category IS NOT DISTINCT FROM $10
+        AND source_hash = $11
+        AND status = $12::price_status
+        AND kind = $13::price_record_kind
+        AND amount_minor IS NOT DISTINCT FROM $14
+        AND currency = $15
+        AND source_price_category IS NOT DISTINCT FROM $16
+        AND source_context = $17::jsonb
+    `,
+    [
+      payload.catalogSourceId,
+      sourceEntity.id,
+      materialVariantId,
+      modelId,
+      record.data.identity.sourceType,
+      record.data.identity.sourceId,
+      sourceVersion,
+      record.data.identity.sourceSlug,
+      record.data.identity.sourceUrl,
+      record.data.identity.sourceCategory ?? null,
+      record.data.identity.sourceHash,
+      record.data.status,
+      record.data.kind,
+      record.data.amountMinor,
+      record.data.currency,
+      record.data.sourcePriceCategory,
+      JSON.stringify(record.data.sourceContext),
+    ],
+  );
+  if (exactExisting.rows[0] === undefined) {
+    throw new CatalogPipelineError('CATALOG_PIPELINE_RESUME_CONFLICT');
+  }
 }
 
 function derivedMediaReferenceIdentity(
@@ -862,6 +928,26 @@ export async function normalizeCatalogSnapshots(
     await helpers.withPgClient(async (client) => {
       await client.query('BEGIN');
       try {
+        const runResult = await client.query<{
+          catalog_source_id: string;
+          source_version: string | null;
+        }>(
+          `
+            SELECT catalog_source_id::text, source_version
+            FROM catalog_sync_run
+            WHERE id = $1::uuid
+            FOR UPDATE
+          `,
+          [payload.syncRunId],
+        );
+        const run = runResult.rows[0];
+        if (
+          run === undefined ||
+          run.catalog_source_id !== payload.catalogSourceId ||
+          run.source_version !== batch.sourceVersion.version
+        ) {
+          throw new CatalogPipelineError('CATALOG_PIPELINE_RESUME_CONFLICT');
+        }
         const families = new Map<string, NormalizedReference>();
         const categories = new Map<string, NormalizedReference>();
         const systems = new Map<string, NormalizedReference>();
@@ -1008,10 +1094,16 @@ export async function normalizeCatalogSnapshots(
 
         for (const price of batch.prices) {
           const variant = variants.get(price.data.identity.sourceId);
-          if (variant === undefined) {
+          const model = models.get(price.data.identity.sourceId);
+          let target: NormalizedPriceTarget;
+          if (variant !== undefined && model === undefined) {
+            target = { id: variant.id, kind: 'MATERIAL_VARIANT' };
+          } else if (model !== undefined && variant === undefined) {
+            target = { id: model.id, kind: 'MODEL' };
+          } else {
             throw new CatalogPipelineError('CATALOG_PIPELINE_PAYLOAD_INVALID');
           }
-          await upsertPrice(client, payload, price, variant.id);
+          await upsertPrice(client, payload, price, batch.sourceVersion.version, target);
         }
         for (const manifest of batch.mediaManifests) {
           const variant = variants.get(manifest.data.materialSourceId);

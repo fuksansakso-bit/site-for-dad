@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Статус | Нормативная политика; Phase 1B.2 разрешает full source card/base price snapshots and local overrides без dimensional calculator |
-| Версия | 1.6.0 |
+| Версия | 1.7.0 |
 | Дата | 2026-08-03, Europe/Moscow |
 | Главный источник правды | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) |
 | Внешние источники | [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md) |
@@ -29,6 +29,8 @@
 - **PRICING-SOURCE-012 — MUST:** по `OWNER-DECISION-009` конфигуратор и расчёт MUST получать catalog/material/base-price inputs только из совместимых активных одобренных `CatalogVersion`/`PriceVersion` в PostgreSQL. Client request MUST NOT читать AMIGO, raw capture, staged candidate, cache/search source или неподтверждённую цену напрямую.
 - **PRICING-SOURCE-013 — MUST:** Phase 1B.1 хранит только decimal minor-unit source card price «от» с currency `RUB`, published regional/source context, capture/version/status и nullable verified `sourcePriceCategory`; отсутствующее/нулевое/неразбираемое значение получает `PRICE_ON_REQUEST`, а opaque DOM token не выдаётся за подтверждённую price category.
 - **PRICING-SOURCE-014 — MUST:** Phase 1B.2 расширяет `PRICING-SOURCE-013` на все discovered source entities. Каждая запись сохраняет source entity/link, captured date, source version, currency, context, nullable source/base/price-from amount и nullable source price category; неизвестное значение остаётся `PRICE_ON_REQUEST` и MUST NOT превращаться в `0 ₽`.
+- **PRICING-SOURCE-015 — MUST:** complete Phase 1B.2 capture создаёт ровно одну типизированную source-price revision для каждого discovered price-bearing `MaterialVariant` и `ProductModel`; target обязан быть ровно одним из этих типов. Отсутствующая сумма создаёт `PRICE_ON_REQUEST`, а не пропуск записи; ambiguous/duplicate target блокирует run.
+- **PRICING-SOURCE-016 — MUST:** `SourcePriceRecord` является append-only revision, уникальной в пределах `(catalogSourceId, sourceId, sourceVersion)`. Exact retry той же semantic source version переиспользует совпадающую запись; несовпадающие hash, target, provenance или price facts при том же ключе являются blocking resume conflict. `PriceVersionRecord` закрепляет точную revision.
 
 ## 2. Приоритет источников и способ получения
 
@@ -46,6 +48,8 @@
 - **PRICING-SYNC-004 — MUST:** город/регион AMIGO, используемый для базового сравнения, определяется `TBD-PRICE-SOURCE-001`; московский контекст не считается автоматически применимым к Чеченской Республике.
 - **PRICING-SYNC-005 — MUST NOT:** нельзя утверждать существование публичного официального API AMIGO только из факта партнёрства; конкретный transport/export/API подтверждается отдельно по `TBD-SOURCE-AMIGO-002`.
 - **PRICING-SYNC-007 — MUST:** full price diff перед OWNER/ADMIN activation показывает changed count, old/new values, absolute/percentage delta when both values exist, added/removed/`PRICE_ON_REQUEST`, source and date. Daily/manual sync never activates `PriceVersion` and never overwrites `LocalPriceOverride`.
+- **PRICING-SYNC-008 — MUST:** price manifest и candidate выбирают source-price records только для semantic `sourceVersion` текущего `SyncRun`; совпадающий `sourceHash` из другой версии не может попасть в manifest, diff или `PriceVersionRecord`.
+- **PRICING-SYNC-009 — MUST:** complete-run accounting сверяет discovered price identities, immutable price snapshots, typed normalized price records и records созданного `PriceVersion`. Missing/extra/ambiguous revision или partial capture запрещает complete candidate; `LocalPriceOverride` при этом не создаётся, не меняется и не удаляется.
 
 ## 3. Snapshot model и versioning
 
@@ -191,3 +195,4 @@ PricingProvider
 | 1.4.0 | 2026-08-02 | По `OWNER-DECISION-009` public calculations переведены на активные PostgreSQL `CatalogVersion`/`PriceVersion`; зафиксированы override precedence, staged diff, owner/admin activation, audit/source timestamps и отсутствие direct AMIGO runtime reads. |
 | 1.5.0 | 2026-08-02 | `OWNER-DECISION-010` разрешил Phase 1B.1 source card prices/PRICE_ON_REQUEST/local base overrides и daily diff, сохранив calculator/formulas/minimum rule для Phase 1C. |
 | 1.6.0 | 2026-08-03 | `OWNER-DECISION-012` разрешил full-catalog source/base/card/price-from/category snapshots, complete activation diff and persistent local overrides; dimensional calculator/formulas/minimum remain Phase 1C. |
+| 1.7.0 | 2026-08-03 | Phase 1B.2 implementation закрепил full material/model price accounting, exact typed target, append-only `(sourceId, sourceVersion)` revisions, current-run-only manifest/version selection, `PRICE_ON_REQUEST` и неизменность local overrides. |

@@ -125,11 +125,36 @@ export function createJobsCatalogFixture(): FixtureCatalogDataset {
   const price: SourcePrice = {
     amountMinor: 150_000,
     currency: 'RUB',
-    identity: identity('PRICE', materialSourceId, categorySourceId),
+    identity: {
+      ...identity('PRICE', materialSourceId, categorySourceId),
+      sourceHash: hashCanonicalSource({
+        amountMinor: 150_000,
+        kind: 'FROM',
+        sourceId: materialSourceId,
+        status: 'AVAILABLE',
+      }),
+    },
     kind: 'FROM',
     sourceContext: { label: 'от 1 500 ₽' },
     sourcePriceCategory: '1',
     status: 'AVAILABLE',
+  };
+  const modelPrice: SourcePrice = {
+    amountMinor: null,
+    currency: 'RUB',
+    identity: {
+      ...identity('PRICE', modelSourceId, categorySourceId),
+      sourceHash: hashCanonicalSource({
+        amountMinor: null,
+        kind: 'BASE',
+        sourceId: modelSourceId,
+        status: 'PRICE_ON_REQUEST',
+      }),
+    },
+    kind: 'BASE',
+    sourceContext: { categoryPath: '/fixture/ready-made', label: 'PRICE_ON_REQUEST' },
+    sourcePriceCategory: 'Готовые изделия',
+    status: 'PRICE_ON_REQUEST',
   };
   const mediaManifest: SourceMediaManifest = {
     identity: identity('MEDIA', materialSourceId, categorySourceId),
@@ -163,7 +188,7 @@ export function createJobsCatalogFixture(): FixtureCatalogDataset {
       mediaFile(modelMediaUrl, 'jobs-model-roller-ready-1001.png'),
     ],
     models: [captured(model)],
-    prices: [captured(price)],
+    prices: [captured(price), captured(modelPrice)],
     sourceVersion,
     systems: [captured(system)],
   };

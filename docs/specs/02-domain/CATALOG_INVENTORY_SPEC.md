@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1B.1 32-variant catalog/overlay pilot authorized; full inventory remains `TBD-ASSORT-002` |
-| Версия | 0.5.0 |
+| Статус | Phase 1B.2 full source catalog capture/import authorized and in progress; local publication/orderability remain reviewed decisions |
+| Версия | 0.6.0 |
 | Дата | 2026-08-03 |
 | Sources | [EXTERNAL_SOURCES.md](../../00-global/EXTERNAL_SOURCES.md) |
 | Rights | [ASSET_RIGHTS_REGISTER.md](../../00-global/ASSET_RIGHTS_REGISTER.md) |
@@ -16,7 +16,7 @@
 
 In scope: supplier/partner/source catalogs, dynamic product hierarchy, materials/variants/properties, options/compatibility/dimensions, source/local states, provenance, aliases and availability records.
 
-Out of scope: full AMIGO inventory, real stock quantities, unverified technical limits, price formulas/calculation and production imports/deployment. Phase 1B.1 physical schema and bounded public-page transport follow the active plan and technical specs.
+Out of scope: real stock quantities, unverified technical limits, price formulas/calculation, configurator/order flows and production deployment. Phase 1B.2 MAY capture and normalize the full currently discoverable authorized AMIGO source catalog under the active plan; import never implies local publication, availability, pricing, orderability or closure of `TBD-ASSORT-002` before accepted manifest/coverage/activation evidence.
 
 ## 2. Акторы, термины и ownership
 
@@ -170,7 +170,7 @@ Primary AC: `AC-CATALOG-001`, `AC-CATALOG-DYNAMIC-001`, `AC-AMIGO-PARITY-001`, `
 
 Tests: unique IDs/aliases; parent cycle; new price category `X`; unknown property; rename/move/split/merge; publication readiness matrix; missing/wrong asset; compatibility conflict; dimension boundary tables; stale availability; source removal; concurrent edit; historical quote after retirement; source outage and rollback.
 
-Phase 1B.1 implementation serves the 32-variant pilot only from a compatible active immutable catalog/price version pair. The projection excludes any entry unless visibility is `VISIBLE`, manual review is `APPROVED`, publication is `PUBLISHED`, availability is a known allowed state, price is explicit and primary media has permitted rights plus `PUBLICATION_APPROVED`. Local override takes precedence only inside the pinned composition; source price history remains unchanged. Search and facets use only populated normalized category/system/color/availability/blackout/zebra values. Missing active version is an empty unpublished catalog, while database or object-integrity failure is a degraded state and never falls back to AMIGO/staging.
+The active public baseline remains the reviewed Phase 1B.1 32-variant version until a complete Phase 1B.2 candidate independently passes manifest/coverage, local overlay review and explicit activation. Phase 1B.2 staging MAY contain the discovered 28-category/56-system/9-model/1655-variant source inventory, full typed media mappings and material/model price revisions without exposing any of it. The public projection excludes any entry unless visibility is `VISIBLE`, manual review is `APPROVED`, publication is `PUBLISHED`, availability is a known allowed state, price is explicit or safely `PRICE_ON_REQUEST`, and primary media has permitted rights plus `PUBLICATION_APPROVED`. Local override takes precedence only inside the pinned composition; source price history remains unchanged. Missing active version is an empty unpublished catalog, while database or object-integrity failure is a degraded state and never falls back to AMIGO/staging.
 
 ## 14. Dependencies, risks and open questions
 
@@ -180,7 +180,7 @@ Risks: text-key merges, auto-publication, unknown-as-positive, mismapped images,
 
 ## 15. Связанные требования и история
 
-Links: `FR-CATALOG-*`, `FR-MATERIAL-*`, `FR-VARIANT-*`, `AMIGO-SYNC-*`, `ASSET-*`, `PRICING-*`, `CAT-INV-001`–`024`.
+Links: `FR-CATALOG-*`, `FR-MATERIAL-*`, `FR-VARIANT-*`, `AMIGO-SYNC-*`, `ASSET-*`, `PRICING-*`, `CAT-INV-001`–`029`.
 
 | Версия | Дата | Изменение |
 |---|---|---|
@@ -189,3 +189,4 @@ Links: `FR-CATALOG-*`, `FR-MATERIAL-*`, `FR-VARIANT-*`, `AMIGO-SYNC-*`, `ASSET-*
 | 0.3.0 | 2026-08-02 | По `OWNER-DECISION-008` добавлены field-level authority, PostgreSQL operational projection, защита local overlays от sync и object-storage boundary для image binaries. |
 | 0.4.0 | 2026-08-02 | Phase 1B.1 32-variant source/overlay pilot authorized while full inventory remained gated. |
 | 0.5.0 | 2026-08-03 | Recorded the active-version-only public projection, explicit readiness/price/media gates, normalized pilot facets and safe empty/degraded behavior. |
+| 0.6.0 | 2026-08-03 | Synchronized the authorized Phase 1B.2 full source capture/import boundary while retaining independent local publication, availability, pricing, orderability and accepted-manifest gates. |

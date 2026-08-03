@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1B.2 full public-page discovery verified; durable import/review/activation in progress |
-| Версия | 0.8.0 |
+| Статус | Phase 1B.2 full discovery/resumable import/media/price snapshots implemented; review/activation in progress |
+| Версия | 0.9.0 |
 | Дата | 2026-08-03 |
 | Source registry | [EXTERNAL_SOURCES.md](../../00-global/EXTERNAL_SOURCES.md) |
 | Pricing policy | [PRICING_SOURCE_POLICY.md](../../00-global/PRICING_SOURCE_POLICY.md) |
@@ -74,6 +74,8 @@ Public browser research and volatile customizer DOM/iframe are not a production 
 - **SYNC-ARCH-043 — MUST:** an operator cancellation request is durable and checked between bounded items. It seals the run as `CANCELLED`, keeps captured evidence and does not enqueue normalization. Process shutdown/timeout is not cancellation: it releases the Graphile Worker job for retry and keeps the run resumable without declaring partial completion.
 - **SYNC-ARCH-044 — MUST:** after normalization/media/diff, the pipeline inserts exactly one append-only `CatalogImportManifest` for the run. It records source/parser/mapping versions, start/end, expected and captured category/system/model/material/page/media/price counts, warning/failure/skip/duplicate/source-removal counts, checkpoint/resume evidence and deterministic checksum summary. Any failure or incomplete discovery yields `PARTIAL_FAILED`, never a complete manifest.
 - **SYNC-ARCH-045 — MUST:** normalization preserves the discovered category parent/order hierarchy and every typed `ProductModel`. A model always retains its evidence-backed category and links to a system only when the source supplies that relationship; missing referenced categories/systems fail closed instead of inventing or silently dropping the relation.
+- **SYNC-ARCH-046 — MUST:** a complete price partition contains the union of discovered material and model source IDs with no collision. Normalization creates one exact typed `SourcePriceRecord` target (`MaterialVariant` xor `ProductModel`) per identity; missing amount becomes `PRICE_ON_REQUEST`, while a missing, duplicate or ambiguous target fails closed.
+- **SYNC-ARCH-047 — MUST:** source-price revisions are append-only and pinned by semantic source version. Manifest, diff, composition and `PriceVersionRecord` join only the revision matching the current run's `sourceVersion`; exact same-version retry is idempotent, a conflict is blocking, and sync never mutates `LocalPriceOverride`.
 
 ## 4. Pipeline stages
 
@@ -165,7 +167,7 @@ Business Owner approval determines local public composition/visibility. The admi
 
 ## 10. Price synchronization boundary
 
-Catalog run MAY carry source price metadata, but price candidate is independently staged/validated/parity-tested/approved. `sourcePriceCategory` dynamic strings are preserved. Active price version and catalog version compatibility is declared. Approved Business Owner price overrides compose after the immutable AMIGO base-price layer and have priority only in their declared scope. No partial price table or unverified public `от` value becomes active calculator data.
+Catalog run MAY carry source price metadata, but price candidate is independently staged/validated/parity-tested/approved. Full capture accounts for every discovered material/model price identity, stores `FROM`/`BASE`, integer minor units, currency, context, nullable dynamic `sourcePriceCategory`, typed target and semantic source version; unknown/zero source values remain `PRICE_ON_REQUEST`. Each `PriceVersion` pins exact immutable records from that run version, and its diff retains old/new/POR states plus computable absolute/percentage deltas. Approved Business Owner price overrides compose after the immutable AMIGO base-price layer and have priority only in their declared scope. No partial price table or unverified public `от` value becomes active calculator data.
 
 ## 11. Media synchronization boundary
 
@@ -220,3 +222,4 @@ Dependencies: catalog/pricing/media/admin/data/API/security/observability/deploy
 | 0.6.0 | 2026-08-03 | Recorded controlled full public-page discovery: dynamic path traversal, pagination/models, load bounds, semantic catalog hashing, canonical-card selection, item-level diagnostics, multi-section path identity and zero-price normalization. |
 | 0.7.0 | 2026-08-03 | Defined deterministic append-only capture keys, PostgreSQL stage checkpoints, same-source-version resume, durable cancellation versus graceful retry, and one sealed checksummed full-run import manifest. |
 | 0.8.0 | 2026-08-03 | Required full category hierarchy and typed model normalization with evidence-backed optional system links; missing referenced nodes fail closed. |
+| 0.9.0 | 2026-08-03 | Implemented full material/model price capture accounting, exact typed targets, semantic-version-pinned append-only revisions and current-run-only manifest/diff/version links while preserving local overrides. |

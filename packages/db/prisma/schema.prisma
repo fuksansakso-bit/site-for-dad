@@ -796,6 +796,7 @@ model ProductModel {
   compatibilityRules   CompatibilityRule[]
   dimensionConstraints DimensionConstraint[]
   sourceMediaAssets    SourceMediaAsset[]
+  sourcePrices         SourcePriceRecord[]
 
   @@index([categoryId], map: "product_model_category_idx")
   @@index([systemId], map: "product_model_system_idx")
@@ -1006,9 +1007,11 @@ model SourcePriceRecord {
   id                   String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   catalogSourceId      String                @map("catalog_source_id") @db.Uuid
   sourceEntityId       String                @map("source_entity_id") @db.Uuid
-  materialVariantId    String                @map("material_variant_id") @db.Uuid
+  materialVariantId    String?               @map("material_variant_id") @db.Uuid
+  modelId              String?               @map("model_id") @db.Uuid
   sourceType           CatalogSourceType     @map("source_type")
   sourceId             String                @map("source_id") @db.VarChar(255)
+  sourceVersion        String                @map("source_version") @db.VarChar(160)
   sourceSlug           String                @map("source_slug") @db.VarChar(255)
   sourceUrl            String                @map("source_url") @db.VarChar(1024)
   sourceCategory       String?               @map("source_category") @db.VarChar(255)
@@ -1024,12 +1027,14 @@ model SourcePriceRecord {
   createdAt            DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
   catalogSource        CatalogSource         @relation(fields: [catalogSourceId], references: [id], onDelete: Restrict)
   sourceEntity         SourceEntity          @relation(fields: [sourceEntityId], references: [id], onDelete: Restrict)
-  materialVariant      MaterialVariant       @relation(fields: [materialVariantId], references: [id], onDelete: Restrict)
+  materialVariant      MaterialVariant?      @relation(fields: [materialVariantId], references: [id], onDelete: Restrict)
+  model                ProductModel?         @relation(fields: [modelId], references: [id], onDelete: Restrict)
   versionEntries       PriceVersionRecord[]
   catalogEntries       CatalogVersionEntry[]
 
-  @@unique([catalogSourceId, sourceId, sourceHash], map: "source_price_record_version_key")
+  @@unique([catalogSourceId, sourceId, sourceVersion], map: "source_price_record_version_key")
   @@index([materialVariantId, sourceCapturedAt], map: "source_price_record_variant_time_idx")
+  @@index([modelId, sourceCapturedAt], map: "source_price_record_model_time_idx")
   @@map("source_price_record")
 }
 

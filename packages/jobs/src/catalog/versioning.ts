@@ -80,7 +80,10 @@ interface PriceAttachmentRow {
   readonly source_entity_id: string;
   readonly source_price_category: string | null;
   readonly source_price_record_id: string;
+  readonly source_version: string;
   readonly status: string;
+  readonly target_id: string;
+  readonly target_type: 'MATERIAL_VARIANT' | 'MODEL';
 }
 
 interface SnapshotEvidenceRow {
@@ -202,6 +205,7 @@ function semanticEntityValue(entity: VersionEntity): unknown {
             kind: attachment?.['kind'] ?? null,
             sourcePriceCategory: attachment?.['sourcePriceCategory'] ?? null,
             status: attachment?.['status'] ?? null,
+            targetType: attachment?.['targetType'] ?? null,
           }
         : entity.attachment;
   return {
@@ -247,7 +251,10 @@ function priceAttachment(row: PriceAttachmentRow | undefined): unknown {
     kind: row.kind,
     sourcePriceCategory: row.source_price_category,
     sourcePriceRecordId: row.source_price_record_id,
+    sourceVersion: row.source_version,
     status: row.status,
+    targetId: row.target_id,
+    targetType: row.target_type,
   };
 }
 
@@ -651,10 +658,15 @@ export async function buildCatalogVersionDiff(
           `
               SELECT price.source_entity_id::text, price.id::text AS source_price_record_id,
                      price.status::text, price.kind::text, price.amount_minor,
-                     price.currency, price.source_price_category
+                     price.currency, price.source_price_category, price.source_version,
+                     COALESCE(price.material_variant_id, price.model_id)::text AS target_id,
+                     CASE WHEN price.material_variant_id IS NOT NULL
+                          THEN 'MATERIAL_VARIANT' ELSE 'MODEL' END AS target_type
               FROM source_price_record price
               JOIN catalog_sync_item item ON item.source_entity_id = price.source_entity_id
                                            AND item.after_hash = price.source_hash
+              JOIN catalog_sync_run price_run ON price_run.id = item.sync_run_id
+                                              AND price_run.source_version = price.source_version
               WHERE item.sync_run_id = $1::uuid AND item.source_type = 'PRICE'
           `,
           [payload.syncRunId],
@@ -787,6 +799,8 @@ export async function buildCatalogVersionDiff(
                 FROM source_price_record price
                 JOIN catalog_sync_item item ON item.source_entity_id = price.source_entity_id
                                              AND item.after_hash = price.source_hash
+                JOIN catalog_sync_run price_run ON price_run.id = item.sync_run_id
+                                                AND price_run.source_version = price.source_version
                 WHERE item.sync_run_id = $2::uuid AND item.source_type = 'PRICE'
                 ON CONFLICT (price_version_id, source_price_record_id) DO NOTHING
               `,

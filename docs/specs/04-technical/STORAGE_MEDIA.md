@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A storage port and Phase 1B.2 full-catalog media contract verified; real full intake remains a final acceptance step; production provider/region gated |
-| Версия | 0.6.0 |
-| Дата | 2026-08-03 |
+| Статус | Phase 1A storage port and Phase 1B.2 real full-catalog media intake verified; production provider/region gated |
+| Версия | 0.7.0 |
+| Дата | 2026-08-04 |
 | Media pipeline | [ASSET_MEDIA_PIPELINE.md](ASSET_MEDIA_PIPELINE.md) |
 | Privacy/security | [SECURITY_PRIVACY.md](SECURITY_PRIVACY.md) |
 
@@ -152,6 +152,10 @@ RustFS `1.0.0-beta.11` was removed from active local/CI configuration after Wind
 
 The completed pilot then imported 59/59 allowlisted media assets (8,340,101 bytes) for 32/32 variants and re-read every object byte-for-byte before and after a graceful full-environment restart. The controlled public route delivered all 32 primary images only from active version-pinned composition and revalidated MIME, length and SHA-256; anonymous buckets, permanent signed URLs, client credentials and hotlinks were not introduced. A CI-discovered same-key race was fixed by serializing immutable writes per endpoint/bucket/key, and the 15-case concurrency/idempotency contract plus the full 9-stage CI gate passed afterward.
 
+### Phase 1B.2 full-catalog storage evidence (2026-08-04)
+
+The accepted full intake stored 2 818 distinct SHA-256 objects totaling 519 671 532 bytes for 3 053 typed catalog references and 1 655/1 655 primary material mappings. `catalog-full-acceptance` enumerated every active object through `StoragePort`, checked stored length and response-body SHA-256, and sampled controlled same-origin delivery without exposing keys/checksums in public DTOs. Two complete environment stop/start cycles retained all objects and active pointers; the semantic no-op repeat reused exact bytes and created no catalog/price version or difference. VersityGW remains loopback/private local/CI infrastructure only; no production provider, public bucket, permanent URL or credential was introduced.
+
 ## 13. Dependencies, risks and open questions
 
 Dependencies: media/AI/data/API/security/performance/observability/deployment/evaluation and storage ADR. Open: vendor/region/residency, encryption/key, private delivery pattern, exact limits/TTLs, CDN, backup/RPO/RTO, replication, provider deletion and cost. Risks: accidental public bucket, signed URL leak, incomplete deletion, restore resurrection, broad prefix delete, prod-to-test data and egress cost.
@@ -166,3 +170,4 @@ Dependencies: media/AI/data/API/security/performance/observability/deployment/ev
 | 0.4.0 | 2026-08-03 | Recorded `OWNER-DECISION-011`, private VersityGW Compose/named-volume contract and passed real-image/signed/multipart/restart gate. |
 | 0.5.0 | 2026-08-03 | Recorded 59-object real pilot import/public delivery, post-restart integrity, immutable same-key race regression and final CI evidence. |
 | 0.6.0 | 2026-08-03 | Added the full authorized catalog object-source marker while retaining exact-integrity reuse of immutable Phase 1B.1 partner objects. |
+| 0.7.0 | 2026-08-04 | Recorded accepted 2 818-object/519 671 532-byte full intake, complete length/SHA verification, two restart cycles and semantic no-op reuse without changing the production provider gate. |

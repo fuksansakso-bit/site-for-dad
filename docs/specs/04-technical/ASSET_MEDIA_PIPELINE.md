@@ -4,15 +4,15 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1B.2 full authorized catalog media importer implemented and verified; real full intake remains a final acceptance step; user media/production pipeline gated |
-| Версия | 0.6.0 |
-| Дата | 2026-08-03 |
+| Статус | Phase 1B.2 full authorized catalog media intake accepted; user media/production pipeline gated |
+| Версия | 0.8.0 |
+| Дата | 2026-08-04 |
 | Rights | [ASSET_RIGHTS_REGISTER.md](../../00-global/ASSET_RIGHTS_REGISTER.md) |
 | Storage | [STORAGE_MEDIA.md](STORAGE_MEDIA.md) |
 
 ## 1. Purpose and boundaries
 
-The pipeline registers, validates, stores, maps, reviews, publishes, revokes and deletes owner/partner media with full provenance. `OWNER-DECISION-012` authorizes Phase 1B.2 to extend the same verified importer from the frozen pilot to media references discovered for the full authorized catalog through the local private-by-default storage port. User upload, production storage and any source outside the typed controlled discovery remain gated.
+The pipeline registers, validates, stores, maps, reviews, publishes, revokes and deletes owner/partner media with full provenance. `OWNER-DECISION-012` authorized Phase 1B.2 to extend the same verified importer from the frozen pilot to media references discovered for the full authorized catalog through the local private-by-default storage port; that bounded intake is now accepted. User upload, production storage and any source outside the typed controlled discovery remain gated.
 
 Out of scope: bulk scraping, hotlink, watermark removal, authorship change, training use, client-photo public content and arbitrary transformations beyond rights/profile.
 
@@ -52,6 +52,7 @@ Content manager registers/maps; rights approver/owner confirms scope; publicatio
 - **MEDIA-PIPE-028 — MUST:** every source media reference maps to exactly one typed catalog target and a generated private object key. Binary identity is SHA-256; exact bytes MAY be reused across multiple mappings, while source identities, rights claims and placements remain separate. Existing Phase 1B.1 object metadata MAY be reused only after exact hash/type/length/zone/source-basis verification; new full-catalog objects use the full authorized catalog source marker.
 - **MEDIA-PIPE-029 — MUST:** full media intake runs in bounded durable batches, skips and re-verifies already linked immutable objects after restart, checks operator cancellation between bounded items and continues missing work without consuming retries as ordinary pagination. Exhausted retryable transport/storage failure retries the current batch; a permanent individual source/MIME/decode failure is isolated, audited and prevents a false complete manifest.
 - **MEDIA-PIPE-030 — MUST:** a database media link whose object is missing or whose stored metadata conflicts fails closed and is not silently rebound to newly fetched bytes. Repair requires exact integrity evidence; public delivery never falls back to AMIGO.
+- **MEDIA-PIPE-031 — MUST:** OWNER publication preparation evaluates every typed current-run material/category/system/model source-media reference, and MAY move only its locally verified `PARTNER_LICENSE` object from `PENDING` to `PUBLICATION_APPROVED`. Content-hash reuse MAY cause several references to share one approval, but historical references remain distinct; activation still serves only media selected by the immutable active composition.
 
 ## 4. Asset lifecycle
 
@@ -154,13 +155,13 @@ Tests: signature/polyglot/bomb/malware/metadata; duplicate/hash; rights/status m
 
 The bounded AMIGO transport processed only the frozen 32-ID allowlist with concurrency `1`, redirect/SSRF policy, declared and detected MIME checks, size/dimension/decompression limits, SHA-256 and generated immutable keys. It created 59 mapped `PARTNER_LICENSE` assets for 32/32 variants, preserved source URLs/original filenames only as governed metadata, recorded audit/sync events and produced zero item-level failures. Separate asset publication approval preceded active composition; the public surface uses no hotlink and exposes no source URL/object key. Recovery and no-op repeats created no duplicate assets or links, and all stored bytes were reverified after restart.
 
-### Phase 1B.2 implementation evidence (2026-08-03)
+### Phase 1B.2 full intake evidence (2026-08-04)
 
-The extended importer normalized one exact material, category, system and model media target, processed them in two independently idempotent batches, retained four provenance mappings while deduplicating identical verified bytes to one private object, and reverified previously linked objects before diff. Integration evidence also confirmed that a missing linked object leaves the run in retryable `IMPORTING_MEDIA`, creates no candidate/manifest and therefore fails closed before review. The complete nine-stage gate passed with 13 PostgreSQL/job scenarios, 15 VersityGW storage cases and 25 browser checks. This is implementation evidence only; the controlled real full-media intake and its manifest remain required by plan stage 12.
+The accepted run accounts for 3 053 typed references: 2 940 material, 12 category, 52 system and 49 model. Exact typed mappings produced 4 708 normalized media sync items and 1 655 manifests; checksum-based deduplication retained provenance while storing 2 818 distinct private objects totaling 519 671 532 bytes. All 1 655 MaterialVariant have local primary media, all 2 818 objects are `PARTNER_LICENSE` + `PUBLICATION_APPROVED`, and item-level failures/hotlinks are zero. Acceptance re-read every object by length/SHA-256 after two full restarts and confirmed that the semantic no-op repeat created no candidate/diff. Missing/conflicting object and terminal failure regressions remain fail closed before review.
 
 ## 14. Dependencies, risks and open questions
 
-Dependencies: rights/source/catalog/content/storage/admin/sync/AI/security/performance. Open: approved partner export/media transport, exact attribution/brand guidelines, asset inventory, formats/quality profiles, retention/cache purge, reviewers and color-management tolerances. Risks: wrong SKU image, license scope drift, metadata PII, parser exploit, color degradation, hotlink, incomplete revoke and training misuse.
+Dependencies: rights/source/catalog/content/storage/admin/sync/AI/security/performance. Open: official partner export/media channel, exact attribution/brand guidelines, derivative formats/quality profiles, retention/cache purge and color-management tolerances. Current public-page transport and Phase 1B.2 asset inventory are accepted only for the recorded source version. Risks: wrong SKU image, license scope drift, metadata PII, parser exploit, color degradation, hotlink, incomplete revoke and training misuse.
 
 ## 15. History
 
@@ -172,3 +173,5 @@ Dependencies: rights/source/catalog/content/storage/admin/sync/AI/security/perfo
 | 0.4.0 | 2026-08-03 | Added mandatory pre-import VersityGW contract gate and exact SSRF/MIME/size/dimensions/hash/dedup/item-failure requirements from `OWNER-DECISION-011`. |
 | 0.5.0 | 2026-08-03 | Recorded completed 32-variant/59-asset media intake, zero failures, publication approval, no-hotlink public delivery, deduplication and restart verification. |
 | 0.6.0 | 2026-08-03 | Authorized the same controlled importer for typed full-catalog material/category/system/model media with exact-target mapping, bounded continuation batches, restart verification, legacy-source compatibility and fail-closed missing-object behavior. |
+| 0.7.0 | 2026-08-03 | Required OWNER publication preparation to review all typed current-run catalog media while preserving hash deduplication, reference provenance and active-composition-only delivery. |
+| 0.8.0 | 2026-08-04 | Recorded accepted 3 053 typed references, 2 818 approved private objects/519 671 532 bytes, 1 655/1 655 primary mappings, zero failures/hotlinks and complete restart/no-op integrity evidence. |

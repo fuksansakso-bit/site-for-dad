@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import type { JobHelpers } from 'graphile-worker';
 
-import { type CatalogJobIdentifier } from './contracts.js';
+import { catalogJobIdentifiers, type CatalogJobIdentifier } from './contracts.js';
 import { CatalogPipelineError, type CatalogPipelineErrorCode } from './errors.js';
 import { sealCatalogImportManifest } from './manifest.js';
 
@@ -12,6 +12,13 @@ interface CatalogIdempotentPayload {
   readonly schemaVersion: 1;
   readonly syncRunId?: string;
 }
+
+const syncRunFailureIdentifiers = new Set<CatalogJobIdentifier>([
+  catalogJobIdentifiers.buildDiff,
+  catalogJobIdentifiers.mediaImport,
+  catalogJobIdentifiers.normalize,
+  catalogJobIdentifiers.syncRun,
+]);
 
 function payloadDigest(payload: CatalogIdempotentPayload): string {
   return createHash('sha256').update(JSON.stringify(payload)).digest('hex');
@@ -102,15 +109,7 @@ export async function failCatalogExecution(
         [identifier, payload.idempotencyKey],
       );
       let failedSyncRunId: string | undefined;
-      if (
-        payload.syncRunId !== undefined &&
-        [
-          'catalog-build-diff',
-          'catalog-import-media',
-          'catalog-normalize',
-          'catalog-sync-run',
-        ].includes(identifier)
-      ) {
+      if (payload.syncRunId !== undefined && syncRunFailureIdentifiers.has(identifier)) {
         const failedRun = await client.query<{ id: string }>(
           `
             UPDATE catalog_sync_run

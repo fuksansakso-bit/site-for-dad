@@ -950,7 +950,7 @@ model MaterialVariant {
   sourcePrices         SourcePriceRecord[]
   businessEntries      BusinessCatalogEntry[]
 
-  @@unique([materialId, article], map: "material_variant_material_article_key")
+  @@index([materialId, article], map: "material_variant_material_article_idx")
   @@index([colorId], map: "material_variant_color_idx")
   @@map("material_variant")
 }
@@ -1029,6 +1029,7 @@ model SourceMediaAsset {
   placement            MaterialMediaAsset?
 
   @@unique([catalogSourceId, sourceId], map: "source_media_asset_identity_key")
+  @@index([sourceEntityId], map: "source_media_asset_source_entity_idx")
   @@index([materialVariantId, role], map: "source_media_asset_variant_role_idx")
   @@index([categoryId, role], map: "source_media_asset_category_role_idx")
   @@index([systemId, role], map: "source_media_asset_system_role_idx")

@@ -172,6 +172,70 @@ function priceChangedJobsCatalogFixture(): FixtureCatalogDataset {
   };
 }
 
+function recapturedJobsCatalogFixture(): FixtureCatalogDataset {
+  const fixture = createJobsCatalogFixture();
+  const recapturedAt = '2026-08-04T12:00:00.000Z';
+  const recapture = <
+    T extends {
+      readonly capture: { readonly capturedAt: string };
+      readonly data: {
+        readonly identity: {
+          readonly sourceCapturedAt: string;
+          readonly sourceLastVerifiedAt: string;
+        };
+      };
+    },
+  >(
+    record: T,
+  ): T =>
+    ({
+      ...record,
+      capture: { ...record.capture, capturedAt: recapturedAt },
+      data: {
+        ...record.data,
+        identity: {
+          ...record.data.identity,
+          sourceCapturedAt: recapturedAt,
+          sourceLastVerifiedAt: recapturedAt,
+        },
+      },
+    }) as T;
+  return {
+    ...fixture,
+    categories: fixture.categories.map(recapture),
+    materials: fixture.materials.map(recapture),
+    mediaFiles: fixture.mediaFiles.map((file) => ({ ...file, capturedAt: recapturedAt })),
+    mediaManifests: fixture.mediaManifests.map((record) => {
+      const recaptured = recapture(record);
+      return {
+        ...recaptured,
+        data: {
+          ...recaptured.data,
+          identity: {
+            ...recaptured.data.identity,
+            sourceHash: hashCanonicalSource({
+              recapturedAt,
+              sourceId: recaptured.data.identity.sourceId,
+            }),
+          },
+          media: recaptured.data.media.map((media) => ({
+            ...media,
+            identity: {
+              ...media.identity,
+              sourceCapturedAt: recapturedAt,
+              sourceLastVerifiedAt: recapturedAt,
+            },
+          })),
+        },
+      };
+    }),
+    models: (fixture.models ?? []).map(recapture),
+    prices: fixture.prices.map(recapture),
+    sourceVersion: { ...fixture.sourceVersion, capturedAt: recapturedAt },
+    systems: fixture.systems.map(recapture),
+  };
+}
+
 async function runPipeline(
   idempotencySuffix: string,
   retryOfSyncRunId?: string,
@@ -1235,7 +1299,11 @@ describe.sequential('catalog synchronization pipeline', () => {
       expect.objectContaining({
         depth: 0,
         parentId: null,
-        path: [expect.objectContaining({ slug: expect.stringMatching(/^amigo-category-/) })],
+        path: [
+          expect.objectContaining({
+            slug: expect.stringMatching(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+          }),
+        ],
         sortOrder: 0,
       }),
     ]);
@@ -1255,7 +1323,16 @@ describe.sequential('catalog synchronization pipeline', () => {
 
   it('does not duplicate normalized identities or immutable source prices on a repeat import', async () => {
     if (firstSyncRunId === undefined) throw new Error('First catalog sync run is unavailable.');
-    const repeatSyncRunId = await runPipeline('pipeline-002', firstSyncRunId, 'COMPLETED');
+    const recapturedServices = createCatalogJobServices(
+      () => new FixtureCatalogSourceAdapter(recapturedJobsCatalogFixture()),
+      () => ({ maximumBytes: 1_048_576, maximumItemsPerBatch: 2, objectStorage }),
+    );
+    const repeatSyncRunId = await runPipeline(
+      'pipeline-002',
+      firstSyncRunId,
+      'COMPLETED',
+      recapturedServices,
+    );
     const counts = await pool.query<{
       material_count: string;
       media_asset_count: string;

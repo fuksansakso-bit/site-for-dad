@@ -23,6 +23,11 @@ describe('Phase 1B.2 migration boundary', () => {
       '20260803190000_phase_1b2_full_catalog_prices',
       '20260803200000_phase_1b2_catalog_review_activation',
       '20260803210000_phase_1b2_catalog_bulk_controls',
+      '20260803223000_phase_1b2_family_identity_compatibility',
+      '20260803224000_phase_1b2_product_model_upgrade_compatibility',
+      '20260803225000_phase_1b2_nonunique_material_articles',
+      '20260803226000_phase_1b2_ambiguous_price_parser',
+      '20260803227000_phase_1b2_media_join_index',
     ]);
 
     const tables = new Set<string>();
@@ -92,6 +97,13 @@ describe('Phase 1B.2 migration boundary', () => {
     expect(schema).toContain('model MaterialVariant');
     expect(schema).toContain('model BusinessCatalogEntry');
     expect(schema).toContain('@@unique([catalogSourceId, sourceType, sourceId]');
+    expect(schema).toContain(
+      '@@index([materialId, article], map: "material_variant_material_article_idx")',
+    );
+    expect(schema).not.toContain('@@unique([materialId, article]');
+    expect(schema).toContain(
+      '@@index([sourceEntityId], map: "source_media_asset_source_entity_idx")',
+    );
     expect(schema).toMatch(/status\s+AvailabilityStatus/);
     expect(schema).toMatch(/amountMinor\s+Int\?/);
   });

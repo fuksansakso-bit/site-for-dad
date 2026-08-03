@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Нормативный глобальный реестр; Phase 1B.2 full public-page discovery verified, import/activation gated |
-| Версия | 1.7.0 |
-| Дата проверки источников | 2026-08-03, Europe/Moscow |
+| Статус | Нормативный глобальный реестр; Phase 1B.2 full public-page discovery/import/activation accepted; official export remains unproved |
+| Версия | 1.8.0 |
+| Дата проверки источников | 2026-08-04, Europe/Moscow |
 | Главный источник правды | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) |
 | Связанные политики | [PRICING_SOURCE_POLICY.md](PRICING_SOURCE_POLICY.md), [ASSET_RIGHTS_REGISTER.md](ASSET_RIGHTS_REGISTER.md) |
 
@@ -378,9 +378,9 @@
 - Не утверждаются конкретный partner API/export format, его schema или credentials до отдельного доказательства.
 - Cadence/staleness зафиксированы `OWNER-DECISION-005`; dated Phase 1B.2 discovery доказал full-catalog public-page fallback для текущего доступного каталога, но official partner API/export всё ещё остаётся открытым аспектом `TBD-SOURCE-AMIGO-002` до отдельного доказательства.
 - Не задаётся город AMIGO для базового price snapshot до `TBD-PRICE-SOURCE-001`.
-- Phase 1B.1 создал frozen 32-ID pilot; Phase 1B.2 real discovery 2026-08-03 завершён с semantic source version `sha256:66a1b9e1bee9985845aa0e3e03f7a321bd33f2d0e0b798f28ee6444c08735911`, но это ещё не accepted PostgreSQL/media import и не activation.
-- `OWNER-DECISION-012` разрешает public-page fallback для полного доступного каталога только при выполнении stop/coverage/manifest gates; `TBD-SOURCE-AMIGO-002`/`TBD-ASSORT-002` закрываются либо уточняются только фактическим evidence.
-- `OWNER-DECISION-009` определяет public-serving topology и governance версии, но не доказывает transport/schema, фактический import batch, полноту каталога, активную `PriceVersion` или готовые assets.
+- Phase 1B.1 создал frozen 32-ID pilot; Phase 1B.2 accepted run `7d19a6e8-abcc-4bc6-a180-c0a5b59e17d6` использовал parser/mapping `2.0.1`, semantic source version `sha256:3cf971b0aabe17091ef0804e8d8368fb37182939533a4eef8ee4346f4c59711d` и `COMPLETE` manifest checksum `ea1b2a3148efa6bd1be9a41a8dba8c21e1a4bada1c728fe262047a0b0f52579e`.
+- Completion evidence закрывает current public-page inventory aspect `TBD-ASSORT-002`: 114 pages, 28 categories, 56 systems, 9 models, 1 655 variants, 3 053 typed media references and 1 664 price records imported and manually activated. `TBD-SOURCE-AMIGO-002` остаётся открыт только для official partner API/export/file/schema, если такой канал существует.
+- `OWNER-DECISION-009` вместе с Phase 1B.2 completion report доказывает фактический import batch, активные CatalogVersion/PriceVersion v2 и готовые approved local assets; оно по-прежнему не превращает snapshot в вечный факт и не доказывает official export.
 
 ## 7. История изменений
 
@@ -392,3 +392,4 @@
 | 1.5.0 | 2026-08-02 | `OWNER-DECISION-010` разрешил bounded public-page transport только для Phase 1B.1; зафиксированы четыре paths, 32-ID manifest, concurrency/rate/security controls и сохранён full-catalog export TBD. |
 | 1.6.0 | 2026-08-03 | `OWNER-DECISION-012` разрешил controlled full-catalog discovery через расширение existing adapter с path/entity manifest, bounded load/resume и честными stop/coverage conditions; official API/export не предполагается. |
 | 1.7.0 | 2026-08-03 | Зафиксирован успешный dated full public-page discovery: 114 safe pages, 28 categories, 56 systems, 9 models, 1655 variants, 0 failures, semantic source hash и explicit warning/zero-price behavior; official export и import/activation gates сохранены. |
+| 1.8.0 | 2026-08-04 | Зафиксированы accepted full manifest/import, active CatalogVersion/PriceVersion v2, 1 655 variants, 2 818 approved local objects, no-op/restart evidence и закрытие current inventory aspect; official partner API/export/file/schema остаётся открытым. |

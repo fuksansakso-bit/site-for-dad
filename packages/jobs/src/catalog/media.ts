@@ -399,7 +399,7 @@ async function markMediaError(
   });
 }
 
-async function persistMediaLink(
+export async function persistMediaLink(
   helpers: JobHelpers,
   payload: CatalogMediaImportPayload,
   sourceMedia: PendingSourceMedia,
@@ -447,10 +447,9 @@ async function persistMediaLink(
             INSERT INTO material_media_asset (
               material_variant_id, media_asset_id, source_media_asset_id, role, sort_order
             ) VALUES ($1::uuid, $2::uuid, $3::uuid, $4::media_asset_role, $5)
-            ON CONFLICT (source_media_asset_id) DO UPDATE
+            ON CONFLICT (material_variant_id, role, sort_order) DO UPDATE
             SET media_asset_id = EXCLUDED.media_asset_id,
-                role = EXCLUDED.role,
-                sort_order = EXCLUDED.sort_order
+                source_media_asset_id = EXCLUDED.source_media_asset_id
           `,
           [
             sourceMedia.material_variant_id,

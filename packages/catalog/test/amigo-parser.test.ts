@@ -44,4 +44,25 @@ describe('AMIGO full catalog parser regressions', () => {
     });
     expect(parsed.diagnostics).toEqual([]);
   });
+
+  it('keeps cards with multiple price labels but makes the ambiguous price inquiry-only', async () => {
+    const html = (await readFile(previewFixtureUrl, 'utf8')).replace(
+      'от 2 100 ₽',
+      'от 4 650 ₽ от 4 160 ₽',
+    );
+    const parsed = parseAmigoMaterialCollectionPage(
+      html,
+      'https://shop.amigo.ru/rulonnye-shtory/rulonnye-tkani/',
+    );
+
+    expect(parsed.materials).toHaveLength(1);
+    expect(parsed.materials[0]).toMatchObject({ priceMinor: null, sourceId: '1001' });
+    expect(parsed.diagnostics).toEqual([
+      expect.objectContaining({
+        code: 'AMBIGUOUS_SOURCE_PRICE_NORMALIZED',
+        entitySourceId: '1001',
+        severity: 'WARNING',
+      }),
+    ]);
+  });
 });

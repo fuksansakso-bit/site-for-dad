@@ -170,4 +170,51 @@ describe('resumable catalog capture', () => {
       catalogSafeSnapshotPayloadSchema.parse({ ...legacy, rawHtml: '<script />' }),
     ).toThrow();
   });
+
+  it('accepts only bounded safe relative page references in category snapshots', () => {
+    const current = emptyCatalogSafeSnapshotPayload(sourceVersion);
+    const category = {
+      capture,
+      data: {
+        childCategorySourceIds: [],
+        family: { code: 'ROLLER', name: 'Roller', slug: 'roller', sourceId: 'family:roller' },
+        identity: {
+          sourceCapturedAt: sourceVersion.capturedAt,
+          sourceEntityType: 'CATEGORY',
+          sourceHash: 'c'.repeat(64),
+          sourceId: '80',
+          sourceLastVerifiedAt: sourceVersion.capturedAt,
+          sourceSlug: 'amigo-category-roller',
+          sourceType: 'FIXTURE',
+          sourceUrl: 'https://shop.amigo.ru/rulonnye-shtory/rulonnye-tkani/',
+          supplierSlug: 'amigo',
+        },
+        materialSourceIds: ['1001'],
+        mediaSourceUrls: [],
+        modelSourceIds: [],
+        name: 'Roller fabrics',
+        sortOrder: 0,
+        sourcePageReferences: [
+          '/rulonnye-shtory/rulonnye-tkani/',
+          '/rulonnye-shtory/rulonnye-tkani/?PAGEN_5=2',
+        ],
+        sourceStatus: 'ACTIVE',
+        systemSourceIds: ['7556'],
+      },
+    };
+    const payloadWithCategory = { ...current, categories: [category] };
+
+    expect(catalogSafeSnapshotPayloadSchema.parse(payloadWithCategory).categories).toHaveLength(1);
+    expect(() =>
+      catalogSafeSnapshotPayloadSchema.parse({
+        ...payloadWithCategory,
+        categories: [
+          {
+            ...category,
+            data: { ...category.data, sourcePageReferences: ['/catalog/?action=delete'] },
+          },
+        ],
+      }),
+    ).toThrow();
+  });
 });

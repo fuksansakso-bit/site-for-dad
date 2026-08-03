@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A infrastructure and authorized Phase 1B.2 source/catalog/media/price/overlay/review/bulk schema implemented |
-| Версия | 0.8.0 |
-| Дата | 2026-08-03 |
+| Статус | Phase 1A infrastructure and accepted Phase 1B.2 source/catalog/media/price/overlay/review/bulk schema implemented and verified |
+| Версия | 0.11.0 |
+| Дата | 2026-08-04 |
 | Architecture | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | Glossary | [GLOSSARY.md](../../00-global/GLOSSARY.md) |
 
@@ -40,6 +40,8 @@ This specification defines aggregate ownership, entities, keys/revisions, relati
 - **DATA-SPEC-024 — MUST:** a run manifest, diff, composition and `PriceVersion` select source prices by both the run item/hash and the run-pinned `sourceVersion`. Historical revisions with an equal hash cannot be joined as current, and no source-price operation mutates `LocalPriceOverride`.
 - **DATA-SPEC-025 — MUST:** each catalog/price difference review persists as an append-only `CatalogDifferenceReviewBatch` referencing exactly one candidate version, its sync run, expected difference checksum, selection mode/IDs/checksum, resolution, affected count, actor, safe reason, correlation and idempotency key. Review history cannot be updated or deleted, and candidate approval is derived only from matching evidence plus the current explicit resolutions.
 - **DATA-SPEC-026 — MUST:** each successful local-overlay bulk apply persists one append-only `CatalogBulkCommand` bound to catalog source, sync run and mutable candidate version. It stores selector mode/payload, requested patch, exact affected business-entry IDs, per-target before/after snapshots, matched/affected counts, selection/request/expected-difference checksums, actor, safe reason, correlation and unique idempotency key; failed validation inserts neither command nor partial overlay changes.
+- **DATA-SPEC-027 — MUST:** `MaterialVariant.sourceEntityId` and its source namespace form the stable unique identity. `(materialId, article)` is indexed but non-unique because real authorized source evidence contains distinct variants sharing an article; normalization MUST preserve every source ID and MUST NOT merge or discard those rows.
+- **DATA-SPEC-028 — MUST:** a material-media placement is unique by `(materialVariantId, assetRole, sortOrder)`. When a parser or mapping revision gives the current source media reference a new identity for that same semantic placement, import MUST atomically rebind the placement to the current `SourceMediaAsset`, preserve historical source entities/snapshots, and keep binary deduplication hash-based; it MUST NOT create two placements for one semantic slot.
 
 ## 2. Aggregate boundaries
 
@@ -168,11 +170,11 @@ Tests: ID uniqueness, optimistic concurrency, effective interval overlap, hierar
 
 ## 17. Physical schema record through Phase 1B.2
 
-The seven Phase 1A identity/audit/delivery tables remain unchanged. Reviewed Phase 1B.1/1B.2 migrations additionally physicalize only the authorized partner/source, resumable sync/manifest, normalized catalog hierarchy, typed media mapping, immutable source-price/price-version, append-only difference-review and bulk-command evidence, and separate business-overlay/publication aggregates. `SourcePriceRecord` has an exact-one `materialVariantId`/`modelId` target and required semantic `sourceVersion`; `CatalogDifferenceReviewBatch` binds one catalog or price candidate to exact review selection/checksum/actor/idempotency evidence; `CatalogBulkCommand` binds one successful local-overlay transaction to its exact target IDs and before/after states. Their append-only triggers remain active after migration backfill. No calculator formula/rule engine, quote, configurator, client-photo, cart, order, installment, account or production-provider aggregate is introduced. Evidence remains the Prisma schema, migration boundary/recovery checks, the completed Phase 1A/1B.1 reports and the active Phase 1B.2 plan.
+The seven Phase 1A identity/audit/delivery tables remain unchanged. Fifteen reviewed Phase 1B.1/1B.2 migrations additionally physicalize only the authorized partner/source, resumable sync/manifest, normalized catalog hierarchy, typed media mapping, immutable source-price/price-version, append-only difference-review and bulk-command evidence, and separate business-overlay/publication aggregates. `SourcePriceRecord` has an exact-one `materialVariantId`/`modelId` target and required semantic `sourceVersion`; `CatalogDifferenceReviewBatch` binds one catalog or price candidate to exact review selection/checksum/actor/idempotency evidence; `CatalogBulkCommand` binds one successful local-overlay transaction to its exact target IDs and before/after states. Their append-only triggers remain active after migration backfill. Forward compatibility preserves pilot family/model identities, treats article as a non-unique searchable fact and indexes current semantic media joins without rewriting historical evidence. Accepted v2 pins 1 739 composition entries, 1 664 exact price revisions and 2 818 approved media objects. No calculator formula/rule engine, quote, configurator, client-photo, cart, order, installment, account or production-provider aggregate is introduced. Evidence is the Prisma schema, migration boundary/recovery checks, stable plan and completed Phase 1A/1B.1/1B.2 reports.
 
 ## 18. Dependencies, risks and open questions
 
-Dependencies: all domain specs, API/storage/security/deployment, ADRs and `OWNER-DECISION-008/009/010/012`. PostgreSQL/Prisma is fixed; Phase 1B.2 MAY physicalize only the authorized catalog/source/version/overlay/media/price/audit entities described above. Production storage/index/search, PII/legal/commercial workflow aggregates and Phase 1C+ remain gated. Risks: over-normalization vs opaque blobs, revision explosion, accidental cascade deletion, mutable history, projection drift, enum lock-in and private data in generic metadata.
+Dependencies: all domain specs, API/storage/security/deployment, ADRs and `OWNER-DECISION-008/009/010/012`. PostgreSQL/Prisma is fixed; completed Phase 1B.2 physicalizes only the authorized catalog/source/version/overlay/media/price/audit entities described above. Production storage/index/search, PII/legal/commercial workflow aggregates and Phase 1C+ remain gated. Risks: over-normalization vs opaque blobs, revision explosion, accidental cascade deletion, mutable history, projection drift, enum lock-in and private data in generic metadata.
 
 ## 19. History
 
@@ -186,3 +188,6 @@ Dependencies: all domain specs, API/storage/security/deployment, ADRs and `OWNER
 | 0.6.0 | 2026-08-03 | Recorded Phase 1B.2 resumable import/media schema and exact material/model source-price revisions pinned by semantic source version without calculator or Phase 1C aggregates. |
 | 0.7.0 | 2026-08-03 | Added the append-only exact-candidate catalog/price difference-review batch schema and recorded source-bound atomic activation/rollback evidence without expanding into bulk controls or Phase 1C aggregates. |
 | 0.8.0 | 2026-08-03 | Added append-only exact-target `CatalogBulkCommand` evidence for atomic local-overlay category/filter/selection changes, including checksums and per-target before/after state, without source-price or Phase 1C aggregates. |
+| 0.9.0 | 2026-08-03 | Replaced the disproved material/article uniqueness assumption with indexed non-unique article facts and source-entity identity, plus a forward pilot-to-full schema compatibility path. |
+| 0.10.0 | 2026-08-03 | Added semantic material-media placement rebinding to the current source reference while retaining historical source evidence and checksum-based binary deduplication. |
+| 0.11.0 | 2026-08-04 | Recorded accepted fifteen-migration Phase 1B.2 schema, pilot compatibility fixes, non-unique article identity, active v2 composition/price/media evidence and final migration/recovery verification without later-phase aggregates. |

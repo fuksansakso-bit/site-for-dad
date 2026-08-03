@@ -165,6 +165,7 @@ export interface CatalogSourceHealth {
 }
 
 export const sourceDiscoveryDiagnosticCodes = [
+  'AMBIGUOUS_SOURCE_PRICE_NORMALIZED',
   'DUPLICATE_SOURCE_ID',
   'EMPTY_STRUCTURED_CATEGORY',
   'MISSING_MEDIA',

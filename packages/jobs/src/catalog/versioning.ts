@@ -95,7 +95,7 @@ interface SnapshotEvidenceRow {
   readonly source_version: string | null;
 }
 
-interface VersionEntity {
+export interface VersionEntity {
   readonly artifactHash: string;
   readonly attachment: unknown;
   readonly facts: unknown;
@@ -194,6 +194,13 @@ function manifestEntities(value: unknown): readonly VersionEntity[] {
   });
 }
 
+function semanticSourceFacts(value: unknown): unknown {
+  const record = asRecord(value);
+  if (record === null || !('identity' in record)) return value;
+  const { identity: _identity, ...facts } = record;
+  return facts;
+}
+
 function semanticEntityValue(entity: VersionEntity): unknown {
   const attachment = asRecord(entity.attachment);
   const semanticAttachment =
@@ -217,20 +224,27 @@ function semanticEntityValue(entity: VersionEntity): unknown {
             targetType: attachment?.['targetType'] ?? null,
           }
         : entity.attachment;
+  const representativeSourceUrl = ['COLOR', 'FAMILY', 'MATERIAL'].includes(entity.sourceType)
+    ? null
+    : entity.sourceUrl;
   return {
     attachment: semanticAttachment,
+    facts: semanticSourceFacts(entity.facts),
     sourceCategory: entity.sourceCategory,
-    sourceHash: entity.sourceHash,
     sourceId: entity.sourceId,
     sourceSlug: entity.sourceSlug,
     sourceStatus: entity.sourceStatus,
     sourceType: entity.sourceType,
-    sourceUrl: entity.sourceUrl,
+    sourceUrl: representativeSourceUrl,
   };
 }
 
+export function catalogVersionSemanticArtifactHash(entity: VersionEntity): string {
+  return hashCanonicalSource(semanticEntityValue(entity));
+}
+
 function entityArtifactHash(input: Omit<VersionEntity, 'artifactHash' | 'key'>): string {
-  return hashCanonicalSource(semanticEntityValue({ ...input, artifactHash: '', key: '' }));
+  return catalogVersionSemanticArtifactHash({ ...input, artifactHash: '', key: '' });
 }
 
 function mediaAttachment(row: MediaAttachmentRow | undefined): unknown {
@@ -298,9 +312,12 @@ function toVersionEntity(
   };
 }
 
-function contentChecksum(entities: readonly VersionEntity[]): string {
+export function catalogVersionSemanticContentChecksum(entities: readonly VersionEntity[]): string {
   return hashCanonicalSource(
-    entities.map((entity) => ({ artifactHash: entity.artifactHash, key: entity.key })),
+    entities.map((entity) => ({
+      artifactHash: catalogVersionSemanticArtifactHash(entity),
+      key: entity.key,
+    })),
   );
 }
 
@@ -312,7 +329,7 @@ function makeManifest(
 ): VersionManifest {
   return {
     catalogSourceId: payload.catalogSourceId,
-    contentChecksum: contentChecksum(entities),
+    contentChecksum: catalogVersionSemanticContentChecksum(entities),
     entities,
     evidence: {
       snapshots: snapshots.map((snapshot) => ({
@@ -401,7 +418,13 @@ function buildDifferences(
             }),
             sourceStatus: 'SOURCE_REMOVED',
           });
-    if (after === undefined || before?.artifactHash === after.artifactHash) continue;
+    if (
+      after === undefined ||
+      (before !== undefined &&
+        catalogVersionSemanticArtifactHash(before) === catalogVersionSemanticArtifactHash(after))
+    ) {
+      continue;
+    }
     const oldPriceMinor = priceMinor(before);
     const newPriceMinor = priceMinor(after);
     const absoluteChangeMinor =
@@ -739,8 +762,22 @@ export async function buildCatalogVersionDiff(
           `,
           [priceManifest.contentChecksum],
         );
-        const createCatalog = catalogEntities.length > 0 && equivalentCatalog.rows[0] === undefined;
-        const createPrice = priceEntities.length > 0 && equivalentPrice.rows[0] === undefined;
+        const activeCatalogEquivalent =
+          activeCatalog !== undefined &&
+          catalogVersionSemanticContentChecksum(manifestEntities(activeCatalog.source_manifest)) ===
+            catalogManifest.contentChecksum
+            ? { difference_checksum: activeCatalog.difference_checksum, id: activeCatalog.id }
+            : undefined;
+        const activePriceEquivalent =
+          activePrice !== undefined &&
+          catalogVersionSemanticContentChecksum(manifestEntities(activePrice.source_manifest)) ===
+            priceManifest.contentChecksum
+            ? { difference_checksum: activePrice.difference_checksum, id: activePrice.id }
+            : undefined;
+        const equivalentCatalogVersion = activeCatalogEquivalent ?? equivalentCatalog.rows[0];
+        const equivalentPriceVersion = activePriceEquivalent ?? equivalentPrice.rows[0];
+        const createCatalog = catalogEntities.length > 0 && equivalentCatalogVersion === undefined;
+        const createPrice = priceEntities.length > 0 && equivalentPriceVersion === undefined;
 
         const catalogDifferences = createCatalog
           ? buildDifferences(catalogEntities, manifestEntities(activeCatalog?.source_manifest))
@@ -879,8 +916,8 @@ export async function buildCatalogVersionDiff(
             priceVersionId,
             catalogVersionId === null ? null : catalogDifferenceChecksum,
             priceVersionId === null ? null : priceDifferenceChecksum,
-            equivalentCatalog.rows[0]?.id ?? null,
-            equivalentPrice.rows[0]?.id ?? null,
+            equivalentCatalogVersion?.id ?? null,
+            equivalentPriceVersion?.id ?? null,
             !createdAny,
             importManifest.checksum,
             importManifest.status,

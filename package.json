@@ -32,6 +32,7 @@
     "test": "turbo run test",
     "test:browser": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tooling/scripts/browser-smoke.ps1",
     "test:catalog-browser": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tooling/scripts/catalog-browser-acceptance.ps1",
+    "test:catalog-full": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tooling/scripts/catalog-full-acceptance.ps1",
     "test:catalog-pilot": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tooling/scripts/catalog-pilot-acceptance.ps1",
     "test:catalog-scale": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tooling/scripts/catalog-scale-acceptance.ps1",
     "test:coverage": "turbo run test:coverage",

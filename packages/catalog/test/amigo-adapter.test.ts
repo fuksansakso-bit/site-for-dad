@@ -170,6 +170,15 @@ describe('AmigoCatalogSourceAdapter', () => {
       'category:path:readymade',
       '80',
     ]);
+    expect(
+      discovery.categories.find(
+        (category) => category.data.identity.sourceId === 'category:path:rulonnye-shtory',
+      )?.data.family,
+    ).toMatchObject({
+      code: 'ROLLER',
+      slug: 'rulonnye-shtory',
+      sourceId: 'family:roller',
+    });
     expect(discovery.materialSourceIds).toEqual(['1001', '1002', '1003', '9001']);
     expect(discovery.modelSourceIds).toEqual(['49094']);
     expect(discovery.systemSourceIds).toEqual(['7556']);
@@ -182,6 +191,11 @@ describe('AmigoCatalogSourceAdapter', () => {
       'MATERIAL_COLLECTION',
       'PAGINATION',
     ]);
+    const categoryPageReferences = discovery.categories.flatMap(
+      (category) => category.data.sourcePageReferences ?? [],
+    );
+    expect(categoryPageReferences).toContain('/rulonnye-shtory/rulonnye-tkani/?PAGEN_5=2');
+    expect(categoryPageReferences.every((reference) => reference.startsWith('/'))).toBe(true);
     expect((await adapter.fetchMaterial('1003')).data).toMatchObject({
       categorySourceId: '80',
       color: 'бежевый',

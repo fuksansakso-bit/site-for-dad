@@ -6,9 +6,9 @@
 Более локальный `AGENTS.md` в будущем MAY уточнять правила только для своей директории, но не может ослаблять требования этого файла.
 
 Фаза **1A — FOUNDATION** завершена 2026-08-02 со статусом `PASSED_PHASE_1A_FOUNDATION` на commit `943d4a2efa5e05f0d05493633cf5eb549e072a22`. Отдельно разрешённая Product Owner по `OWNER-DECISION-010` **Phase 1B.1 — AMIGO CATALOG PILOT AND LOCAL PUBLICATION LAYER** завершена 2026-08-03 со статусом `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT` в ветке `phase/1b-amigo-catalog-pilot`.
-`OWNER-DECISION-012` от 2026-08-03 разрешает начать только **Phase 1B.2 — FULL AUTHORIZED AMIGO CATALOG EXPANSION** в ветке `phase/1b2-amigo-full-catalog` от commit `af8411d2b854e572b6b61b214d3e99a88b96cafc`. Phase 1C и любая более поздняя фаза не разрешены.
+Отдельно разрешённая `OWNER-DECISION-012` **Phase 1B.2 — FULL AUTHORIZED AMIGO CATALOG EXPANSION** завершена 2026-08-04 со статусом `PASSED_PHASE_1B2_FULL_AMIGO_CATALOG` в ветке `phase/1b2-amigo-full-catalog`; никакая следующая фаза не разрешена.
 `OWNER-DECISION-011` от 2026-08-03 заменяет только active local/CI RustFS emulator на digest-pinned VersityGW Docker/POSIX named-volume adapter после воспроизводимого Windows 11 real-image failure. Оно сохраняет provider-neutral `StoragePort`, PostgreSQL/Prisma/Graphile Worker и не выбирает production storage или Phase 1C.
-В Phase 1B.2 разрешено расширять только существующий Phase 1B.1 importer и publication layer: controlled full discovery/import, source/normalized/business-overlay layers, snapshots/manifest/resume, local media, source card/base prices, sync/diff/review/manual activation, bulk local controls и масштабируемые `/catalog`/`/admin/catalog`. Configurator, dimensional calculation, preview/AI, cart/order/WhatsApp/installment/account, final landing/starfield, production deployment и Phase 1C+ запрещены. Завершение Phase 1B.2 не разрешает автоматически начинать следующую фазу.
+В завершённой Phase 1B.2 были разрешены только расширение существующего Phase 1B.1 importer/publication layer, controlled full discovery/import, source/normalized/business-overlay layers, snapshots/manifest/resume, local media, source card/base prices, sync/diff/review/manual activation, bulk local controls и масштабируемые `/catalog`/`/admin/catalog`. Configurator, dimensional calculation, preview/AI, cart/order/WhatsApp/installment/account, final landing/starfield, production deployment и Phase 1C+ запрещены. Завершение Phase 1B.2 не разрешает автоматически начинать следующую фазу.
 
 ## 2. Обязательный порядок чтения
 
@@ -40,9 +40,9 @@
 - Название `PROJECT_NAME` MUST использоваться до отдельного решения о бренде.
 - Окончательные технологии, хостинг и AI-провайдер MUST выбираться только через соответствующие сравнительные документы и ADR.
 
-Phase 1B.2 MAY расширить доказанный 32-ID allowlist только через существующий `AmigoCatalogSourceAdapter`, динамическое discovery и новый воспроизводимый full-import manifest. Official API/export MUST NOT предполагаться; transport работает только по обнаруженным и затем явно зафиксированным allowlisted HTTPS paths с контролируемыми concurrency/rate/backoff/timeout/redirects, без login/CAPTCHA/action/filter endpoints и без чрезмерной нагрузки. Fixtures разрешены только для тестов и никогда не считаются реальным импортом.
+Завершённая Phase 1B.2 MUST NOT расширяться за пределы принятого manifest/source version без нового письменного решения. Official API/export MUST NOT предполагаться; выбранный public-page transport работает только по обнаруженным и явно зафиксированным allowlisted HTTPS paths с контролируемыми concurrency/rate/backoff/timeout/redirects, без login/CAPTCHA/action/filter endpoints и без чрезмерной нагрузки. Fixtures разрешены только для тестов и никогда не считаются реальным импортом.
 
-Entry/completion conditions Phase 1B.2 зафиксированы в `OWNER-DECISION-012`, `QG-195+`, active plan, будущем completion report и dated full-transport discovery. Исполнитель MUST применить stop conditions при credential/CAPTCHA/access restriction/unstable identity/mass parser failure/duplicates/storage loss и MUST остановиться на границе Phase 1B.2 без начала Phase 1C.
+Entry/completion conditions Phase 1B.2 зафиксированы в `OWNER-DECISION-012`, `QG-195`–`230`, stable plan, completion report и dated full-transport discovery. Исполнитель MUST остановиться на границе Phase 1B.2 и запросить новое письменное решение для любого расширения scope.
 
 ## 4. Планирование работы
 

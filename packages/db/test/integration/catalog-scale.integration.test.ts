@@ -157,7 +157,7 @@ function buildPublicComposition(): readonly Record<string, unknown>[] {
       entity: {
         article: `SCALE-${index.toString().padStart(4, '0')}`,
         color: {
-          hex: `#${(0x100000 + (index % 0xefffff)).toString(16).padStart(6, '0')}`,
+          hex: `#${(0x100000 + (index % colorCount)).toString(16).padStart(6, '0')}`,
           name: `Цвет ${index % colorCount}`,
           slug: `scale-color-${index % colorCount}`,
         },

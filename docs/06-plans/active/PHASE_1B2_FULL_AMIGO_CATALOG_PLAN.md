@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Plan ID | `PLAN-1B2-001` |
-| Статус | **IN PROGRESS — AUTHORIZED_PHASE_1B2_FULL_AMIGO_CATALOG** |
+| Статус | **COMPLETED — PASSED_PHASE_1B2_FULL_AMIGO_CATALOG** |
 | Ветка | `phase/1b2-amigo-full-catalog` |
 | Исходный commit | `af8411d2b854e572b6b61b214d3e99a88b96cafc` |
 | Зависимость | `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT` |
@@ -71,9 +71,9 @@ Only one stage may be `IN_PROGRESS`.
 | 7 | Add bulk business catalog controls | COMPLETED | Exact category-subtree/filter/selected preview and OWNER apply are atomic, stale/partial/unauthorized/frozen-candidate safe and append-only/idempotent; source, price override and unrelated owner fields remain unchanged across clean 10-migration recovery and all 9 CI stages |
 | 8 | Expand `/admin/catalog` | COMPLETED | Full inventory hierarchy, bounded server filters/pages, safe manifest/run/diff/history, exact review/bulk/release actions and responsive keyboard states passed clean 10-migration integration and all 9 CI stages |
 | 9 | Expand `/catalog` | COMPLETED | Hierarchy, search, server filters/sort/cursors, detail/media/breadcrumb/share URL/loading/error/empty states passed without AMIGO; full CI 9/9 |
-| 10 | Verify full catalog expansion | COMPLETED | 38 catalog, 6 contract and 20 web cases plus rollback public-state recovery passed; isolated active PostgreSQL/private-media catalog passed 5/5 browser profiles with zero runtime AMIGO; enclosing CI gate passed 9/9 with the 25/25 fail-closed baseline |
+| 10 | Verify full catalog expansion | COMPLETED | 40 catalog, 6 contract, 28 jobs and 22 web cases plus rollback public-state recovery passed; isolated active PostgreSQL/private-media catalog passed 5/5 browser profiles with zero runtime AMIGO; enclosing CI gate passed with the 25/25 fail-closed baseline |
 | 11 | Validate full catalog scale | COMPLETED | 2,048 synthetic materials exceeded real 1,655; 41 bounded cursor pages were complete, public/admin/bulk used constant 1/4/6+12 planned statements with zero temp spill, one atomic bulk command, and the enclosing CI gate passed 9/9 |
-| 12 | Real import, acceptance documentation and stop | IN_PROGRESS | Real manifest/no-op/resume/daily/bulk/persistence/public/perf/CI evidence recorded; report complete; tree clean; Phase 1C absent |
+| 12 | Real import, acceptance documentation and stop | COMPLETED | Accepted 21 019-item manifest, active v2 catalog/price, 2 818 media objects, resume/daily/bulk/rollback/two-restart/no-op/public/perf/CI evidence and completion report recorded; Phase 1C absent |
 
 ## 7. Commit sequence
 
@@ -113,3 +113,5 @@ Work stops with an exact report if full transport requires unknown credentials, 
 Phase 1B.2 passes only when the complete allowed discovery/import has a reviewed manifest, stable identities, local media/no hotlink, idempotent no-op and resume evidence, source-removal preservation, overlay persistence, default inquiry-only behavior, complete diff/manual activation/daily schedule/bulk controls, PostgreSQL-only scalable public catalog, required tests/CI and synchronized documentation. The immutable result is written to `docs/06-plans/completed/PHASE_1B2_FULL_AMIGO_CATALOG_REPORT.md`.
 
 Completion does not authorize Phase 1C. After the final report the work stops.
+
+Final result: `PASSED_PHASE_1B2_FULL_AMIGO_CATALOG` on 2026-08-04. Evidence: [completion report](../completed/PHASE_1B2_FULL_AMIGO_CATALOG_REPORT.md).

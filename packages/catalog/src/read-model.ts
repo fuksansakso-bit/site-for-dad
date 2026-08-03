@@ -643,6 +643,25 @@ function optionalNonnegativeInteger(record: JsonRecord, key: string): number {
   return value === null || value === undefined ? 0 : requiredInteger(record, key);
 }
 
+function publicSlug(record: JsonRecord, key: string): string {
+  const normalized = requiredString(record, key, 256)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  if (normalized.length === 0 || normalized.length > 128) {
+    throw new CatalogReadError('CATALOG_READ_VALIDATION');
+  }
+  return normalized;
+}
+
+function registerPublicSlug(owners: Map<string, string>, slug: string, identity: string): void {
+  const existing = owners.get(slug);
+  if (existing !== undefined && existing !== identity) {
+    throw new CatalogReadError('CATALOG_READ_VALIDATION');
+  }
+  owners.set(slug, identity);
+}
+
 function mapPublishedCategory(entry: JsonRecord): RawPublicCategory | null {
   if (entry['entityType'] !== 'CATEGORY' || publishedOverlay(entry) === null) return null;
   const entity = asRecord(entry['entity']);
@@ -651,7 +670,7 @@ function mapPublishedCategory(entry: JsonRecord): RawPublicCategory | null {
     id: requiredString(entity, 'id', 64),
     name: requiredString(entity, 'name', 256),
     parentId: optionalString(entity, 'parentId', 64),
-    slug: requiredString(entity, 'slug', 256),
+    slug: publicSlug(entity, 'slug'),
     sortOrder: optionalNonnegativeInteger(entity, 'sortOrder'),
   };
 }
@@ -664,7 +683,7 @@ function mapPublishedSystem(entry: JsonRecord): CatalogPublicSystem | null {
     categoryId: optionalString(entity, 'categoryId', 64),
     id: requiredString(entity, 'id', 64),
     name: requiredString(entity, 'name', 256),
-    slug: requiredString(entity, 'slug', 256),
+    slug: publicSlug(entity, 'slug'),
     sortOrder: optionalNonnegativeInteger(entity, 'sortOrder'),
   };
 }
@@ -752,7 +771,7 @@ function mapPublicMaterial(
       : {
           hex: optionalString(rawColor, 'hex', 16),
           name: requiredString(rawColor, 'name', 128),
-          slug: requiredString(rawColor, 'slug', 128),
+          slug: publicSlug(rawColor, 'slug'),
         };
   return {
     article: requiredString(entity, 'article', 128),
@@ -768,7 +787,7 @@ function mapPublicMaterial(
     media,
     name: requiredString(entity, 'name', 256),
     price,
-    slug: requiredString(entity, 'slug', 256),
+    slug: publicSlug(entity, 'slug'),
     system,
     widthMm: optionalPositiveDecimal(entity, 'widthMm'),
   };
@@ -790,11 +809,19 @@ export function buildCatalogPublicSnapshot(
   });
   const rawCategories = new Map<string, RawPublicCategory>();
   const systems = new Map<string, CatalogPublicSystem>();
+  const categorySlugOwners = new Map<string, string>();
+  const systemSlugOwners = new Map<string, string>();
   for (const entry of entries) {
     const category = mapPublishedCategory(entry);
-    if (category !== null) rawCategories.set(category.id, category);
+    if (category !== null) {
+      registerPublicSlug(categorySlugOwners, category.slug, category.id);
+      rawCategories.set(category.id, category);
+    }
     const system = mapPublishedSystem(entry);
-    if (system !== null) systems.set(system.id, system);
+    if (system !== null) {
+      registerPublicSlug(systemSlugOwners, system.slug, system.id);
+      systems.set(system.id, system);
+    }
   }
   const categories = resolvePublicCategories(rawCategories);
   const items = entries
@@ -807,6 +834,18 @@ export function buildCatalogPublicSnapshot(
         left.article.localeCompare(right.article, 'ru') ||
         left.id.localeCompare(right.id),
     );
+  const materialSlugOwners = new Map<string, string>();
+  const colorSlugOwners = new Map<string, string>();
+  for (const item of items) {
+    registerPublicSlug(materialSlugOwners, item.slug, item.id);
+    if (item.color !== null) {
+      registerPublicSlug(
+        colorSlugOwners,
+        item.color.slug,
+        `${item.color.name}\u0000${item.color.hex ?? ''}`,
+      );
+    }
+  }
   if (items.length > input.maximumMaterialCount) {
     throw new CatalogReadError('CATALOG_READ_VALIDATION');
   }

@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A and Phase 1B.1 gates passed; Phase 1B.2 isolated verification and synthetic scale gates executed; real acceptance and production tests gated |
-| Версия | 0.8.0 |
-| Дата | 2026-08-03 |
+| Статус | Phase 1A, Phase 1B.1 and Phase 1B.2 gates passed; later-feature and production tests gated |
+| Версия | 0.9.0 |
+| Дата | 2026-08-04 |
 | Requirements | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) and profile specs |
 | Acceptance | [ACCEPTANCE_CRITERIA.md](../specs/01-product/ACCEPTANCE_CRITERIA.md) |
 | Traceability | [TRACEABILITY_MATRIX.md](../00-global/TRACEABILITY_MATRIX.md) |
@@ -38,6 +38,7 @@ Tests provide evidence for requirements and risk; they do not invent missing bus
 - **TEST-SPEC-021 — MUST:** the real authorized AMIGO gate image is downloaded only through the bounded allowlisted transport, must be exactly 515,180 bytes and match SHA-256 after download from storage; any corruption, unsupported signed URL/multipart operation or persistence failure blocks media import.
 - **TEST-SPEC-022 — MUST:** Phase 1B.2 public-catalog browser acceptance uses disposable PostgreSQL/private object storage and synthetic nested catalog/media, pins one compatible active `CatalogVersion`/`PriceVersion`, covers hierarchy/search/filters/sort/cursors/detail/breadcrumb/share/conditional media/responsive/reduced-motion behavior in all five supported profiles, and proves zero runtime AMIGO requests and safe cleanup.
 - **TEST-SPEC-023 — MUST:** Phase 1B.2 catalog-scale acceptance uses a disposable dataset larger than the dated real catalog, measures but does not invent production budgets, asserts bounded item/page/bulk limits, complete cursor traversal, constant public/admin/bulk statement counts, planned-query evidence, no temporary-block spill, atomic bulk outcome and safe exact-target cleanup.
+- **TEST-SPEC-024 — MUST:** Phase 1B.2 real acceptance pins accepted/repeat/recovery run IDs and verifies complete manifest/counts/checksum, exact source-version price records, compatible active versions, public cursor traversal/detail/filter/media responses, every distinct private object by length/SHA-256, semantic no-op reuse and restart-preserved pointers without logging credentials, source URLs or object keys.
 
 ## 2. Test layers and ownership
 
@@ -182,9 +183,15 @@ The 2026-08-03 Windows execution passed all 5/5 active-catalog browser profiles 
 
 The enclosing 2026-08-03 CI-equivalent run passed 9/9 stages with the scale gate inside the production-build/artifact stage, followed by the 25/25 fail-closed and 5/5 active-catalog browser suites and final secret/advisory checks. The successful scale database and its generated credentials were removed; no production/AMIGO data was used.
 
+### 13.5. Phase 1B.2 real full-catalog acceptance
+
+`pnpm test:catalog-full` pinned accepted run `7d19a6e8-abcc-4bc6-a180-c0a5b59e17d6`, repeat `ae9b8759-7b14-4ca6-9b13-b518113a63b0` and recovery run `cf159226-450a-4aad-8495-1b5c7a5d3fab`. It passed the complete 21 019-item manifest and checksum, exact 1 664 current-source price records, active CatalogVersion/PriceVersion v2, all 1 655 public variants over 34 cursor pages, sampled detail/category/media contracts and all 2 818 private object bytes totaling 519 671 532 bytes. The repeat retained the same semantic source version and created zero versions/differences; the recovery lineage preserved 114 resumes and its terminal failed status. Two full environment restarts retained database history, active pointers, storage objects and healthy public reads.
+
+The final Phase 1B.2 exact-toolchain CI-equivalent execution passed 9/9 stages: format/docs/scope/boundary, lint/type/coverage, fresh/upgrade/recovery database paths, 15/15 storage contract, production build/artifact scan plus scale gate, 25/25 baseline and 5/5 active-catalog browser profiles, repository secret scan over 358 files and critical advisory scan. The exact outcome is linked from QG-227 and the Phase 1B.2 completion report; no later-phase or production test is inferred.
+
 ## 14. Dependencies, risks and open questions
 
-Dependencies: all specs/ADRs/evaluations, implementation stack/environments, approved fixtures/business data/support matrix. Open: numeric budgets/thresholds, real price/source fixtures, browser/AT matrix, provider sandboxes, test tooling/owners, UAT roles, security test scope and retention of artifacts. Risks: fake fixtures mistaken production truth, flaky E2E, unlicensed media, provider dependence, automated a11y/AI false confidence and unsafe production testing.
+Dependencies: all specs/ADRs/evaluations, implementation stack/environments, approved fixtures/business data/support matrix. Open: numeric budgets/thresholds, dimensional pricing/parity fixtures, browser/AT matrix, provider sandboxes, test tooling/owners, UAT roles, security test scope and retention of artifacts. Risks: fake fixtures mistaken production truth, flaky E2E, unlicensed media, provider dependence, automated a11y/AI false confidence and unsafe production testing.
 
 ## 15. History
 
@@ -198,3 +205,4 @@ Dependencies: all specs/ADRs/evaluations, implementation stack/environments, app
 | 0.6.0 | 2026-08-03 | Recorded real 32-variant publication, 59-object byte/SHA verification, public delivery, graceful restart, historical failed-run preservation and no-op repeat evidence. |
 | 0.7.0 | 2026-08-03 | Added the isolated Phase 1B.2 active-catalog browser gate and its synthetic data, private storage, no-runtime-AMIGO, conditional delivery, responsive and recovery contract. |
 | 0.8.0 | 2026-08-03 | Added the executed 2,048-material synthetic scale gate with bounded fixture persistence, constant query-plan counts, cursor completeness, zero temporary-block spill and atomic bulk evidence. |
+| 0.9.0 | 2026-08-04 | Added and recorded real full-catalog manifest/version/public/object/restart/recovery/semantic no-op acceptance and the final Phase 1B.2 exact-toolchain CI gate without claiming later-feature or production readiness. |

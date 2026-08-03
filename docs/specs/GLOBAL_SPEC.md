@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A and Phase 1B.1 passed; only Phase 1B.2 full authorized catalog expansion in progress; Phase 1C+ hold |
-| Версия | 0.14.0 |
-| Дата | 2026-08-03, Europe/Moscow |
+| Статус | Phase 1A, Phase 1B.1 and Phase 1B.2 passed; no next phase authorized; Phase 1C+ hold |
+| Версия | 0.15.0 |
+| Дата | 2026-08-04, Europe/Moscow |
 | Владелец документа | Product Owner — владелец проекта; Business Owner — отец владельца проекта (`OWNER-DECISION-001`) |
 | Продукт | `PROJECT_NAME` до отдельного решения о бренде |
 | Язык | Русский; английские идентификаторы и технические термины допустимы |
@@ -35,6 +35,7 @@
 - [Phase 1B.1 transport discovery](../research/AMIGO_PILOT_TRANSPORT_DISCOVERY_2026-08-02.md)
 - [Phase 1B.2 full catalog plan](../06-plans/active/PHASE_1B2_FULL_AMIGO_CATALOG_PLAN.md)
 - [Phase 1B.2 full transport discovery](../research/AMIGO_FULL_CATALOG_TRANSPORT_DISCOVERY_2026-08-03.md)
+- [Phase 1B.2 completion report](../06-plans/completed/PHASE_1B2_FULL_AMIGO_CATALOG_REPORT.md)
 - [Правила работы](../../AGENTS.md)
 - [История изменений](../../CHANGELOG.md)
 - [Правила референсов](../../reference/README.md)
@@ -58,6 +59,7 @@
 | 0.12.0 | 2026-08-03 | Phase 1B.1 Pilot Acceptance Gate passed: the reviewed 32-variant AMIGO pilot, 59 local media assets, immutable CatalogVersion/PriceVersion v1, business overlays, admin/public catalog, restart/idempotency/recovery and 9/9 CI evidence are recorded without authorizing Phase 1B.2/1C or production. |
 | 0.13.0 | 2026-08-03 | `OWNER-DECISION-012` отдельно разрешил только Phase 1B.2 full authorized AMIGO catalog expansion на существующем importer: dynamic discovery, resumable snapshots/manifest, local media/base-price versions, diff/review/manual activation, bulk overlays и scalable catalog/admin; Phase 1C+, dimensional calculation и production остаются запрещены. |
 | 0.14.0 | 2026-08-03 | Реальный full discovery существующим adapter подтвердил 28 динамических категорий, 56 систем, 9 моделей и 1655 MaterialVariant при 0 failure diagnostics; semantic source version исключает volatile HTML/form tokens, source `0` нормализуется в `PRICE_ON_REQUEST`, а discovery остаётся staged без activation и без Phase 1C. |
+| 0.15.0 | 2026-08-04 | Phase 1B.2 завершена: принят 21 019-item manifest, вручную активированы CatalogVersion/PriceVersion v2, 1 655 variants и 2 818 approved local media objects, проверены rollback/restart/no-op/public/full CI; Phase 1C+ и production не разрешены. |
 
 ## 1. Нормативный язык и приоритет источников
 
@@ -106,7 +108,7 @@
 
 ### 2.2. Решения владельца для implementation governance и будущих feature gates
 
-Источник `OWNER-DECISION-*` — письменные решения Product Owner от 2026-08-02 и 2026-08-03. Они задают бизнес- и архитектурные границы; implementation scope расширяется только явным transition decision. Phase 1A и Phase 1B.1 завершены; `OWNER-DECISION-012` разрешает только Phase 1B.2, а Phase 1C+ остаются запрещены.
+Источник `OWNER-DECISION-*` — письменные решения Product Owner от 2026-08-02 и 2026-08-03. Они задают бизнес- и архитектурные границы; implementation scope расширяется только явным transition decision. Phase 1A, Phase 1B.1 и отдельно разрешённая `OWNER-DECISION-012` Phase 1B.2 завершены; Phase 1C+ остаются запрещены.
 
 - **OWNER-DECISION-001 — MUST:** Product Owner — владелец проекта; Business Owner — отец владельца проекта. Product Owner утверждает продуктовые решения, UX, технические этапы, приоритеты и MVP. Business Owner утверждает цены, ассортимент, наличие, правила изготовления, гарантийные решения и коммерческие условия.
 - **OWNER-DECISION-002 — MUST:** новую `PriceVersion` может активировать только actor с ролью `OWNER` или `ADMIN`, после просмотра точного diff и явного подтверждения; каждая попытка и успешная активация MUST попадать в audit log.
@@ -150,6 +152,8 @@ Public Catalog (explicit administrator activation)
 5. Capture/import, validation, diff resolution, local edit/override, approval, activation, rejection, hide/archive, rollback и rebuild производных read models MUST оставлять audit trail с actor, временем, причиной, before/after reference и correlation ID.
 6. Каждая `CatalogVersion` MUST иметь уникальный ID, `createdAt`, nullable `publishedAt`, source/source-version manifest, ссылки на sync run/captures/diff, Business Owner approval, administrator activation, предыдущую версию и rollback target. Опубликованная версия неизменяема; исправление создаёт новую версию.
 7. Search index, cache, filter facets и analytics/read projections MAY использоваться только как rebuildable производные точной активной `CatalogVersion` из PostgreSQL. Они MUST быть version-pinned, MUST NOT принимать AMIGO/staging напрямую и MUST NOT становиться независимым mutation source.
+
+Phase 1B.2 acceptance 2026-08-04 зафиксировал этот pipeline на semantic source version `sha256:3cf971b0aabe17091ef0804e8d8368fb37182939533a4eef8ee4346f4c59711d`: active CatalogVersion v2 `8975b18c-d7de-49cc-a6e6-d7566b69460a`, active PriceVersion v2 `9fdc0a74-9fab-4d63-b4b6-015f534e117d`, 1 739 composition entries, 1 655 public variants и 2 818 approved local media objects. Repeat run `ae9b8759-7b14-4ca6-9b13-b518113a63b0` создал zero versions/differences; v1 сохранена как rollback target. Эти динамические значения являются dated governed evidence, а не неизменяемым ассортиментным enum.
 
 Причины решения:
 
@@ -951,7 +955,7 @@ Public Catalog (explicit administrator activation)
 4. **0C — Implementation readiness, MVP freeze and P0 TBD triage:** MVP, P0 classification, critical spec audit, sequence 1A–1H и Foundation plan подготовлены; итог gate не является implementation authorization.
 5. **1A — Foundation:** завершённые monorepo, web/BFF, data/storage/jobs, environment/CI/tests, auth/observability/security baseline без бизнес-функций.
 6. **1B.1 — AMIGO catalog pilot:** завершённый allowlisted import 32 verified materials, 59 local media assets, diff/version/approval/overlays и минимальный public/admin catalog.
-7. **1B.2 — Full authorized AMIGO catalog expansion:** разрешённое расширение существующего importer до полного доступного разрешённого каталога, controlled local media/base prices, resumable manifest, review/manual activation, bulk overlays и scalable public/admin catalog без dimensional calculation.
+7. **1B.2 — Full authorized AMIGO catalog expansion:** завершённое расширение существующего importer до полного доступного разрешённого каталога, controlled local media/base prices, resumable manifest, review/manual activation, bulk overlays и scalable public/admin catalog без dimensional calculation.
 8. **1C — Configurator and pricing:** compatibility, millimetres/quantity, versioned preliminary price, override/manual fallback и parity tests; не разрешена автоматически после 1B.2.
 9. **1D — Standard preview:** deterministic prepared-scene rendering for supported MVP profiles.
 10. **1E — Cart, WhatsApp and orders:** multi-item cart, guest/measurement lead, neutral installment request and saved calculation.

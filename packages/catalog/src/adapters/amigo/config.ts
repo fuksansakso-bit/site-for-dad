@@ -1,8 +1,8 @@
 import { type SourceFamilyReference } from '../../types.js';
 
 export const amigoAdapterVersions = {
-  mapping: 'amigo-public-full-catalog-mapping/2.0.0',
-  parser: 'amigo-public-html/2.0.0',
+  mapping: 'amigo-public-full-catalog-mapping/2.0.1',
+  parser: 'amigo-public-html/2.0.1',
 } as const;
 
 export const amigoOrigin = 'https://shop.amigo.ru';

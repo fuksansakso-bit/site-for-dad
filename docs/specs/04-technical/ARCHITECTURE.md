@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A/1B.1 verified; Phase 1B.2 discovery verified and import in progress; Phase 1C/production gated |
-| Версия | 0.8.0 |
-| Дата | 2026-08-03 |
+| Статус | Phase 1A/1B.1/1B.2 verified; Phase 1C/production gated |
+| Версия | 0.9.0 |
+| Дата | 2026-08-04 |
 | Global baseline | [GLOBAL_SPEC.md](../GLOBAL_SPEC.md) 0.14.0 |
 | Decisions | [docs/adr](../../adr/) |
 
@@ -210,7 +210,7 @@ For Phase 1B.1, `OWNER-DECISION-011` replaced the unreliable Windows-native Rust
 
 The completed Phase 1B.1 slice adds source/normalized/business-overlay modules behind the established boundaries, separate worker synchronization/media stages, immutable PostgreSQL catalog/price versions, audited OWNER approval/ADMIN activation, and same-origin public/admin catalog surfaces. Real run `9bd1a4f8-e456-4617-9e16-7f5604c1c65c` activated an exact 40-entry/32-price composition; the public projection returned 32 items and 32 checksum-verified primary images without any live AMIGO/staging dependency. Restart and no-op repeat evidence preserved active pointers/history and produced no duplicate/version drift. No configurator, pricing engine, preview, cart, AI or production topology was added. Evidence: [Phase 1B.1 report](../../06-plans/completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md).
 
-Phase 1B.2 discovery extends that same adapter boundary with dynamic catalog-index traversal, nested collections, strict pagination, structured ready-made model details, broader controlled media URL shapes, semantic source versions and item diagnostics. The 2026-08-03 real capture completed 114 pages with 28 categories, 56 systems, 9 models, 1655 variants and zero failure diagnostics. This evidence is staged discovery only: active PostgreSQL pointers/public runtime remain unchanged until the later import/diff/review/activation stages. Evidence: [Phase 1B.2 transport discovery](../../research/AMIGO_FULL_CATALOG_TRANSPORT_DISCOVERY_2026-08-03.md).
+Completed Phase 1B.2 extends that same adapter boundary with dynamic catalog-index traversal, nested collections, strict pagination, structured ready-made model details, broader controlled media URL shapes, semantic source versions and item diagnostics. The accepted run persisted 114 pages/5 181 snapshots/21 019 normalized items through resumable Graphile stages, stored 2 818 private catalog objects, and activated compatible immutable CatalogVersion/PriceVersion v2 only after checksum-bound OWNER review and ADMIN activation. Public/admin runtime continues to read PostgreSQL/local storage only; semantic repeat produced zero versions/differences, v1 rollback and two full restarts preserved history/pointers/objects. No configurator, dimensional pricing, preview, cart, AI or production topology was added. Evidence: [transport discovery](../../research/AMIGO_FULL_CATALOG_TRANSPORT_DISCOVERY_2026-08-03.md) and [Phase 1B.2 report](../../06-plans/completed/PHASE_1B2_FULL_AMIGO_CATALOG_REPORT.md).
 
 ## 18. Dependencies, risks and open questions
 
@@ -228,3 +228,4 @@ Dependencies: all specs, ADR/evaluations, data/API/sync/media/AI/storage/securit
 | 0.6.0 | 2026-08-03 | Applied local-only `OWNER-DECISION-011`: VersityGW Docker/POSIX named-volume adapter replaced active RustFS while `StoragePort`, catalog/media boundaries and production-provider gate remained neutral. |
 | 0.7.0 | 2026-08-03 | Recorded completed Phase 1B.1 source/version/overlay/worker/admin/public topology, active real pilot versions and restart/idempotency evidence without starting later domains or production. |
 | 0.8.0 | 2026-08-03 | Recorded Phase 1B.2 full discovery inside the existing adapter boundary, including dynamic hierarchy/models/pagination, semantic source hashing and real 28/56/9/1655 evidence without activation or Phase 1C. |
+| 0.9.0 | 2026-08-04 | Recorded completed Phase 1B.2 resumable import, active v2 governance, local media, public/admin, rollback/restart/no-op evidence inside the existing adapter/PostgreSQL/StoragePort boundaries; later phases remain gated. |

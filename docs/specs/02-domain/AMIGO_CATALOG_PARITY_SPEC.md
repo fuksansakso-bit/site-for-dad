@@ -4,12 +4,13 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1B.2 full public-page discovery verified; import/review/activation in progress, Phase 1C gated |
-| Версия | 0.5.0 |
-| Дата | 2026-08-03 |
+| Статус | Phase 1B.2 full public-page discovery/import/review/activation accepted; Phase 1C gated |
+| Версия | 0.6.0 |
+| Дата | 2026-08-04 |
 | Source evidence | [AMIGO public parity snapshot](../../research/AMIGO_PUBLIC_PARITY_SNAPSHOT_2026-08-02.md) |
 | Pilot transport | [AMIGO Phase 1B.1 discovery](../../research/AMIGO_PILOT_TRANSPORT_DISCOVERY_2026-08-02.md) |
 | Full transport | [AMIGO Phase 1B.2 discovery](../../research/AMIGO_FULL_CATALOG_TRANSPORT_DISCOVERY_2026-08-03.md) |
+| Full acceptance | [Phase 1B.2 completion report](../../06-plans/completed/PHASE_1B2_FULL_AMIGO_CATALOG_REPORT.md) |
 | Governance | [EXTERNAL_SOURCES.md](../../00-global/EXTERNAL_SOURCES.md), [ASSET_RIGHTS_REGISTER.md](../../00-global/ASSET_RIGHTS_REGISTER.md) |
 
 ## 1. Назначение, ответственность и non-goals
@@ -175,7 +176,7 @@ Required tests include source taxonomy fixtures, rename/remove/schema drift, pro
 
 ## 13. Dependencies, risks and open questions
 
-Dependencies: catalog/configurator/pricing/preview/cart/sync/media specs. The Phase 1B.2 public-page discovery path is evidenced; accepted full import/activation remains `TBD-ASSORT-002`, official API/export remains the open aspect of `TBD-SOURCE-AMIGO-002`, and `TBD-ASSORT-003`, `TBD-PRICE-*`, `TBD-SIZE-001`, `TBD-ASSET-AMIGO-003` still gate later capabilities. Risks: marketing overstates parity, dynamic category becomes silently active, source semantics mistranslated, examples misattributed, volatile customizer treated as API.
+Dependencies: catalog/configurator/pricing/preview/cart/sync/media specs. Phase 1B.2 public-page discovery and full import/activation are accepted, closing `TBD-ASSORT-002`; official API/export remains the open aspect of `TBD-SOURCE-AMIGO-002`, and `TBD-ASSORT-003`, dimensional `TBD-PRICE-*`, `TBD-SIZE-001`, `TBD-ASSET-AMIGO-003` still gate later capabilities. Risks: marketing overstates parity, dynamic category becomes silently active, source semantics mistranslated, examples misattributed, volatile customizer treated as API.
 
 ## 14. Связанные требования и история
 
@@ -188,3 +189,4 @@ Links: `PARTNER-*`, `AMIGO-PARITY-*`, `AMIGO-SYNC-*`, `FR-CATALOG-*`, `FR-CONFIG
 | 0.3.0 | 2026-08-02 | Aligned parity with `OWNER-DECISION-009`: only active PostgreSQL `CatalogVersion` serves public capabilities; source removal becomes reviewed diff and never auto-deletes/hides local data. |
 | 0.4.0 | 2026-08-03 | Authorized only Phase 1B.2 full catalog expansion while retaining import/activation, Phase 1C and production gates. |
 | 0.5.0 | 2026-08-03 | Recorded complete real discovery (28 categories, 56 systems, 9 models, 1655 variants), stable identity rules, canonical-card preference, semantic source version, item diagnostics and zero-price-to-`PRICE_ON_REQUEST` behavior. |
+| 0.6.0 | 2026-08-04 | Recorded accepted full manifest, reviewed active v2 catalog/price, 1 655 public variants and local media/no-op/restart evidence while keeping configurator/calculation parity gated. |

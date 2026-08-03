@@ -162,6 +162,35 @@ describe('public catalog projection', () => {
     });
   });
 
+  it('normalizes a retained technical category identity into a bounded public URL slug', () => {
+    const retained = manifest();
+    const category = (retained.composition[0] as Record<string, unknown>)['entity'] as Record<
+      string,
+      unknown
+    >;
+    category['slug'] = 'amigo-category-category:path:rulonnye-shtory';
+
+    const snapshot = buildCatalogPublicSnapshot(input(retained));
+
+    expect(snapshot.categories[0]?.slug).toBe('amigo-category-category-path-rulonnye-shtory');
+    expect(snapshot.items[0]?.category.path[0]?.slug).toBe(
+      'amigo-category-category-path-rulonnye-shtory',
+    );
+
+    retained.composition.unshift({
+      entity: {
+        id: '00000000-0000-4000-8000-000000000409',
+        name: 'Colliding category',
+        parentId: null,
+        slug: 'amigo-category-category-path-rulonnye-shtory',
+        sortOrder: 5,
+      },
+      entityType: 'CATEGORY',
+      overlay: publishedOverlay,
+    });
+    expect(() => buildCatalogPublicSnapshot(input(retained))).toThrow(CatalogReadError);
+  });
+
   it('fails closed for hidden, unreviewed or corrupted media data', () => {
     const hidden = buildCatalogPublicSnapshot(
       input(manifest({ publication: { status: 'DRAFT' } })),

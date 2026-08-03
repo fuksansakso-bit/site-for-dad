@@ -4,10 +4,10 @@
 
 | Поле | Значение |
 |---|---|
-| Фаза документа | Phase 1A and Phase 1B.1 completed; only Phase 1B.2 authorized/in progress; Phase 1C+ hold |
-| Статус roadmap | **PHASE 1A PASSED / PHASE 1B.1 PASSED / PHASE 1B.2 AUTHORIZED / PHASE 1C+ HOLD** |
+| Фаза документа | Phase 1A, Phase 1B.1 and Phase 1B.2 completed; no next phase authorized; Phase 1C+ hold |
+| Статус roadmap | **PHASE 1A PASSED / PHASE 1B.1 PASSED / PHASE 1B.2 PASSED / PHASE 1C+ HOLD** |
 | Scope | [MVP_SCOPE](MVP_SCOPE.md) |
-| Планы / evidence | [PHASE_1A_FOUNDATION_PLAN](active/PHASE_1A_FOUNDATION_PLAN.md), [PHASE_1A_FOUNDATION_REPORT](completed/PHASE_1A_FOUNDATION_REPORT.md), [PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN](active/PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN.md), [PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT](completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md), [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN](active/PHASE_1B2_FULL_AMIGO_CATALOG_PLAN.md) |
+| Планы / evidence | [PHASE_1A_FOUNDATION_PLAN](active/PHASE_1A_FOUNDATION_PLAN.md), [PHASE_1A_FOUNDATION_REPORT](completed/PHASE_1A_FOUNDATION_REPORT.md), [PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN](active/PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN.md), [PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT](completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md), [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN](active/PHASE_1B2_FULL_AMIGO_CATALOG_PLAN.md), [PHASE_1B2_FULL_AMIGO_CATALOG_REPORT](completed/PHASE_1B2_FULL_AMIGO_CATALOG_REPORT.md) |
 
 - **ROADMAP-001 — MUST:** фазы выполняются по порядку 1A–1H; параллельный research MAY идти, но dependent implementation не обходит entry gate.
 - **ROADMAP-002 — MUST:** каждая возможность включается feature flag только после собственных acceptance/security/data gates; наличие кода не равно production activation.
@@ -64,7 +64,7 @@ Phase 1B.1 completed 2026-08-03 as `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT`; exact
 | Запрещённые изменения | Second importer; access/CAPTCHA/rate bypass; AMIGO frontend/design/code reuse; hotlink/unmanaged download/watermark removal; guessed properties/prices/zero price; auto activation/deletion; dimensional calculator/configurator/preview/AI/cart/order/WhatsApp/account/final design; production provider/secrets/deployment; Phase 1C. |
 | Rollback | Cancel/drain jobs, retain checkpoint/manifest/snapshots, reactivate prior compatible CatalogVersion/PriceVersion atomically, preserve overlays/audit/source-removed history and use forward compensation for schema changes. |
 
-Execution contract: [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN](active/PHASE_1B2_FULL_AMIGO_CATALOG_PLAN.md). Passing Phase 1B.2 will not authorize Phase 1C.
+Execution contract: [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN](active/PHASE_1B2_FULL_AMIGO_CATALOG_PLAN.md). Phase 1B.2 completed 2026-08-04 as `PASSED_PHASE_1B2_FULL_AMIGO_CATALOG`; exact run/manifest/version/media/recovery/no-op/public/CI evidence is in the [completion report](completed/PHASE_1B2_FULL_AMIGO_CATALOG_REPORT.md). This result does not authorize Phase 1C.
 
 ## 4. PHASE 1C — CONFIGURATOR AND PRICING
 
@@ -180,3 +180,4 @@ Execution contract: [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN](active/PHASE_1B2_FULL_AM
 | 1.4.0 | 2026-08-02 | `OWNER-DECISION-010` разрешил только Phase 1B.1 с 32-ID real pilot/public-page transport; full-catalog expansion выделен в отдельную Phase 1B.2 и остаётся на hold вместе с Phase 1C+. |
 | 1.5.0 | 2026-08-03 | Phase 1B.1 отмечена passed со ссылкой на 32-variant/59-media/version/restart/CI completion evidence; Phase 1B.2/1C+ hold сохранён. |
 | 1.6.0 | 2026-08-03 | `OWNER-DECISION-012` и active plan разрешили только Phase 1B.2 full authorized catalog expansion с manifest/resume/media/price/review/bulk/public/admin/performance gates; Phase 1C+ и production сохранены на hold. |
+| 1.7.0 | 2026-08-04 | Phase 1B.2 отмечена passed со ссылкой на accepted full manifest, active v2 catalog/price, 2 818 media objects, restart/no-op/public/CI report; Phase 1C+ и production остаются на hold. |

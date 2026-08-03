@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1B.2 full-catalog `/admin/catalog` control room implemented; verification in progress |
-| Версия | 0.7.0 |
-| Дата | 2026-08-02 |
+| Статус | Phase 1B.2 full-catalog `/admin/catalog` control room implemented and accepted; later admin modules gated |
+| Версия | 0.8.0 |
+| Дата | 2026-08-04 |
 | Permissions | [ROLES_PERMISSIONS.md](../01-product/ROLES_PERMISSIONS.md) |
 | Source flows | Catalog, pricing, media, sync and order specs |
 
@@ -186,3 +186,4 @@ Links: `FR-ADMIN-*`, `RBAC-*`, `NFR-AUDIT-*`, `ADMIN-SPEC-001`–`034`.
 | 0.5.0 | 2026-08-03 | Зафиксирован реализованный local-only `/admin/catalog`: 32-ID bounded read model, OWNER/ADMIN HttpOnly sessions, exact diff/bulk/approval/activation и отдельные overlay/override commands. |
 | 0.6.0 | 2026-08-03 | Implemented the Phase 1B.2 exact category-subtree/filter/selected bulk preview and atomic OWNER apply contract with stale-preview rejection, immutable before/after evidence and idempotent replay; expanded admin UI remains the next stage. |
 | 0.7.0 | 2026-08-03 | Expanded `/admin/catalog` to the full normalized inventory with server filters/pages, hierarchy facets, safe manifest and durable-run progress, paginated diff review, immutable histories and the exact review/bulk/composition/activation/rollback workflow in a responsive keyboard-operable control room. |
+| 0.8.0 | 2026-08-04 | Recorded accepted real manifest/progress/diff/review/bulk/activation/rollback histories and final authorization, recovery, browser and CI evidence for `/admin/catalog`; non-catalog and production admin remain gated. |

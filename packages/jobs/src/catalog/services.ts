@@ -1,5 +1,6 @@
 import {
   AmigoCatalogSourceAdapter,
+  amigoAdapterVersions,
   hashCanonicalSource,
   type CapturedSource,
   type CatalogSourceVersion,
@@ -117,10 +118,14 @@ function assertRunning(signal: AbortSignal): void {
 }
 
 async function defaultAdapterFactory(source: CatalogSourceRecord): Promise<CatalogSourceAdapter> {
-  if (source.source_type !== 'AUTHORIZED_PUBLIC_WEB') {
+  if (
+    source.source_type !== 'AUTHORIZED_PUBLIC_WEB' ||
+    source.parser_version !== amigoAdapterVersions.parser ||
+    source.mapping_version !== amigoAdapterVersions.mapping
+  ) {
     throw new CatalogPipelineError('CATALOG_PIPELINE_SOURCE_INVALID');
   }
-  return new AmigoCatalogSourceAdapter();
+  return new AmigoCatalogSourceAdapter({ catalogScope: 'full' });
 }
 
 function defaultMediaDependenciesFactory(): CatalogMediaImportDependencies {

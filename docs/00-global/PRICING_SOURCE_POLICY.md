@@ -4,14 +4,14 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Нормативная политика; Phase 1B.2 разрешает full source card/base price snapshots and local overrides без dimensional calculator |
-| Версия | 1.7.0 |
-| Дата | 2026-08-03, Europe/Moscow |
+| Статус | Нормативная политика; Phase 1B.2 full source card/base price version accepted without dimensional calculator |
+| Версия | 1.9.0 |
+| Дата | 2026-08-04, Europe/Moscow |
 | Главный источник правды | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) |
 | Внешние источники | [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md) |
 | Будущая детализация | `PRICING_CALCULATOR_SPEC.md` и `TEST_STRATEGY.md`, запланированные в [SPEC_ROADMAP.md](SPEC_ROADMAP.md) |
 
-Политика задаёт происхождение, версии, подтверждение и деградацию цены. Phase 1B.2 MAY импортировать для полного доступного каталога опубликованные source/base/card prices, цену «от», price category, currency, context/date/source version и separate local price override; формула, размеры, minimum 1500 и calculator остаются запрещены до Phase 1C.
+Политика задаёт происхождение, версии, подтверждение и деградацию цены. Phase 1B.2 импортировала для полного доступного каталога опубликованные source/base/card prices, цену «от», price category, currency, context/date/source version и сохранила separate local price override; формула, размеры, minimum 1500 и calculator остаются запрещены до Phase 1C.
 
 ## 1. Основные требования владельца
 
@@ -31,6 +31,7 @@
 - **PRICING-SOURCE-014 — MUST:** Phase 1B.2 расширяет `PRICING-SOURCE-013` на все discovered source entities. Каждая запись сохраняет source entity/link, captured date, source version, currency, context, nullable source/base/price-from amount и nullable source price category; неизвестное значение остаётся `PRICE_ON_REQUEST` и MUST NOT превращаться в `0 ₽`.
 - **PRICING-SOURCE-015 — MUST:** complete Phase 1B.2 capture создаёт ровно одну типизированную source-price revision для каждого discovered price-bearing `MaterialVariant` и `ProductModel`; target обязан быть ровно одним из этих типов. Отсутствующая сумма создаёт `PRICE_ON_REQUEST`, а не пропуск записи; ambiguous/duplicate target блокирует run.
 - **PRICING-SOURCE-016 — MUST:** `SourcePriceRecord` является append-only revision, уникальной в пределах `(catalogSourceId, sourceId, sourceVersion)`. Exact retry той же semantic source version переиспользует совпадающую запись; несовпадающие hash, target, provenance или price facts при том же ключе являются blocking resume conflict. `PriceVersionRecord` закрепляет точную revision.
+- **PRICING-SOURCE-017 — MUST:** если одна карточка источника содержит несколько денежных значений без доказанного однозначного контекста, importer сохраняет исходную метку и контекст, но нормализует цену как `PRICE_ON_REQUEST`. Склеивать цифры, выбирать минимум/максимум или публиковать одно значение по догадке запрещено.
 
 ## 2. Приоритет источников и способ получения
 
@@ -182,9 +183,11 @@ PricingProvider
 
 ## 13. Открытые решения
 
-Блокирующими для автоматического production-pricing остаются реальные snapshots и правила из `TBD-PRICE-001`–`006`, `TBD-MECHANISM-001`, `TBD-PRICE-SOURCE-001`, а также конкретный export/transport `TBD-SOURCE-AMIGO-002`. `TBD-PRICE-007`, `TBD-MIN-PRICE-001`, `TBD-PRICE-SOURCE-002`, `TBD-PRICE-PARITY-001`, `TBD-SOURCE-AMIGO-001` и `TBD-PRICE-CATEGORY-001` решены и сохраняются для истории. Срок предложения остаётся `TBD-PRICE-008` и не получает выдуманного периода.
+Accepted PriceVersion v2 `9fdc0a74-9fab-4d63-b4b6-015f534e117d` закрепляет ровно 1 664 current-run revisions: 1 655 MaterialVariant и 9 ProductModel; `AVAILABLE = 1 596`, `PRICE_ON_REQUEST = 68`, observed numeric range `127 600`–`5 301 700` minor RUB units. Exact price diff checksum `9fb6b6f927d07b535baac471cb172c4aa6441670b8e6cbba9ed4581724062e27` принят OWNER и активирован ADMIN; no-op repeat создал zero price versions/differences, а v1 сохранена как rollback target. Это закрывает `TBD-PRICE-001` только как вопрос активной проверенной AMIGO-origin catalog PriceVersion и не превращает card/base/price-from facts в dimensional calculation.
 
-`OWNER-DECISION-008` закрывает authority слоёв, а `OWNER-DECISION-009` — public-serving PostgreSQL topology, diff/approval/no-delete/override/audit/version rules. Ни одно из них не доказывает наличие active `CatalogVersion`/`PriceVersion`, completeness импортированных base prices, формулу, source region или parity fixtures и поэтому не закрывает перечисленные pricing TBD.
+Блокирующими для автоматического production-pricing остаются правила из `TBD-PRICE-002`–`006`, `TBD-MECHANISM-001` и `TBD-PRICE-SOURCE-001`. Official API/export/file/schema aspect `TBD-SOURCE-AMIGO-002` остаётся открытым, но не отменяет принятую source-versioned public-page v2. `TBD-PRICE-001`, `TBD-PRICE-007`, `TBD-MIN-PRICE-001`, `TBD-PRICE-SOURCE-002`, `TBD-PRICE-PARITY-001`, `TBD-SOURCE-AMIGO-001` и `TBD-PRICE-CATEGORY-001` решены и сохраняются для истории. Срок предложения остаётся `TBD-PRICE-008` и не получает выдуманного периода.
+
+`OWNER-DECISION-008` закрывает authority слоёв, а `OWNER-DECISION-009` — public-serving PostgreSQL topology, diff/approval/no-delete/override/audit/version rules. Phase 1B.2 completion report отдельно доказывает active CatalogVersion/PriceVersion v2 и complete current-run card/base-price accounting; ни решения, ни report не доказывают dimensional formula, source region, compatibility или parity fixtures и поэтому не закрывают оставшиеся pricing TBD.
 
 ## 14. История изменений
 
@@ -196,3 +199,5 @@ PricingProvider
 | 1.5.0 | 2026-08-02 | `OWNER-DECISION-010` разрешил Phase 1B.1 source card prices/PRICE_ON_REQUEST/local base overrides и daily diff, сохранив calculator/formulas/minimum rule для Phase 1C. |
 | 1.6.0 | 2026-08-03 | `OWNER-DECISION-012` разрешил full-catalog source/base/card/price-from/category snapshots, complete activation diff and persistent local overrides; dimensional calculator/formulas/minimum remain Phase 1C. |
 | 1.7.0 | 2026-08-03 | Phase 1B.2 implementation закрепил full material/model price accounting, exact typed target, append-only `(sourceId, sourceVersion)` revisions, current-run-only manifest/version selection, `PRICE_ON_REQUEST` и неизменность local overrides. |
+| 1.8.0 | 2026-08-03 | Real full-catalog evidence established fail-closed handling for cards with multiple context-dependent price labels: provenance is retained and the normalized value is `PRICE_ON_REQUEST`, never concatenated or guessed. |
+| 1.9.0 | 2026-08-04 | Зафиксированы accepted 1 664-record PriceVersion v2, exact diff/OWNER approval/ADMIN activation, no-op/rollback evidence и закрытие `TBD-PRICE-001` для catalog price version без утверждения dimensional calculator inputs. |

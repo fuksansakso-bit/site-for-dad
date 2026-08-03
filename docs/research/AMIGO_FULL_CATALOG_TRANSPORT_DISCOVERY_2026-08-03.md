@@ -8,10 +8,10 @@
 | Existing adapter | расширен существующий `AmigoCatalogSourceAdapter`; второй importer не создан |
 | Transport | `AUTHORIZED_PUBLIC_WEB`, `https://shop.amigo.ru/catalog/` и обнаруженные безопасные catalog paths |
 | Capture | 2026-08-03 13:54:11 Europe/Moscow (`2026-08-03T10:54:11.607Z`) |
-| Parser | `amigo-public-html/2.0.0` |
-| Mapping | `amigo-public-full-catalog-mapping/2.0.0` |
-| Semantic source version | `sha256:66a1b9e1bee9985845aa0e3e03f7a321bd33f2d0e0b798f28ee6444c08735911` |
-| Результат discovery | `complete = true`; failure diagnostics `0` |
+| Parser | `amigo-public-html/2.0.1` |
+| Mapping | `amigo-public-full-catalog-mapping/2.0.1` |
+| Semantic source version | `sha256:3cf971b0aabe17091ef0804e8d8368fb37182939533a4eef8ee4346f4c59711d` |
+| Результат discovery | `complete = true`; failure diagnostics `0`; warning diagnostics `28` |
 
 Это доказательство полного доступного на дату capture discovery через разрешённый public-page fallback. Оно не доказывает существование official API/export, не активирует данные, не является завершённым PostgreSQL/media import manifest и не разрешает Phase 1C.
 
@@ -36,12 +36,14 @@
 | MaterialVariant source IDs | 1655 |
 | Уникальные system/model/material identities | 1720 |
 | Material media links | 2940 |
+| Category/system/model media links | 113 |
+| Typed media references всего | 3053 |
 | Source price records на обнаруженных material/model entities | 1664 |
-| `PRICE_ON_REQUEST` | 44 |
+| `PRICE_ON_REQUEST` | 68 |
 | Failure diagnostics | 0 |
-| Warning diagnostics | 4 |
+| Warning diagnostics | 28 |
 
-`2940` — точный discovery-счётчик ссылок material manifests. Category, system и model media входят в typed source facts, но общий импортированный/deduplicated media count фиксируется только последующим Full Catalog Import Manifest после byte validation и VersityGW import.
+`2940` — точный discovery-счётчик material media links; ещё `113` ссылок принадлежат category/system/model targets. `3053` — количество typed source references, а не обещание такого же количества бинарных объектов: локальное хранилище дедуплицирует точные bytes по SHA-256, сохраняя каждую provenance-связь.
 
 ## 4. Обнаруженные категории
 
@@ -95,8 +97,9 @@
 | `MULTIPLE_SOURCE_SECTIONS` | 2 | Коллекции дерево/бамбук/пластик и вертикальный пластик/алюминий сохранены с path identity; все безопасно распознанные items включены |
 | `SOURCE_ZERO_PRICE_NORMALIZED` | 1 | Source ID `986` публикует `от 0 ₽`; запись сохранена, цена стала `PRICE_ON_REQUEST`, а не `0` |
 | `EMPTY_STRUCTURED_CATEGORY` | 1 | Мансардная страница сохранена как категория; рекламный текст про ROOF не превращён в вымышленную структурированную сущность |
+| `AMBIGUOUS_SOURCE_PRICE_NORMALIZED` | 24 | Карточки с несколькими контекстными денежными значениями сохранены с исходной меткой, но нормализованы как `PRICE_ON_REQUEST`; цифры не склеиваются и одно значение не выбирается по догадке |
 
-Обзорные material preview cards не считаются каноническими collection cards. Это исключает ложные duplicate/source-conflict/media-failure diagnostics для одного и того же material ID. Повреждённая карточка в будущем получает item-level `PARSER_REVIEW_REQUIRED`; safe siblings продолжаются, но discovery не получает `complete = true`, пока failure не устранён или не отражён принятой политикой.
+Обзорные material preview cards не считаются каноническими collection cards. Это исключает ложные duplicate/source-conflict/media-failure diagnostics для одного и того же material ID. Реальные данные содержат 23 группы повторяющихся article values (29 дополнительных строк), поэтому article остаётся поисковым source fact, а стабильной identity служит source ID; ни одна строка не теряется и не сливается. Повреждённая карточка в будущем получает item-level `PARSER_REVIEW_REQUIRED`; safe siblings продолжаются, но discovery не получает `complete = true`, пока failure не устранён или не отражён принятой политикой.
 
 ## 7. Stop-condition audit
 
@@ -111,6 +114,6 @@
 | Глобальный transport/parser failure | `0` |
 | Phase 1C/calculator/production secret | Не требуются и не начаты |
 
-## 8. Следующий разрешённый шаг
+## 8. Последующий принятый результат
 
-Discovery candidate ещё не является локально активным каталогом. Следующий шаг в этой же Phase 1B.2 — durable resumable import со safe snapshots, manifest, PostgreSQL normalization/diff и без изменения active pointers. До отдельной ручной activation public runtime продолжает обслуживать последнюю активную Phase 1B.1 версию.
+После этого dated discovery Phase 1B.2 выполнила durable resumable import, sealed manifest, PostgreSQL normalization/diff, OWNER review и explicit ADMIN activation. Accepted run и точные версии/counts/media/restart/no-op результаты зафиксированы в [Phase 1B.2 completion report](../06-plans/completed/PHASE_1B2_FULL_AMIGO_CATALOG_REPORT.md). Этот research snapshot остаётся provenance исходного capture и не заменяет governed manifest; никакая следующая фаза не разрешена.

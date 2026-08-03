@@ -1429,13 +1429,14 @@ export function createCatalogManagementAdapter(
             UPDATE media_asset asset
             SET publication_status = 'PUBLICATION_APPROVED', updated_at = NOW()
             WHERE asset.id IN (
-              SELECT placement.media_asset_id
-              FROM material_media_asset placement
-              JOIN material_variant variant ON variant.id = placement.material_variant_id
-              JOIN catalog_sync_item item ON item.source_entity_id = variant.source_entity_id
+              SELECT media.media_asset_id
+              FROM source_media_asset media
+              JOIN catalog_sync_item item ON item.source_entity_id = media.source_entity_id
               JOIN source_entity source ON source.id = item.source_entity_id
               WHERE item.sync_run_id = $1::uuid
                 AND source.catalog_source_id = $2::uuid
+                AND item.source_type = 'MEDIA'
+                AND media.media_asset_id IS NOT NULL
                 AND asset.rights_status = 'PARTNER_LICENSE'
                 AND asset.publication_status = 'PENDING'
             )
@@ -1583,7 +1584,7 @@ export function createCatalogManagementAdapter(
             UPDATE catalog_version
             SET source_manifest = $2::jsonb, difference_checksum = $3,
                 safe_notes = COALESCE(safe_notes, '') ||
-                  E'\nOwner-composed Phase 1B.1 publication manifest.'
+                  E'\nOwner-composed Phase 1B.2 publication manifest.'
             WHERE id = $1::uuid AND status = 'AWAITING_APPROVAL'
           `,
           [input.catalogVersionId, JSON.stringify(updatedManifest), differenceChecksum],

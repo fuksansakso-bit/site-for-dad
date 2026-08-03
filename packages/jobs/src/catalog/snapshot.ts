@@ -64,6 +64,12 @@ const propertySchema = z
   })
   .strict();
 
+const sourcePageReferenceSchema = z
+  .string()
+  .min(1)
+  .max(1024)
+  .regex(/^\/(?:[a-z0-9-]+\/){1,4}(?:\?PAGEN_[1-9][0-9]{0,4}=[1-9][0-9]{0,4})?$/u);
+
 const categorySchema = z
   .object({
     childCategorySourceIds: z.array(z.string().min(1).max(255)).optional(),
@@ -76,7 +82,7 @@ const categorySchema = z
     name: z.string().min(1).max(255),
     parentCategorySourceId: z.string().min(1).max(255).optional(),
     sortOrder: z.number().int().min(0).optional(),
-    sourcePageReferences: z.array(z.url().max(1024)).optional(),
+    sourcePageReferences: z.array(sourcePageReferenceSchema).optional(),
     sourceStatus: z.enum(['ACTIVE', 'PARSER_REVIEW_REQUIRED', 'SOURCE_REMOVED']).optional(),
     systemSourceIds: z.array(z.string().min(1).max(255)),
   })

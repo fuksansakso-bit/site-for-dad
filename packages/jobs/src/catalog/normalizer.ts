@@ -88,6 +88,26 @@ function deduplicate<T extends { readonly data: { readonly identity: SourceIdent
   return [...result.values()];
 }
 
+export function resolveCatalogSnapshotSourceVersion(
+  payloads: readonly CatalogSafeSnapshotPayload[],
+): CatalogSafeSnapshotPayload['sourceVersion'] {
+  const sourceVersions = payloads.map((payload) => payload.sourceVersion);
+  const sourceVersion = [...sourceVersions].sort((left, right) =>
+    left.capturedAt.localeCompare(right.capturedAt),
+  )[0];
+  if (
+    sourceVersion === undefined ||
+    new Set(
+      sourceVersions.map((candidate) =>
+        hashCanonicalSource({ sourceType: candidate.sourceType, version: candidate.version }),
+      ),
+    ).size !== 1
+  ) {
+    throw new CatalogPipelineError('CATALOG_PIPELINE_RESUME_CONFLICT');
+  }
+  return sourceVersion;
+}
+
 function mergePayloads(payloads: readonly CatalogSafeSnapshotPayload[]): {
   readonly categories: readonly CapturedSource<SourceCategory>[];
   readonly materials: readonly CapturedSource<SourceMaterial>[];
@@ -97,13 +117,7 @@ function mergePayloads(payloads: readonly CatalogSafeSnapshotPayload[]): {
   readonly sourceVersion: CatalogSafeSnapshotPayload['sourceVersion'];
   readonly systems: readonly CapturedSource<SourceSystem>[];
 } {
-  const sourceVersion = payloads[0]?.sourceVersion;
-  if (
-    sourceVersion === undefined ||
-    new Set(payloads.map((payload) => hashCanonicalSource(payload.sourceVersion))).size !== 1
-  ) {
-    throw new CatalogPipelineError('CATALOG_PIPELINE_RESUME_CONFLICT');
-  }
+  const sourceVersion = resolveCatalogSnapshotSourceVersion(payloads);
   return {
     categories: deduplicate(
       payloads.flatMap((payload) => payload.categories) as CapturedSource<SourceCategory>[],
@@ -307,6 +321,7 @@ async function upsertCategory(
       ) VALUES ($1::uuid, $2::uuid, $3, $4, $5, NOW())
       ON CONFLICT (source_entity_id) DO UPDATE
       SET family_id = EXCLUDED.family_id,
+          slug = EXCLUDED.slug,
           name = EXCLUDED.name,
           sort_order = EXCLUDED.sort_order,
           updated_at = NOW()
@@ -315,7 +330,7 @@ async function upsertCategory(
     [
       sourceEntity.id,
       familyId,
-      `amigo-category-${record.data.identity.sourceId}`,
+      record.data.identity.sourceSlug,
       record.data.name,
       record.data.sortOrder ?? 0,
     ],
@@ -876,16 +891,23 @@ async function upsertMediaManifest(
   record: CapturedSource<SourceMediaManifest>,
   materialVariantId: string,
 ): Promise<void> {
+  const manifestFacts = {
+    materialSourceId: record.data.materialSourceId,
+    mediaSourceIds: record.data.media.map((media) => media.identity.sourceId),
+  };
+  const manifestIdentity = derivedIdentity(record.data.identity, {
+    entityType: 'MEDIA',
+    facts: manifestFacts,
+    sourceId: record.data.identity.sourceId,
+    sourceSlug: record.data.identity.sourceSlug,
+  });
   const manifestSourceEntity = await upsertSourceEntity(
     client,
     payload.catalogSourceId,
-    record.data.identity,
-    {
-      materialSourceId: record.data.materialSourceId,
-      mediaSourceIds: record.data.media.map((media) => media.identity.sourceId),
-    },
+    manifestIdentity,
+    manifestFacts,
   );
-  await recordSyncItem(client, payload, record.data.identity, manifestSourceEntity);
+  await recordSyncItem(client, payload, manifestIdentity, manifestSourceEntity);
   const roleCounts = new Map<SourceMediaReference['role'], number>();
   for (const media of record.data.media) {
     const sortOrder = roleCounts.get(media.role) ?? 0;
@@ -914,7 +936,7 @@ export async function normalizeCatalogSnapshots(
         SELECT safe_payload
         FROM source_snapshot
         WHERE sync_run_id = $1::uuid AND status = 'CAPTURED'
-        ORDER BY source_url
+        ORDER BY source_url, capture_key
       `,
       [payload.syncRunId],
     );

@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1B.2 full discovery/import/media/price review, activation, bulk local controls and safe admin/public projections implemented |
-| Версия | 0.13.0 |
-| Дата | 2026-08-03 |
+| Статус | Phase 1B.2 full discovery/import/media/price review, activation, bulk controls and safe admin/public projections accepted |
+| Версия | 0.14.0 |
+| Дата | 2026-08-04 |
 | Source registry | [EXTERNAL_SOURCES.md](../../00-global/EXTERNAL_SOURCES.md) |
 | Pricing policy | [PRICING_SOURCE_POLICY.md](../../00-global/PRICING_SOURCE_POLICY.md) |
 
@@ -81,6 +81,7 @@ Public browser research and volatile customizer DOM/iframe are not a production 
 - **SYNC-ARCH-050 — MUST:** a bulk local-overlay command runs only after explicit publication preparation and before immutable candidate composition. It is bound to the exact source/run/candidate and checksum-resolved current state, affects only Business Owner visibility/review/availability/publication fields in one transaction, and records append-only per-target before/after evidence; source facts, source/base price and unrelated local overlays remain unchanged.
 - **SYNC-ARCH-051 — MUST:** the authorized admin read projection exposes human-readable safe manifest counts, durable run/checkpoint/stage progress, bounded catalog/price differences and immutable review/bulk histories for the complete selected source. It MUST NOT expose raw snapshots, parser-internal diagnostics, source hashes, storage locators or credentials, and it MUST NOT reuse staged admin visibility as a public-serving path.
 - **SYNC-ARCH-052 — MUST:** the authorized public read projection resolves complete category hierarchy, linked systems, eligible variants, detail and media only from one compatible active catalog/price composition in PostgreSQL. Search, descendant filters, allowlisted sort and version/query-bound cursors MUST NOT read AMIGO, raw snapshots or staged candidates at request time; all public item and media references stay pinned to that active composition.
+- **SYNC-ARCH-053 — MUST:** exact-repeat catalog/price equivalence and diff checksums use canonical safe source facts, stable source identity/state and imported binary descriptors. Recapture timestamps, persisted hash-format revisions, local media object IDs/keys, local rights/publication decisions and a representative provenance URL selected for a shared derived family/material/color MUST NOT create a false candidate or diff; changed source facts, direct source provenance, source removal or changed binary content MUST remain detectable.
 
 ## 4. Pipeline stages
 
@@ -211,9 +212,11 @@ Primary: `AC-AMIGO-SYNC-001`, `AC-SYNC-DIFF-001`, `AC-SYNC-ROLLBACK-001`, `AC-CA
 
 Tests: every transport via authorized fixture; integrity/schema/encoding/locale; dynamic category/property/category string; rename/move/split/merge/reused ID; field/relationship/price/media diff; direct AMIGO/staging public-read denial; source-removal preservation of local data/overlays/history; override precedence without source mutation; Business Owner + activation-capability evidence; catalog-version source/timestamp/audit completeness; approval checksum invalidation; stale-base concurrency; dry run/no pointer change; atomic activation/version-pinned cache/search/filter/analytics rebuild; post-health/rollback; retry/resume/idempotency; source/auth/rate outage; telemetry/secret scan; historical retention.
 
+Phase 1B.2 acceptance pinned run `7d19a6e8-abcc-4bc6-a180-c0a5b59e17d6`: 114 pages, 5 181 snapshots, 21 019 normalized items, 8 checkpoints, `COMPLETE` manifest, 28 warnings and zero errors/skips/identity duplicates/source removals. Checksum-bound review and selected bulk evidence preceded active CatalogVersion/PriceVersion v2; v2→v1→v2 rollback, two full restarts and recovery run with 114 resumes preserved history. Repeat `ae9b8759-7b14-4ca6-9b13-b518113a63b0` retained the same semantic source version and created zero versions/differences. An intermediate false v3 caused by recapture/media-governance/provenance-representative drift was never activated, was explicitly rejected by OWNER and now has regression coverage under `SYNC-ARCH-053`.
+
 ## 16. Dependencies, risks and open questions
 
-Dependencies: catalog/pricing/media/admin/data/API/security/observability/deployment, ADR-0002 and `OWNER-DECISION-008/009/012`. The full public-page discovery fallback, path policy and stable identity rules are evidenced by the dated Phase 1B.2 report; official API/export, source price region/context, accepted full import/media manifest and activation grouping remain open or gated. Cadence/staleness, local availability authority and public-serving topology are resolved by `OWNER-DECISION-004/005/009`. Risks: volatile DOM, secret exposure, direct staging exposure, auto-publication, destructive removal, override loss, price mismatch, parser drift, approval of moving candidate, derived-projection drift and rollback inconsistency.
+Dependencies: catalog/pricing/media/admin/data/API/security/observability/deployment, ADR-0002 and `OWNER-DECISION-008/009/012`. Full public-page discovery fallback, path policy, stable identity, accepted import/media manifest and activation grouping are evidenced by the dated Phase 1B.2 report; official API/export and source price region/context remain open or gated. Cadence/staleness, local availability authority and public-serving topology are resolved by `OWNER-DECISION-004/005/009`. Risks: volatile DOM, secret exposure, direct staging exposure, auto-publication, destructive removal, override loss, price mismatch, parser drift, approval of moving candidate, derived-projection drift and rollback inconsistency.
 
 ## 17. History
 
@@ -232,3 +235,4 @@ Dependencies: catalog/pricing/media/admin/data/API/security/observability/deploy
 | 0.11.0 | 2026-08-03 | Bound Phase 1B.2 category/filter/selection bulk local-overlay changes to the exact prepared mutable candidate with stale-state rejection, atomic apply and immutable per-target evidence before composition. |
 | 0.12.0 | 2026-08-03 | Added the safe full-source admin read projection for human-readable manifests, durable stage progress, bounded differences and immutable review/bulk histories while retaining raw-evidence redaction and active-version-only public serving. |
 | 0.13.0 | 2026-08-03 | Added the full active-only public hierarchy/list/detail projection with descendant filtering, allowlisted sort, bound cursors and version-pinned local media without runtime AMIGO or staging reads. |
+| 0.14.0 | 2026-08-04 | Made exact-repeat candidate equivalence semantic and backward-compatible with already published manifests; recorded accepted manifest/activation/rollback/restart/recovery/no-op evidence and explicit rejection of the unactivated false v3 while actual source facts/status/direct provenance/binary changes still diff. |

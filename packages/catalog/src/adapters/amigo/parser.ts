@@ -78,20 +78,26 @@ function parseArticle(
   };
 }
 
+function parsePriceComponentsMinor(label: string | undefined): readonly number[] {
+  if (label === undefined) return [];
+  const amounts: number[] = [];
+  for (const match of label.matchAll(
+    /(?<![0-9])([0-9]{1,3}(?:[ \u00a0\u202f][0-9]{3})+|[0-9]+)(?:[,.]([0-9]{1,2}))?(?![0-9])/gu,
+  )) {
+    const rubles = Number(match[1]?.replace(/[ \u00a0\u202f]/gu, ''));
+    const kopecks = Number((match[2] ?? '').padEnd(2, '0'));
+    const amountMinor = rubles * 100 + kopecks;
+    if (!Number.isSafeInteger(amountMinor) || amountMinor < 0) {
+      throw new CatalogSourceError('SOURCE_CONTENT_INVALID', 'AMIGO source price is invalid.');
+    }
+    amounts.push(amountMinor);
+  }
+  return amounts;
+}
+
 function parsePriceMinor(label: string | undefined): number | null {
-  if (label === undefined) {
-    return null;
-  }
-  const digits = label.replace(/[^0-9]/g, '');
-  if (digits.length === 0) {
-    return null;
-  }
-  const rubles = Number(digits);
-  if (!Number.isSafeInteger(rubles) || rubles < 0) {
-    throw new CatalogSourceError('SOURCE_CONTENT_INVALID', 'AMIGO source price is invalid.');
-  }
-  if (rubles === 0) return null;
-  return rubles * 100;
+  const amounts = parsePriceComponentsMinor(label);
+  return amounts.length === 1 && amounts[0] !== 0 ? (amounts[0] ?? null) : null;
 }
 
 function inferContentType(url: URL): string | undefined {
@@ -851,8 +857,20 @@ export function parseAmigoMaterialCollectionPage(
         properties.push({ key: 'source_color_code', name: 'Код цвета AMIGO', value: article });
       }
       const opaquePriceTableToken = sanitizeOptionalText(card.attr('data-table') ?? '', 64);
-      const priceMinor = parsePriceMinor(priceLabel);
-      if (priceLabel !== undefined && priceMinor === null && /0/u.test(priceLabel)) {
+      const priceComponentsMinor = parsePriceComponentsMinor(priceLabel);
+      const priceMinor =
+        priceComponentsMinor.length === 1 && priceComponentsMinor[0] !== 0
+          ? (priceComponentsMinor[0] ?? null)
+          : null;
+      if (priceComponentsMinor.length > 1) {
+        diagnostics.push({
+          code: 'AMBIGUOUS_SOURCE_PRICE_NORMALIZED',
+          entitySourceId: sourceId,
+          message: 'Multiple AMIGO source prices were normalized to PRICE_ON_REQUEST.',
+          severity: 'WARNING',
+          sourceUrl,
+        });
+      } else if (priceLabel !== undefined && priceMinor === null && /0/u.test(priceLabel)) {
         diagnostics.push({
           code: 'SOURCE_ZERO_PRICE_NORMALIZED',
           entitySourceId: sourceId,

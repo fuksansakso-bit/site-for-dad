@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Нормативный global rights register; Phase 1B.2 controlled full-catalog media import authorized under per-asset gate |
-| Версия | 1.4.0 |
-| Дата | 2026-08-03, Europe/Moscow |
+| Статус | Нормативный global rights register; Phase 1B.2 controlled full-catalog media intake accepted under per-asset gate |
+| Версия | 1.5.0 |
+| Дата | 2026-08-04, Europe/Moscow |
 | Главный источник правды | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) |
 | Реестр происхождения | [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md) |
 
@@ -202,15 +202,17 @@
 
 AMIGO-source asset MUST NOT иметь роль `LOCAL_PORTFOLIO`. Только реальные подтверждённые фотографии объектов бизнеса MAY публиковаться в разделе «Наши работы».
 
-## 5. Управляемый будущий импорт партнёрских материалов AMIGO
+## 5. Управляемый импорт партнёрских материалов AMIGO
 
 - **ASSET-IMPORT-001 — MUST:** официальный партнёрский статус и общий permission scope подтверждены; конкретный import batch MUST ссылаться на `PartnerRelationship`, источник, категории файлов и разрешённые цели.
 - **ASSET-IMPORT-002 — MUST:** файл копируется в собственное object storage; hotlink не используется.
 - **ASSET-IMPORT-003 — MUST:** для каждого импорта сохраняются исходный источник, правообладатель, основание использования, дата разрешения, ограничения лицензии, дата импорта, hash файла и связь с `MaterialVariant`.
 - **ASSET-IMPORT-004 — MUST:** повторный импорт изменившегося файла создаёт новую ревизию и повторную проверку публикации.
-- **ASSET-IMPORT-005 — MUST:** импорт не запускается в фазе 0A.1; сейчас разрешены только документация и reference URL.
+- **ASSET-IMPORT-005 — MUST:** импорт был запрещён в Phase 0A.1. Phase 1B.1/1B.2 выполняют только явно разрешённый manifest-bound catalog-media intake через принятый pipeline; произвольные источники, user media, training use и production storage остаются запрещены до собственных gates.
 - **ASSET-IMPORT-006 — MUST:** сохраняются original, optimized copy, thumbnail, WebP/AVIF derivative, renderer/AI-reference derivative, card derivative и fullscreen derivative; производные не меняют rights scope исходника.
 - **ASSET-IMPORT-007 — MUST:** при отзыве/истечении права публикация блокируется, caches и derivatives удаляются по delete path, а audit/provenance record сохраняется без бинарного файла в допустимых границах.
+
+Phase 1B.2 evidence: accepted run учёл 3 053 typed references (`2 940` material, `12` category, `52` system, `49` model), сохранил 2 818 distinct SHA-256 objects общим объёмом 519 671 532 bytes и связал local primary media со всеми 1 655 MaterialVariant. OWNER отдельно перевёл все 2 818 assets в `PUBLICATION_APPROVED`; item-level failures и hotlinks равны нулю, а restart acceptance повторно проверил length/SHA-256 каждого объекта. Это принятие не расширяет derivative/AI/training rights и не отменяет обязательность derivative profiles `ASSET-IMPORT-006` для соответствующих будущих поверхностей.
 
 ## 6. Остановочные условия
 
@@ -224,3 +226,4 @@ AMIGO-source asset MUST NOT иметь роль `LOCAL_PORTFOLIO`. Только 
 | 1.2.0 | 2026-08-02 | По `OWNER-DECISION-008` разделены AMIGO image authority, PostgreSQL metadata и object-storage binaries; Business Owner закреплён как authority локального portfolio composition без ослабления rights/consent gate. |
 | 1.3.0 | 2026-08-02 | `OWNER-DECISION-010` разрешил только bounded media import для frozen Phase 1B.1 manifest с private storage, validation/dedup и отдельным publication gate. |
 | 1.4.0 | 2026-08-03 | `OWNER-DECISION-012` разрешил controlled full-catalog media manifest/import через existing pipeline; per-asset rights/publication, no-hotlink, private storage, validation/dedup и local approved placeholder сохранены. |
+| 1.5.0 | 2026-08-04 | Зафиксированы accepted 3 053 typed media references, 2 818 distinct approved private objects, 1 655/1 655 primary mappings, zero failures/hotlinks и post-restart integrity без расширения derivative/AI/training scope. |

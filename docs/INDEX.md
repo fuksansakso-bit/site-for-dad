@@ -2,7 +2,7 @@
 
 ## 0. Статус
 
-Phase 1A Foundation завершена `PASSED_PHASE_1A_FOUNDATION` на commit `943d4a2efa5e05f0d05493633cf5eb549e072a22`. Отдельно разрешённая `OWNER-DECISION-010` Phase 1B.1 catalog pilot/local publication layer завершена `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT`: QG-169–194, 32-ID real allowlist, 59 local media assets, active catalog/price versions, admin/public catalog, restart/idempotency and CI evidence passed. `OWNER-DECISION-012` разрешает только Phase 1B.2 full authorized catalog expansion; Phase 1C+, dimensional calculator и production deployment запрещены.
+Phase 1A Foundation завершена `PASSED_PHASE_1A_FOUNDATION` на commit `943d4a2efa5e05f0d05493633cf5eb549e072a22`. Phase 1B.1 catalog pilot/local publication layer завершена `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT`. Отдельно разрешённая `OWNER-DECISION-012` Phase 1B.2 full authorized catalog expansion завершена 2026-08-04 со статусом `PASSED_PHASE_1B2_FULL_AMIGO_CATALOG`: QG-195–230, real 21 019-item manifest, active v2 versions, 2 818 approved local media objects, restart/no-op/public/CI evidence passed. Phase 1C+, dimensional calculator и production deployment запрещены.
 
 ## 1. Порядок обязательного чтения
 
@@ -16,7 +16,7 @@ Phase 1A Foundation завершена `PASSED_PHASE_1A_FOUNDATION` на commit 
 8. [PRICING_SOURCE_POLICY.md](00-global/PRICING_SOURCE_POLICY.md) — snapshots, версии, overrides, fallback и parity.
 9. [ASSUMPTIONS.md](00-global/ASSUMPTIONS.md) и [OPEN_QUESTIONS.md](00-global/OPEN_QUESTIONS.md) — неподтверждённые решения и пробелы.
 10. Релевантная профильная спека из разделов ниже.
-11. Для implementation readiness — [MVP scope](06-plans/MVP_SCOPE.md), [critical audit](06-plans/SPEC_READINESS_AUDIT.md), [roadmap](06-plans/IMPLEMENTATION_ROADMAP.md), [Phase 1A plan](06-plans/active/PHASE_1A_FOUNDATION_PLAN.md), [stable Phase 1B.1 plan](06-plans/active/PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN.md), его [completion report](06-plans/completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md) и [active Phase 1B.2 plan](06-plans/active/PHASE_1B2_FULL_AMIGO_CATALOG_PLAN.md).
+11. Для implementation readiness — [MVP scope](06-plans/MVP_SCOPE.md), [critical audit](06-plans/SPEC_READINESS_AUDIT.md), [roadmap](06-plans/IMPLEMENTATION_ROADMAP.md), стабильные Phase 1A/1B.1/1B.2 plans и [Phase 1B.2 completion report](06-plans/completed/PHASE_1B2_FULL_AMIGO_CATALOG_REPORT.md).
 12. [CHANGELOG.md](../CHANGELOG.md) — история содержательных изменений.
 
 При конфликте действует repository precedence: `GLOBAL_SPEC` (включая перенесённые owner/partner decisions) → accepted ADR → approved профильная спецификация → governed dynamic snapshot → assumptions/open questions. Противоречие останавливает зависимую работу.
@@ -34,7 +34,7 @@ Phase 1A Foundation завершена `PASSED_PHASE_1A_FOUNDATION` на commit 
 | [OPEN_QUESTIONS.md](00-global/OPEN_QUESTIONS.md) | Канонический реестр `TBD-*`, владельцев, влияния и критериев закрытия |
 | [SPEC_ROADMAP.md](00-global/SPEC_ROADMAP.md) | Фактический комплект 0B/0C, accepted Foundation ADR, gates и последовательность 1A–1H |
 | [TRACEABILITY_MATRIX.md](00-global/TRACEABILITY_MATRIX.md) | 18 critical chains и полная 40-story связь со спеками, AC и tests |
-| [SPEC_QUALITY_GATE.md](00-global/SPEC_QUALITY_GATE.md) | Passed gates 0B/0C/1A/1B.1, authorized Phase 1B.2 entry QG-195–202 and pending completion gate; Phase 1C+ hold |
+| [SPEC_QUALITY_GATE.md](00-global/SPEC_QUALITY_GATE.md) | Passed gates 0B/0C/1A/1B.1/1B.2, including QG-195–230; Phase 1C+ hold |
 
 ## 3. Product specifications
 
@@ -109,6 +109,7 @@ Phase 1A Foundation завершена `PASSED_PHASE_1A_FOUNDATION` на commit 
 | [PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md](06-plans/completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md) | Storage recovery, real 32-variant/59-media run, versions/publication, restart/idempotency, CI and final acceptance evidence |
 | [PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN.md](06-plans/active/PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN.md) | Authorized 32-ID pilot, scope, transport, execution stages, commits, stop and acceptance conditions |
 | [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN.md](06-plans/active/PHASE_1B2_FULL_AMIGO_CATALOG_PLAN.md) | Authorized full-catalog expansion scope, ownership/runtime boundaries, stages, exact commits, stop and acceptance conditions |
+| [PHASE_1B2_FULL_AMIGO_CATALOG_REPORT.md](06-plans/completed/PHASE_1B2_FULL_AMIGO_CATALOG_REPORT.md) | Real manifest/version/media/governance/restart/no-op/public/CI evidence and final Phase 1B.2 acceptance |
 
 ## 9. Architecture decisions
 
@@ -131,7 +132,7 @@ Phase 1A Foundation завершена `PASSED_PHASE_1A_FOUNDATION` на commit 
 |---|---|
 | [AMIGO public parity snapshot](research/AMIGO_PUBLIC_PARITY_SNAPSHOT_2026-08-02.md) | Read-only наблюдения 14 public URLs и calculator customizer на 2026-08-02; taxonomy/flow/filters/source categories/gaps |
 | [AMIGO Phase 1B.1 transport discovery](research/AMIGO_PILOT_TRANSPORT_DISCOVERY_2026-08-02.md) | Priority discovery, selected public-page transport, stable IDs, 32-item manifest boundary, media/security controls and residual full-export gate |
-| [AMIGO Phase 1B.2 full transport discovery](research/AMIGO_FULL_CATALOG_TRANSPORT_DISCOVERY_2026-08-03.md) | Real 114-page dynamic discovery: 28 categories, 56 systems, 9 models, 1655 variants, semantic source version, 0 failures and explicit warnings; import/activation still gated |
+| [AMIGO Phase 1B.2 full transport discovery](research/AMIGO_FULL_CATALOG_TRANSPORT_DISCOVERY_2026-08-03.md) | Real 114-page dynamic discovery: 28 categories, 56 systems, 9 models, 1655 variants, semantic source version, 0 failures and explicit warnings; accepted import/activation is linked in the completion report |
 
 Research snapshot не является вечным catalog/price fact. Нормативное поведение задают global/profile specs, а динамические значения требуют authorized source snapshot и verification.
 
@@ -157,7 +158,7 @@ Research snapshot не является вечным catalog/price fact. Нор�
 - Кто может выполнить действие — `ROLES_PERMISSIONS` и relevant domain spec.
 - Каких данных не хватает — `OPEN_QUESTIONS` по уникальному `TBD-*`.
 - Как требование проверяется — `TRACEABILITY_MATRIX`, AC и `TEST_STRATEGY`.
-- Можно ли начинать следующий код — да, но только Phase 1B.2: QG-195–202 разрешают full authorized catalog expansion по active plan. Phase 1C+, dimensional pricing/configurator/preview/cart/AI и production по-прежнему требуют нового письменного разрешения.
+- Можно ли начинать следующий код — нет: Phase 1B.2 завершена, а Phase 1C+, dimensional pricing/configurator/preview/cart/AI и production требуют нового письменного разрешения.
 
 ## 13. Правило навигации
 

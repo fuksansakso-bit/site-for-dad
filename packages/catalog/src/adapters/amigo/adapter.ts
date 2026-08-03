@@ -179,6 +179,10 @@ function familyFromCategory(input: {
   readonly pageReference: string;
 }): SourceFamilyReference {
   const slug = slugFromPageReference(input.pageReference);
+  const existingPilotFamily = amigoPilotCategories.find(
+    (category) => category.family.slug === slug,
+  )?.family;
+  if (existingPilotFamily !== undefined) return existingPilotFamily;
   return {
     code: slug.replace(/-/g, '_').toUpperCase().slice(0, 96),
     name: input.name,

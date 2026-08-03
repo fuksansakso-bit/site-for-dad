@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
 
 import type { JobHelpers } from 'graphile-worker';
 import { describe, expect, it, vi } from 'vitest';
@@ -26,6 +27,18 @@ import { createCatalogTaskList } from '../../src/catalog/task.js';
 const catalogSourceId = '00000000-0000-4000-8000-000000000103';
 
 describe('catalog synchronization job contracts', () => {
+  it('binds the runtime AMIGO adapter to the reviewed full-catalog mapping', async () => {
+    const servicesSource = await readFile(
+      new URL('../../src/catalog/services.ts', import.meta.url),
+      'utf8',
+    );
+
+    expect(servicesSource).toContain('source.parser_version !== amigoAdapterVersions.parser');
+    expect(servicesSource).toContain('source.mapping_version !== amigoAdapterVersions.mapping');
+    expect(servicesSource).toContain("new AmigoCatalogSourceAdapter({ catalogScope: 'full' })");
+    expect(servicesSource).not.toContain('return new AmigoCatalogSourceAdapter();');
+  });
+
   it('registers exactly the owner-authorized Phase 1B.2 catalog jobs', () => {
     const services = {
       activateVersion: vi.fn(),

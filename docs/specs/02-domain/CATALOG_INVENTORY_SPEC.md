@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1B.2 full source review/activation, transactional overlays and full admin/public inventory projections implemented |
-| Версия | 0.10.0 |
-| Дата | 2026-08-03 |
+| Статус | Phase 1B.2 full source review/activation, transactional overlays and full admin/public inventory projections accepted |
+| Версия | 0.13.0 |
+| Дата | 2026-08-04 |
 | Sources | [EXTERNAL_SOURCES.md](../../00-global/EXTERNAL_SOURCES.md) |
 | Rights | [ASSET_RIGHTS_REGISTER.md](../../00-global/ASSET_RIGHTS_REGISTER.md) |
 
@@ -122,6 +122,8 @@ Dimension constraints use millimetres and square metres conceptually but exact n
 - **CAT-INV-032 — MUST:** bulk category-subtree, typed-filter and explicit-selection commands MAY change only independently owned material-variant visibility, manual-review, availability and publication overlays before candidate composition. They revalidate exact source/run/candidate and current state, apply atomically with immutable before/after evidence, and never mutate source identity/data, base price, local description/order/notes or local price override.
 - **CAT-INV-033 — MUST:** the authorized administrative inventory projection represents the complete dynamic category hierarchy and all normalized source variants for its selected source independently of public activation and the historical Phase 1B.1 allowlist. It exposes source facts and Business Owner overlays as separate fields, uses bounded server-side filters/pages and never turns a staged, hidden, unreviewed or source-removed entity into public content.
 - **CAT-INV-034 — MUST:** the authorized public inventory projection exposes the complete hierarchy, linked systems and eligible material variants only from one compatible `ACTIVE/PUBLIC` immutable `CatalogVersion`/`PriceVersion` composition. Search, descendant-category filtering, system/color/availability/property filters, stable sort/cursor navigation, material detail and media delivery MUST resolve against that same composition; staged, hidden, unreviewed, unpublished, source-removed or runtime AMIGO data never enters the response.
+- **CAT-INV-035 — MUST:** AMIGO `sourceEntityId` remains the stable variant identity. `article/SKU` is a preserved, searchable source fact and MUST NOT be treated as unique: distinct source variants with the same family/material/article remain separate without loss or automatic merge.
+- **CAT-INV-036 — MUST:** catalog media occupies a semantic target/role/order placement independently of parser-generated source-media identity. A current authorized capture MAY rebind that placement to its current source reference while historical capture/reference evidence remains immutable; identical binaries remain deduplicated by checksum and MUST NOT be published as duplicate placements solely because a parser/mapping identity changed.
 
 ## 9. Core flows and state transitions
 
@@ -175,17 +177,19 @@ Primary AC: `AC-CATALOG-001`, `AC-CATALOG-DYNAMIC-001`, `AC-AMIGO-PARITY-001`, `
 
 Tests: unique IDs/aliases; parent cycle; new price category `X`; unknown property; rename/move/split/merge; publication readiness matrix; missing/wrong asset; compatibility conflict; dimension boundary tables; stale availability; source removal; concurrent edit; historical quote after retirement; source outage and rollback; active hierarchy/descendant filters; filter-bound cursors; material detail/media pinned to the exact active catalog and price pair.
 
-The active public baseline remains the reviewed Phase 1B.1 32-variant version until a complete Phase 1B.2 candidate independently passes manifest/coverage, local overlay review and explicit activation. Phase 1B.2 staging MAY contain the discovered 28-category/56-system/9-model/1655-variant source inventory, full typed media mappings and material/model price revisions without exposing any of it. The public projection excludes any entry unless visibility is `VISIBLE`, manual review is `APPROVED`, publication is `PUBLISHED`, availability is a known allowed state, price is explicit or safely `PRICE_ON_REQUEST`, and primary media has permitted rights plus `PUBLICATION_APPROVED`. Local override takes precedence only inside the pinned composition; source price history remains unchanged. Missing active version is an empty unpublished catalog, while database or object-integrity failure is a degraded state and never falls back to AMIGO/staging.
+- **CAT-INV-037 — MUST:** public category/system/color/material route and filter slugs are deterministic bounded lowercase ASCII projections of the immutable composed slug. Retained technical separators such as `category:path:` are normalized without changing source identity or provenance; an empty, overlong or colliding public slug fails closed instead of producing an invalid or ambiguous URL.
+
+The active public baseline is the reviewed Phase 1B.2 CatalogVersion v2 `8975b18c-d7de-49cc-a6e6-d7566b69460a` with compatible PriceVersion v2 `9fdc0a74-9fab-4d63-b4b6-015f534e117d`. Its immutable composition contains 28 categories, 56 systems and 1 655 MaterialVariant; v1 remains a rollback target. The public projection excludes any entry unless visibility is `VISIBLE`, manual review is `APPROVED`, publication is `PUBLISHED`, availability is a known allowed state, price is explicit or safely `PRICE_ON_REQUEST`, and primary media has permitted rights plus `PUBLICATION_APPROVED`. Local override takes precedence only inside the pinned composition; source price history remains unchanged. Missing active version is an empty unpublished catalog, while database or object-integrity failure is a degraded state and never falls back to AMIGO/staging.
 
 ## 14. Dependencies, risks and open questions
 
-Dependencies: parity, configurator, pricing, media, sync, admin, data model. Open: `TBD-ASSORT-002`–`007`, applicable `TBD-SYSTEM-*`, `TBD-SIZE-001`, `TBD-INVENTORY-001/004-007`, `TBD-SOURCE-AMIGO-002`, `TBD-ASSET-AMIGO-003`, applicable `TBD-PRICE-*`. `TBD-INVENTORY-002` is resolved by `OWNER-DECISION-004/005`.
+Dependencies: parity, configurator, pricing, media, sync, admin, data model. Open: `TBD-ASSORT-003`–`005`, `TBD-ASSORT-007`, applicable `TBD-SYSTEM-*`, `TBD-SIZE-001`, `TBD-INVENTORY-001/004-007`, official-export aspect `TBD-SOURCE-AMIGO-002`, `TBD-ASSET-AMIGO-003` and applicable dimensional `TBD-PRICE-*`. `TBD-ASSORT-002`, `TBD-ASSORT-006`, `TBD-PRICE-001` and `TBD-INVENTORY-002` are resolved by accepted evidence/owner decisions.
 
 Risks: text-key merges, auto-publication, unknown-as-positive, mismapped images, stale availability, fixed price-category enum and history loss. Mitigations are stable identities, independent states, explicit mappings, approvals and immutable revisions.
 
 ## 15. Связанные требования и история
 
-Links: `FR-CATALOG-*`, `FR-MATERIAL-*`, `FR-VARIANT-*`, `AMIGO-SYNC-*`, `ASSET-*`, `PRICING-*`, `CAT-INV-001`–`034`.
+Links: `FR-CATALOG-*`, `FR-MATERIAL-*`, `FR-VARIANT-*`, `AMIGO-SYNC-*`, `ASSET-*`, `PRICING-*`, `CAT-INV-001`–`037`.
 
 | Версия | Дата | Изменение |
 |---|---|---|
@@ -199,3 +203,6 @@ Links: `FR-CATALOG-*`, `FR-MATERIAL-*`, `FR-VARIANT-*`, `AMIGO-SYNC-*`, `ASSET-*
 | 0.8.0 | 2026-08-03 | Added exact candidate-bound category-subtree/filter/selected bulk local-overlay controls with atomic apply, stale-preview rejection and immutable per-target evidence while preserving source and other owner fields. |
 | 0.9.0 | 2026-08-03 | Required and recorded the complete dynamic admin inventory projection with hierarchy facets, bounded server filtering/pagination and strict separation from public activation and the historical pilot allowlist. |
 | 0.10.0 | 2026-08-03 | Required the complete active-only public hierarchy, descendant-aware filtering, stable sort/cursors and material detail/media to resolve from one compatible catalog/price composition without AMIGO or staging reads. |
+| 0.11.0 | 2026-08-03 | Recorded real full-catalog identity evidence: article is non-unique descriptive source data, while distinct AMIGO source IDs remain lossless variant identities. |
+| 0.12.0 | 2026-08-03 | Required semantic media placements to rebind to current parser-generated source references without duplicate public slots or loss of historical provenance. |
+| 0.13.0 | 2026-08-04 | Required deterministic bounded public slugs for retained full-catalog technical category identities without mutating source identity/provenance. |

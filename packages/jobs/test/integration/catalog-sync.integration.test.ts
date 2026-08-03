@@ -1,11 +1,18 @@
 import { randomUUID } from 'node:crypto';
 
-import { FixtureCatalogSourceAdapter } from '@project-name/catalog';
+import {
+  FixtureCatalogSourceAdapter,
+  hashCanonicalSource,
+  type FixtureCatalogDataset,
+} from '@project-name/catalog';
 import {
   parseDatabaseEnvironment,
   parseWorkerEnvironment,
   type WorkerEnvironment,
 } from '@project-name/config/server';
+import { createCatalogManagementAdapter } from '@project-name/db';
+import type { JobHelpers } from 'graphile-worker';
+import type { PoolClient, QueryResult, QueryResultRow } from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import {
@@ -16,6 +23,11 @@ import {
 } from '../../src/adapter.js';
 import type { CatalogTaskLifecycleEvent } from '../../src/catalog/task.js';
 import { createCatalogJobServices } from '../../src/catalog/services.js';
+import {
+  activateCatalogVersions,
+  approveCatalogVersions,
+  rollbackCatalogVersions,
+} from '../../src/catalog/versioning.js';
 import {
   createJobsCatalogFixture,
   createMemoryCatalogStorage,
@@ -30,15 +42,81 @@ const workerEnvironment: WorkerEnvironment = {
 };
 const pool = createFoundationJobPool(databaseEnvironment, 4);
 const objectStorage = createMemoryCatalogStorage();
+const ownerActorId = randomUUID();
+const adminActorId = randomUUID();
 const services = createCatalogJobServices(
   () => new FixtureCatalogSourceAdapter(createJobsCatalogFixture()),
   () => ({ maximumBytes: 1_048_576, objectStorage }),
 );
+const management = createCatalogManagementAdapter(databaseEnvironment);
+const versionHelpers = {
+  query: <T extends QueryResultRow>(text: string, values?: unknown[]): Promise<QueryResult<T>> =>
+    pool.query<T>(text, values),
+  withPgClient: async <T>(operation: (client: PoolClient) => Promise<T>) => {
+    const client = await pool.connect();
+    try {
+      return await operation(client);
+    } finally {
+      client.release();
+    }
+  },
+} as unknown as JobHelpers;
+
+interface ReleaseEvidence {
+  readonly catalogDifferenceChecksum: string;
+  readonly catalogVersionId: string;
+  readonly priceDifferenceChecksum: string;
+  readonly priceVersionId: string;
+}
+
+function changedJobsCatalogFixture(): FixtureCatalogDataset {
+  const fixture = createJobsCatalogFixture();
+  const contentHash = hashCanonicalSource({ fixture: 'jobs-catalog-pipeline-v2' });
+  const material = fixture.materials[0];
+  if (material === undefined) throw new Error('Fixture material is unavailable.');
+  const capture = {
+    ...material.capture,
+    contentHash,
+    sourceVersion: 'jobs-fixture-v2',
+  };
+  const updateCapture = <T extends { readonly capture: typeof material.capture }>(
+    record: T,
+  ): T => ({
+    ...record,
+    capture: { ...record.capture, contentHash, sourceVersion: 'jobs-fixture-v2' },
+  });
+  return {
+    ...fixture,
+    categories: fixture.categories.map(updateCapture),
+    materials: [
+      {
+        capture,
+        data: {
+          ...material.data,
+          identity: {
+            ...material.data.identity,
+            sourceHash: hashCanonicalSource({
+              article: material.data.article,
+              revision: 2,
+              sourceId: material.data.identity.sourceId,
+            }),
+          },
+          variantName: `${material.data.variantName} v2`,
+        },
+      },
+    ],
+    mediaManifests: fixture.mediaManifests.map(updateCapture),
+    prices: fixture.prices.map(updateCapture),
+    sourceVersion: { ...fixture.sourceVersion, version: 'jobs-fixture-v2' },
+    systems: fixture.systems.map(updateCapture),
+  };
+}
 
 async function runPipeline(
   idempotencySuffix: string,
   retryOfSyncRunId?: string,
   expectedStatus: 'AWAITING_APPROVAL' | 'COMPLETED' = 'AWAITING_APPROVAL',
+  pipelineServices = services,
 ): Promise<string> {
   const uniqueSuffix = `${runTag}-${idempotencySuffix}`;
   const idempotencyKey = `catalog:test:${catalogSourceId}:${uniqueSuffix}`;
@@ -61,7 +139,7 @@ async function runPipeline(
       undefined,
       undefined,
       (event) => lifecycleEvents.push(event),
-      services,
+      pipelineServices,
     );
     result = await pool.query<{
       id: string;
@@ -83,11 +161,31 @@ async function runPipeline(
   return syncRunId;
 }
 
-beforeAll(() => verifyFoundationQueueSchema(pool));
-afterAll(() => pool.end());
+beforeAll(async () => {
+  await verifyFoundationQueueSchema(pool);
+  await pool.query(
+    `
+      INSERT INTO actor_identity (id, provider, subject, updated_at)
+      VALUES
+        ($1::uuid, 'synthetic-user', $3, NOW()),
+        ($2::uuid, 'synthetic-user', $4, NOW())
+    `,
+    [ownerActorId, adminActorId, `catalog-owner-${runTag}`, `catalog-admin-${runTag}`],
+  );
+  await pool.query(
+    `INSERT INTO role_grant (actor_id, role)
+     VALUES ($1::uuid, 'OWNER'), ($2::uuid, 'ADMIN')`,
+    [ownerActorId, adminActorId],
+  );
+});
+afterAll(async () => {
+  await management.close();
+  await pool.end();
+});
 
 describe.sequential('catalog synchronization pipeline', () => {
   let firstSyncRunId: string | undefined;
+  let firstRelease: ReleaseEvidence | undefined;
 
   it('captures safe snapshots and normalizes the fixture through all pre-approval stages', async () => {
     const syncRunId = await runPipeline('pipeline-001');
@@ -174,6 +272,140 @@ describe.sequential('catalog synchronization pipeline', () => {
     });
   });
 
+  it('keeps owner overlays separate, composes them immutably and activates with distinct governance actors', async () => {
+    if (firstSyncRunId === undefined) throw new Error('First catalog sync run is unavailable.');
+    const release = await pool.query<{
+      catalog_difference_checksum: string;
+      catalog_version_id: string;
+      price_difference_checksum: string;
+      price_version_id: string;
+    }>(
+      `
+        SELECT catalog.id::text AS catalog_version_id,
+               catalog.difference_checksum AS catalog_difference_checksum,
+               price.id::text AS price_version_id,
+               price.difference_checksum AS price_difference_checksum
+        FROM catalog_version catalog
+        JOIN price_version price ON price.sync_run_id = catalog.sync_run_id
+        WHERE catalog.sync_run_id = $1::uuid
+      `,
+      [firstSyncRunId],
+    );
+    const row = release.rows[0];
+    if (row === undefined) throw new Error('Candidate versions are unavailable.');
+    firstRelease = {
+      catalogDifferenceChecksum: row.catalog_difference_checksum,
+      catalogVersionId: row.catalog_version_id,
+      priceDifferenceChecksum: row.price_difference_checksum,
+      priceVersionId: row.price_version_id,
+    };
+    const command = {
+      actorId: ownerActorId,
+      catalogSourceId,
+      catalogVersionId: row.catalog_version_id,
+      correlationId: `catalog-publication-${runTag}`,
+      expectedCatalogDifferenceChecksum: row.catalog_difference_checksum,
+      expectedVariantCount: 1,
+      syncRunId: firstSyncRunId,
+    } as const;
+    const publication = await management.publishPilot(command);
+    expect(publication).toEqual({
+      categoryCount: 1,
+      mediaApprovedCount: 1,
+      systemCount: 1,
+      variantCount: 1,
+    });
+    await expect(management.publishPilot(command)).resolves.toEqual(publication);
+
+    const business = await pool.query<{ id: string }>(
+      `SELECT id::text FROM business_catalog_entry WHERE entity_type = 'MATERIAL_VARIANT'
+       AND material_variant_id = (
+         SELECT variant.id FROM material_variant variant
+         JOIN catalog_sync_item item ON item.source_entity_id = variant.source_entity_id
+         WHERE item.sync_run_id = $1::uuid AND item.source_type = 'MATERIAL_VARIANT'
+         LIMIT 1
+       )`,
+      [firstSyncRunId],
+    );
+    const businessId = business.rows[0]?.id;
+    if (businessId === undefined) throw new Error('Business overlay is unavailable.');
+    const overrideId = await management.setLocalPriceOverride({
+      actorId: ownerActorId,
+      amountMinor: 199_900,
+      businessCatalogEntryId: businessId,
+      correlationId: `catalog-override-${runTag}`,
+      currency: 'RUB',
+      effectiveFrom: '2026-08-03T00:00:00.000Z',
+      reason: 'Synthetic integration override.',
+    });
+    const sourcePrice = await pool.query<{ amount_minor: number }>(
+      `SELECT amount_minor FROM source_price_record WHERE source_id = 'jobs-material-roller-1001'`,
+    );
+    expect(sourcePrice.rows[0]?.amount_minor).toBe(150_000);
+    await management.removeLocalPriceOverride({
+      actorId: ownerActorId,
+      businessCatalogEntryId: businessId,
+      correlationId: `catalog-override-remove-${runTag}`,
+      reason: 'Synthetic override recovery.',
+    });
+    const removedOverride = await pool.query<{ status: string }>(
+      'SELECT status::text FROM local_price_override WHERE id = $1::uuid',
+      [overrideId],
+    );
+    expect(removedOverride.rows[0]?.status).toBe('REMOVED');
+
+    const composition = await management.composeCatalogVersion(command);
+    expect(composition).toMatchObject({ entryCount: 3, reused: false, variantCount: 1 });
+    await expect(management.composeCatalogVersion(command)).resolves.toMatchObject({
+      differenceChecksum: composition.differenceChecksum,
+      reused: true,
+    });
+    firstRelease = {
+      ...firstRelease,
+      catalogDifferenceChecksum: composition.differenceChecksum,
+    };
+    await approveCatalogVersions(
+      {
+        approvedByActorId: ownerActorId,
+        approvalReason: 'Owner reviewed the exact fixture composition.',
+        catalogSourceId,
+        catalogVersionId: row.catalog_version_id,
+        correlationId: `catalog-approval-${runTag}`,
+        expectedCatalogDifferenceChecksum: composition.differenceChecksum,
+        expectedPriceDifferenceChecksum: row.price_difference_checksum,
+        idempotencyKey: `catalog:approval:${runTag}:fixture-release`,
+        priceVersionId: row.price_version_id,
+        schemaVersion: 1,
+        syncRunId: firstSyncRunId,
+      },
+      versionHelpers,
+    );
+    await activateCatalogVersions(
+      {
+        activatedByActorId: adminActorId,
+        activationReason: 'Administrator activated the approved fixture release.',
+        catalogSourceId,
+        catalogVersionId: row.catalog_version_id,
+        correlationId: `catalog-activation-${runTag}`,
+        expectedCatalogDifferenceChecksum: composition.differenceChecksum,
+        expectedPriceDifferenceChecksum: row.price_difference_checksum,
+        idempotencyKey: `catalog:activation:${runTag}:fixture-release`,
+        priceVersionId: row.price_version_id,
+        schemaVersion: 1,
+        syncRunId: firstSyncRunId,
+      },
+      versionHelpers,
+    );
+    const active = await pool.query<{ catalog_active: string; price_active: string }>(`
+      SELECT
+        (SELECT count(*)::text FROM catalog_version WHERE activation_key = 'PUBLIC')
+          AS catalog_active,
+        (SELECT count(*)::text FROM price_version WHERE activation_key = 'PUBLIC')
+          AS price_active
+    `);
+    expect(active.rows[0]).toEqual({ catalog_active: '1', price_active: '1' });
+  });
+
   it('does not duplicate normalized identities or immutable source prices on a repeat import', async () => {
     if (firstSyncRunId === undefined) throw new Error('First catalog sync run is unavailable.');
     const repeatSyncRunId = await runPipeline('pipeline-002', firstSyncRunId, 'COMPLETED');
@@ -238,6 +470,95 @@ describe.sequential('catalog synchronization pipeline', () => {
       price_count: '1',
       source_identity_count: '1',
       version_count: '2',
+    });
+  });
+
+  it('activates a changed catalog candidate and atomically rolls back to the verified predecessor', async () => {
+    if (firstSyncRunId === undefined || firstRelease === undefined) {
+      throw new Error('First active release is unavailable.');
+    }
+    const changedServices = createCatalogJobServices(
+      () => new FixtureCatalogSourceAdapter(changedJobsCatalogFixture()),
+      () => ({ maximumBytes: 1_048_576, objectStorage }),
+    );
+    const changedRunId = await runPipeline(
+      'pipeline-003-changed',
+      firstSyncRunId,
+      'AWAITING_APPROVAL',
+      changedServices,
+    );
+    const candidate = await pool.query<{
+      difference_checksum: string;
+      id: string;
+    }>('SELECT id::text, difference_checksum FROM catalog_version WHERE sync_run_id = $1::uuid', [
+      changedRunId,
+    ]);
+    const changed = candidate.rows[0];
+    if (changed === undefined) throw new Error('Changed candidate is unavailable.');
+    const command = {
+      actorId: ownerActorId,
+      catalogSourceId,
+      catalogVersionId: changed.id,
+      correlationId: `catalog-changed-publication-${runTag}`,
+      expectedCatalogDifferenceChecksum: changed.difference_checksum,
+      expectedVariantCount: 1,
+      syncRunId: changedRunId,
+    } as const;
+    await management.publishPilot(command);
+    const composition = await management.composeCatalogVersion(command);
+    await approveCatalogVersions(
+      {
+        approvedByActorId: ownerActorId,
+        approvalReason: 'Owner reviewed the changed fixture diff.',
+        catalogSourceId,
+        catalogVersionId: changed.id,
+        correlationId: `catalog-changed-approval-${runTag}`,
+        expectedCatalogDifferenceChecksum: composition.differenceChecksum,
+        idempotencyKey: `catalog:approval:${runTag}:changed-release`,
+        schemaVersion: 1,
+        syncRunId: changedRunId,
+      },
+      versionHelpers,
+    );
+    await activateCatalogVersions(
+      {
+        activatedByActorId: adminActorId,
+        activationReason: 'Administrator activated the changed fixture release.',
+        catalogSourceId,
+        catalogVersionId: changed.id,
+        correlationId: `catalog-changed-activation-${runTag}`,
+        expectedCatalogDifferenceChecksum: composition.differenceChecksum,
+        idempotencyKey: `catalog:activation:${runTag}:changed-release`,
+        schemaVersion: 1,
+        syncRunId: changedRunId,
+      },
+      versionHelpers,
+    );
+    await rollbackCatalogVersions(
+      {
+        approvedByActorId: ownerActorId,
+        catalogRollbackTargetId: firstRelease.catalogVersionId,
+        catalogSourceId,
+        correlationId: `catalog-rollback-${runTag}`,
+        expectedActiveCatalogVersionId: changed.id,
+        idempotencyKey: `catalog:rollback:${runTag}:changed-release`,
+        rollbackReason: 'Synthetic post-activation recovery verification.',
+        rolledBackByActorId: adminActorId,
+        schemaVersion: 1,
+      },
+      versionHelpers,
+    );
+    const rollback = await pool.query<{ active_id: string; changed_status: string }>(
+      `
+        SELECT
+          (SELECT id::text FROM catalog_version WHERE activation_key = 'PUBLIC') AS active_id,
+          (SELECT status::text FROM catalog_version WHERE id = $1::uuid) AS changed_status
+      `,
+      [changed.id],
+    );
+    expect(rollback.rows[0]).toEqual({
+      active_id: firstRelease.catalogVersionId,
+      changed_status: 'SUPERSEDED',
     });
   });
 });

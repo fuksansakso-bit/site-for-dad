@@ -298,6 +298,9 @@ importers:
       '@prisma/client':
         specifier: 'catalog:'
         version: 7.9.1(prisma@7.9.1(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(magicast@0.5.4)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(typescript@6.0.3))(typescript@6.0.3)
+      '@project-name/catalog':
+        specifier: workspace:*
+        version: link:../catalog
       '@project-name/config':
         specifier: workspace:*
         version: link:../config
@@ -369,6 +372,9 @@ importers:
       '@project-name/contracts':
         specifier: workspace:*
         version: link:../contracts
+      '@project-name/db':
+        specifier: workspace:*
+        version: link:../db
       '@project-name/observability':
         specifier: workspace:*
         version: link:../observability

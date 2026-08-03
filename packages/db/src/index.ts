@@ -11,3 +11,7 @@ export {
   ServiceHealthStatus,
   SystemRole,
 } from './generated/prisma/enums.js';
+export {
+  createCatalogManagementAdapter,
+  type CatalogManagementAdapter,
+} from './catalog-management.js';

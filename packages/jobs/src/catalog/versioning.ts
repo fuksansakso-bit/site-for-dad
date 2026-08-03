@@ -178,8 +178,29 @@ function manifestEntities(value: unknown): readonly VersionEntity[] {
 }
 
 function semanticEntityValue(entity: VersionEntity): unknown {
+  const attachment = asRecord(entity.attachment);
+  const semanticAttachment =
+    entity.sourceType === 'MEDIA'
+      ? {
+          byteSize: attachment?.['byteSize'] ?? null,
+          fileHash: attachment?.['fileHash'] ?? null,
+          height: attachment?.['height'] ?? null,
+          imported: attachment?.['imported'] ?? false,
+          mimeType: attachment?.['mimeType'] ?? null,
+          width: attachment?.['width'] ?? null,
+        }
+      : entity.sourceType === 'PRICE'
+        ? {
+            amountMinor: attachment?.['amountMinor'] ?? null,
+            captured: attachment?.['captured'] ?? false,
+            currency: attachment?.['currency'] ?? null,
+            kind: attachment?.['kind'] ?? null,
+            sourcePriceCategory: attachment?.['sourcePriceCategory'] ?? null,
+            status: attachment?.['status'] ?? null,
+          }
+        : entity.attachment;
   return {
-    attachment: entity.attachment,
+    attachment: semanticAttachment,
     sourceCategory: entity.sourceCategory,
     sourceHash: entity.sourceHash,
     sourceId: entity.sourceId,

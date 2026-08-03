@@ -152,12 +152,13 @@ const allowedRouteFiles = new Set([
   'apps/web/app/api/v1/health/live/route.ts',
   'apps/web/app/api/v1/health/ready/route.ts',
 ]);
+const allowedPageFiles = new Set(['apps/web/app/admin/catalog/page.tsx', 'apps/web/app/page.tsx']);
 for (const file of await collectFiles(join(repositoryRoot, 'apps', 'web', 'app'))) {
   const repositoryPath = relative(repositoryRoot, file).replaceAll('\\', '/');
   if (file.endsWith('route.ts') && !allowedRouteFiles.has(repositoryPath)) {
     errors.push(`${repositoryPath}: route is outside the current Phase 1B.1 allowlist`);
   }
-  if (file.endsWith('page.tsx') && repositoryPath !== 'apps/web/app/page.tsx') {
+  if (file.endsWith('page.tsx') && !allowedPageFiles.has(repositoryPath)) {
     errors.push(`${repositoryPath}: page is outside the current Phase 1B.1 allowlist`);
   }
 }

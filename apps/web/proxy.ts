@@ -5,7 +5,7 @@ export function createContentSecurityPolicy(nonce: string, development: boolean)
   return `
     default-src 'self';
     script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${development ? " 'unsafe-eval'" : ''};
-    style-src 'self' 'nonce-${nonce}'${development ? " 'unsafe-inline'" : ''};
+    style-src 'self'${development ? " 'unsafe-inline'" : ` 'nonce-${nonce}'`};
     connect-src 'self';
     img-src 'self' blob: data:;
     font-src 'self';

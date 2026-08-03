@@ -55,8 +55,8 @@ Allowlist содержит roller blackout (`49129`, `50772`), Zebra blackout (`
 | 6 | Media import через storage abstraction | COMPLETED | Runs `f9407db3-9e82-4174-9e21-87528bdd7092`/`642f2bc2-387b-44fe-9d52-e05cd78e374c`: 32/32 variants, 59/59 byte/SHA-verified private objects, zero item failures, retry lineage and restart persistence; failed run unchanged |
 | 7 | Catalog/Price versioning, exact diff и activation | COMPLETED | Exact candidates/checksums, distinct OWNER approval, ADMIN activation, idempotency and atomic rollback passed disposable PostgreSQL integration |
 | 8 | Business overlay и mutation APIs | COMPLETED | Owner visibility/review, inquiry-only availability, publication and local override set/remove remain separate from source facts and are pinned into immutable composition |
-| 9 | Минимальный `/admin/catalog` по design-system rules | **IN_PROGRESS** | RBAC, bulk publication, status/history/diff и responsive flow проходят |
-| 10 | Минимальный PostgreSQL-only `/catalog` | PENDING | Search/filter/hidden/out-of-stock/outage scenarios проходят |
+| 9 | Минимальный `/admin/catalog` по design-system rules | COMPLETED | OWNER/ADMIN HttpOnly sessions, exact bulk/approval/activation commands, source/local/active separation, 32-row allowlist, history/diff and responsive browser gate passed |
+| 10 | Минимальный PostgreSQL-only `/catalog` | **IN_PROGRESS** | Search/filter/hidden/out-of-stock/outage scenarios проходят |
 | 11 | Реальный pilot run и полный test/CI-equivalent gate | PENDING | 32 real variants/media/prices imported; build/tests/CI clean |
 | 12 | Документация, completion report и остановка | PENDING | План completed, report создан, tree clean, Phase 1C не начата |
 

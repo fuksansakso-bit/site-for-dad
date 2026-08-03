@@ -15,3 +15,4 @@ export {
   createCatalogManagementAdapter,
   type CatalogManagementAdapter,
 } from './catalog-management.js';
+export { createCatalogReadAdapter } from './catalog-read.js';

@@ -13,6 +13,9 @@
   "scripts": {
     "architecture:check": "node tooling/scripts/check-boundaries.mjs",
     "build": "turbo run build",
+    "catalog:operator:admin": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tooling/scripts/catalog-pilot-operator.ps1 -CopyRole ADMIN",
+    "catalog:operator:bootstrap": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tooling/scripts/catalog-pilot-operator.ps1",
+    "catalog:operator:owner": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tooling/scripts/catalog-pilot-operator.ps1 -CopyRole OWNER",
     "check": "pnpm format:check && pnpm architecture:check && pnpm lint && pnpm typecheck && pnpm test",
     "ci:verify": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tooling/scripts/verify-foundation.ps1",
     "docs:check": "node tooling/scripts/validate-documentation.mjs",

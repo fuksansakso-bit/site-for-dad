@@ -152,6 +152,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@project-name/catalog':
+        specifier: workspace:*
+        version: link:../../packages/catalog
       '@project-name/config':
         specifier: workspace:*
         version: link:../../packages/config
@@ -161,6 +164,12 @@ importers:
       '@project-name/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@project-name/identity':
+        specifier: workspace:*
+        version: link:../../packages/identity
+      '@project-name/jobs':
+        specifier: workspace:*
+        version: link:../../packages/jobs
       '@project-name/observability':
         specifier: workspace:*
         version: link:../../packages/observability
@@ -176,6 +185,9 @@ importers:
       react-dom:
         specifier: 'catalog:'
         version: 19.2.8(react@19.2.8)
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
     devDependencies:
       '@project-name/tooling':
         specifier: workspace:*

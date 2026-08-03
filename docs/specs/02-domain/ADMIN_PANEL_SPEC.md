@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Статус | Minimal catalog-only `/admin/catalog` slice authorized in Phase 1B.1; all other admin areas remain gated |
-| Версия | 0.4.0 |
+| Версия | 0.5.0 |
 | Дата | 2026-08-02 |
 | Permissions | [ROLES_PERMISSIONS.md](../01-product/ROLES_PERMISSIONS.md) |
 | Source flows | Catalog, pricing, media, sync and order specs |
@@ -160,11 +160,15 @@ Primary: `AC-ADMIN-001`, `AC-CATALOG-DYNAMIC-001`, `AC-PRICE-ACTIVATE-001`, `AC-
 
 Tests: full role/capability matrix; object/environment scope; stale edit; approval separation; exact target/bulk; dynamic category; price validation/activation/rollback; media revoke graph; sync conflicts; order transitions; role revoke/session; audit/outbox failure; export redaction; no private media; keyboard/screen reader/zoom; large lists/diffs and dependency outages.
 
-## 13. Dependencies, risks and open questions
+## 13. Phase 1B.1 implementation record
+
+The implemented local-only `/admin/catalog` uses a bounded PostgreSQL read adapter pinned to the 32-ID AMIGO pilot allowlist. It displays immutable source identity separately from local visibility, availability, publication and price override state; exact candidate/diff checksums, active pointers and historical failed runs remain visible. OWNER and ADMIN authenticate through separate short-lived synthetic sessions in an HttpOnly SameSite cookie. Bulk preparation, OWNER approval and ADMIN activation require exact target IDs/checksums, typed impact confirmation, correlation/idempotency keys and server-side role re-evaluation. Local session tokens remain only under ignored `.local` state and can be copied through a PowerShell helper without terminal disclosure. No generic database editor, production auth provider or Phase 1C module was introduced.
+
+## 14. Dependencies, risks and open questions
 
 Dependencies: all domain modules, RBAC/auth, sync/media/storage/data/API/security/observability/deployment. Activation roles are resolved by `OWNER-DECISION-002`; open: separation thresholds, support/private access, audit/export retention, bulk limits, alert owners, staff/team assignment and emergency access. Risks: broad admin, direct state edit, stale overwrite, approval of changed revision, secret/PII exposure, inaccessible grids and dangerous production confusion.
 
-## 14. Связанные требования and history
+## 15. Связанные требования and history
 
 Links: `FR-ADMIN-*`, `RBAC-*`, `NFR-AUDIT-*`, `ADMIN-SPEC-001`–`024`.
 
@@ -173,3 +177,4 @@ Links: `FR-ADMIN-*`, `RBAC-*`, `NFR-AUDIT-*`, `ADMIN-SPEC-001`–`024`.
 | 0.1.0 | 2026-08-02 | Определены admin IA, capability workflows, safe mutation/approval/bulk/export contracts, failures and tests. |
 | 0.2.0 | 2026-08-02 | Добавлены authoritative local availability, AMIGO freshness gates и `OWNER`/`ADMIN` PriceVersion activation with exact diff/confirmation/audit. |
 | 0.3.0 | 2026-08-02 | Добавлены authority-aware read-only AMIGO fields, отдельные Business Owner commands и явное разделение PostgreSQL media metadata/object-storage binaries по `OWNER-DECISION-008`. |
+| 0.5.0 | 2026-08-03 | Зафиксирован реализованный local-only `/admin/catalog`: 32-ID bounded read model, OWNER/ADMIN HttpOnly sessions, exact diff/bulk/approval/activation и отдельные overlay/override commands. |

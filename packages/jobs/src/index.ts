@@ -1,6 +1,9 @@
 export {
   createFoundationJobPool,
   enqueueCatalogSourceDiscovery,
+  enqueueCatalogVersionActivation,
+  enqueueCatalogVersionApproval,
+  enqueueCatalogVersionRollback,
   enqueueFoundationProbe,
   ensureDailyCatalogSourceDiscovery,
   listPermanentFoundationFailures,
@@ -10,6 +13,7 @@ export {
   verifyFoundationQueueSchema,
   type EnqueuedFoundationJob,
   type EnqueuedCatalogJob,
+  type EnqueuedCatalogGovernanceJob,
   type FoundationJobRuntime,
   type PermanentFoundationFailure,
 } from './adapter.js';

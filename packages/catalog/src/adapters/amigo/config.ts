@@ -141,3 +141,11 @@ export const amigoPilotMaterialCount = amigoPilotCategories.reduce(
   (count, category) => count + category.pilotMaterialSourceIds.length,
   0,
 );
+
+export const amigoPilotCategorySourceIds = amigoPilotCategories.map(
+  (category) => category.categorySourceId,
+);
+export const amigoPilotMaterialSourceIds = amigoPilotCategories.flatMap(
+  (category) => category.pilotMaterialSourceIds,
+);
+export const amigoPilotSystemSourceIds = amigoPilotSystems.map((system) => system.sourceId);

@@ -1,9 +1,12 @@
 export { AmigoCatalogSourceAdapter } from './adapters/amigo/adapter.js';
 export {
   amigoAdapterVersions,
+  amigoPilotCategorySourceIds,
   amigoPilotCatalogSourceId,
   amigoPilotCategories,
   amigoPilotMaterialCount,
+  amigoPilotMaterialSourceIds,
+  amigoPilotSystemSourceIds,
   amigoPilotSystems,
 } from './adapters/amigo/config.js';
 export { isPublicNetworkAddress, validateAmigoUrl } from './adapters/amigo/security.js';
@@ -39,6 +42,23 @@ export {
   type SetCatalogBusinessOverlayInput,
   type SetCatalogLocalPriceOverrideInput,
 } from './management.js';
+export {
+  CatalogReadError,
+  assertCatalogAdminVariantQuery,
+  catalogReadErrorCodes,
+  catalogReleaseStatuses,
+  type CatalogActiveVersionSummary,
+  type CatalogAdminOverview,
+  type CatalogAdminRelease,
+  type CatalogAdminSummary,
+  type CatalogAdminSyncRun,
+  type CatalogAdminVariant,
+  type CatalogAdminVariantPage,
+  type CatalogAdminVariantQuery,
+  type CatalogReadErrorCode,
+  type CatalogReadPort,
+  type CatalogReleaseStatus,
+} from './read-model.js';
 export {
   catalogSourceTypes,
   sourceEntityTypes,

@@ -12,7 +12,15 @@ function rejectUrl(reason: string): never {
   });
 }
 
-export function validateAmigoUrl(input: string, kind: AmigoUrlKind): URL {
+export function amigoPageReference(url: URL): string {
+  return `${url.pathname}${url.search}`;
+}
+
+export function validateAmigoUrl(
+  input: string,
+  kind: AmigoUrlKind,
+  allowedPageReferences: ReadonlySet<string> = amigoAllowedPagePaths,
+): URL {
   let url: URL;
   try {
     url = new URL(input, amigoOrigin);
@@ -37,17 +45,23 @@ export function validateAmigoUrl(input: string, kind: AmigoUrlKind): URL {
   }
 
   if (kind === 'media') {
+    const mediaPathPatterns = [
+      /^\/upload\/iblock\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9._-]+\.(?:jpe?g|png|webp)$/i,
+      /^\/upload\/resize_cache\/iblock\/[a-zA-Z0-9_-]+\/[0-9_a-zA-Z-]+\/[a-zA-Z0-9._-]+\.(?:jpe?g|png|webp)$/i,
+      /^\/upload\/webp\/resize_cache\/[a-zA-Z0-9_-]+\/[0-9_a-zA-Z-]+\/[a-zA-Z0-9._-]+\.webp$/i,
+      /^\/upload\/(?:medialibrary|uf)\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9._-]+\.(?:jpe?g|png|webp)$/i,
+    ];
     if (
       url.search !== '' ||
       url.hash !== '' ||
-      !/^\/upload\/iblock\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9._-]+\.(?:jpe?g|png|webp)$/i.test(url.pathname)
+      !mediaPathPatterns.some((pattern) => pattern.test(url.pathname))
     ) {
       rejectUrl('media-path');
     }
     return url;
   }
 
-  if (!amigoAllowedPagePaths.has(url.pathname) || url.search !== '') {
+  if (!allowedPageReferences.has(amigoPageReference(url))) {
     rejectUrl('page-path');
   }
   if (kind === 'page' && url.hash !== '') {
@@ -55,6 +69,63 @@ export function validateAmigoUrl(input: string, kind: AmigoUrlKind): URL {
   }
   if (kind === 'provenance' && !/^(?:|#(?:material|system)-[0-9]+)$/.test(url.hash)) {
     rejectUrl('provenance-fragment');
+  }
+  return url;
+}
+
+const forbiddenDiscoverySegments = new Set([
+  'ajax',
+  'api',
+  'auth',
+  'bitrix',
+  'calculator',
+  'contacts',
+  'filter',
+  'login',
+  'payments',
+  'personal',
+  'projects',
+  'search',
+  'services',
+  'upload',
+]);
+
+export function validateDiscoveredAmigoPageUrl(input: string, parentSourceUrl: string): URL {
+  const parent = new URL(parentSourceUrl);
+  let url: URL;
+  try {
+    url = new URL(input, parent);
+  } catch (error) {
+    throw new CatalogSourceError('SOURCE_URL_REJECTED', 'AMIGO discovery URL is invalid.', {
+      cause: error,
+      safeDetails: { reason: 'malformed-discovery-link' },
+    });
+  }
+  if (
+    parent.protocol !== 'https:' ||
+    parent.hostname !== 'shop.amigo.ru' ||
+    url.protocol !== 'https:' ||
+    url.hostname !== 'shop.amigo.ru' ||
+    url.port !== '' ||
+    url.username !== '' ||
+    url.password !== '' ||
+    url.hash !== '' ||
+    url.pathname.includes('%') ||
+    url.pathname.includes('\\') ||
+    url.pathname.length > 256 ||
+    !/^\/(?:[a-z0-9-]+\/){1,4}$/u.test(url.pathname)
+  ) {
+    rejectUrl('discovery-origin-or-path');
+  }
+  const segments = url.pathname.split('/').filter(Boolean);
+  if (segments.some((segment) => forbiddenDiscoverySegments.has(segment))) {
+    rejectUrl('discovery-forbidden-segment');
+  }
+  if (url.search !== '') {
+    const match = url.search.match(/^\?PAGEN_([1-9][0-9]*)=([1-9][0-9]*)$/u);
+    if (match === null || Number(match[1]) > 10_000 || Number(match[2]) > 10_000) {
+      rejectUrl('discovery-query');
+    }
   }
   return url;
 }

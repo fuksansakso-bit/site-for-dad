@@ -23,6 +23,7 @@ describe('AMIGO bounded HTTP transport', () => {
       hostResolver: async () => ['93.184.216.34'],
       maximumAttempts: 2,
       minimumDelayMs: 0,
+      random: () => 0,
       sleep: async (milliseconds) => void delays.push(milliseconds),
     });
 
@@ -48,6 +49,28 @@ describe('AMIGO bounded HTTP transport', () => {
       retryable: false,
     });
     expect(calls).toBe(1);
+  });
+
+  it('distinguishes a passive contact CAPTCHA from a catalog access challenge', async () => {
+    const accepted = new AmigoHttpTransport({
+      fetchImplementation: async () =>
+        htmlResponse(
+          '<div class="product-card"><h2>FixLine</h2></div><form class="captcha"></form>',
+        ),
+      hostResolver: async () => ['93.184.216.34'],
+      minimumDelayMs: 0,
+    });
+    await expect(accepted.fetchPage(pageUrl)).resolves.toMatchObject({ httpStatus: 200 });
+
+    const rejected = new AmigoHttpTransport({
+      fetchImplementation: async () => htmlResponse('<form class="captcha"></form>'),
+      hostResolver: async () => ['93.184.216.34'],
+      maximumAttempts: 1,
+      minimumDelayMs: 0,
+    });
+    await expect(rejected.fetchPage(pageUrl)).rejects.toMatchObject({
+      code: 'SOURCE_CAPTCHA_OR_CHALLENGE',
+    });
   });
 
   it('rejects oversized source responses before parsing', async () => {

@@ -4,15 +4,15 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1B.1 bounded public-page sync authorized; full-catalog transport remains `TBD-SOURCE-AMIGO-002` |
-| Версия | 0.5.0 |
-| Дата | 2026-08-02 |
+| Статус | Phase 1B.2 full public-page discovery verified; durable import/review/activation in progress |
+| Версия | 0.6.0 |
+| Дата | 2026-08-03 |
 | Source registry | [EXTERNAL_SOURCES.md](../../00-global/EXTERNAL_SOURCES.md) |
 | Pricing policy | [PRICING_SOURCE_POLICY.md](../../00-global/PRICING_SOURCE_POLICY.md) |
 
 ## 1. Purpose and boundaries
 
-Sync architecture safely captures authorized AMIGO catalog/price/media metadata into immutable PostgreSQL-backed staging, normalizes and diffs it, obtains Business Owner approval, records explicit administrator activation, atomically publishes local versions and rolls back. Public flows consume only the active approved local version. `OWNER-DECISION-010` authorizes this pipeline only for the four-path/32-ID Phase 1B.1 pilot; it does not assume a public API or authorize full-catalog acquisition.
+Sync architecture safely captures authorized AMIGO catalog/price/media metadata into immutable PostgreSQL-backed staging, normalizes and diffs it, obtains Business Owner approval, records explicit administrator activation, atomically publishes local versions and rolls back. Public flows consume only the active approved local version. `OWNER-DECISION-012` authorizes extending the existing Phase 1B.1 adapter and pipeline only through Phase 1B.2; it does not assume an official API/export, auto-activate a discovered candidate or authorize Phase 1C.
 
 ## 2. Transport priority and evidence
 
@@ -61,6 +61,14 @@ Public browser research and volatile customizer DOM/iframe are not a production 
 - **SYNC-ARCH-030 — MUST:** applicable approved local overrides have declared precedence in the composed public projection while immutable AMIGO values remain unchanged. Override conflicts, expiry or ambiguous scope block affected activation.
 - **SYNC-ARCH-031 — MUST:** capture/import, validation, diff creation/resolution, override, approval, rejection, activation, hide/archive, rollback and derived-projection rebuild produce audit records with actor/workload, timestamp, reason, version references and correlation ID.
 - **SYNC-ARCH-032 — MUST:** every candidate and published `CatalogVersion` has a unique ID, `createdAt`, nullable `publishedAt`, source/source-version manifest, capture/sync/diff checksums, approval/activation references, predecessor and rollback target. Published content is immutable; corrections create a new version.
+- **SYNC-ARCH-033 — MUST:** Phase 1B.2 discovery extends the existing `AmigoCatalogSourceAdapter`; it starts at the registered catalog index, dynamically follows only admitted category/nested/pagination/model paths and MUST NOT create a parallel importer or fixed category enum.
+- **SYNC-ARCH-034 — MUST:** public-page discovery is sequential by default (`concurrency = 1`) with configured minimum delay, timeout, bounded retry, exponential backoff and jitter; a page limit and strict numeric pagination prevent unbounded traversal.
+- **SYNC-ARCH-035 — MUST:** discovery admits only same-host HTTPS catalog paths under a typed path policy. Login/account/cart/action/filter/search/upload/Bitrix mutation/API/customizer paths, arbitrary query strings, credentials and CAPTCHA flows are rejected rather than bypassed.
+- **SYNC-ARCH-036 — MUST:** parser and mapping versions are pinned. Raw response content hash remains capture evidence, while catalog `sourceVersion` hashes sorted safe parsed category/system/model/material facts so volatile scripts, forms, tokens and capture time do not create a false semantic change.
+- **SYNC-ARCH-037 — MUST:** parser failure is item-level: the affected entity becomes `PARSER_REVIEW_REQUIRED`, safe siblings continue, diagnostics expose source ID/path/code, and any failure prevents a false `complete = true` result.
+- **SYNC-ARCH-038 — MUST:** canonical full collection cards take precedence over overview previews; the same upstream identity is not duplicated merely because a poorer preview exists on a parent page.
+- **SYNC-ARCH-039 — MUST:** numeric section identity is used only for one unambiguous nested source section. Multi-section collections retain canonical path identity and preserve all observed section facts with a nonblocking warning.
+- **SYNC-ARCH-040 — MUST:** source card price zero is not imported as money; the entity remains discoverable and its price status is `PRICE_ON_REQUEST` with structured warning evidence.
 
 ## 4. Pipeline stages
 
@@ -193,7 +201,7 @@ Tests: every transport via authorized fixture; integrity/schema/encoding/locale;
 
 ## 16. Dependencies, risks and open questions
 
-Dependencies: catalog/pricing/media/admin/data/API/security/observability/deployment, ADR-0002 and `OWNER-DECISION-008/009`. Open: transport/export/schema/sample, permission details, source region/context, rate limits, retry/concurrency, change markers, media acquisition and activation grouping. Cadence/staleness, local availability authority and public-serving topology are resolved by `OWNER-DECISION-004/005/009`; actual transport/data/import remain gated. Risks: volatile DOM, secret exposure, direct staging exposure, auto-publication, destructive removal, override loss, price mismatch, parser drift, approval of moving candidate, derived-projection drift and rollback inconsistency.
+Dependencies: catalog/pricing/media/admin/data/API/security/observability/deployment, ADR-0002 and `OWNER-DECISION-008/009/012`. The full public-page discovery fallback, path policy and stable identity rules are evidenced by the dated Phase 1B.2 report; official API/export, source price region/context, accepted full import/media manifest and activation grouping remain open or gated. Cadence/staleness, local availability authority and public-serving topology are resolved by `OWNER-DECISION-004/005/009`. Risks: volatile DOM, secret exposure, direct staging exposure, auto-publication, destructive removal, override loss, price mismatch, parser drift, approval of moving candidate, derived-projection drift and rollback inconsistency.
 
 ## 17. History
 
@@ -203,3 +211,5 @@ Dependencies: catalog/pricing/media/admin/data/API/security/observability/deploy
 | 0.2.0 | 2026-08-02 | Зафиксированы daily/manual cadence, `STALE_WARNING`, 30-day verification gate и запрет auto-overwrite локального наличия; реализация sync остаётся Phase 1B+. |
 | 0.3.0 | 2026-08-02 | Added field-level authority, PostgreSQL source/local revision separation and object-storage image import boundary from `OWNER-DECISION-008`; transport/import evidence remains gated. |
 | 0.4.0 | 2026-08-02 | Applied `OWNER-DECISION-009`: PostgreSQL active `CatalogVersion` is the only public-serving source; added exact owner/admin pipeline, no-auto-delete, override precedence, full audit/version metadata and version-pinned derived rebuilds. |
+| 0.5.0 | 2026-08-03 | Authorized only Phase 1B.2 expansion of the existing importer and retained all activation/Phase 1C/production gates. |
+| 0.6.0 | 2026-08-03 | Recorded controlled full public-page discovery: dynamic path traversal, pagination/models, load bounds, semantic catalog hashing, canonical-card selection, item-level diagnostics, multi-section path identity and zero-price normalization. |

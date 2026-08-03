@@ -5,10 +5,12 @@ import {
   type CatalogSourceHealth,
   type CatalogSourceVersion,
   type FixtureCatalogDataset,
+  type SourceCatalogDiscovery,
   type SourceCategory,
   type SourceMaterial,
   type SourceMediaManifest,
   type SourceMediaFile,
+  type SourceModel,
   type SourcePrice,
   type SourceSystem,
 } from '../types.js';
@@ -52,6 +54,7 @@ export class FixtureCatalogSourceAdapter implements CatalogSourceAdapter {
   readonly #materials: ReadonlyMap<string, CapturedSource<SourceMaterial>>;
   readonly #mediaFiles: ReadonlyMap<string, SourceMediaFile>;
   readonly #mediaManifests: ReadonlyMap<string, CapturedSource<SourceMediaManifest>>;
+  readonly #models: ReadonlyMap<string, CapturedSource<SourceModel>>;
   readonly #prices: ReadonlyMap<string, CapturedSource<SourcePrice>>;
   readonly #systems: ReadonlyMap<string, CapturedSource<SourceSystem>>;
 
@@ -60,6 +63,7 @@ export class FixtureCatalogSourceAdapter implements CatalogSourceAdapter {
     this.#categories = buildUniqueMap(dataset.categories, 'category');
     this.#systems = buildUniqueMap(dataset.systems, 'system');
     this.#materials = buildUniqueMap(dataset.materials, 'material');
+    this.#models = buildUniqueMap(dataset.models ?? [], 'model');
     this.#prices = buildUniqueMap(dataset.prices, 'price');
     this.#mediaManifests = buildUniqueMap(dataset.mediaManifests, 'media-manifest');
     this.#mediaFiles = new Map(
@@ -75,6 +79,20 @@ export class FixtureCatalogSourceAdapter implements CatalogSourceAdapter {
 
   async discoverCategories(): Promise<readonly CapturedSource<SourceCategory>[]> {
     return [...this.#categories.values()].map((record) => structuredClone(record));
+  }
+
+  async discoverCatalog(): Promise<SourceCatalogDiscovery> {
+    const categories = await this.discoverCategories();
+    return {
+      categories,
+      complete: true,
+      diagnostics: [],
+      materialSourceIds: [...this.#materials.keys()].sort(),
+      modelSourceIds: [...this.#models.keys()].sort(),
+      pages: [],
+      sourceVersion: await this.getSourceVersion(),
+      systemSourceIds: [...this.#systems.keys()].sort(),
+    };
   }
 
   async fetchCategory(sourceId: string): Promise<CapturedSource<SourceCategory>> {
@@ -97,6 +115,10 @@ export class FixtureCatalogSourceAdapter implements CatalogSourceAdapter {
       });
     }
     return structuredClone(file);
+  }
+
+  async fetchModel(sourceId: string): Promise<CapturedSource<SourceModel>> {
+    return requireRecord(this.#models, sourceId, 'model');
   }
 
   async fetchPrice(sourceId: string): Promise<CapturedSource<SourcePrice>> {

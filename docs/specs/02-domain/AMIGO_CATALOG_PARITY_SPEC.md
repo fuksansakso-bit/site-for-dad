@@ -4,11 +4,12 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1B.1 32-item factual pilot authorized; full parity/assortment remains gated |
-| Версия | 0.4.0 |
-| Дата | 2026-08-02 |
+| Статус | Phase 1B.2 full public-page discovery verified; import/review/activation in progress, Phase 1C gated |
+| Версия | 0.5.0 |
+| Дата | 2026-08-03 |
 | Source evidence | [AMIGO public parity snapshot](../../research/AMIGO_PUBLIC_PARITY_SNAPSHOT_2026-08-02.md) |
 | Pilot transport | [AMIGO Phase 1B.1 discovery](../../research/AMIGO_PILOT_TRANSPORT_DISCOVERY_2026-08-02.md) |
+| Full transport | [AMIGO Phase 1B.2 discovery](../../research/AMIGO_FULL_CATALOG_TRANSPORT_DISCOVERY_2026-08-03.md) |
 | Governance | [EXTERNAL_SOURCES.md](../../00-global/EXTERNAL_SOURCES.md), [ASSET_RIGHTS_REGISTER.md](../../00-global/ASSET_RIGHTS_REGISTER.md) |
 
 ## 1. Назначение, ответственность и non-goals
@@ -47,10 +48,16 @@ Actors: guest/customer, local manager/admin/content/owner, sync system and AI wo
 - **PARITY-SPEC-012 — MUST:** расширения PROJECT_NAME не должны искажать identity выбранного AMIGO product/material.
 - **PARITY-SPEC-013 — MUST:** AMIGO is source authority for AMIGO-origin products, materials, technical data, catalog images and base prices; local parity maps/presents those values but does not redefine them.
 - **PARITY-SPEC-014 — MUST:** Business Owner is authority for local availability, visibility/publication, price overrides, portfolio and commercial conditions; parity with AMIGO MUST NOT copy AMIGO-local conditions into those fields or overwrite their PostgreSQL revisions.
+- **PARITY-SPEC-015 — MUST:** full catalog taxonomy is discovered dynamically from the registered source index and safe nested/pagination links; the dated observed category list is evidence, never a closed enum.
+- **PARITY-SPEC-016 — MUST:** system/model/material cards use published upstream IDs. A category uses a numeric section ID only when the source publishes exactly one unambiguous section; top-level and multi-section collections retain canonical path identity rather than an invented ID.
+- **PARITY-SPEC-017 — MUST:** an informational category with no structured entity cards remains a category with an explicit warning; names or models mentioned only in marketing prose MUST NOT be synthesized as source entities.
+- **PARITY-SPEC-018 — MUST:** overview/preview cards MUST NOT compete with richer canonical collection cards for the same identity; duplicate/conflicting stable IDs, schema drift and unparseable cards remain item-level diagnostics and block a false `complete` result.
+- **PARITY-SPEC-019 — MUST:** semantic source version is computed from sorted safe parsed catalog facts under pinned parser/mapping versions, excluding volatile scripts, form/CAPTCHA/session tokens and capture timestamps.
+- **PARITY-SPEC-020 — MUST:** source card price `0` is preserved as evidence but normalized to `PRICE_ON_REQUEST`; it MUST NOT become a public, active or calculated zero price.
 
 ## 4. Полная category target map
 
-Динамический scope не является закрытым enum. Таблица фиксирует текущий обязательный target inventory по owner request; точный source entity inventory и локальная готовность — `TBD-ASSORT-002`.
+Динамический scope не является закрытым enum. Реальный capture 2026-08-03 обнаружил 28 categories, 56 systems, 9 models и 1655 MaterialVariant; это dated source inventory evidence, а не обещание вечной полноты. Его PostgreSQL import, локальная activation/orderability и completion coverage audit до принятого Full Catalog Import Manifest остаются `TBD-ASSORT-002`.
 
 | Category target | Наблюдение/основание | Local target | Initial status | Gate |
 |---|---|---|---|---|
@@ -168,14 +175,16 @@ Required tests include source taxonomy fixtures, rename/remove/schema drift, pro
 
 ## 13. Dependencies, risks and open questions
 
-Dependencies: catalog/configurator/pricing/preview/cart/sync/media specs. Blockers: `TBD-ASSORT-002/003`, `TBD-SOURCE-AMIGO-002`, `TBD-PRICE-*`, `TBD-SIZE-001`, `TBD-ASSET-AMIGO-003`. Risks: marketing overstates parity, dynamic category becomes silently active, source semantics mistranslated, examples misattributed, volatile customizer treated as API.
+Dependencies: catalog/configurator/pricing/preview/cart/sync/media specs. The Phase 1B.2 public-page discovery path is evidenced; accepted full import/activation remains `TBD-ASSORT-002`, official API/export remains the open aspect of `TBD-SOURCE-AMIGO-002`, and `TBD-ASSORT-003`, `TBD-PRICE-*`, `TBD-SIZE-001`, `TBD-ASSET-AMIGO-003` still gate later capabilities. Risks: marketing overstates parity, dynamic category becomes silently active, source semantics mistranslated, examples misattributed, volatile customizer treated as API.
 
 ## 14. Связанные требования и история
 
-Links: `PARTNER-*`, `AMIGO-PARITY-*`, `AMIGO-SYNC-*`, `FR-CATALOG-*`, `FR-CONFIG-*`, `FR-PRICE-*`, `FR-STANDARD-PREVIEW-*`, `FR-CART-*`, `PARITY-SPEC-001`–`012`.
+Links: `PARTNER-*`, `AMIGO-PARITY-*`, `AMIGO-SYNC-*`, `FR-CATALOG-*`, `FR-CONFIG-*`, `FR-PRICE-*`, `FR-STANDARD-PREVIEW-*`, `FR-CART-*`, `PARITY-SPEC-001`–`020`.
 
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Созданы category target map, customizer hierarchy snapshot, capability/property parity matrices и readiness rules. |
 | 0.2.0 | 2026-08-02 | Added AMIGO-vs-Business Owner data authority boundary from `OWNER-DECISION-008`; local PostgreSQL projection remains distinct from parity/source truth. |
 | 0.3.0 | 2026-08-02 | Aligned parity with `OWNER-DECISION-009`: only active PostgreSQL `CatalogVersion` serves public capabilities; source removal becomes reviewed diff and never auto-deletes/hides local data. |
+| 0.4.0 | 2026-08-03 | Authorized only Phase 1B.2 full catalog expansion while retaining import/activation, Phase 1C and production gates. |
+| 0.5.0 | 2026-08-03 | Recorded complete real discovery (28 categories, 56 systems, 9 models, 1655 variants), stable identity rules, canonical-card preference, semantic source version, item diagnostics and zero-price-to-`PRICE_ON_REQUEST` behavior. |

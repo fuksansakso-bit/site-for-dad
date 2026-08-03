@@ -79,7 +79,143 @@ function createFetchStub(calls: string[]): typeof globalThis.fetch {
   };
 }
 
+function fullMaterialCard(input: {
+  readonly id: string;
+  readonly page: string;
+  readonly section: string;
+}): string {
+  return `<a class="catalog_all__item" data-id="${input.id}" data-sec="${input.section}"
+    data-page="${input.page}" title="Ткань ${input.id}, 200см">
+    <div class="catalog_all__img"><div class="box_img"><img src="/upload/iblock/full/${input.id}.jpg"></div></div>
+    <p class="catalog_all__desc">Ткань ${input.id}</p>
+    <span class="single-item5__price">от 2 100 ₽</span>
+    <p class="catalog_all__info">бежевый</p>
+  </a>`;
+}
+
+function createFullDiscoveryFetchStub(
+  calls: string[],
+  volatilePageToken = 'capture-one',
+): typeof globalThis.fetch {
+  return async (input) => {
+    const url = new URL(input instanceof Request ? input.url : String(input));
+    calls.push(`${url.pathname}${url.search}`);
+    let html: string;
+    if (url.pathname === '/catalog/') {
+      html = `<!doctype html><h1>Каталог продукции компании «Амиго»</h1>
+        <div class="catalog__sub-fon">
+          <a href="/rulonnye-shtory/">Рулонные шторы</a>
+          <a href="/novaya-kategoriya/">Новая категория</a>
+          <a href="/readymade/">Готовые решения</a>
+        </div>`;
+    } else if (url.pathname === '/rulonnye-shtory/') {
+      html = `<!doctype html><h1>Рулонные шторы</h1>
+        <section class="materials_section"><a class="articleBtn" href="/rulonnye-shtory/rulonnye-tkani/">Посмотреть все материалы</a></section>
+        <div class="windows__item"><h2 class="h2">MINI</h2><div class="windows__list">Описание</div><a class="windows__bay" data-id="7556">Цена</a></div>`;
+    } else if (url.pathname === '/novaya-kategoriya/') {
+      html = `<!doctype html><h1>Новая категория</h1><div class="catalog_all">${fullMaterialCard({ id: '9001', page: url.pathname, section: '900' })}</div>`;
+    } else if (url.pathname === '/readymade/') {
+      html = `<!doctype html><h1>Готовые решения</h1>
+        <div class="catalog-base__product-preview" id="bx_3966226736_49094_abcdef" data-entity="item">
+          <a class="js_change_offer_href" href="/readymade/shtornye-karnizy/fixline/"><div class="catalog-base__img-wrap"><img src="/upload/webp/resize_cache/abc/300_400_1/model-preview.webp"></div></a>
+          <div class="catalog-base__title-product">FixLine</div>
+          <div class="catalog-base__price-product">14 200 руб.</div>
+        </div>`;
+    } else if (url.pathname === '/readymade/shtornye-karnizy/fixline/') {
+      html = `<!doctype html><div class="product-card">
+        <meta itemprop="name" content="FixLine"><meta itemprop="category" content="Карнизы">
+        <span itemprop="offers"><meta itemprop="price" content="14200"><link itemprop="availability" href="http://schema.org/InStock"></span>
+        <div class="product-card__title-product"><h2>FixLine</h2></div>
+        <a class="product-card__slide-preview" data-fancybox="offer_49094" href="/upload/iblock/abc/model-original.jpg"><img src="/upload/webp/resize_cache/abc/600_800_1/model.webp"></a>
+        <div class="description__in">Описание FixLine</div>
+      </div>`;
+    } else if (url.search === '?PAGEN_5=2') {
+      html = `<!doctype html><h1>Рулонные ткани</h1><div class="catalog_all">${fullMaterialCard({ id: '1003', page: url.pathname, section: '80' })}</div>`;
+    } else {
+      html = `<!doctype html><h1>Рулонные ткани</h1><div class="catalog_all">
+        ${fullMaterialCard({ id: '1001', page: url.pathname, section: '80' })}
+        ${fullMaterialCard({ id: '1002', page: url.pathname, section: '80' })}
+        </div><a href="?PAGEN_5=2">2</a>`;
+    }
+    html += `<script data-volatile-page-token="${volatilePageToken}"></script>`;
+    const body = new TextEncoder().encode(html);
+    return new Response(body, {
+      headers: {
+        'content-type': 'text/html; charset=utf-8',
+        etag: `"${url.pathname}${url.search}"`,
+      },
+      status: 200,
+    });
+  };
+}
+
 describe('AmigoCatalogSourceAdapter', () => {
+  it('discovers a dynamic nested catalog with strict pagination and stable identities', async () => {
+    const calls: string[] = [];
+    const adapter = new AmigoCatalogSourceAdapter({
+      catalogScope: 'full',
+      fetchImplementation: createFullDiscoveryFetchStub(calls, 'capture-one'),
+      hostResolver: async () => ['93.184.216.34'],
+      minimumDelayMs: 0,
+      random: () => 0,
+      sleep: async () => undefined,
+    });
+
+    const discovery = await adapter.discoverCatalog();
+    expect(discovery.diagnostics).toEqual([]);
+    expect(discovery.complete).toBe(true);
+    expect(discovery.categories.map((category) => category.data.identity.sourceId)).toEqual([
+      'category:path:rulonnye-shtory',
+      'category:path:novaya-kategoriya',
+      'category:path:readymade',
+      '80',
+    ]);
+    expect(discovery.materialSourceIds).toEqual(['1001', '1002', '1003', '9001']);
+    expect(discovery.modelSourceIds).toEqual(['49094']);
+    expect(discovery.systemSourceIds).toEqual(['7556']);
+    expect(discovery.pages.map((page) => page.kind)).toEqual([
+      'CATALOG_INDEX',
+      'CATEGORY',
+      'CATEGORY',
+      'CATEGORY',
+      'MODEL_DETAIL',
+      'MATERIAL_COLLECTION',
+      'PAGINATION',
+    ]);
+    expect((await adapter.fetchMaterial('1003')).data).toMatchObject({
+      categorySourceId: '80',
+      color: 'бежевый',
+      systemSourceIds: ['7556'],
+    });
+    expect((await adapter.fetchPrice('1003')).data).toMatchObject({
+      amountMinor: 210_000,
+      status: 'AVAILABLE',
+    });
+    expect((await adapter.fetchProduct('7556')).data.name).toBe('MINI');
+    expect((await adapter.fetchModel('49094')).data).toMatchObject({
+      categorySourceId: 'category:path:readymade',
+      mediaSourceUrls: ['https://shop.amigo.ru/upload/iblock/abc/model-original.jpg'],
+      name: 'FixLine',
+      sourceAvailability: 'AVAILABLE',
+    });
+    expect((await adapter.fetchPrice('49094')).data).toMatchObject({
+      amountMinor: 1_420_000,
+      kind: 'BASE',
+    });
+    await adapter.discoverCatalog();
+    expect(calls).toHaveLength(7);
+
+    const secondAdapter = new AmigoCatalogSourceAdapter({
+      catalogScope: 'full',
+      fetchImplementation: createFullDiscoveryFetchStub([], 'capture-two'),
+      hostResolver: async () => ['93.184.216.34'],
+      minimumDelayMs: 0,
+      random: () => 0,
+      sleep: async () => undefined,
+    });
+    expect((await secondAdapter.getSourceVersion()).version).toBe(discovery.sourceVersion.version);
+  });
+
   it('maps the controlled pilot without exposing source-specific selectors', async () => {
     const calls: string[] = [];
     const adapter = new AmigoCatalogSourceAdapter({

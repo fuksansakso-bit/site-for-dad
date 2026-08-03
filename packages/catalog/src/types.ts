@@ -62,10 +62,18 @@ export interface SourceFamilyReference {
 }
 
 export interface SourceCategory {
+  readonly childCategorySourceIds?: readonly string[];
+  readonly description?: string;
   readonly family: SourceFamilyReference;
   readonly identity: SourceIdentity;
   readonly materialSourceIds: readonly string[];
+  readonly mediaSourceUrls?: readonly string[];
+  readonly modelSourceIds?: readonly string[];
   readonly name: string;
+  readonly parentCategorySourceId?: string;
+  readonly sortOrder?: number;
+  readonly sourcePageReferences?: readonly string[];
+  readonly sourceStatus?: 'ACTIVE' | 'PARSER_REVIEW_REQUIRED' | 'SOURCE_REMOVED';
   readonly systemSourceIds: readonly string[];
 }
 
@@ -76,6 +84,18 @@ export interface SourceSystem {
   readonly identity: SourceIdentity;
   readonly mediaSourceUrl?: string;
   readonly name: string;
+}
+
+export interface SourceModel {
+  readonly categorySourceId: string;
+  readonly description?: string;
+  readonly family: SourceFamilyReference;
+  readonly identity: SourceIdentity;
+  readonly mediaSourceUrls: readonly string[];
+  readonly name: string;
+  readonly sourceAvailability?: 'AVAILABLE' | 'OUT_OF_STOCK' | 'UNKNOWN';
+  readonly sourceCategoryName?: string;
+  readonly systemSourceId?: string;
 }
 
 export interface SourceMaterialProperty {
@@ -144,12 +164,55 @@ export interface CatalogSourceHealth {
   readonly status: 'healthy' | 'unavailable';
 }
 
+export const sourceDiscoveryDiagnosticCodes = [
+  'DUPLICATE_SOURCE_ID',
+  'EMPTY_STRUCTURED_CATEGORY',
+  'MISSING_MEDIA',
+  'MULTIPLE_SOURCE_SECTIONS',
+  'PAGE_FETCH_FAILED',
+  'PARSER_REVIEW_REQUIRED',
+  'SOURCE_IDENTITY_CONFLICT',
+  'SOURCE_ZERO_PRICE_NORMALIZED',
+] as const;
+
+export type SourceDiscoveryDiagnosticCode = (typeof sourceDiscoveryDiagnosticCodes)[number];
+
+export interface SourceDiscoveryDiagnostic {
+  readonly code: SourceDiscoveryDiagnosticCode;
+  readonly entitySourceId?: string;
+  readonly message: string;
+  readonly severity: 'FAILURE' | 'WARNING';
+  readonly sourceUrl: string;
+}
+
+export interface SourceDiscoveryPage {
+  readonly capture: SourceCaptureMetadata;
+  readonly kind:
+    'CATALOG_INDEX' | 'CATEGORY' | 'MATERIAL_COLLECTION' | 'MODEL_DETAIL' | 'PAGINATION';
+  readonly pageNumber: number;
+  readonly parentCategorySourceId?: string;
+  readonly sourceReference: string;
+}
+
+export interface SourceCatalogDiscovery {
+  readonly categories: readonly CapturedSource<SourceCategory>[];
+  readonly complete: boolean;
+  readonly diagnostics: readonly SourceDiscoveryDiagnostic[];
+  readonly materialSourceIds: readonly string[];
+  readonly modelSourceIds: readonly string[];
+  readonly pages: readonly SourceDiscoveryPage[];
+  readonly sourceVersion: CatalogSourceVersion;
+  readonly systemSourceIds: readonly string[];
+}
+
 export interface CatalogSourceAdapter {
+  discoverCatalog(): Promise<SourceCatalogDiscovery>;
   discoverCategories(): Promise<readonly CapturedSource<SourceCategory>[]>;
   fetchCategory(sourceId: string): Promise<CapturedSource<SourceCategory>>;
   fetchMaterial(sourceId: string): Promise<CapturedSource<SourceMaterial>>;
   fetchMediaManifest(sourceId: string): Promise<CapturedSource<SourceMediaManifest>>;
   fetchMedia(sourceUrl: string): Promise<SourceMediaFile>;
+  fetchModel(sourceId: string): Promise<CapturedSource<SourceModel>>;
   fetchPrice(sourceId: string): Promise<CapturedSource<SourcePrice>>;
   fetchProduct(sourceId: string): Promise<CapturedSource<SourceSystem>>;
   getSourceVersion(): Promise<CatalogSourceVersion>;
@@ -162,6 +225,7 @@ export interface FixtureCatalogDataset {
   readonly materials: readonly CapturedSource<SourceMaterial>[];
   readonly mediaManifests: readonly CapturedSource<SourceMediaManifest>[];
   readonly mediaFiles: readonly SourceMediaFile[];
+  readonly models?: readonly CapturedSource<SourceModel>[];
   readonly prices: readonly CapturedSource<SourcePrice>[];
   readonly sourceVersion: CatalogSourceVersion;
   readonly systems: readonly CapturedSource<SourceSystem>[];

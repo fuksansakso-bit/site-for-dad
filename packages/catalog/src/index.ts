@@ -1,6 +1,7 @@
 export { AmigoCatalogSourceAdapter } from './adapters/amigo/adapter.js';
 export {
   amigoAdapterVersions,
+  amigoCatalogIndexPath,
   amigoPilotCategorySourceIds,
   amigoPilotCatalogSourceId,
   amigoPilotCategories,
@@ -9,7 +10,12 @@ export {
   amigoPilotSystemSourceIds,
   amigoPilotSystems,
 } from './adapters/amigo/config.js';
-export { isPublicNetworkAddress, validateAmigoUrl } from './adapters/amigo/security.js';
+export {
+  amigoPageReference,
+  isPublicNetworkAddress,
+  validateAmigoUrl,
+  validateDiscoveredAmigoPageUrl,
+} from './adapters/amigo/security.js';
 export { FixtureCatalogSourceAdapter } from './adapters/fixture.js';
 export { CatalogSourceError, catalogSourceErrorCodes } from './errors.js';
 export { hashCanonicalSource, sha256 } from './hash.js';
@@ -72,6 +78,7 @@ export {
 } from './read-model.js';
 export {
   catalogSourceTypes,
+  sourceDiscoveryDiagnosticCodes,
   sourceEntityTypes,
   type CapturedSource,
   type CatalogSourceAdapter,
@@ -80,7 +87,11 @@ export {
   type CatalogSourceVersion,
   type FixtureCatalogDataset,
   type SourceCaptureMetadata,
+  type SourceCatalogDiscovery,
   type SourceCategory,
+  type SourceDiscoveryDiagnostic,
+  type SourceDiscoveryDiagnosticCode,
+  type SourceDiscoveryPage,
   type SourceEntityType,
   type SourceFamilyReference,
   type SourceIdentity,
@@ -89,6 +100,7 @@ export {
   type SourceMediaManifest,
   type SourceMediaFile,
   type SourceMediaReference,
+  type SourceModel,
   type SourcePrice,
   type SourceSystem,
 } from './types.js';

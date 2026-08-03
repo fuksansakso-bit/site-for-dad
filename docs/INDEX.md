@@ -131,6 +131,7 @@ Phase 1A Foundation завершена `PASSED_PHASE_1A_FOUNDATION` на commit 
 |---|---|
 | [AMIGO public parity snapshot](research/AMIGO_PUBLIC_PARITY_SNAPSHOT_2026-08-02.md) | Read-only наблюдения 14 public URLs и calculator customizer на 2026-08-02; taxonomy/flow/filters/source categories/gaps |
 | [AMIGO Phase 1B.1 transport discovery](research/AMIGO_PILOT_TRANSPORT_DISCOVERY_2026-08-02.md) | Priority discovery, selected public-page transport, stable IDs, 32-item manifest boundary, media/security controls and residual full-export gate |
+| [AMIGO Phase 1B.2 full transport discovery](research/AMIGO_FULL_CATALOG_TRANSPORT_DISCOVERY_2026-08-03.md) | Real 114-page dynamic discovery: 28 categories, 56 systems, 9 models, 1655 variants, semantic source version, 0 failures and explicit warnings; import/activation still gated |
 
 Research snapshot не является вечным catalog/price fact. Нормативное поведение задают global/profile specs, а динамические значения требуют authorized source snapshot и verification.
 

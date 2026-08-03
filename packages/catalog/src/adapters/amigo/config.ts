@@ -1,8 +1,8 @@
 import { type SourceFamilyReference } from '../../types.js';
 
 export const amigoAdapterVersions = {
-  mapping: 'amigo-public-pilot-mapping/1.0.0',
-  parser: 'amigo-public-html/1.0.0',
+  mapping: 'amigo-public-full-catalog-mapping/2.0.0',
+  parser: 'amigo-public-html/2.0.0',
 } as const;
 
 export const amigoOrigin = 'https://shop.amigo.ru';
@@ -133,9 +133,14 @@ export const amigoPilotSystems: readonly AmigoPilotSystemConfig[] = [
 ] as const;
 
 export const amigoAllowedPagePaths = new Set([
+  '/catalog/',
   ...amigoPilotCategories.map((category) => category.categoryPath),
   ...amigoPilotSystems.map((system) => system.pagePath),
 ]);
+
+export type AmigoCatalogScope = 'full' | 'pilot';
+
+export const amigoCatalogIndexPath = '/catalog/';
 
 export const amigoPilotMaterialCount = amigoPilotCategories.reduce(
   (count, category) => count + category.pilotMaterialSourceIds.length,

@@ -2,7 +2,7 @@ import { setTimeout as sleepTimer } from 'node:timers/promises';
 
 import { CatalogSourceError } from '../../errors.js';
 import { sha256 } from '../../hash.js';
-import { amigoAdapterVersions } from './config.js';
+import { amigoAdapterVersions, amigoAllowedPagePaths } from './config.js';
 import {
   assertAmigoHostResolvesPublicly,
   defaultAmigoHostResolver,
@@ -13,12 +13,14 @@ import {
 const defaultMaximumHtmlBytes = 4 * 1024 * 1024;
 
 export interface AmigoHttpTransportOptions {
+  readonly allowedPageReferences?: ReadonlySet<string>;
   readonly fetchImplementation?: typeof globalThis.fetch;
   readonly hostResolver?: AmigoHostResolver;
   readonly maximumAttempts?: number;
   readonly maximumHtmlBytes?: number;
   readonly minimumDelayMs?: number;
   readonly now?: () => number;
+  readonly random?: () => number;
   readonly sleep?: (milliseconds: number) => Promise<void>;
   readonly timeoutMs?: number;
 }
@@ -78,7 +80,9 @@ function containsAccessChallenge(html: string): boolean {
   const challengeMarkup =
     /<(?:div|form|iframe)[^>]+(?:captcha|g-recaptcha|hcaptcha|cf-chl|challenge)/iu.test(html);
   const expectedCatalogMarkup =
-    /class=["'][^"']*(?:catalog_all__item|windows__item)[^"']*["']/iu.test(html);
+    /class=["'][^"']*(?:catalog_all__item|windows__item|section_catalog|catalog__item|catalog-base__product-preview|product-card)[^"']*["']/iu.test(
+      html,
+    ) || /<h1[^>]*>[^<]*(?:каталог|штор|жалюзи|ставн|систем)[^<]*<\/h1>/iu.test(html);
   return challengeTitle || (challengeMarkup && !expectedCatalogMarkup);
 }
 
@@ -93,12 +97,14 @@ function normalizeTransportError(error: unknown): CatalogSourceError {
 }
 
 export class AmigoHttpTransport {
+  readonly #allowedPageReferences: ReadonlySet<string>;
   readonly #fetch: typeof globalThis.fetch;
   readonly #hostResolver: AmigoHostResolver;
   readonly #maximumAttempts: number;
   readonly #maximumHtmlBytes: number;
   readonly #minimumDelayMs: number;
   readonly #now: () => number;
+  readonly #random: () => number;
   readonly #sleep: (milliseconds: number) => Promise<void>;
   readonly #timeoutMs: number;
   #hostValidation: Promise<void> | undefined;
@@ -106,12 +112,14 @@ export class AmigoHttpTransport {
   #queue: Promise<void> = Promise.resolve();
 
   constructor(options: AmigoHttpTransportOptions = {}) {
+    this.#allowedPageReferences = options.allowedPageReferences ?? new Set(amigoAllowedPagePaths);
     this.#fetch = options.fetchImplementation ?? globalThis.fetch;
     this.#hostResolver = options.hostResolver ?? defaultAmigoHostResolver;
     this.#maximumAttempts = options.maximumAttempts ?? 3;
     this.#maximumHtmlBytes = options.maximumHtmlBytes ?? defaultMaximumHtmlBytes;
     this.#minimumDelayMs = options.minimumDelayMs ?? 1200;
     this.#now = options.now ?? Date.now;
+    this.#random = options.random ?? Math.random;
     this.#sleep = options.sleep ?? (async (milliseconds) => void (await sleepTimer(milliseconds)));
     this.#timeoutMs = options.timeoutMs ?? 15_000;
 
@@ -134,7 +142,7 @@ export class AmigoHttpTransport {
   }
 
   fetchPage(input: string): Promise<AmigoHtmlPage> {
-    const sourceUrl = validateAmigoUrl(input, 'page').href;
+    const sourceUrl = validateAmigoUrl(input, 'page', this.#allowedPageReferences).href;
     const operation = this.#queue.then(() => this.#fetchWithRetry(sourceUrl));
     this.#queue = operation.then(
       () => undefined,
@@ -157,7 +165,9 @@ export class AmigoHttpTransport {
         if (!lastError.retryable || attempt === this.#maximumAttempts) {
           throw lastError;
         }
-        await this.#sleep(Math.min(4000, 250 * 2 ** (attempt - 1)));
+        const backoffMs = Math.min(4000, 250 * 2 ** (attempt - 1));
+        const jitterMs = Math.floor(Math.max(0, Math.min(1, this.#random())) * 101);
+        await this.#sleep(backoffMs + jitterMs);
       }
     }
     throw (
@@ -183,7 +193,7 @@ export class AmigoHttpTransport {
         const response = await this.#fetch(requestUrl, {
           headers: {
             accept: 'text/html,application/xhtml+xml',
-            'user-agent': 'PROJECT_NAME-partner-catalog-pilot/1.0 (owner-authorized; low-rate)',
+            'user-agent': 'PROJECT_NAME-partner-catalog/2.0 (owner-authorized; bounded-low-rate)',
           },
           redirect: 'manual',
           signal: controller.signal,
@@ -198,7 +208,11 @@ export class AmigoHttpTransport {
               { safeDetails: { status: String(response.status) } },
             );
           }
-          requestUrl = validateAmigoUrl(new URL(location, requestUrl).href, 'page').href;
+          requestUrl = validateAmigoUrl(
+            new URL(location, requestUrl).href,
+            'page',
+            this.#allowedPageReferences,
+          ).href;
           continue;
         }
         if (response.status === 401 || response.status === 403) {

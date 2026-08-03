@@ -4,10 +4,10 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A and Phase 1B.1 verified; later features/production gated |
-| Версия | 0.7.0 |
+| Статус | Phase 1A/1B.1 verified; Phase 1B.2 discovery verified and import in progress; Phase 1C/production gated |
+| Версия | 0.8.0 |
 | Дата | 2026-08-03 |
-| Global baseline | [GLOBAL_SPEC.md](../GLOBAL_SPEC.md) 0.11.0 |
+| Global baseline | [GLOBAL_SPEC.md](../GLOBAL_SPEC.md) 0.14.0 |
 | Decisions | [docs/adr](../../adr/) |
 
 ## 1. Назначение and boundaries
@@ -59,6 +59,7 @@ Architecture defines logical components, trust/data boundaries, synchronous/asyn
 - **ARCH-SPEC-028 — MUST:** every catalog version and lifecycle mutation records source/source-version manifest, timestamps, capture/sync/diff, approvals, activation actor, audit correlation, predecessor and rollback target; published versions are immutable.
 - **ARCH-SPEC-029 — MUST:** `OWNER-DECISION-011` changes only the local/CI implementation behind the existing provider-neutral `StoragePort`: VersityGW-specific endpoint, path-style SigV4, credentials, retry/timeout and multipart settings remain in typed configuration/S3 adapter and MUST NOT enter catalog domain, media domain or client code.
 - **ARCH-SPEC-030 — MUST:** local VersityGW runs as a Linux Docker Compose service with POSIX data/versioning/IAM named volumes and loopback-only S3/Admin endpoints; its selection MUST NOT be treated as a production object-storage decision.
+- **ARCH-SPEC-031 — MUST:** Phase 1B.2 full discovery remains inside the existing catalog source boundary: `AmigoCatalogSourceAdapter` owns source-specific selectors/path policy/parser versions, exposes provider-neutral typed category/system/model/material/price/media facts, and never leaks AMIGO DOM or live requests into public/admin runtime modules.
 
 ## 4. Logical context
 
@@ -209,6 +210,8 @@ For Phase 1B.1, `OWNER-DECISION-011` replaced the unreliable Windows-native Rust
 
 The completed Phase 1B.1 slice adds source/normalized/business-overlay modules behind the established boundaries, separate worker synchronization/media stages, immutable PostgreSQL catalog/price versions, audited OWNER approval/ADMIN activation, and same-origin public/admin catalog surfaces. Real run `9bd1a4f8-e456-4617-9e16-7f5604c1c65c` activated an exact 40-entry/32-price composition; the public projection returned 32 items and 32 checksum-verified primary images without any live AMIGO/staging dependency. Restart and no-op repeat evidence preserved active pointers/history and produced no duplicate/version drift. No configurator, pricing engine, preview, cart, AI or production topology was added. Evidence: [Phase 1B.1 report](../../06-plans/completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md).
 
+Phase 1B.2 discovery extends that same adapter boundary with dynamic catalog-index traversal, nested collections, strict pagination, structured ready-made model details, broader controlled media URL shapes, semantic source versions and item diagnostics. The 2026-08-03 real capture completed 114 pages with 28 categories, 56 systems, 9 models, 1655 variants and zero failure diagnostics. This evidence is staged discovery only: active PostgreSQL pointers/public runtime remain unchanged until the later import/diff/review/activation stages. Evidence: [Phase 1B.2 transport discovery](../../research/AMIGO_FULL_CATALOG_TRANSPORT_DISCOVERY_2026-08-03.md).
+
 ## 18. Dependencies, risks and open questions
 
 Dependencies: all specs, ADR/evaluations, data/API/sync/media/AI/storage/security/performance/observability/deployment and `OWNER-DECISION-008/009`. Foundation runtime/framework/database/queue boundaries are fixed by ADR-0007–0010; open: production object/auth/telemetry/hosting providers, search, AI, region/network and RPO/RTO. `OWNER-DECISION-009` composes the already accepted ADR-0002 local-active read path with ADR-0008 PostgreSQL persistence; it does not approve a transport, search product or business schema. Risks: premature microservices, distributed inconsistency, provider lock-in, hidden live-source/staging dependency, derived-projection drift, destructive import, privacy boundary collapse and untestable recovery.
@@ -224,3 +227,4 @@ Dependencies: all specs, ADR/evaluations, data/API/sync/media/AI/storage/securit
 | 0.5.0 | 2026-08-02 | Added the authorized Phase 1B.1 catalog pilot topology and preserved all later-phase boundaries. |
 | 0.6.0 | 2026-08-03 | Applied local-only `OWNER-DECISION-011`: VersityGW Docker/POSIX named-volume adapter replaced active RustFS while `StoragePort`, catalog/media boundaries and production-provider gate remained neutral. |
 | 0.7.0 | 2026-08-03 | Recorded completed Phase 1B.1 source/version/overlay/worker/admin/public topology, active real pilot versions and restart/idempotency evidence without starting later domains or production. |
+| 0.8.0 | 2026-08-03 | Recorded Phase 1B.2 full discovery inside the existing adapter boundary, including dynamic hierarchy/models/pagination, semantic source hashing and real 28/56/9/1655 evidence without activation or Phase 1C. |

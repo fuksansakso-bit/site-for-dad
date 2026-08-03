@@ -12,6 +12,8 @@
 
 `OWNER-DECISION-012` разрешает начать только **Phase 1B.2 — FULL AUTHORIZED AMIGO CATALOG EXPANSION** в ветке `phase/1b2-amigo-full-catalog` от commit `af8411d2b854e572b6b61b214d3e99a88b96cafc`. Цель — контролируемо расширить существующий importer до полного доступного разрешённого каталога, локальных media/base-price snapshots, diff/review/manual activation, bulk business overlays и масштабируемых public/admin surfaces. Phase 1C, dimensional calculator/configurator/preview/AI/cart/order/WhatsApp/account/final landing и production deployment не разрешены.
 
+Этап Phase 1B.2 discovery завершён фактическим controlled capture: 114 safe pages, 28 categories, 56 systems, 9 models, 1655 variants, semantic source version и 0 failure diagnostics. Результат пока staged: full PostgreSQL/media import, manifest, diff/review и activation выполняются следующими шагами active plan; публичная версия не переключалась. Evidence: [full transport discovery](docs/research/AMIGO_FULL_CATALOG_TRANSPORT_DISCOVERY_2026-08-03.md).
+
 ## С чего начать
 
 Читайте документы в таком порядке:
@@ -46,7 +48,7 @@
 - Все отсутствующие бизнес-данные и выборы имеют уникальные `TBD-*` в `OPEN_QUESTIONS.md`.
 - Подтверждены срок изготовления 2–7 календарных дней, гарантия 12 месяцев с условиями, бесплатные услуги, регион, WhatsApp и начальный baseline четырёх семейств/систем.
 - Подтверждены официальный партнёрский статус AMIGO, `AUTHORIZED_PARTNER_SOURCE`, permission scope каталога/цен/медиа/калькуляторной логики/бейджа и `PARTNER_LICENSE`; конкретные файлы по-прежнему проходят provenance, mapping и `PUBLICATION_APPROVED`.
-- По `OWNER-DECISION-008` AMIGO является authority для AMIGO-origin products/materials/technical data/catalog images/base prices, а Business Owner — для local availability/visibility/price overrides/portfolio/commercial conditions. Phase 1B.1 импортировал только frozen 32-ID pilot в PostgreSQL/object storage; это не доказывает полный AMIGO inventory и не переносит authority между слоями.
+- По `OWNER-DECISION-008` AMIGO является authority для AMIGO-origin products/materials/technical data/catalog images/base prices, а Business Owner — для local availability/visibility/price overrides/portfolio/commercial conditions. Phase 1B.1 импортировал frozen 32-ID pilot в PostgreSQL/object storage; Phase 1B.2 discovery доказал текущий source inventory, но ещё не импортировал и не активировал его. Ни один этап не переносит authority между слоями.
 - По `OWNER-DECISION-009` публичная часть никогда не читает AMIGO напрямую: единственным каноническим runtime-источником является активная одобренная PostgreSQL `CatalogVersion` и связанные транзакционные записи. Любое обновление проходит staged import, validation/diff, Business Owner approval и явную admin activation; auto-delete локальных данных запрещён, overrides приоритетны в публичной проекции, версии и изменения аудируются. Это не разрешает Phase 1B.
 - Каталожная модель динамически поддерживает все текущие и будущие source categories AMIGO; импорт не означает автоматические публикацию, наличие, расчётную готовность или возможность заказа.
 - Базовая цена имеет provenance AMIGO. Pilot PriceVersion v1 содержит только 32 проверенные карточные цены «от» и безопасный `PRICE_ON_REQUEST`; формулы, compatibility, расчёт по размерам, minimum-price engine и parity matrix остаются Phase 1C и не реализованы.
@@ -76,4 +78,4 @@ pnpm.cmd test:catalog-pilot
 
 ## Текущая граница работы
 
-Phase 1B.1 завершена по [stable plan](docs/06-plans/active/PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN.md) и [completion report](docs/06-plans/completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md). Сейчас разрешена только Phase 1B.2 по [active plan](docs/06-plans/active/PHASE_1B2_FULL_AMIGO_CATALOG_PLAN.md): неизвестные full-transport/inventory факты закрываются только фактическим discovery/import evidence, а calculation, compatibility для точного расчёта, privacy/legal production gates и production provider остаются видимыми TBD. Phase 1C+ и production deployment требуют нового письменного решения Product Owner.
+Phase 1B.1 завершена по [stable plan](docs/06-plans/active/PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN.md) и [completion report](docs/06-plans/completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md). Сейчас разрешена только Phase 1B.2 по [active plan](docs/06-plans/active/PHASE_1B2_FULL_AMIGO_CATALOG_PLAN.md): full public-page transport/discovery доказан dated evidence, а full local import/media/manifest/review/activation ещё выполняются. Calculation, compatibility для точного расчёта, privacy/legal production gates и production provider остаются видимыми TBD. Phase 1C+ и production deployment требуют нового письменного решения Product Owner.

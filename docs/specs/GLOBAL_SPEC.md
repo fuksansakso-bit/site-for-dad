@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Статус | Phase 1A and Phase 1B.1 passed; only Phase 1B.2 full authorized catalog expansion in progress; Phase 1C+ hold |
-| Версия | 0.13.0 |
+| Версия | 0.14.0 |
 | Дата | 2026-08-03, Europe/Moscow |
 | Владелец документа | Product Owner — владелец проекта; Business Owner — отец владельца проекта (`OWNER-DECISION-001`) |
 | Продукт | `PROJECT_NAME` до отдельного решения о бренде |
@@ -34,6 +34,7 @@
 - [Phase 1B.1 completion report](../06-plans/completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md)
 - [Phase 1B.1 transport discovery](../research/AMIGO_PILOT_TRANSPORT_DISCOVERY_2026-08-02.md)
 - [Phase 1B.2 full catalog plan](../06-plans/active/PHASE_1B2_FULL_AMIGO_CATALOG_PLAN.md)
+- [Phase 1B.2 full transport discovery](../research/AMIGO_FULL_CATALOG_TRANSPORT_DISCOVERY_2026-08-03.md)
 - [Правила работы](../../AGENTS.md)
 - [История изменений](../../CHANGELOG.md)
 - [Правила референсов](../../reference/README.md)
@@ -56,6 +57,7 @@
 | 0.11.0 | 2026-08-03 | `OWNER-DECISION-011` заменил только active local/CI RustFS adapter на digest-pinned VersityGW Docker/POSIX named-volume runtime после воспроизводимого Windows 11 real-image failure; provider-neutral `StoragePort`, PostgreSQL и выбор production storage не изменены. |
 | 0.12.0 | 2026-08-03 | Phase 1B.1 Pilot Acceptance Gate passed: the reviewed 32-variant AMIGO pilot, 59 local media assets, immutable CatalogVersion/PriceVersion v1, business overlays, admin/public catalog, restart/idempotency/recovery and 9/9 CI evidence are recorded without authorizing Phase 1B.2/1C or production. |
 | 0.13.0 | 2026-08-03 | `OWNER-DECISION-012` отдельно разрешил только Phase 1B.2 full authorized AMIGO catalog expansion на существующем importer: dynamic discovery, resumable snapshots/manifest, local media/base-price versions, diff/review/manual activation, bulk overlays и scalable catalog/admin; Phase 1C+, dimensional calculation и production остаются запрещены. |
+| 0.14.0 | 2026-08-03 | Реальный full discovery существующим adapter подтвердил 28 динамических категорий, 56 систем, 9 моделей и 1655 MaterialVariant при 0 failure diagnostics; semantic source version исключает volatile HTML/form tokens, source `0` нормализуется в `PRICE_ON_REQUEST`, а discovery остаётся staged без activation и без Phase 1C. |
 
 ## 1. Нормативный язык и приоритет источников
 
@@ -360,6 +362,8 @@ Public Catalog (explicit administrator activation)
 - **AMIGO-SYNC-004 — MUST:** source lifecycle поддерживает `SOURCE_ACTIVE`, `SOURCE_CHANGED`, `SOURCE_REMOVED`; local lifecycle — `LOCAL_REVIEW_REQUIRED`, `LOCAL_ACTIVE`, `LOCAL_HIDDEN`, `LOCAL_ARCHIVED`.
 - **AMIGO-SYNC-005 — MUST:** каждый run имеет ID, source/version, acquisition method, started/finished timestamps, counters, validation errors, actor, decision и audit reference.
 - **AMIGO-SYNC-006 — MUST:** способ получения выбирается по разрешённому приоритету: официальный партнёрский канал/API при доказанном существовании → партнёрский кабинет → официальная выгрузка → разрешённый файл → разрешённая фиксация публичных страниц → ручной ввод.
+- **AMIGO-SYNC-007 — MUST:** Phase 1B.2 full discovery использует существующий `AmigoCatalogSourceAdapter`, динамическую иерархию без закрытого enum, strict same-host path/pagination policy, stable source identity, item-level diagnostics и semantic source version из безопасных распознанных catalog facts; volatile scripts, form/CAPTCHA/session tokens и capture time MUST NOT создавать ложную catalog version.
+- **AMIGO-SYNC-008 — MUST:** опубликованное upstream значение `0` не является допустимой неизвестной ценой: такая source entity сохраняется, получает диагностируемый `PRICE_ON_REQUEST` и никогда не публикуется как `0 ₽`; информационная category без структурированных cards сохраняется без выдуманных systems/models/materials.
 
 ### 10.1. Главная страница
 

@@ -2,9 +2,12 @@ import { describe, expect, it } from 'vitest';
 
 import {
   CatalogManagementError,
+  assertCatalogBusinessBulkApplyInput,
+  assertCatalogBusinessBulkPreviewInput,
   assertBusinessOverlayInput,
   assertCatalogVersionCommand,
   assertLocalPriceOverrideInput,
+  catalogBulkConfirmation,
 } from '../src/management.js';
 
 const context = {
@@ -64,5 +67,84 @@ describe('catalog business management contracts', () => {
         syncRunId: '00000000-0000-4000-8000-000000000301',
       }),
     ).toThrow(CatalogManagementError);
+  });
+
+  it('validates exact category, filter and selected bulk previews', () => {
+    const base = {
+      ...context,
+      catalogSourceId: '00000000-0000-4000-8000-000000000103',
+      catalogVersionId: '00000000-0000-4000-8000-000000000302',
+      expectedCatalogDifferenceChecksum: 'b'.repeat(64),
+      patch: { availabilityStatus: 'INQUIRY_ONLY' as const },
+      reason: 'Owner confirmed the exact bulk local overlay.',
+      syncRunId: '00000000-0000-4000-8000-000000000301',
+    };
+    expect(() =>
+      assertCatalogBusinessBulkPreviewInput({
+        ...base,
+        selector: {
+          categoryId: '00000000-0000-4000-8000-000000000401',
+          mode: 'CATEGORY',
+        },
+      }),
+    ).not.toThrow();
+    expect(() =>
+      assertCatalogBusinessBulkPreviewInput({
+        ...base,
+        selector: { filter: { visibility: 'VISIBLE' }, mode: 'FILTER' },
+      }),
+    ).not.toThrow();
+    expect(() =>
+      assertCatalogBusinessBulkPreviewInput({
+        ...base,
+        selector: {
+          businessCatalogEntryIds: ['00000000-0000-4000-8000-000000000501'],
+          mode: 'SELECTED',
+        },
+      }),
+    ).not.toThrow();
+  });
+
+  it('rejects unresolved bulk filters, duplicate selections and stale confirmation text', () => {
+    const base = {
+      ...context,
+      catalogSourceId: '00000000-0000-4000-8000-000000000103',
+      catalogVersionId: '00000000-0000-4000-8000-000000000302',
+      expectedCatalogDifferenceChecksum: 'c'.repeat(64),
+      patch: { visibility: 'HIDDEN' as const },
+      reason: 'Owner confirmed the exact bulk local overlay.',
+      syncRunId: '00000000-0000-4000-8000-000000000301',
+    };
+    expect(() =>
+      assertCatalogBusinessBulkPreviewInput({
+        ...base,
+        selector: { filter: {}, mode: 'FILTER' },
+      }),
+    ).toThrow(CatalogManagementError);
+    expect(() =>
+      assertCatalogBusinessBulkPreviewInput({
+        ...base,
+        selector: {
+          businessCatalogEntryIds: [
+            '00000000-0000-4000-8000-000000000501',
+            '00000000-0000-4000-8000-000000000501',
+          ],
+          mode: 'SELECTED',
+        },
+      }),
+    ).toThrow(CatalogManagementError);
+
+    const checksum = 'd'.repeat(64);
+    expect(() =>
+      assertCatalogBusinessBulkApplyInput({
+        ...base,
+        confirmation: 'ПРИМЕНИТЬ 3 deadbeef',
+        expectedSelectionChecksum: checksum,
+        expectedTargetCount: 2,
+        idempotencyKey: 'catalog:bulk:unit:001',
+        selector: { filter: { visibility: 'VISIBLE' }, mode: 'FILTER' },
+      }),
+    ).toThrow(CatalogManagementError);
+    expect(catalogBulkConfirmation(2, checksum)).toBe('ПРИМЕНИТЬ 2 dddddddd');
   });
 });

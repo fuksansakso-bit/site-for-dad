@@ -206,6 +206,14 @@ enum CatalogDifferenceSelectionMode {
   @@map("catalog_difference_selection_mode")
 }
 
+enum CatalogBulkSelectorMode {
+  CATEGORY
+  FILTER
+  SELECTED
+
+  @@map("catalog_bulk_selector_mode")
+}
+
 enum CatalogVersionStatus {
   DRAFT
   AWAITING_APPROVAL
@@ -335,6 +343,7 @@ model ActorIdentity {
   sessions       SyntheticSession[]
   auditEvents    AuditEvent[]
   catalogDifferenceReviews CatalogDifferenceReviewBatch[]
+  catalogBulkCommands CatalogBulkCommand[]
 
   @@unique([provider, subject], map: "actor_identity_provider_subject_key")
   @@map("actor_identity")
@@ -497,6 +506,7 @@ model CatalogSource {
   syncRuns               CatalogSyncRun[]
   mediaAssets            SourceMediaAsset[]
   priceRecords           SourcePriceRecord[]
+  bulkCommands           CatalogBulkCommand[]
 
   @@unique([supplierId, sourceType, name], map: "catalog_source_identity_key")
   @@index([supplierRelationshipId], map: "catalog_source_relationship_idx")
@@ -600,6 +610,7 @@ model CatalogSyncRun {
   items                    CatalogSyncItem[]
   differences              CatalogSyncDifference[]
   differenceReviewBatches  CatalogDifferenceReviewBatch[]
+  bulkCommands             CatalogBulkCommand[]
   checkpoints              CatalogSyncCheckpoint[]
   importManifest           CatalogImportManifest?
   catalogVersions          CatalogVersion[]
@@ -728,6 +739,37 @@ model CatalogDifferenceReviewBatch {
   @@map("catalog_difference_review_batch")
 }
 
+model CatalogBulkCommand {
+  id                         String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  catalogSourceId            String                  @map("catalog_source_id") @db.Uuid
+  syncRunId                  String                  @map("sync_run_id") @db.Uuid
+  catalogVersionId           String                  @map("catalog_version_id") @db.Uuid
+  selectorMode               CatalogBulkSelectorMode @map("selector_mode")
+  selector                   Json                    @db.JsonB
+  patch                      Json                    @db.JsonB
+  targetEntryIds             Json                    @map("target_entry_ids") @db.JsonB
+  beforeSnapshot             Json                    @map("before_snapshot") @db.JsonB
+  afterSnapshot              Json                    @map("after_snapshot") @db.JsonB
+  matchedCount               Int                     @map("matched_count")
+  affectedCount              Int                     @map("affected_count")
+  selectionChecksum          String                  @map("selection_checksum") @db.Char(64)
+  requestChecksum            String                  @map("request_checksum") @db.Char(64)
+  expectedDifferenceChecksum String                  @map("expected_difference_checksum") @db.Char(64)
+  appliedByActorId           String                  @map("applied_by_actor_id") @db.Uuid
+  safeReason                 String                  @map("safe_reason") @db.VarChar(512)
+  correlationId              String                  @map("correlation_id") @db.VarChar(128)
+  idempotencyKey             String                  @unique(map: "catalog_bulk_command_idempotency_key") @map("idempotency_key") @db.VarChar(255)
+  createdAt                  DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
+  catalogSource              CatalogSource           @relation(fields: [catalogSourceId], references: [id], onDelete: Restrict)
+  syncRun                    CatalogSyncRun           @relation(fields: [syncRunId], references: [id], onDelete: Restrict)
+  catalogVersion             CatalogVersion           @relation(fields: [catalogVersionId], references: [id], onDelete: Restrict)
+  appliedByActor             ActorIdentity            @relation(fields: [appliedByActorId], references: [id], onDelete: Restrict)
+
+  @@index([catalogVersionId, createdAt], map: "catalog_bulk_command_version_time_idx")
+  @@index([syncRunId, selectorMode, createdAt], map: "catalog_bulk_command_run_selector_idx")
+  @@map("catalog_bulk_command")
+}
+
 model CatalogVersion {
   id                 String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   versionNumber      Int                   @unique(map: "catalog_version_number_key") @map("version_number")
@@ -754,6 +796,7 @@ model CatalogVersion {
   rollbackSources    CatalogVersion[]      @relation("catalog_version_rollback")
   entries            CatalogVersionEntry[]
   differenceReviews  CatalogDifferenceReviewBatch[]
+  bulkCommands       CatalogBulkCommand[]
 
   @@index([status, createdAt], map: "catalog_version_status_idx")
   @@map("catalog_version")

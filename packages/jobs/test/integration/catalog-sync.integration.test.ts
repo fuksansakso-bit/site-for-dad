@@ -731,8 +731,9 @@ describe.sequential('catalog synchronization pipeline', () => {
     });
     await expect(management.publishPilot(command)).resolves.toEqual(publication);
 
-    const business = await pool.query<{ id: string }>(
-      `SELECT id::text FROM business_catalog_entry WHERE entity_type = 'MATERIAL_VARIANT'
+    const business = await pool.query<{ entity_id: string; id: string }>(
+      `SELECT id::text, material_variant_id::text AS entity_id
+       FROM business_catalog_entry WHERE entity_type = 'MATERIAL_VARIANT'
        AND material_variant_id = (
          SELECT variant.id FROM material_variant variant
          JOIN catalog_sync_item item ON item.source_entity_id = variant.source_entity_id
@@ -742,7 +743,25 @@ describe.sequential('catalog synchronization pipeline', () => {
       [firstSyncRunId],
     );
     const businessId = business.rows[0]?.id;
-    if (businessId === undefined) throw new Error('Business overlay is unavailable.');
+    const businessEntityId = business.rows[0]?.entity_id;
+    if (businessId === undefined || businessEntityId === undefined) {
+      throw new Error('Business overlay is unavailable.');
+    }
+    await management.setBusinessOverlay({
+      actorId: ownerActorId,
+      availabilityReason: 'Manager confirmation remains required.',
+      availabilityStatus: 'INQUIRY_ONLY',
+      correlationId: `catalog-bulk-preserved-fields-${runTag}`,
+      entityId: businessEntityId,
+      entityType: 'MATERIAL_VARIANT',
+      localDescription: 'Owner description preserved by bulk local-state controls.',
+      localOrder: 17,
+      manualReviewState: 'APPROVED',
+      ownerNotes: 'Owner note outside the bulk patch.',
+      publicationReason: 'Owner retained reviewed publication.',
+      publicationStatus: 'PUBLISHED',
+      visibility: 'VISIBLE',
+    });
     const overrideId = await management.setLocalPriceOverride({
       actorId: ownerActorId,
       amountMinor: 199_900,
@@ -752,10 +771,226 @@ describe.sequential('catalog synchronization pipeline', () => {
       effectiveFrom: '2026-08-03T00:00:00.000Z',
       reason: 'Synthetic integration override.',
     });
-    const sourcePrice = await pool.query<{ amount_minor: number }>(
+    const sourcePriceBeforeBulk = await pool.query<{ amount_minor: number }>(
       `SELECT amount_minor FROM source_price_record WHERE source_id = 'jobs-material-roller-1001'`,
     );
-    expect(sourcePrice.rows[0]?.amount_minor).toBe(150_000);
+    expect(sourcePriceBeforeBulk.rows[0]?.amount_minor).toBe(150_000);
+    const category = await pool.query<{ id: string }>(
+      `SELECT category.id::text
+       FROM product_category category
+       JOIN catalog_sync_item item ON item.source_entity_id = category.source_entity_id
+       WHERE item.sync_run_id = $1::uuid
+       ORDER BY category.id LIMIT 1`,
+      [firstSyncRunId],
+    );
+    const categoryId = category.rows[0]?.id;
+    if (categoryId === undefined) throw new Error('Bulk category is unavailable.');
+
+    const staleSelectedPreviewInput = {
+      actorId: ownerActorId,
+      catalogSourceId,
+      catalogVersionId: row.catalog_version_id,
+      correlationId: `catalog-bulk-selected-stale-preview-${runTag}`,
+      expectedCatalogDifferenceChecksum: row.catalog_difference_checksum,
+      patch: { availabilityStatus: 'AVAILABLE' as const },
+      reason: 'Owner previewed one selected local availability update.',
+      selector: {
+        businessCatalogEntryIds: [businessId],
+        mode: 'SELECTED' as const,
+      },
+      syncRunId: firstSyncRunId,
+    };
+    const staleSelectedPreview =
+      await management.previewBusinessOverlayBulk(staleSelectedPreviewInput);
+    expect(staleSelectedPreview).toMatchObject({ matchedCount: 1, targetCount: 1 });
+
+    const categoryBulkInput = {
+      actorId: ownerActorId,
+      catalogSourceId,
+      catalogVersionId: row.catalog_version_id,
+      correlationId: `catalog-bulk-category-${runTag}`,
+      expectedCatalogDifferenceChecksum: row.catalog_difference_checksum,
+      patch: { availabilityStatus: 'OUT_OF_STOCK' as const },
+      reason: 'Owner marked the exact category selection out of stock for review.',
+      selector: { categoryId, mode: 'CATEGORY' as const },
+      syncRunId: firstSyncRunId,
+    };
+    const categoryPreview = await management.previewBusinessOverlayBulk(categoryBulkInput);
+    expect(categoryPreview).toMatchObject({ matchedCount: 1, targetCount: 1 });
+    const categoryCommand = {
+      ...categoryBulkInput,
+      confirmation: categoryPreview.confirmation,
+      expectedSelectionChecksum: categoryPreview.selectionChecksum,
+      expectedTargetCount: categoryPreview.targetCount,
+      idempotencyKey: `catalog:bulk:${runTag}:category-out-of-stock`,
+    };
+    const categoryResult = await management.applyBusinessOverlayBulk(categoryCommand);
+    expect(categoryResult).toMatchObject({ matchedCount: 1, reused: false, targetCount: 1 });
+    await expect(management.applyBusinessOverlayBulk(categoryCommand)).resolves.toEqual({
+      ...categoryResult,
+      reused: true,
+    });
+    await expect(
+      management.applyBusinessOverlayBulk({
+        ...categoryCommand,
+        reason: 'A conflicting payload cannot reuse the completed command key.',
+      }),
+    ).rejects.toMatchObject({ code: 'CATALOG_MANAGEMENT_CONFLICT' });
+    await expect(
+      management.applyBusinessOverlayBulk({
+        ...staleSelectedPreviewInput,
+        confirmation: staleSelectedPreview.confirmation,
+        expectedSelectionChecksum: staleSelectedPreview.selectionChecksum,
+        expectedTargetCount: staleSelectedPreview.targetCount,
+        idempotencyKey: `catalog:bulk:${runTag}:stale-selected`,
+      }),
+    ).rejects.toMatchObject({ code: 'CATALOG_MANAGEMENT_CONFLICT' });
+
+    const filterBulkInput = {
+      actorId: ownerActorId,
+      catalogSourceId,
+      catalogVersionId: row.catalog_version_id,
+      correlationId: `catalog-bulk-filter-${runTag}`,
+      expectedCatalogDifferenceChecksum: row.catalog_difference_checksum,
+      patch: { manualReviewState: 'NEEDS_REVIEW' as const },
+      reason: 'Owner moved the exact out-of-stock filter result back to review.',
+      selector: {
+        filter: { availabilityStatus: 'OUT_OF_STOCK' as const },
+        mode: 'FILTER' as const,
+      },
+      syncRunId: firstSyncRunId,
+    };
+    const filterPreview = await management.previewBusinessOverlayBulk(filterBulkInput);
+    const filterResult = await management.applyBusinessOverlayBulk({
+      ...filterBulkInput,
+      confirmation: filterPreview.confirmation,
+      expectedSelectionChecksum: filterPreview.selectionChecksum,
+      expectedTargetCount: filterPreview.targetCount,
+      idempotencyKey: `catalog:bulk:${runTag}:filter-review`,
+    });
+    expect(filterResult).toMatchObject({ matchedCount: 1, reused: false, targetCount: 1 });
+
+    const selectedRestoreInput = {
+      actorId: ownerActorId,
+      catalogSourceId,
+      catalogVersionId: row.catalog_version_id,
+      correlationId: `catalog-bulk-selected-restore-${runTag}`,
+      expectedCatalogDifferenceChecksum: row.catalog_difference_checksum,
+      patch: {
+        availabilityStatus: 'INQUIRY_ONLY' as const,
+        manualReviewState: 'APPROVED' as const,
+      },
+      reason: 'Owner restored the selected local entry after explicit review.',
+      selector: {
+        businessCatalogEntryIds: [businessId],
+        mode: 'SELECTED' as const,
+      },
+      syncRunId: firstSyncRunId,
+    };
+    const selectedRestorePreview =
+      await management.previewBusinessOverlayBulk(selectedRestoreInput);
+    const selectedRestoreResult = await management.applyBusinessOverlayBulk({
+      ...selectedRestoreInput,
+      confirmation: selectedRestorePreview.confirmation,
+      expectedSelectionChecksum: selectedRestorePreview.selectionChecksum,
+      expectedTargetCount: selectedRestorePreview.targetCount,
+      idempotencyKey: `catalog:bulk:${runTag}:selected-restore`,
+    });
+    expect(selectedRestoreResult).toMatchObject({
+      matchedCount: 1,
+      reused: false,
+      targetCount: 1,
+    });
+
+    await expect(
+      management.previewBusinessOverlayBulk({
+        ...selectedRestoreInput,
+        actorId: adminActorId,
+        correlationId: `catalog-bulk-admin-denied-${runTag}`,
+        patch: { visibility: 'HIDDEN' },
+      }),
+    ).rejects.toMatchObject({ code: 'CATALOG_MANAGEMENT_AUTHORIZATION' });
+    await expect(
+      management.previewBusinessOverlayBulk({
+        ...selectedRestoreInput,
+        correlationId: `catalog-bulk-partial-selection-${runTag}`,
+        selector: {
+          businessCatalogEntryIds: [businessId, randomUUID()],
+          mode: 'SELECTED',
+        },
+      }),
+    ).rejects.toMatchObject({ code: 'CATALOG_MANAGEMENT_NOT_FOUND' });
+
+    const bulkEvidence = await pool.query<{
+      action_count: string;
+      availability_status: string;
+      command_count: string;
+      local_description: string;
+      local_order: number;
+      manual_review_state: string;
+      owner_notes: string;
+    }>(
+      `SELECT
+         (SELECT count(*)::text FROM catalog_bulk_command
+          WHERE catalog_version_id = $1::uuid) AS command_count,
+         (SELECT count(*)::text FROM audit_event
+          WHERE action = 'CATALOG_BUSINESS_BULK_APPLIED'
+            AND target_type = 'CATALOG_BULK_COMMAND') AS action_count,
+         (SELECT status::text FROM availability_record
+          WHERE business_catalog_entry_id = $2::uuid AND ended_at IS NULL
+          ORDER BY created_at DESC LIMIT 1) AS availability_status,
+         (SELECT manual_review_state::text FROM business_catalog_entry
+          WHERE id = $2::uuid) AS manual_review_state,
+         (SELECT local_description FROM business_catalog_entry
+          WHERE id = $2::uuid) AS local_description,
+         (SELECT local_order FROM business_catalog_entry
+          WHERE id = $2::uuid) AS local_order,
+         (SELECT owner_notes FROM business_catalog_entry
+          WHERE id = $2::uuid) AS owner_notes`,
+      [row.catalog_version_id, businessId],
+    );
+    expect(bulkEvidence.rows[0]).toEqual({
+      action_count: '3',
+      availability_status: 'INQUIRY_ONLY',
+      command_count: '3',
+      local_description: 'Owner description preserved by bulk local-state controls.',
+      local_order: 17,
+      manual_review_state: 'APPROVED',
+      owner_notes: 'Owner note outside the bulk patch.',
+    });
+    await expect(
+      pool.query(
+        `UPDATE catalog_bulk_command SET safe_reason = 'forbidden runtime mutation'
+         WHERE id = $1::uuid`,
+        [categoryResult.commandId],
+      ),
+    ).rejects.toMatchObject({ code: '42501' });
+    await expect(
+      migrationPool.query(
+        `UPDATE catalog_bulk_command SET safe_reason = 'forbidden owner mutation'
+         WHERE id = $1::uuid`,
+        [categoryResult.commandId],
+      ),
+    ).rejects.toMatchObject({ code: '55000' });
+
+    const priceLayersAfterBulk = await pool.query<{
+      amount_minor: number;
+      override_amount_minor: number;
+      override_status: string;
+    }>(
+      `SELECT source.amount_minor,
+              override_row.amount_minor AS override_amount_minor,
+              override_row.status::text AS override_status
+       FROM source_price_record source
+       JOIN local_price_override override_row ON override_row.id = $1::uuid
+       WHERE source.source_id = 'jobs-material-roller-1001'`,
+      [overrideId],
+    );
+    expect(priceLayersAfterBulk.rows[0]).toEqual({
+      amount_minor: 150_000,
+      override_amount_minor: 199_900,
+      override_status: 'ACTIVE',
+    });
     await management.removeLocalPriceOverride({
       actorId: ownerActorId,
       businessCatalogEntryId: businessId,
@@ -770,6 +1005,13 @@ describe.sequential('catalog synchronization pipeline', () => {
 
     const composition = await management.composeCatalogVersion(command);
     expect(composition).toMatchObject({ entryCount: 3, reused: false, variantCount: 1 });
+    await expect(
+      management.previewBusinessOverlayBulk({
+        ...categoryBulkInput,
+        correlationId: `catalog-bulk-frozen-candidate-${runTag}`,
+        patch: { visibility: 'HIDDEN' },
+      }),
+    ).rejects.toMatchObject({ code: 'CATALOG_MANAGEMENT_CONFLICT' });
     await expect(management.composeCatalogVersion(command)).resolves.toMatchObject({
       differenceChecksum: composition.differenceChecksum,
       reused: true,

@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A infrastructure and authorized Phase 1B.2 source/catalog/media/price/overlay/review activation schema implemented |
-| Версия | 0.7.0 |
+| Статус | Phase 1A infrastructure and authorized Phase 1B.2 source/catalog/media/price/overlay/review/bulk schema implemented |
+| Версия | 0.8.0 |
 | Дата | 2026-08-03 |
 | Architecture | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | Glossary | [GLOSSARY.md](../../00-global/GLOSSARY.md) |
@@ -39,6 +39,7 @@ This specification defines aggregate ownership, entities, keys/revisions, relati
 - **DATA-SPEC-023 — MUST:** every source price revision targets exactly one normalized `MaterialVariant` or `ProductModel`, stores its semantic `sourceVersion` and remains append-only. A retry may reuse only an exact revision for the same `(catalogSourceId, sourceId, sourceVersion)`; `PriceVersionRecord` pins its exact immutable ID.
 - **DATA-SPEC-024 — MUST:** a run manifest, diff, composition and `PriceVersion` select source prices by both the run item/hash and the run-pinned `sourceVersion`. Historical revisions with an equal hash cannot be joined as current, and no source-price operation mutates `LocalPriceOverride`.
 - **DATA-SPEC-025 — MUST:** each catalog/price difference review persists as an append-only `CatalogDifferenceReviewBatch` referencing exactly one candidate version, its sync run, expected difference checksum, selection mode/IDs/checksum, resolution, affected count, actor, safe reason, correlation and idempotency key. Review history cannot be updated or deleted, and candidate approval is derived only from matching evidence plus the current explicit resolutions.
+- **DATA-SPEC-026 — MUST:** each successful local-overlay bulk apply persists one append-only `CatalogBulkCommand` bound to catalog source, sync run and mutable candidate version. It stores selector mode/payload, requested patch, exact affected business-entry IDs, per-target before/after snapshots, matched/affected counts, selection/request/expected-difference checksums, actor, safe reason, correlation and unique idempotency key; failed validation inserts neither command nor partial overlay changes.
 
 ## 2. Aggregate boundaries
 
@@ -167,7 +168,7 @@ Tests: ID uniqueness, optimistic concurrency, effective interval overlap, hierar
 
 ## 17. Physical schema record through Phase 1B.2
 
-The seven Phase 1A identity/audit/delivery tables remain unchanged. Reviewed Phase 1B.1/1B.2 migrations additionally physicalize only the authorized partner/source, resumable sync/manifest, normalized catalog hierarchy, typed media mapping, immutable source-price/price-version, append-only difference-review batches and separate business-overlay/publication aggregates. `SourcePriceRecord` has an exact-one `materialVariantId`/`modelId` target and required semantic `sourceVersion`; `CatalogDifferenceReviewBatch` binds one catalog or price candidate to exact review selection/checksum/actor/idempotency evidence. Their append-only triggers remain active after migration backfill. No calculator formula/rule engine, quote, configurator, client-photo, cart, order, installment, account or production-provider aggregate is introduced. Evidence remains the Prisma schema, migration boundary/recovery checks, the completed Phase 1A/1B.1 reports and the active Phase 1B.2 plan.
+The seven Phase 1A identity/audit/delivery tables remain unchanged. Reviewed Phase 1B.1/1B.2 migrations additionally physicalize only the authorized partner/source, resumable sync/manifest, normalized catalog hierarchy, typed media mapping, immutable source-price/price-version, append-only difference-review and bulk-command evidence, and separate business-overlay/publication aggregates. `SourcePriceRecord` has an exact-one `materialVariantId`/`modelId` target and required semantic `sourceVersion`; `CatalogDifferenceReviewBatch` binds one catalog or price candidate to exact review selection/checksum/actor/idempotency evidence; `CatalogBulkCommand` binds one successful local-overlay transaction to its exact target IDs and before/after states. Their append-only triggers remain active after migration backfill. No calculator formula/rule engine, quote, configurator, client-photo, cart, order, installment, account or production-provider aggregate is introduced. Evidence remains the Prisma schema, migration boundary/recovery checks, the completed Phase 1A/1B.1 reports and the active Phase 1B.2 plan.
 
 ## 18. Dependencies, risks and open questions
 
@@ -184,3 +185,4 @@ Dependencies: all domain specs, API/storage/security/deployment, ADRs and `OWNER
 | 0.5.0 | 2026-08-03 | Recorded the implemented Phase 1B.1 source/normalized/business-overlay, immutable catalog/price version and managed media-reference schema. |
 | 0.6.0 | 2026-08-03 | Recorded Phase 1B.2 resumable import/media schema and exact material/model source-price revisions pinned by semantic source version without calculator or Phase 1C aggregates. |
 | 0.7.0 | 2026-08-03 | Added the append-only exact-candidate catalog/price difference-review batch schema and recorded source-bound atomic activation/rollback evidence without expanding into bulk controls or Phase 1C aggregates. |
+| 0.8.0 | 2026-08-03 | Added append-only exact-target `CatalogBulkCommand` evidence for atomic local-overlay category/filter/selection changes, including checksums and per-target before/after state, without source-price or Phase 1C aggregates. |

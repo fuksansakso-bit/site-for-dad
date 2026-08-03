@@ -30,6 +30,15 @@ export const catalogPublicationValues = [
 ] as const;
 export type CatalogPublicationValue = (typeof catalogPublicationValues)[number];
 
+export const catalogBulkSelectorModes = ['CATEGORY', 'FILTER', 'SELECTED'] as const;
+export type CatalogBulkSelectorMode = (typeof catalogBulkSelectorModes)[number];
+
+export const catalogBulkPriceStatuses = ['AVAILABLE', 'PRICE_ON_REQUEST'] as const;
+export type CatalogBulkPriceStatus = (typeof catalogBulkPriceStatuses)[number];
+
+export const maximumCatalogBulkSelectedCount = 500;
+export const maximumCatalogBulkTargetCount = 10_000;
+
 export const catalogManagementErrorCodes = [
   'CATALOG_MANAGEMENT_AUTHORIZATION',
   'CATALOG_MANAGEMENT_CONFLICT',
@@ -67,6 +76,87 @@ export interface SetCatalogBusinessOverlayInput extends CatalogCommandContext {
   readonly publicationReason: string;
   readonly publicationStatus: CatalogPublicationValue;
   readonly visibility: CatalogVisibilityValue;
+}
+
+export interface CatalogBulkFilter {
+  readonly availabilityStatus?: CatalogAvailabilityValue;
+  readonly categoryId?: string;
+  readonly manualReviewState?: CatalogManualReviewValue;
+  readonly priceStatus?: CatalogBulkPriceStatus;
+  readonly publicationStatus?: CatalogPublicationValue;
+  readonly systemId?: string;
+  readonly visibility?: CatalogVisibilityValue;
+}
+
+export type CatalogBulkSelector =
+  | {
+      readonly categoryId: string;
+      readonly mode: 'CATEGORY';
+    }
+  | {
+      readonly filter: CatalogBulkFilter;
+      readonly mode: 'FILTER';
+    }
+  | {
+      readonly businessCatalogEntryIds: readonly string[];
+      readonly mode: 'SELECTED';
+    };
+
+export interface CatalogBulkOverlayPatch {
+  readonly availabilityStatus?: CatalogAvailabilityValue;
+  readonly manualReviewState?: CatalogManualReviewValue;
+  readonly publicationStatus?: CatalogPublicationValue;
+  readonly visibility?: CatalogVisibilityValue;
+}
+
+export interface PreviewCatalogBusinessBulkInput extends CatalogCommandContext {
+  readonly catalogSourceId: string;
+  readonly catalogVersionId: string;
+  readonly expectedCatalogDifferenceChecksum: string;
+  readonly patch: CatalogBulkOverlayPatch;
+  readonly reason: string;
+  readonly selector: CatalogBulkSelector;
+  readonly syncRunId: string;
+}
+
+export interface ApplyCatalogBusinessBulkInput extends PreviewCatalogBusinessBulkInput {
+  readonly confirmation: string;
+  readonly expectedSelectionChecksum: string;
+  readonly expectedTargetCount: number;
+  readonly idempotencyKey: string;
+}
+
+export interface CatalogBulkOverlayState {
+  readonly availabilityStatus: CatalogAvailabilityValue | null;
+  readonly manualReviewState: CatalogManualReviewValue;
+  readonly publicationStatus: CatalogPublicationValue | null;
+  readonly visibility: CatalogVisibilityValue;
+}
+
+export interface CatalogBulkTargetPreview {
+  readonly after: CatalogBulkOverlayState;
+  readonly before: CatalogBulkOverlayState;
+  readonly businessCatalogEntryId: string;
+  readonly entityId: string;
+  readonly entityType: 'MATERIAL_VARIANT';
+  readonly name: string;
+  readonly sourceId: string;
+}
+
+export interface CatalogBusinessBulkPreview {
+  readonly confirmation: string;
+  readonly matchedCount: number;
+  readonly selectionChecksum: string;
+  readonly targetCount: number;
+  readonly targets: readonly CatalogBulkTargetPreview[];
+}
+
+export interface CatalogBusinessBulkResult {
+  readonly commandId: string;
+  readonly matchedCount: number;
+  readonly reused: boolean;
+  readonly selectionChecksum: string;
+  readonly targetCount: number;
 }
 
 export interface SetCatalogLocalPriceOverrideInput extends CatalogCommandContext {
@@ -116,8 +206,14 @@ export interface CatalogCompositionResult {
 }
 
 export interface CatalogManagementPort {
+  applyBusinessOverlayBulk(
+    input: ApplyCatalogBusinessBulkInput,
+  ): Promise<CatalogBusinessBulkResult>;
   close(): Promise<void>;
   composeCatalogVersion(input: ComposeCatalogVersionInput): Promise<CatalogCompositionResult>;
+  previewBusinessOverlayBulk(
+    input: PreviewCatalogBusinessBulkInput,
+  ): Promise<CatalogBusinessBulkPreview>;
   publishPilot(input: PublishCatalogPilotInput): Promise<CatalogPublicationResult>;
   removeLocalPriceOverride(input: RemoveCatalogLocalPriceOverrideInput): Promise<void>;
   setBusinessOverlay(input: SetCatalogBusinessOverlayInput): Promise<string>;
@@ -128,6 +224,7 @@ const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}
 const correlationPattern = /^[A-Za-z0-9._:-]{8,128}$/;
 const checksumPattern = /^[0-9a-f]{64}$/;
 const currencyPattern = /^[A-Z]{3}$/;
+const idempotencyPattern = /^[A-Za-z0-9._:-]{8,255}$/;
 
 export function assertCatalogCommandContext(input: CatalogCommandContext): void {
   if (!uuidPattern.test(input.actorId) || !correlationPattern.test(input.correlationId)) {
@@ -172,6 +269,135 @@ export function assertBusinessOverlayInput(input: SetCatalogBusinessOverlayInput
       input.localDescription !== null &&
       input.localDescription.length > 4_000) ||
     (input.ownerNotes !== undefined && input.ownerNotes !== null && input.ownerNotes.length > 4_000)
+  ) {
+    throw new CatalogManagementError('CATALOG_MANAGEMENT_VALIDATION');
+  }
+}
+
+function assertCatalogBulkSelector(selector: CatalogBulkSelector): void {
+  if (typeof selector !== 'object' || selector === null) {
+    throw new CatalogManagementError('CATALOG_MANAGEMENT_VALIDATION');
+  }
+  if (selector.mode === 'CATEGORY') {
+    if (
+      Object.keys(selector).some((key) => !['categoryId', 'mode'].includes(key)) ||
+      !uuidPattern.test(selector.categoryId)
+    ) {
+      throw new CatalogManagementError('CATALOG_MANAGEMENT_VALIDATION');
+    }
+    return;
+  }
+  if (selector.mode === 'SELECTED') {
+    const ids = selector.businessCatalogEntryIds;
+    if (
+      Object.keys(selector).some((key) => !['businessCatalogEntryIds', 'mode'].includes(key)) ||
+      !Array.isArray(ids) ||
+      ids.length < 1 ||
+      ids.length > maximumCatalogBulkSelectedCount ||
+      ids.some((id) => !uuidPattern.test(id)) ||
+      new Set(ids).size !== ids.length
+    ) {
+      throw new CatalogManagementError('CATALOG_MANAGEMENT_VALIDATION');
+    }
+    return;
+  }
+  if (
+    selector.mode !== 'FILTER' ||
+    typeof selector.filter !== 'object' ||
+    selector.filter === null
+  ) {
+    throw new CatalogManagementError('CATALOG_MANAGEMENT_VALIDATION');
+  }
+  const filterKeys = Object.keys(selector.filter);
+  const allowedFilterKeys = [
+    'availabilityStatus',
+    'categoryId',
+    'manualReviewState',
+    'priceStatus',
+    'publicationStatus',
+    'systemId',
+    'visibility',
+  ];
+  if (
+    Object.keys(selector).some((key) => !['filter', 'mode'].includes(key)) ||
+    filterKeys.length === 0 ||
+    !Object.values(selector.filter).some((value) => value !== undefined) ||
+    filterKeys.some((key) => !allowedFilterKeys.includes(key)) ||
+    (selector.filter.categoryId !== undefined && !uuidPattern.test(selector.filter.categoryId)) ||
+    (selector.filter.systemId !== undefined && !uuidPattern.test(selector.filter.systemId)) ||
+    (selector.filter.visibility !== undefined &&
+      !catalogVisibilityValues.includes(selector.filter.visibility)) ||
+    (selector.filter.manualReviewState !== undefined &&
+      !catalogManualReviewValues.includes(selector.filter.manualReviewState)) ||
+    (selector.filter.availabilityStatus !== undefined &&
+      !catalogAvailabilityValues.includes(selector.filter.availabilityStatus)) ||
+    (selector.filter.publicationStatus !== undefined &&
+      !catalogPublicationValues.includes(selector.filter.publicationStatus)) ||
+    (selector.filter.priceStatus !== undefined &&
+      !catalogBulkPriceStatuses.includes(selector.filter.priceStatus))
+  ) {
+    throw new CatalogManagementError('CATALOG_MANAGEMENT_VALIDATION');
+  }
+}
+
+function assertCatalogBulkPatch(patch: CatalogBulkOverlayPatch): void {
+  if (typeof patch !== 'object' || patch === null) {
+    throw new CatalogManagementError('CATALOG_MANAGEMENT_VALIDATION');
+  }
+  const keys = Object.keys(patch);
+  if (
+    keys.length === 0 ||
+    !Object.values(patch).some((value) => value !== undefined) ||
+    keys.some(
+      (key) =>
+        !['availabilityStatus', 'manualReviewState', 'publicationStatus', 'visibility'].includes(
+          key,
+        ),
+    ) ||
+    (patch.visibility !== undefined && !catalogVisibilityValues.includes(patch.visibility)) ||
+    (patch.manualReviewState !== undefined &&
+      !catalogManualReviewValues.includes(patch.manualReviewState)) ||
+    (patch.availabilityStatus !== undefined &&
+      !catalogAvailabilityValues.includes(patch.availabilityStatus)) ||
+    (patch.publicationStatus !== undefined &&
+      !catalogPublicationValues.includes(patch.publicationStatus))
+  ) {
+    throw new CatalogManagementError('CATALOG_MANAGEMENT_VALIDATION');
+  }
+}
+
+export function assertCatalogBusinessBulkPreviewInput(
+  input: PreviewCatalogBusinessBulkInput,
+): void {
+  assertCatalogCommandContext(input);
+  if (
+    !uuidPattern.test(input.catalogSourceId) ||
+    !uuidPattern.test(input.catalogVersionId) ||
+    !uuidPattern.test(input.syncRunId) ||
+    !checksumPattern.test(input.expectedCatalogDifferenceChecksum) ||
+    input.reason.trim().length < 3 ||
+    input.reason.length > 512
+  ) {
+    throw new CatalogManagementError('CATALOG_MANAGEMENT_VALIDATION');
+  }
+  assertCatalogBulkSelector(input.selector);
+  assertCatalogBulkPatch(input.patch);
+}
+
+export function catalogBulkConfirmation(targetCount: number, selectionChecksum: string): string {
+  return `ПРИМЕНИТЬ ${targetCount} ${selectionChecksum.slice(0, 8)}`;
+}
+
+export function assertCatalogBusinessBulkApplyInput(input: ApplyCatalogBusinessBulkInput): void {
+  assertCatalogBusinessBulkPreviewInput(input);
+  if (
+    !Number.isSafeInteger(input.expectedTargetCount) ||
+    input.expectedTargetCount < 1 ||
+    input.expectedTargetCount > maximumCatalogBulkTargetCount ||
+    !checksumPattern.test(input.expectedSelectionChecksum) ||
+    !idempotencyPattern.test(input.idempotencyKey) ||
+    input.confirmation !==
+      catalogBulkConfirmation(input.expectedTargetCount, input.expectedSelectionChecksum)
   ) {
     throw new CatalogManagementError('CATALOG_MANAGEMENT_VALIDATION');
   }

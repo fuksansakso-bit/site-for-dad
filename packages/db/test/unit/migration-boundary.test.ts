@@ -22,6 +22,7 @@ describe('Phase 1B.2 migration boundary', () => {
       '20260803170000_phase_1b2_full_catalog_media',
       '20260803190000_phase_1b2_full_catalog_prices',
       '20260803200000_phase_1b2_catalog_review_activation',
+      '20260803210000_phase_1b2_catalog_bulk_controls',
     ]);
 
     const tables = new Set<string>();
@@ -42,6 +43,7 @@ describe('Phase 1B.2 migration boundary', () => {
       'audit_event',
       'availability_record',
       'business_catalog_entry',
+      'catalog_bulk_command',
       'catalog_difference_review_batch',
       'catalog_import_manifest',
       'catalog_source',
@@ -152,5 +154,16 @@ describe('Phase 1B.2 migration boundary', () => {
     expect(reviewSql).toContain('catalog_difference_review_exact_target_check');
     expect(reviewSql).toContain('catalog_difference_review_idempotency_key');
     expect(reviewSql).toContain('catalog_difference_review_batch_append_only');
+
+    const bulkSql = await readFile(
+      new URL(
+        '../../prisma/migrations/20260803210000_phase_1b2_catalog_bulk_controls/migration.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    );
+    expect(bulkSql).toContain('catalog_bulk_command_counts_check');
+    expect(bulkSql).toContain('catalog_bulk_command_idempotency_key');
+    expect(bulkSql).toContain('catalog_bulk_command_append_only');
   });
 });

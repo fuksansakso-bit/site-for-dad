@@ -11,6 +11,14 @@ export {
   type PreviewRenderInput,
   type PreviewRenderModel,
 } from './renderer.js';
+export {
+  horizontalSlatLayout,
+  verticalSlatLayout,
+  type HorizontalSlatLayout,
+  type HorizontalSlatLayoutInput,
+  type VerticalSlatLayout,
+  type VerticalSlatLayoutInput,
+} from './layout.js';
 export { getPreviewScene, previewScenes } from './scenes.js';
 export {
   previewAssetQualities,

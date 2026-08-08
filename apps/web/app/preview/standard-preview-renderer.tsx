@@ -1,5 +1,10 @@
 import type { StandardPreviewStateResponse } from '@project-name/contracts/preview';
-import { buildPreviewRenderModel, type PreviewRenderModel } from '@project-name/preview';
+import {
+  buildPreviewRenderModel,
+  horizontalSlatLayout,
+  type PreviewRenderModel,
+  verticalSlatLayout,
+} from '@project-name/preview';
 
 import { PreviewSceneSvg } from './preview-scene';
 
@@ -148,6 +153,109 @@ function ZebraLayer({ model }: { readonly model: PreviewRenderModel }): React.JS
   );
 }
 
+function HorizontalLayer({ model }: { readonly model: PreviewRenderModel }): React.JSX.Element {
+  const { height, width, x, y } = model.product;
+  const slatWidthMm = model.familyParameters.horizontalSlatWidthMm;
+  if (slatWidthMm === null) return <UnavailableLayer model={model} />;
+  const layout = horizontalSlatLayout({
+    angleDegrees: model.controls.slatAngle,
+    heightMm: model.heightMm,
+    openingPosition: model.controls.openingPosition,
+    productHeight: height,
+    productY: y,
+    slatWidthMm,
+  });
+  const cordX = [x + width * 0.24, x + width * 0.76];
+  return (
+    <g data-family-renderer="HORIZONTAL_ALUMINUM">
+      {layout.slats.map((slat) => (
+        <g key={slat.index}>
+          <rect
+            fill={`url(#${model.ids.materialPattern})`}
+            height={layout.slatHeight}
+            rx={Math.min(2, layout.slatHeight / 3)}
+            stroke="#3D4849"
+            strokeOpacity="0.18"
+            strokeWidth="0.7"
+            width={width}
+            x={x}
+            y={slat.y}
+          />
+          <path
+            d={`M${x + 3} ${slat.y + layout.slatHeight * 0.22} H${x + width - 3}`}
+            opacity={model.controls.slatAngle >= 0 ? 0.34 : 0.15}
+            stroke="#FFFFFF"
+            strokeWidth={Math.max(0.5, layout.slatHeight * 0.08)}
+          />
+        </g>
+      ))}
+      {cordX.map((cord) => (
+        <path
+          d={`M${cord} ${y} V${Math.min(y + height, layout.stackBottomY + layout.slatHeight)}`}
+          key={cord}
+          opacity="0.62"
+          stroke={model.hardwareColor}
+          strokeWidth={Math.max(1, width * 0.004)}
+        />
+      ))}
+      <HardwareRail model={model} y={y + 3} />
+      <HardwareRail
+        model={model}
+        y={Math.min(y + height - 3, layout.stackBottomY + layout.slatHeight)}
+      />
+    </g>
+  );
+}
+
+function VerticalLayer({ model }: { readonly model: PreviewRenderModel }): React.JSX.Element {
+  const { height, width, x, y } = model.product;
+  const lamellaWidthMm = model.familyParameters.verticalLamellaWidthMm;
+  if (lamellaWidthMm === null) return <UnavailableLayer model={model} />;
+  const layout = verticalSlatLayout({
+    angleDegrees: model.controls.slatAngle,
+    lamellaWidthMm,
+    openingDirection: model.familyParameters.verticalOpeningDirection,
+    productWidth: width,
+    productX: x,
+    spread: model.controls.verticalSpread,
+    widthMm: model.widthMm,
+  });
+  const railHeight = Math.max(8, Math.min(18, height * 0.03));
+  const lamellaHeight = Math.max(1, height - railHeight * 1.35);
+  return (
+    <g data-family-renderer="VERTICAL">
+      {layout.slats.map((slat) => (
+        <g key={slat.index}>
+          <rect
+            fill={`url(#${model.ids.materialPattern})`}
+            height={lamellaHeight}
+            rx={Math.min(2.5, layout.lamellaWidth / 4)}
+            stroke="#394647"
+            strokeOpacity="0.16"
+            strokeWidth="0.8"
+            width={layout.lamellaWidth}
+            x={slat.x}
+            y={y + railHeight}
+          />
+          <path
+            d={`M${slat.x + layout.lamellaWidth * 0.24} ${y + railHeight + 4} V${y + railHeight + lamellaHeight - 4}`}
+            opacity={model.controls.slatAngle >= 0 ? 0.25 : 0.12}
+            stroke="#FFFFFF"
+            strokeWidth={Math.max(0.5, layout.lamellaWidth * 0.05)}
+          />
+        </g>
+      ))}
+      <HardwareRail model={model} y={y + railHeight / 2} />
+      <path
+        d={`M${x + width * 0.96} ${y + railHeight} V${y + Math.min(height * 0.58, railHeight + lamellaHeight * 0.58)}`}
+        opacity="0.7"
+        stroke={model.hardwareColor}
+        strokeWidth={Math.max(1, width * 0.005)}
+      />
+    </g>
+  );
+}
+
 function UnavailableLayer({ model }: { readonly model: PreviewRenderModel }): React.JSX.Element {
   const { height, width, x, y } = model.product;
   return (
@@ -190,6 +298,10 @@ export function StandardPreviewRenderer({
       <RollerLayer model={model} />
     ) : state.family === 'ZEBRA' ? (
       <ZebraLayer model={model} />
+    ) : state.family === 'HORIZONTAL_ALUMINUM' ? (
+      <HorizontalLayer model={model} />
+    ) : state.family === 'VERTICAL' ? (
+      <VerticalLayer model={model} />
     ) : (
       <UnavailableLayer model={model} />
     );

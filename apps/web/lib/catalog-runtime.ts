@@ -6,7 +6,9 @@ import {
 import {
   createCatalogManagementAdapter,
   createCatalogReadAdapter,
+  createPricingAdapter,
   type CatalogManagementAdapter,
+  type PricingAdapter,
 } from '@project-name/db';
 import {
   createSyntheticIdentityAdapter,
@@ -20,6 +22,7 @@ let catalogRead: ReturnType<typeof createCatalogReadAdapter> | undefined;
 let identity: SyntheticIdentityAdapter | undefined;
 let jobPool: ReturnType<typeof createFoundationJobPool> | undefined;
 let objectStorage: ReturnType<typeof createS3ObjectStorage> | undefined;
+let pricing: PricingAdapter | undefined;
 
 function databaseEnvironment() {
   return parseDatabaseEnvironment(process.env);
@@ -55,4 +58,9 @@ export function getWebCatalogSigningKey(): string {
 export function getWebObjectStorage(): ReturnType<typeof createS3ObjectStorage> {
   objectStorage ??= createS3ObjectStorage(parseStorageEnvironment(process.env));
   return objectStorage;
+}
+
+export function getWebPricing(): PricingAdapter {
+  pricing ??= createPricingAdapter(databaseEnvironment());
+  return pricing;
 }

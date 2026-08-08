@@ -61,7 +61,7 @@ export async function setCatalogAdminSession(token: string): Promise<CatalogAdmi
   store.set(catalogAdminCookieName, token, {
     httpOnly: true,
     maxAge: 8 * 60 * 60,
-    path: '/admin',
+    path: '/',
     sameSite: 'strict',
     secure: process.env['NODE_ENV'] === 'production',
   });

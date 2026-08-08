@@ -4,10 +4,10 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A/1B.1/1B.2 verified; Phase 1C/production gated |
-| Версия | 0.9.0 |
-| Дата | 2026-08-04 |
-| Global baseline | [GLOBAL_SPEC.md](../GLOBAL_SPEC.md) 0.14.0 |
+| Статус | Phase 1A/1B.1/1B.2/1C verified; Phase 1D+/production gated |
+| Версия | 0.10.0 |
+| Дата | 2026-08-08 |
+| Global baseline | [GLOBAL_SPEC.md](../GLOBAL_SPEC.md) 0.17.0 |
 | Decisions | [docs/adr](../../adr/) |
 
 ## 1. Назначение and boundaries
@@ -212,9 +212,11 @@ The completed Phase 1B.1 slice adds source/normalized/business-overlay modules b
 
 Completed Phase 1B.2 extends that same adapter boundary with dynamic catalog-index traversal, nested collections, strict pagination, structured ready-made model details, broader controlled media URL shapes, semantic source versions and item diagnostics. The accepted run persisted 114 pages/5 181 snapshots/21 019 normalized items through resumable Graphile stages, stored 2 818 private catalog objects, and activated compatible immutable CatalogVersion/PriceVersion v2 only after checksum-bound OWNER review and ADMIN activation. Public/admin runtime continues to read PostgreSQL/local storage only; semantic repeat produced zero versions/differences, v1 rollback and two full restarts preserved history/pointers/objects. No configurator, dimensional pricing, preview, cart, AI or production topology was added. Evidence: [transport discovery](../../research/AMIGO_FULL_CATALOG_TRANSPORT_DISCOVERY_2026-08-03.md) and [Phase 1B.2 report](../../06-plans/completed/PHASE_1B2_FULL_AMIGO_CATALOG_REPORT.md).
 
+Completed Phase 1C adds one independent `packages/pricing` domain boundary and shared contracts without a live AMIGO dependency. The same-origin Next.js BFF requests bounded active-catalog projections from `packages/db`, revalidates all selections, invokes the deterministic integer engine, persists idempotent calculations and immutable quote snapshots, and emits only safe DTOs. PriceVersion activation, parity, rejection and overrides remain server-authorized transactional commands with append-only decision/audit evidence. Cacheable reference data is version-keyed; activation invalidates the active-version projection, while quote responses are always private/no-store. Browser code renders results but cannot submit an authoritative total. Evidence: [Phase 1C report](../../06-plans/completed/PHASE_1C_CONFIGURATOR_PRICING_REPORT.md).
+
 ## 18. Dependencies, risks and open questions
 
-Dependencies: all specs, ADR/evaluations, data/API/sync/media/AI/storage/security/performance/observability/deployment and `OWNER-DECISION-008/009`. Foundation runtime/framework/database/queue boundaries are fixed by ADR-0007–0010; open: production object/auth/telemetry/hosting providers, search, AI, region/network and RPO/RTO. `OWNER-DECISION-009` composes the already accepted ADR-0002 local-active read path with ADR-0008 PostgreSQL persistence; it does not approve a transport, search product or business schema. Risks: premature microservices, distributed inconsistency, provider lock-in, hidden live-source/staging dependency, derived-projection drift, destructive import, privacy boundary collapse and untestable recovery.
+Dependencies: all specs, ADR/evaluations, data/API/sync/media/AI/storage/security/performance/observability/deployment and `OWNER-DECISION-008/009/013`. Foundation runtime/framework/database/queue boundaries are fixed by ADR-0007–0010; open: production object/auth/telemetry/hosting providers, search, AI, region/network and RPO/RTO. Phase 1C implements the already accepted ADR-0003 boundary without selecting later providers or workflows. Risks: premature microservices, distributed inconsistency, provider lock-in, hidden live-source/staging dependency, derived-projection drift, destructive import, privacy boundary collapse and untestable recovery.
 
 ## 19. История изменений
 
@@ -229,3 +231,4 @@ Dependencies: all specs, ADR/evaluations, data/API/sync/media/AI/storage/securit
 | 0.7.0 | 2026-08-03 | Recorded completed Phase 1B.1 source/version/overlay/worker/admin/public topology, active real pilot versions and restart/idempotency evidence without starting later domains or production. |
 | 0.8.0 | 2026-08-03 | Recorded Phase 1B.2 full discovery inside the existing adapter boundary, including dynamic hierarchy/models/pagination, semantic source hashing and real 28/56/9/1655 evidence without activation or Phase 1C. |
 | 0.9.0 | 2026-08-04 | Recorded completed Phase 1B.2 resumable import, active v2 governance, local media, public/admin, rollback/restart/no-op evidence inside the existing adapter/PostgreSQL/StoragePort boundaries; later phases remain gated. |
+| 0.10.0 | 2026-08-08 | Recorded the independent pricing package, active PostgreSQL adapter, same-origin BFF, immutable quote/admin transaction boundaries, version-keyed reference cache and completed Phase 1C without Phase 1D topology. |

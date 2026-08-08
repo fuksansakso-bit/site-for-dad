@@ -26,7 +26,8 @@
     "test:coverage": "prisma generate --config prisma.config.ts && vitest run --coverage --config vitest.config.ts",
     "test:integration": "prisma generate --config prisma.config.ts && vitest run --config vitest.integration.config.ts",
     "test:scale": "prisma generate --config prisma.config.ts && vitest run --config vitest.scale.config.ts",
-    "typecheck": "prisma generate --config prisma.config.ts && tsc --noEmit -p tsconfig.json"
+    "typecheck": "prisma generate --config prisma.config.ts && tsc --noEmit -p tsconfig.json",
+    "pricing:bootstrap": "tsx src/phase1c-bootstrap.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "catalog:",
@@ -34,6 +35,7 @@
     "@project-name/config": "workspace:*",
     "@project-name/catalog": "workspace:*",
     "@project-name/observability": "workspace:*",
+    "@project-name/pricing": "workspace:*",
     "pg": "catalog:"
   },
   "devDependencies": {
@@ -41,6 +43,7 @@
     "@types/node": "catalog:",
     "@types/pg": "catalog:",
     "prisma": "catalog:",
+    "tsx": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },

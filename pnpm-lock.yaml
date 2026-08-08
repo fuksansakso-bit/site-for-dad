@@ -173,6 +173,9 @@ importers:
       '@project-name/observability':
         specifier: workspace:*
         version: link:../../packages/observability
+      '@project-name/pricing':
+        specifier: workspace:*
+        version: link:../../packages/pricing
       '@project-name/storage':
         specifier: workspace:*
         version: link:../../packages/storage
@@ -319,6 +322,9 @@ importers:
       '@project-name/observability':
         specifier: workspace:*
         version: link:../observability
+      '@project-name/pricing':
+        specifier: workspace:*
+        version: link:../pricing
       pg:
         specifier: 'catalog:'
         version: 8.22.0
@@ -335,6 +341,9 @@ importers:
       prisma:
         specifier: 'catalog:'
         version: 7.9.1(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(magicast@0.5.4)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(typescript@6.0.3)
+      tsx:
+        specifier: 'catalog:'
+        version: 4.23.4
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -442,6 +451,21 @@ importers:
       '@project-name/contracts':
         specifier: workspace:*
         version: link:../contracts
+    devDependencies:
+      '@project-name/tooling':
+        specifier: workspace:*
+        version: link:../tooling
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.13.3
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(vite@8.2.0(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.4)(yaml@2.9.0))
+
+  packages/pricing:
     devDependencies:
       '@project-name/tooling':
         specifier: workspace:*

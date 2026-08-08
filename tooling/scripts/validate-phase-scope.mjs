@@ -8,7 +8,6 @@ const forbiddenPathSegments = new Set([
   'calculator',
   'cart',
   'checkout',
-  'configurator',
   'installment',
   'orders',
   'photos',
@@ -60,6 +59,11 @@ const allowedPrismaModels = new Set([
   'LocalPriceOverride',
   'PublicationRecord',
   'CatalogVersionEntry',
+  'PricingRule',
+  'PricingParityRun',
+  'PricingCalculation',
+  'QuoteSnapshot',
+  'PricingVersionDecision',
 ]);
 const allowedPhaseTables = new Set([
   '_prisma_migrations',
@@ -104,6 +108,11 @@ const allowedPhaseTables = new Set([
   'local_price_override',
   'publication_record',
   'catalog_version_entry',
+  'pricing_rule',
+  'pricing_parity_run',
+  'pricing_calculation',
+  'quote_snapshot',
+  'pricing_version_decision',
 ]);
 
 async function collectFiles(directory) {
@@ -130,7 +139,7 @@ for (const rootName of ['apps', 'packages']) {
     }
     if (['.js', '.mjs', '.ts', '.tsx'].includes(extname(file))) {
       const source = await readFile(file, 'utf8');
-      if (/\b(?:whatsapp|configurator|visualizer|starfield)\b/i.test(source)) {
+      if (/\b(?:whatsapp|visualizer|starfield)\b/i.test(source)) {
         errors.push(`${repositoryPath}: later-phase feature reference is forbidden`);
       }
     }
@@ -141,7 +150,7 @@ const schemaPath = join(repositoryRoot, 'packages', 'db', 'prisma', 'schema.pris
 const schema = await readFile(schemaPath, 'utf8');
 for (const match of schema.matchAll(/^model\s+([A-Za-z][A-Za-z0-9_]*)\s*\{/gm)) {
   if (!allowedPrismaModels.has(match[1])) {
-    errors.push(`packages/db/prisma/schema.prisma: model ${match[1]} is outside Phase 1B.2`);
+    errors.push(`packages/db/prisma/schema.prisma: model ${match[1]} is outside Phase 1C`);
   }
 }
 
@@ -151,42 +160,55 @@ for (const file of await collectFiles(migrationRoot)) {
   const sql = await readFile(file, 'utf8');
   for (const match of sql.matchAll(/CREATE\s+TABLE\s+(?:"public"\.)?"?([a-z_][a-z0-9_]*)"?/gi)) {
     if (!allowedPhaseTables.has(match[1].toLowerCase())) {
-      errors.push(`${relative(repositoryRoot, file)}: table ${match[1]} is outside Phase 1B.2`);
+      errors.push(`${relative(repositoryRoot, file)}: table ${match[1]} is outside Phase 1C`);
     }
   }
 }
 
 const allowedRouteFiles = new Set([
+  'apps/web/app/api/v1/admin/pricing/activate/route.ts',
+  'apps/web/app/api/v1/admin/pricing/overrides/route.ts',
+  'apps/web/app/api/v1/admin/pricing/parity/route.ts',
+  'apps/web/app/api/v1/admin/pricing/reject/route.ts',
+  'apps/web/app/api/v1/admin/pricing/route.ts',
   'apps/web/app/api/v1/catalog/materials/[id]/route.ts',
   'apps/web/app/api/v1/catalog/materials/route.ts',
   'apps/web/app/api/v1/catalog/media/[id]/route.ts',
   'apps/web/app/api/v1/health/live/route.ts',
   'apps/web/app/api/v1/health/ready/route.ts',
+  'apps/web/app/api/v1/configurator/route.ts',
+  'apps/web/app/api/v1/configurator/validate/route.ts',
+  'apps/web/app/api/v1/pricing/calculate/route.ts',
+  'apps/web/app/api/v1/quotes/[token]/route.ts',
+  'apps/web/app/api/v1/quotes/route.ts',
 ]);
 const allowedPageFiles = new Set([
   'apps/web/app/admin/catalog/page.tsx',
+  'apps/web/app/admin/pricing/page.tsx',
   'apps/web/app/catalog/[slug]/page.tsx',
   'apps/web/app/catalog/page.tsx',
+  'apps/web/app/configure/page.tsx',
   'apps/web/app/page.tsx',
+  'apps/web/app/quote/[token]/page.tsx',
 ]);
 for (const file of await collectFiles(join(repositoryRoot, 'apps', 'web', 'app'))) {
   const repositoryPath = relative(repositoryRoot, file).replaceAll('\\', '/');
   if (file.endsWith('route.ts') && !allowedRouteFiles.has(repositoryPath)) {
-    errors.push(`${repositoryPath}: route is outside the current Phase 1B.2 allowlist`);
+    errors.push(`${repositoryPath}: route is outside the current Phase 1C allowlist`);
   }
   if (file.endsWith('page.tsx') && !allowedPageFiles.has(repositoryPath)) {
-    errors.push(`${repositoryPath}: page is outside the current Phase 1B.2 allowlist`);
+    errors.push(`${repositoryPath}: page is outside the current Phase 1C allowlist`);
   }
 }
 
 if (errors.length > 0) {
   process.stderr.write(
-    ['Phase 1B.2 scope validation failed:', ...errors.map((error) => `- ${error}`)].join('\n'),
+    ['Phase 1C scope validation failed:', ...errors.map((error) => `- ${error}`)].join('\n'),
   );
   process.stderr.write('\n');
   process.exitCode = 1;
 } else {
   process.stdout.write(
-    'Phase 1B.2 scope validation passed: only Foundation and authorized full-catalog surfaces exist.\n',
+    'Phase 1C scope validation passed: only Foundation, catalog and authorized configurator/pricing surfaces exist.\n',
   );
 }

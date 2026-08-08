@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Версия gate | 1.10.0 |
-| Проверяемая входная база | Phase 0B baseline `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`; Phase 0C baseline `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; Phase 1A completion `943d4a2efa5e05f0d05493633cf5eb549e072a22`; Phase 1B.1 completion baseline `af8411d2b854e572b6b61b214d3e99a88b96cafc`; `GLOBAL_SPEC.md` 0.15.0 |
-| Дата последнего self-audit | 2026-08-04, Europe/Moscow |
+| Версия gate | 1.12.0 |
+| Проверяемая входная база | Phase 0B baseline `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`; Phase 0C baseline `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; Phase 1A completion `943d4a2efa5e05f0d05493633cf5eb549e072a22`; Phase 1B.1 completion baseline `af8411d2b854e572b6b61b214d3e99a88b96cafc`; merged Phase 1B.2 main / Phase 1C baseline `3f1f70c986bd29518364a059393e9abd1b284a02`; `GLOBAL_SPEC.md` 0.17.0 |
+| Дата последнего self-audit | 2026-08-08, Europe/Moscow |
 | Решение по входу в 0B | **PASSED** |
 | Основание письменного решения | Приложенное владельцем задание «AUTHORIZED AMIGO FUNCTIONAL PARITY AND SPECIALIZED SPECS» и повторное указание «так приступай к работе» |
 | Утверждающие роли | Product Owner — владелец проекта; Business Owner — отец владельца проекта (`OWNER-DECISION-001`) |
@@ -19,7 +19,9 @@
 | Phase 1B.1 Pilot Acceptance Gate | **PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT** — QG-185–194 закрыты 2026-08-03 |
 | Phase 1B.2 Entry Gate | **AUTHORIZED_PHASE_1B2_IN_PROGRESS** — QG-195–202 закрыты 2026-08-03 |
 | Phase 1B.2 Completion Gate | **PASSED_PHASE_1B2_FULL_AMIGO_CATALOG** — QG-203–230 закрыты 2026-08-04 |
-| Разрешённая реализация | Только Phase 1B.2 full authorized catalog expansion; Phase 1C+ и production запрещены |
+| Phase 1C Entry Gate | **AUTHORIZED_PHASE_1C_IN_PROGRESS** — QG-231–240 закрыты 2026-08-08 |
+| Phase 1C Completion Gate | **PASSED_PHASE_1C_CONFIGURATOR_PRICING** — QG-241–270 закрыты 2026-08-08 |
+| Разрешённая реализация | Phase 1C завершена; Phase 1D+ и production запрещены без нового письменного решения |
 
 Entry gate подтверждает, что исправления 0A.1 внесены и письменное решение начать документную фазу 0B получено. Он не означает готовность ценовой формулы, импорта, приложения или запуска. Открытые TBD блокируют утверждение зависимой спецификации или функции, но не отменяют разрешение создавать документацию 0B с безопасным поведением.
 
@@ -358,7 +360,59 @@ Entry result: **AUTHORIZED_PHASE_1B2_IN_PROGRESS**. Only the active plan scope m
 
 Completion result: **PASSED_PHASE_1B2_FULL_AMIGO_CATALOG**. Evidence is frozen in [PHASE_1B2_FULL_AMIGO_CATALOG_REPORT.md](../06-plans/completed/PHASE_1B2_FULL_AMIGO_CATALOG_REPORT.md). This completes only Phase 1B.2; Phase 1C+ and production remain unauthorized.
 
-## 10. История изменений
+## 10. Phase 1C configurator and verified pricing gates
+
+### 10.1. Entry gate
+
+- [x] **QG-231 — MUST:** `OWNER-DECISION-013` письменно разрешает только Phase 1C и сохраняет запрет preview/photo/AI/cart/order/WhatsApp/installment/payment/final design/production/Phase 1D+.
+- [x] **QG-232 — MUST:** Phase 1B.2 присутствует в merged `main`; baseline `3f1f70c986bd29518364a059393e9abd1b284a02`, clean pre-change tree и branch `phase/1c-configurator-pricing` записаны без history rewrite.
+- [x] **QG-233 — MUST:** обязательные repository/global/profile/data/API/architecture/security/test/roadmap/report, accepted ADR и owner decisions прочитаны; критического противоречия нет.
+- [x] **QG-234 — MUST:** persistent Docker named volumes не удалены; PostgreSQL/VersityGW/web/worker запущены, zero pending migrations подтверждены, public `/catalog` и protected `/admin/catalog` отвечают.
+- [x] **QG-235 — MUST:** `pnpm.cmd test:catalog-full` прошёл на реальной активной CatalogVersion v2 / PriceVersion v2 с 1 655 variants, 2 818 media objects и полным manifest, не повторяя Phase 1B.2 research.
+- [x] **QG-236 — MUST:** AMIGO calculator evidence получено только разрешённым public flow без login/CAPTCHA/access bypass/secrets; dated source version, hashes, Grozny context, rule scopes and fixtures committed.
+- [x] **QG-237 — MUST:** минимум одно точное правило доказано для каждого из четырёх MVP families; roller/Zebra ограничены exact lookup fixtures, horizontal/vertical — proven area rule/envelope, остальное безопасно деградирует.
+- [x] **QG-238 — MUST:** active plan содержит проверяемый результат, один `IN_PROGRESS` stage, dependencies, ten logical commits, verification/docs/PR gates and explicit Phase 1D prohibition.
+- [x] **QG-239 — MUST:** canonical ownership/runtime boundaries синхронизированы: active PostgreSQL version only, server-side price, integer millimetres/kopecks, local override priority, per-unit minimum, immutable quote and no fabricated zero.
+- [x] **QG-240 — MUST:** entry documentation passes format/docs/link/identifier/diff checks before production code begins; `docs:check` validated 78 files / 1,509 normative IDs and full `format:check`/`git diff --check` passed on the local shell.
+
+Entry result: **AUTHORIZED_PHASE_1C_IN_PROGRESS**. Completion evidence is not inferred from authorization.
+
+### 10.2. Completion gate
+
+- [x] **QG-241 — MUST:** real active PostgreSQL catalog powers all configurator steps and incompatible/unpublished/hidden/unavailable/inactive selections fail closed without loading the full catalog into the browser.
+- [x] **QG-242 — MUST:** server-side compatibility and confirmed dimension constraints cover family/category/system/model/material/mount/hardware/control/options; unknown dimensions return the required manual-review warning without blocking unrelated combinations.
+- [x] **QG-243 — MUST:** independent pricing package is deterministic, UI-independent and server-only; inputs/outputs/statuses follow the approved contract and money never uses floating-point arithmetic.
+- [x] **QG-244 — MUST:** verified rules cover roller, Zebra, horizontal aluminium and vertical fixture scopes; unsupported combinations have no invented amount and return `PRICE_ON_REQUEST` or `MANUAL_REVIEW_REQUIRED`.
+- [x] **QG-245 — MUST:** 150,000 kopecks is applied to each unit before quantity; measurement, delivery and installation appear as separate zero-cost lines; quantity and overflow are safe.
+- [x] **QG-246 — MUST:** only an active reviewed PriceVersion is public; parity failure blocks affected rule activation, OWNER/ADMIN activation/rejection is audited and MANAGER is denied.
+- [x] **QG-247 — MUST:** active local override precedes source price, can be returned to AMIGO source without source mutation, survives sync, and every create/remove/use is attributable.
+- [x] **QG-248 — MUST:** successful saved quote is immutable and stores selected IDs/labels/articles/options/dimensions/quantity/full breakdown/catalog+price+source versions/overrides/minimum/status/timestamp/correlation; later catalog/price changes do not mutate it.
+- [x] **QG-249 — MUST:** public configuration/options/validation/calculation/save/get APIs and admin version/activation/rejection/override/parity APIs have runtime schemas, safe error contract, correlation and dependency statuses.
+- [x] **QG-250 — MUST:** public mutations enforce same-origin/CSRF boundary, bounded request/rate limits and idempotency; clients cannot submit or persist their own total.
+- [x] **QG-251 — MUST:** `/configure` is responsive, preserves step input, supports Back, compatible filtering, clear errors, short summary, server calculation/breakdown/snapshot and mobile viewport without final-design or Phase 1D work.
+- [x] **QG-252 — MUST:** minimal pricing admin shows active/candidate source/date/rule/change/diff/percentage/parity/error/unsupported/audit state and allows only authorized operations.
+- [x] **QG-253 — MUST:** unit tests pass for integer money, conversions/rounding, minimum, quantity, free services, override, inactive version, request/manual statuses, compatibility and dimensions.
+- [x] **QG-254 — MUST:** contract tests pass for configurator/pricing/quote/admin/error APIs, including safe invalid/dependency/inactive responses.
+- [x] **QG-255 — MUST:** integration tests pass against PostgreSQL for calculation, activation, immutable snapshot, override persistence, audit, rollback and duplicate idempotency.
+- [x] **QG-256 — MUST:** browser tests complete supported calculation, quantity/minimum/free services/request/manual/incompatible paths and mobile viewport with no console error or horizontal overflow.
+- [x] **QG-257 — MUST:** at least ten dated fixtures per automatically supported family are committed with source metadata; every active rule has maximum AMIGO parity deviation at most 1 RUB and failure blocks activation.
+- [x] **QG-258 — MUST:** property/boundary tests cover zero/negative/huge dimensions, zero/large quantity, integer overflow, minimum boundary, kopecks and rounding.
+- [x] **QG-259 — MUST:** configurator query indexes, bounded server filtering, no-N+1 projection and version activation cache invalidation are implemented; quote snapshots are never publicly cached.
+- [x] **QG-260 — MUST:** source unavailable/stale/inactive/dependency/error conditions degrade safely without AMIGO runtime dependency, stack/SQL/secret disclosure or fictitious price.
+- [x] **QG-261 — MUST:** required schema migration validates, replays on empty/upgrade databases and preserves active Phase 1B.2 volumes/data; rollback uses forward compensation without deletion.
+- [x] **QG-262 — MUST:** build, typecheck, lint, architecture, formatting, docs, security artifact/secret and exact CI-equivalent gates pass.
+- [x] **QG-263 — MUST:** only affected README/changelog/index/spec/data/API/architecture/test/open-question/traceability/gate/roadmap sections and completion report are updated to match implementation.
+- [x] **QG-264 — MUST:** logical commit sequence is preserved and final tracked/untracked worktree is clean; the preserved pre-phase user stash is not lost.
+- [x] **QG-265 — MUST:** branch is pushed to existing origin and a Draft PR titled `Phase 1C: configurator and verified pricing engine` targets main without merge.
+- [x] **QG-266 — MUST:** preview/client-photo/AI/cart/order/WhatsApp/installment/payment/final landing/starfield/production deployment and Phase 1D are absent.
+- [x] **QG-267 — MUST:** manufacture lead time 2–7 calendar days, warranty 12 months and label «Предварительная стоимость» appear without tax/final-offer/quote-expiry invention.
+- [x] **QG-268 — MUST:** old snapshot replay stays byte-for-byte stable after candidate activation and local override changes while a new calculation uses the current active version.
+- [x] **QG-269 — MUST:** transaction failure leaves no partial quote/version/override/audit state and public duplicate idempotency keys return the same authoritative result.
+- [x] **QG-270 — MUST:** completion report records base/branch/commits/URL/families/rules/fixtures/deviation/examples/version/snapshot/tests/skips/gate/PR/status/TBD and confirms Phase 1D was not started.
+
+Completion result: **PASSED_PHASE_1C_CONFIGURATOR_PRICING**. Every `QG-241`–`QG-270` item has repository/runtime evidence; the branch is pushed and Draft PR #2 remains unmerged.
+
+## 11. История изменений
 
 | Версия | Дата | Изменение |
 |---|---|---|
@@ -373,5 +427,7 @@ Completion result: **PASSED_PHASE_1B2_FULL_AMIGO_CATALOG**. Evidence is frozen i
 | 1.8.0 | 2026-08-03 | QG-185–194 зафиксировали completed real 32-variant/59-media pilot, approved active catalog/price versions, restart/no-op recovery, public/admin surfaces and passed 9/9 CI gate; later phases and production remain unauthorized. |
 | 1.9.0 | 2026-08-03 | `OWNER-DECISION-012` и passed QG-195–202 разрешили только Phase 1B.2; QG-203–230 остаются открыты до real completion evidence, Phase 1C+ и production запрещены. |
 | 1.10.0 | 2026-08-04 | QG-203–230 closed on accepted 21 019-item manifest, active v2 versions, 2 818 media objects, review/bulk/rollback/restart/no-op/public/scale and exact-toolchain 9/9 CI evidence; Phase 1C+ and production remain unauthorized. |
+| 1.11.0 | 2026-08-08 | `OWNER-DECISION-013` and QG-231–240 authorize only Phase 1C after merged-main/catalog/volume/public-calculator evidence; QG-241–270 remain open until configurator/pricing/quote/admin/parity/CI/PR acceptance. |
+| 1.12.0 | 2026-08-08 | QG-241–270 closed on active PostgreSQL configurator, four verified pricing scopes, 40 parity fixtures, immutable quotes, authorized admin, server/API/browser/migration/security evidence, exact 9/9 CI-equivalent gate, clean push and unmerged Draft PR #2; Phase 1D+ remains prohibited. |
 | 0.2.0 | 2026-08-02 | Entry gate обновлён для `GLOBAL_SPEC` 0.4.0 и partner-authorized scope; письменное поручение владельца зафиксировано как разрешение начать 0B; добавлен отдельный completion gate 0B. |
 | 0.1.0 | 2026-08-02 | Предыдущий self-audit 0A.1 для версии 0.3.1; проверки `QG-001`–`087` впоследствии зарезервированы. |

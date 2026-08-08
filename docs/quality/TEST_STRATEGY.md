@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A, Phase 1B.1 and Phase 1B.2 gates passed; later-feature and production tests gated |
-| Версия | 0.9.0 |
-| Дата | 2026-08-04 |
+| Статус | Phase 1A, Phase 1B.1, Phase 1B.2 and Phase 1C gates passed; Phase 1D+/production tests gated |
+| Версия | 1.0.0 |
+| Дата | 2026-08-08 |
 | Requirements | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) and profile specs |
 | Acceptance | [ACCEPTANCE_CRITERIA.md](../specs/01-product/ACCEPTANCE_CRITERIA.md) |
 | Traceability | [TRACEABILITY_MATRIX.md](../00-global/TRACEABILITY_MATRIX.md) |
@@ -189,6 +189,14 @@ The enclosing 2026-08-03 CI-equivalent run passed 9/9 stages with the scale gate
 
 The final Phase 1B.2 exact-toolchain CI-equivalent execution passed 9/9 stages: format/docs/scope/boundary, lint/type/coverage, fresh/upgrade/recovery database paths, 15/15 storage contract, production build/artifact scan plus scale gate, 25/25 baseline and 5/5 active-catalog browser profiles, repository secret scan over 358 files and critical advisory scan. The exact outcome is linked from QG-227 and the Phase 1B.2 completion report; no later-phase or production test is inferred.
 
+### 13.6. Phase 1C configurator and pricing acceptance
+
+The pricing package passed 13 unit/property/boundary cases for integer money, area/rounding, minimum boundary, quantity/overflow, free services, overrides, inactive/request/manual statuses, compatibility and dimensions. Shared pricing contracts passed 9 tests across four files, including strict unknown-field rejection and amount/status consistency. The real PostgreSQL integration scenario verified authoritative calculation and duplicate replay, local-override precedence/removal, per-unit minimum, immutable old snapshot, activation decision/audit, transaction rollback and append-only database enforcement against the retained active catalog.
+
+Targeted Playwright acceptance passed 8/8 scenarios across Chromium desktop and narrow mobile: complete supported configuration, quantity/free services/quote save, minimum-price rendering, non-numeric request state, manual dimension review and incompatible state without console errors or horizontal overflow. Forty committed source fixtures—ten per automatically supported family—passed parity; maximum observed deviation was 100 kopecks. Manual in-app verification repeated the real roller flow and immutable quote view. No Phase 1D, production, client-photo or order test is claimed.
+
+The final exact-toolchain CI-equivalent execution passed all 9/9 stages in 429.9 seconds: frozen install; format/docs/scope/boundary; lint/type/coverage; clean/repeat/upgrade/drift/recovery PostgreSQL paths; 15-case VersityGW storage contract; production build/artifact and catalog-scale checks; 25/25 fail-closed baseline browser scenarios plus 5/5 active-catalog profiles; secret scan and the configured critical-severity dependency gate. The advisory scan reported one high-severity finding below that critical gate; it is not represented as a clean production dependency audit.
+
 ## 14. Dependencies, risks and open questions
 
 Dependencies: all specs/ADRs/evaluations, implementation stack/environments, approved fixtures/business data/support matrix. Open: numeric budgets/thresholds, dimensional pricing/parity fixtures, browser/AT matrix, provider sandboxes, test tooling/owners, UAT roles, security test scope and retention of artifacts. Risks: fake fixtures mistaken production truth, flaky E2E, unlicensed media, provider dependence, automated a11y/AI false confidence and unsafe production testing.
@@ -206,3 +214,4 @@ Dependencies: all specs/ADRs/evaluations, implementation stack/environments, app
 | 0.7.0 | 2026-08-03 | Added the isolated Phase 1B.2 active-catalog browser gate and its synthetic data, private storage, no-runtime-AMIGO, conditional delivery, responsive and recovery contract. |
 | 0.8.0 | 2026-08-03 | Added the executed 2,048-material synthetic scale gate with bounded fixture persistence, constant query-plan counts, cursor completeness, zero temporary-block spill and atomic bulk evidence. |
 | 0.9.0 | 2026-08-04 | Added and recorded real full-catalog manifest/version/public/object/restart/recovery/semantic no-op acceptance and the final Phase 1B.2 exact-toolchain CI gate without claiming later-feature or production readiness. |
+| 1.0.0 | 2026-08-08 | Added and recorded Phase 1C unit/property, contract, real-PostgreSQL, parity, exact 9/9 CI-equivalent and desktop/mobile configurator evidence, including immutable quotes, override/minimum/idempotency/rollback/audit boundaries and ≤1 RUB parity. |

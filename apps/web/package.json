@@ -20,6 +20,7 @@
     "@project-name/identity": "workspace:*",
     "@project-name/jobs": "workspace:*",
     "@project-name/observability": "workspace:*",
+    "@project-name/pricing": "workspace:*",
     "@project-name/storage": "workspace:*",
     "next": "catalog:",
     "react": "catalog:",

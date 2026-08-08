@@ -4,10 +4,10 @@
 
 | Поле | Значение |
 |---|---|
-| Фаза документа | Phase 1A, Phase 1B.1 and Phase 1B.2 completed; no next phase authorized; Phase 1C+ hold |
-| Статус roadmap | **PHASE 1A PASSED / PHASE 1B.1 PASSED / PHASE 1B.2 PASSED / PHASE 1C+ HOLD** |
+| Фаза документа | Phase 1A, Phase 1B.1, Phase 1B.2 and Phase 1C completed; Phase 1D+ hold |
+| Статус roadmap | **PHASE 1A PASSED / PHASE 1B.1 PASSED / PHASE 1B.2 PASSED / PHASE 1C PASSED / PHASE 1D+ HOLD** |
 | Scope | [MVP_SCOPE](MVP_SCOPE.md) |
-| Планы / evidence | [PHASE_1A_FOUNDATION_PLAN](active/PHASE_1A_FOUNDATION_PLAN.md), [PHASE_1A_FOUNDATION_REPORT](completed/PHASE_1A_FOUNDATION_REPORT.md), [PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN](active/PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN.md), [PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT](completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md), [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN](active/PHASE_1B2_FULL_AMIGO_CATALOG_PLAN.md), [PHASE_1B2_FULL_AMIGO_CATALOG_REPORT](completed/PHASE_1B2_FULL_AMIGO_CATALOG_REPORT.md) |
+| Планы / evidence | [PHASE_1A_FOUNDATION_PLAN](active/PHASE_1A_FOUNDATION_PLAN.md), [PHASE_1A_FOUNDATION_REPORT](completed/PHASE_1A_FOUNDATION_REPORT.md), [PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN](active/PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN.md), [PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT](completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md), [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN](active/PHASE_1B2_FULL_AMIGO_CATALOG_PLAN.md), [PHASE_1B2_FULL_AMIGO_CATALOG_REPORT](completed/PHASE_1B2_FULL_AMIGO_CATALOG_REPORT.md), [PHASE_1C_CONFIGURATOR_PRICING_PLAN](active/PHASE_1C_CONFIGURATOR_PRICING_PLAN.md), [PHASE_1C_CONFIGURATOR_PRICING_REPORT](completed/PHASE_1C_CONFIGURATOR_PRICING_REPORT.md) |
 
 - **ROADMAP-001 — MUST:** фазы выполняются по порядку 1A–1H; параллельный research MAY идти, но dependent implementation не обходит entry gate.
 - **ROADMAP-002 — MUST:** каждая возможность включается feature flag только после собственных acceptance/security/data gates; наличие кода не равно production activation.
@@ -72,7 +72,7 @@ Execution contract: [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN](active/PHASE_1B2_FULL_AM
 |---|---|
 | ID / цель | **ROADMAP-1C-001:** валидировать конфигурацию и воспроизводимо вычислять preliminary price только для доказанных systems/rules. |
 | Зависимости | 1B; ADR-0003/0008; configurator/pricing specs; pricing policy; approved PriceVersion and compatibility/size evidence. |
-| Входные условия | Закрыты rule-specific `TBD-PRICE-*`, `TBD-SIZE-001`, relevant dimension/install/mechanism TBD; approver/tolerance defined; minimum 1500 scope resolved before use. Unclosed family remains manual quote, not global blocker. |
+| Входные условия | Для каждого автоматически активируемого scope доказаны source inputs/outputs, compatibility and size envelope; approver/tolerance/minimum scope resolved. Unclosed family remains manual/request, not global blocker. |
 | Deliverables | System/material/options/quantity selection; millimetre inputs; compatibility validation; price snapshot/provider; local override; immutable breakdown; preliminary price; manual quote fallback; parity fixtures/tests. |
 | Acceptance criteria | Exact kopeck arithmetic; active version only; old quote reproduces; unknown/incompatible/stale data never yields numeric certainty; local override provenance/audit; several items keep own inputs/version. |
 | Тесты | Unit/table/property money and dimensions; boundaries/rounding; compatibility; provider contract; stale/missing/zero prohibition; override precedence; saved snapshot replay; AMIGO parity tolerance and failure; concurrency/idempotency. |
@@ -80,6 +80,8 @@ Execution contract: [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN](active/PHASE_1B2_FULL_AM
 | Definition of Done | Every active pricing path has approved rule, examples and parity evidence; manual fallback covers all other paths; audit and rollback to previous PriceVersion rehearsed. |
 | Запрещённые изменения | Guessed formulas, implicit 1500 minimum, float money, modifying historical quote, activating price without approver/parity, presenting estimate as final offer. |
 | Rollback | Deactivate bad PriceVersion/override; reactivate last approved version; preserve historical quotes; disable affected family to `PRICE_ON_REQUEST`; compensate schema forward. |
+
+`OWNER-DECISION-013` authorized this phase only from base `3f1f70c986bd29518364a059393e9abd1b284a02`. Rule-specific evidence is recorded in [AMIGO_PRICING_VERIFICATION_2026-08-08](../research/AMIGO_PRICING_VERIFICATION_2026-08-08.md); unresolved size/rule scopes degrade independently. Phase 1C completed 2026-08-08 as `PASSED_PHASE_1C_CONFIGURATOR_PRICING`; exact implementation, tests and acceptance are frozen in the [plan](active/PHASE_1C_CONFIGURATOR_PRICING_PLAN.md) and [completion report](completed/PHASE_1C_CONFIGURATOR_PRICING_REPORT.md). Phase 1D remains on hold.
 
 ## 5. PHASE 1D — STANDARD PREVIEW
 
@@ -181,3 +183,4 @@ Execution contract: [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN](active/PHASE_1B2_FULL_AM
 | 1.5.0 | 2026-08-03 | Phase 1B.1 отмечена passed со ссылкой на 32-variant/59-media/version/restart/CI completion evidence; Phase 1B.2/1C+ hold сохранён. |
 | 1.6.0 | 2026-08-03 | `OWNER-DECISION-012` и active plan разрешили только Phase 1B.2 full authorized catalog expansion с manifest/resume/media/price/review/bulk/public/admin/performance gates; Phase 1C+ и production сохранены на hold. |
 | 1.7.0 | 2026-08-04 | Phase 1B.2 отмечена passed со ссылкой на accepted full manifest, active v2 catalog/price, 2 818 media objects, restart/no-op/public/CI report; Phase 1C+ и production остаются на hold. |
+| 1.8.0 | 2026-08-08 | Phase 1C отмечена passed со ссылкой на active calculation v5, four scopes/40 fixtures/≤1 RUB parity, configurator/quote/admin/tests/CI report; Phase 1D+ и production остаются на hold. |

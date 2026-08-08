@@ -4,11 +4,11 @@
 
 | Поле | Значение |
 |---|---|
-| Фаза | Phase 1A, Phase 1B.1 and Phase 1B.2 passed; no next phase authorized; Phase 1C+ hold |
-| Версия | 1.10.0 |
-| Дата | 2026-08-04, Europe/Moscow |
+| Фаза | Phase 1A, Phase 1B.1, Phase 1B.2 and Phase 1C passed; no next phase authorized; Phase 1D+ hold |
+| Версия | 1.11.0 |
+| Дата | 2026-08-08, Europe/Moscow |
 | Состояние покрытия | `COVERED_WITH_VISIBLE_TBD` |
-| Главный источник требований | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.15.0 |
+| Главный источник требований | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.17.0 |
 | Feature contract | [FEATURE_SPEC.md](../specs/01-product/FEATURE_SPEC.md) |
 | Stories | [USER_STORIES.md](../specs/01-product/USER_STORIES.md) |
 | Acceptance | [ACCEPTANCE_CRITERIA.md](../specs/01-product/ACCEPTANCE_CRITERIA.md) |
@@ -118,7 +118,7 @@
 |---|---|---|
 | Partner permission | `PARTNER-001` → `AMIGO-PERMISSION-2026-08-02-001` → asset-level rights/publication → audit | Source scope подтверждён; конкретные assets проходят mapping |
 | Dynamic catalog | AMIGO authority → controlled discovery/import/sync → manifest + PostgreSQL staged local catalog → validation/diff → Business Owner review → explicit admin activation of immutable `CatalogVersion` → overlay composition → version-pinned public/derived reads | Phase 1B.2 accepted: 21 019-item manifest, active v2 composition and 1 655 public variants |
-| Price | AMIGO base-price authority → immutable source/price version in PostgreSQL → applicable Business Owner local override with explicit precedence → exact input/breakdown → quote history → parity suite | Boundary complete; public calculation never reads AMIGO directly; formula/data TBD, tolerance/minimum scope/activator resolved |
+| Price | AMIGO base-price authority → immutable source/price version in PostgreSQL → applicable Business Owner local override with explicit precedence → exact input/breakdown → quote history → parity suite | Phase 1C passed for four dated scopes/40 fixtures/≤1 RUB; other formulas remain request/manual and public calculation never reads AMIGO directly |
 | Standard preview | published configuration/material → renderer profile/assets → deterministic `STANDARD_INTERIOR_PREVIEW` → fallback | Отдельный от client-photo geometry/AI обязательный путь |
 | AI preview | private upload → user-confirmed geometry → base render → optional constrained refinement → validation/delete | Provider/benchmark/TTL TBD; base/manual fallback обязателен |
 | Media | source/right evidence → immutable original → derivatives → asset-level approval → public/private delivery → revoke/delete | 2 818 approved local catalog objects accepted; hotlink запрещён; client/AI всегда private |
@@ -140,6 +140,7 @@
 | `OWNER-DECISION-010` | No full-catalog/formula/provider TBD closed: authorized frozen Phase 1B.1 pilot is complete | `GLOBAL_SPEC`, stable Phase 1B.1 plan, dated transport discovery, quality gate and completion report | `QG-169`–`176`, `QG-185`–`194`; real 32-ID pilot passed |
 | `OWNER-DECISION-011` | No production TBD closed; `TBD-INFRA-010` created to preserve provider selection gate | `GLOBAL_SPEC`, ADR-0009, architecture/storage/media/security/deployment/test specs, local/CI scripts, README and dependency baseline | `STORAGE-SPEC-022`–`027`, `TEST-SPEC-019`–`021`; VersityGW 15/15 contract and Docker restart persistence passed 2026-08-03 |
 | `OWNER-DECISION-012` | No TBD closed in advance; accepted evidence later closed `TBD-ASSORT-002`, `TBD-ASSORT-006` and catalog PriceVersion aspect `TBD-PRICE-001` | `GLOBAL_SPEC`, source/rights/pricing policies, implementation/spec roadmaps, QG-195–230, stable plan and completion report | QG-195–230 passed; Phase 1C+ explicitly excluded |
+| `OWNER-DECISION-013` | Active calculation aspect of `TBD-PRICE-001` resolved; `TBD-PRICE-002`–`005` and `TBD-SIZE-001` partially evidenced only for four scopes | `GLOBAL_SPEC`, configurator/pricing/data/API/architecture/test specs, QG-231–270, dated fixtures, stable plan and completion report | QG-231–270 passed; Phase 1D+ explicitly excluded |
 
 ## 7. Phase 0C MVP and implementation traceability
 
@@ -155,6 +156,7 @@
 | `MVP-018/019` | `SCOPE-010/012`, `FR-AUTH-007/008`, admin/auth specs | `US-ADMIN-002`, `US-CUSTOMER-001/002` and linked AC/tests | 1F | Identity/recovery/role gates; `TBD-ACCOUNT-001` resolved |
 | `MVP-020/026` | `SCOPE-007/041/042`, AI visualizer/pipeline/evaluation | `US-GUEST-006`, `US-AI-001`–`003` and linked AC/tests | 1G | Provider/privacy/TTL/evaluation/cost gates |
 | `ROADMAP-1A-001`, `PLAN-1A-001` | Architecture + accepted ADR-0007–0010 | `PLAN-1A-AC-001`–`010` execution evidence in [Phase 1A report](../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md) | 1A | `PASSED_PHASE_1A_FOUNDATION`; Phase 1B forbidden |
+| `ROADMAP-1C-001`, `OWNER-DECISION-013` | `FR-CONFIG-*`, `FR-PRICE-*`, `FR-CALC-*`, active catalog/price/quote/admin contracts | Pricing unit/contract/integration/parity and browser evidence in [Phase 1C report](../06-plans/completed/PHASE_1C_CONFIGURATOR_PRICING_REPORT.md) | 1C | `PASSED_PHASE_1C_CONFIGURATOR_PRICING`; Phase 1D forbidden |
 | `ROADMAP-1H-001` | deployment/security/performance/a11y/test specs | NFR stories/AC/tests + recovery/admin chains | 1H | Full launch checklist and go/no-go |
 
 Post-MVP IDs `POST-MVP-001`–`015` have no Phase 1 delivery commitment and MUST NOT be inferred from existing general feature stories without a future scope/traceability update.
@@ -202,6 +204,15 @@ Detailed runtime versions, commit list, skipped production-only checks and accep
 | `QG-219`–`227`, scale/unit/contract/integration/browser/recovery/CI | 2 048-item scale harness, catalog/full acceptance, five browser profiles and root exact-toolchain CI | Bounded queries/cursors/no spill, semantic repeat `ae9b8759-7b14-4ca6-9b13-b518113a63b0` with zero versions/differences, full 2 818-object verification and all CI stages passed |
 | `QG-228`–`230`, docs/history/scope | Canonical specs, policies, stable plan, report, changelog and final commit | Phase 1B.2 evidence synchronized; Phase 1C+, production provider/secrets/deployment absent |
 
+### 8.4. Phase 1C configurator and pricing execution evidence
+
+| Gate / behavior | Implementation | Verification / result |
+|---|---|---|
+| `QG-241`–`252`, configurator/pricing/quote/admin/security | [`packages/pricing`](../../packages/pricing/), [PostgreSQL adapter](../../packages/db/src/pricing.ts), [public flow](../../apps/web/app/configure/) and versioned API routes | Active CatalogVersion v2 + calculation PriceVersion v5; dynamic eligibility/dimensions, server totals, local override, immutable quote, safe statuses, OWNER/ADMIN and CSRF/origin/rate/idempotency/audit boundaries passed |
+| `QG-253`–`258`, unit/contract/integration/browser/parity/property | [engine tests](../../packages/pricing/test/engine.test.ts), [real PostgreSQL test](../../packages/db/test/integration/pricing-real.integration.test.ts), [browser tests](../../tests/browser/configurator-pricing.spec.ts) | 13 pricing unit/property + 9 contract + real PostgreSQL scenario + 8 Playwright scenarios passed; 40/40 fixtures, maximum deviation 100 kopecks |
+| `QG-259`–`269`, performance/degradation/migration/quality/history | Version/configuration indexes, bounded projections, additive migration, no-store snapshots, transaction/idempotency checks and repository gates | No N+1/full-browser catalog load/live AMIGO; migration preserves v2 data/volumes; rollback/duplicate/old-snapshot assertions and CI-equivalent quality checks passed; Phase 1D absent |
+| `QG-270`, documentation | Canonical affected specs, plan, report, changelog and traceability | Base/branch/commits/routes/families/rules/fixtures/deviation/examples/version/snapshot/tests/skips/gate/PR/status/TBD recorded |
+
 ## 9. Coverage metrics
 
 | Метрика | Значение |
@@ -221,12 +232,13 @@ Detailed runtime versions, commit list, skipped production-only checks and accep
 | Phase 1A automated tests | 61 unit/contract + 19 integration/recovery + 20 browser |
 | Phase 1B.1 acceptance | QG-169–194 passed; real 32-ID/59-media publication pilot and final CI completed |
 | Phase 1B.2 acceptance | QG-195–230 passed; real full manifest, active v2 versions, media/restart/no-op/public/CI evidence completed |
+| Phase 1C acceptance | QG-231–270 passed; four verified scopes, 40 fixtures, active calculation v5, immutable quotes, admin and CI evidence completed |
 
 ## 10. Completion conditions
 
 Покрытие считается валидным, если автоматическая проверка подтверждает существование всех linked files и каждого ID, stories сохраняют полный шаблон, acceptance содержит позитивное и негативное проверяемое поведение, test strategy содержит level/preconditions/input/expected result/status, а открытые TBD не обозначены как выполненные tests.
 
-Матрица отражает завершённые Phase 1A/Phase 1B.1/Phase 1B.2 по [stable plan](../06-plans/active/PHASE_1B2_FULL_AMIGO_CATALOG_PLAN.md) и [completion report](../06-plans/completed/PHASE_1B2_FULL_AMIGO_CATALOG_REPORT.md). Phase 1C+ и production deployment не разрешены.
+Матрица отражает завершённые Phase 1A/Phase 1B.1/Phase 1B.2/Phase 1C по [Phase 1C plan](../06-plans/active/PHASE_1C_CONFIGURATOR_PRICING_PLAN.md) и [completion report](../06-plans/completed/PHASE_1C_CONFIGURATOR_PRICING_REPORT.md). Phase 1D+ и production deployment не разрешены.
 
 ## 11. История изменений
 
@@ -244,3 +256,4 @@ Detailed runtime versions, commit list, skipped production-only checks and accep
 | 1.8.0 | 2026-08-03 | Phase 1B.1 implementation, real run/version/media/public delivery, restart/no-op recovery, QG-185–194 and final 9/9 CI evidence linked; later-phase hold preserved. |
 | 1.9.0 | 2026-08-03 | `OWNER-DECISION-012`, active Phase 1B.2 plan and QG-195–230 linked without claiming full import evidence; Phase 1C+ and production hold preserved. |
 | 1.10.0 | 2026-08-04 | Linked accepted real run/manifest, active v2 pair, 2 818 media objects, bulk/rollback/restart/no-op/public/scale/CI evidence and QG-203–230; later-phase hold preserved. |
+| 1.11.0 | 2026-08-08 | Linked `OWNER-DECISION-013`, active catalog/calculation v5, four verified scopes/40 fixtures/≤1 RUB parity, configurator/quote/admin/security/tests and QG-231–270; Phase 1D+ hold preserved. |

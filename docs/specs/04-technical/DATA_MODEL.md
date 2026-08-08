@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A infrastructure and accepted Phase 1B.2 source/catalog/media/price/overlay/review/bulk schema implemented and verified |
-| Версия | 0.11.0 |
-| Дата | 2026-08-04 |
+| Статус | Phase 1A–1C schema implemented and verified; later business/private-media aggregates gated |
+| Версия | 0.12.0 |
+| Дата | 2026-08-08 |
 | Architecture | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | Glossary | [GLOSSARY.md](../../00-global/GLOSSARY.md) |
 
@@ -168,13 +168,23 @@ Schema changes use additive/read-old-write-new/dual-compatible evolution, backfi
 
 Tests: ID uniqueness, optimistic concurrency, effective interval overlap, hierarchy cycles, reference integrity, readiness matrix, exact money, historical replay, source rename/split/merge/removal, preservation of local data/overlays on removal, dynamic category, catalog-version source/timestamp/approval completeness, single active pointer, public/derived version pinning, override precedence without source mutation, ownership/IDOR, private graph deletion/late job, rights revoke, active pointer rollback, event/job deduplication, catalog-change audit coverage, audit schema redaction, backup restore revocation and migration compatibility.
 
-## 17. Physical schema record through Phase 1B.2
+## 17. Physical schema record through Phase 1C
 
-The seven Phase 1A identity/audit/delivery tables remain unchanged. Fifteen reviewed Phase 1B.1/1B.2 migrations additionally physicalize only the authorized partner/source, resumable sync/manifest, normalized catalog hierarchy, typed media mapping, immutable source-price/price-version, append-only difference-review and bulk-command evidence, and separate business-overlay/publication aggregates. `SourcePriceRecord` has an exact-one `materialVariantId`/`modelId` target and required semantic `sourceVersion`; `CatalogDifferenceReviewBatch` binds one catalog or price candidate to exact review selection/checksum/actor/idempotency evidence; `CatalogBulkCommand` binds one successful local-overlay transaction to its exact target IDs and before/after states. Their append-only triggers remain active after migration backfill. Forward compatibility preserves pilot family/model identities, treats article as a non-unique searchable fact and indexes current semantic media joins without rewriting historical evidence. Accepted v2 pins 1 739 composition entries, 1 664 exact price revisions and 2 818 approved media objects. No calculator formula/rule engine, quote, configurator, client-photo, cart, order, installment, account or production-provider aggregate is introduced. Evidence is the Prisma schema, migration boundary/recovery checks, stable plan and completed Phase 1A/1B.1/1B.2 reports.
+The seven Phase 1A identity/audit/delivery tables and fifteen Phase 1B.1/1B.2 catalog migrations remain compatible. Migration `20260808150000_phase_1c_configurator_pricing` adds five bounded aggregates without changing the active catalog composition:
+
+| Aggregate | Stored evidence and immutability |
+|---|---|
+| `PricingRule` | PriceVersion-scoped applicability, integer rule payload, source/version/verification/envelope/parity metadata; indexed by version and configuration identity |
+| `PricingParityRun` | Immutable fixture count, maximum deviation and report for an exact candidate/version |
+| `PricingCalculation` | Idempotent authoritative input/result snapshot and correlation for server calculation |
+| `QuoteSnapshot` | Opaque public token plus immutable selected labels/articles, dimensions/options/breakdown/version/override/minimum/status snapshot |
+| `PricingVersionDecision` | Append-only activation/rejection actor, reason, parity and correlation evidence |
+
+Append-only database triggers prevent update/delete of rules, parity runs, calculations, quote snapshots and decisions. Existing `LocalPriceOverride` remains a separate Business Owner layer and is referenced in calculation/quote snapshots without mutating AMIGO source facts. Transactional activation maintains one active reviewed pricing version; indexes cover active/version/configuration lookup and public quote-token lookup. No client-photo, cart, order, installment, account or production-provider aggregate was introduced.
 
 ## 18. Dependencies, risks and open questions
 
-Dependencies: all domain specs, API/storage/security/deployment, ADRs and `OWNER-DECISION-008/009/010/012`. PostgreSQL/Prisma is fixed; completed Phase 1B.2 physicalizes only the authorized catalog/source/version/overlay/media/price/audit entities described above. Production storage/index/search, PII/legal/commercial workflow aggregates and Phase 1C+ remain gated. Risks: over-normalization vs opaque blobs, revision explosion, accidental cascade deletion, mutable history, projection drift, enum lock-in and private data in generic metadata.
+Dependencies: all domain specs, API/storage/security/deployment, ADRs and `OWNER-DECISION-008/009/010/012/013`. PostgreSQL/Prisma is fixed; completed Phase 1C physicalizes only the authorized configuration/pricing/parity/quote/admin evidence described above. Production storage/index/search, PII/legal/commercial workflows and Phase 1D+ remain gated. Risks: over-normalization vs opaque blobs, revision explosion, accidental cascade deletion, mutable history, projection drift, enum lock-in and private data in generic metadata.
 
 ## 19. History
 
@@ -191,3 +201,4 @@ Dependencies: all domain specs, API/storage/security/deployment, ADRs and `OWNER
 | 0.9.0 | 2026-08-03 | Replaced the disproved material/article uniqueness assumption with indexed non-unique article facts and source-entity identity, plus a forward pilot-to-full schema compatibility path. |
 | 0.10.0 | 2026-08-03 | Added semantic material-media placement rebinding to the current source reference while retaining historical source evidence and checksum-based binary deduplication. |
 | 0.11.0 | 2026-08-04 | Recorded accepted fifteen-migration Phase 1B.2 schema, pilot compatibility fixes, non-unique article identity, active v2 composition/price/media evidence and final migration/recovery verification without later-phase aggregates. |
+| 0.12.0 | 2026-08-08 | Recorded the additive Phase 1C pricing-rule/parity/calculation/immutable-quote/version-decision schema, append-only triggers, lookup indexes and preserved Phase 1B.2 data/volumes without Phase 1D aggregates. |

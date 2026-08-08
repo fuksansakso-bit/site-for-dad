@@ -7,6 +7,12 @@ export {
   selectPreviewFamily,
 } from './domain.js';
 export {
+  buildPreviewRenderModel,
+  type PreviewRenderInput,
+  type PreviewRenderModel,
+} from './renderer.js';
+export { getPreviewScene, previewScenes } from './scenes.js';
+export {
   previewAssetQualities,
   previewEligibilityReasons,
   previewFamilyCodes,

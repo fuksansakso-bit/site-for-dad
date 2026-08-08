@@ -173,6 +173,9 @@ importers:
       '@project-name/observability':
         specifier: workspace:*
         version: link:../../packages/observability
+      '@project-name/preview':
+        specifier: workspace:*
+        version: link:../../packages/preview
       '@project-name/pricing':
         specifier: workspace:*
         version: link:../../packages/pricing

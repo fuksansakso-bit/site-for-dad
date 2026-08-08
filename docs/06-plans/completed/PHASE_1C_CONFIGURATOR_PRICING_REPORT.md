@@ -14,7 +14,7 @@
 
 ## 3. Коммиты
 
-Implementation commits: `ecf4f8e` authorization, `99c1e70` domain model, `1d49686` compatibility/dimensions, `2e2a841` pricing engine, `dc8c970` immutable snapshots, `9f9c4ab` APIs, `26fd874` guest UI, `0acd3eb` administration, `96d40fc` security/idempotency, `ca3f439` verification, `bb01d5f` formatting and `6f61e21` gate alignment. Completion documentation follows as separate logical commits.
+Implementation commits: `ecf4f8e` authorization, `99c1e70` domain model, `1d49686` compatibility/dimensions, `2e2a841` pricing engine, `dc8c970` immutable snapshots, `9f9c4ab` APIs, `26fd874` guest UI, `0acd3eb` administration, `96d40fc` security/idempotency, `ca3f439` verification, `bb01d5f` formatting, `6f61e21` gate alignment and `1db3a89` acceptance evidence. The final PR-metadata commit contains this completed report and quality-gate result.
 
 ## 4. URL конфигуратора
 
@@ -75,11 +75,11 @@ QG-231–270 evidence is synchronized in `SPEC_QUALITY_GATE.md`. Server authorit
 
 ## 17. Draft PR
 
-The Draft PR is created only after this acceptance report and clean logical commits are first pushed. Its exact URL is appended to this report immediately after GitHub creates it; merge is explicitly excluded.
+Draft PR [#2 — Phase 1C: configurator and verified pricing engine](https://github.com/bataevabdullah2009-pixel/site-for-dad/pull/2) targets `main` from `phase/1c-configurator-pricing`. It remains open in Draft state; no merge was performed.
 
 ## 18. Git status
 
-The final handoff requires a clean tracked/untracked worktree after the report/PR metadata commit. Docker named volumes remain intact and the preserved user stash is retained.
+The final tracked/untracked worktree is clean after the report/PR metadata commit and push. Docker named volumes remain intact and the preserved pre-phase user stash is retained.
 
 ## 19. Оставшиеся TBD
 

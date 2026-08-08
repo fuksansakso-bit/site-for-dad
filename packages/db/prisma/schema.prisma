@@ -331,19 +331,62 @@ enum LocalPriceOverrideStatus {
   @@map("local_price_override_status")
 }
 
+enum PricingRuleKind {
+  EXACT_LOOKUP
+  AREA_MINIMUM
+
+  @@map("pricing_rule_kind")
+}
+
+enum PricingRuleVerificationStatus {
+  CANDIDATE
+  VERIFIED
+  REJECTED
+
+  @@map("pricing_rule_verification_status")
+}
+
+enum PricingParityStatus {
+  PENDING
+  PASSED
+  FAILED
+
+  @@map("pricing_parity_status")
+}
+
+enum PricingCalculationStatus {
+  CALCULATED
+  PRICE_ON_REQUEST
+  MANUAL_REVIEW_REQUIRED
+  CONFIGURATION_INVALID
+  SOURCE_DATA_STALE
+  PRICE_VERSION_INACTIVE
+  DEPENDENCY_UNAVAILABLE
+
+  @@map("pricing_calculation_status")
+}
+
+enum PricingVersionDecisionAction {
+  ACTIVATE
+  REJECT
+  PARITY_VERIFY
+
+  @@map("pricing_version_decision_action")
+}
+
 model ActorIdentity {
-  id             String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  provider       String             @db.VarChar(64)
-  subject        String             @db.VarChar(255)
-  disabledAt     DateTime?          @map("disabled_at") @db.Timestamptz(6)
-  createdAt      DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt      DateTime           @updatedAt @map("updated_at") @db.Timestamptz(6)
-  roleGrants     RoleGrant[]        @relation("role_target")
-  grantsAuthored RoleGrant[]        @relation("role_granter")
-  sessions       SyntheticSession[]
-  auditEvents    AuditEvent[]
+  id                       String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  provider                 String                         @db.VarChar(64)
+  subject                  String                         @db.VarChar(255)
+  disabledAt               DateTime?                      @map("disabled_at") @db.Timestamptz(6)
+  createdAt                DateTime                       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                DateTime                       @updatedAt @map("updated_at") @db.Timestamptz(6)
+  roleGrants               RoleGrant[]                    @relation("role_target")
+  grantsAuthored           RoleGrant[]                    @relation("role_granter")
+  sessions                 SyntheticSession[]
+  auditEvents              AuditEvent[]
   catalogDifferenceReviews CatalogDifferenceReviewBatch[]
-  catalogBulkCommands CatalogBulkCommand[]
+  catalogBulkCommands      CatalogBulkCommand[]
 
   @@unique([provider, subject], map: "actor_identity_provider_subject_key")
   @@map("actor_identity")
@@ -580,32 +623,32 @@ model SourceEntity {
 }
 
 model CatalogSyncRun {
-  id                       String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  catalogSourceId          String                  @map("catalog_source_id") @db.Uuid
+  id                       String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  catalogSourceId          String                         @map("catalog_source_id") @db.Uuid
   trigger                  CatalogSyncTrigger
-  status                   CatalogSyncStatus       @default(QUEUED)
-  idempotencyKey           String                  @unique(map: "catalog_sync_run_idempotency_key") @map("idempotency_key") @db.VarChar(255)
-  correlationId            String                  @map("correlation_id") @db.VarChar(128)
-  requestedByActorId       String?                 @map("requested_by_actor_id") @db.Uuid
-  startedAt                DateTime?               @map("started_at") @db.Timestamptz(6)
-  completedAt              DateTime?               @map("completed_at") @db.Timestamptz(6)
-  lastHeartbeatAt          DateTime?               @map("last_heartbeat_at") @db.Timestamptz(6)
-  attempt                  Int                     @default(0)
-  discoveredCount          Int                     @default(0) @map("discovered_count")
-  processedCount           Int                     @default(0) @map("processed_count")
-  errorCount               Int                     @default(0) @map("error_count")
-  parserVersion            String                  @map("parser_version") @db.VarChar(64)
-  mappingVersion           String                  @map("mapping_version") @db.VarChar(64)
-  sourceVersion            String?                 @map("source_version") @db.VarChar(160)
-  errorCode                String?                 @map("error_code") @db.VarChar(128)
-  cancelRequestedAt        DateTime?               @map("cancel_requested_at") @db.Timestamptz(6)
-  cancelRequestedByActorId String?                 @map("cancel_requested_by_actor_id") @db.Uuid
-  cancellationReason       String?                 @map("cancellation_reason") @db.VarChar(512)
-  cancelledAt              DateTime?               @map("cancelled_at") @db.Timestamptz(6)
-  auditContext             Json                    @map("audit_context") @db.JsonB
-  createdAt                DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt                DateTime                @updatedAt @map("updated_at") @db.Timestamptz(6)
-  catalogSource            CatalogSource           @relation(fields: [catalogSourceId], references: [id], onDelete: Restrict)
+  status                   CatalogSyncStatus              @default(QUEUED)
+  idempotencyKey           String                         @unique(map: "catalog_sync_run_idempotency_key") @map("idempotency_key") @db.VarChar(255)
+  correlationId            String                         @map("correlation_id") @db.VarChar(128)
+  requestedByActorId       String?                        @map("requested_by_actor_id") @db.Uuid
+  startedAt                DateTime?                      @map("started_at") @db.Timestamptz(6)
+  completedAt              DateTime?                      @map("completed_at") @db.Timestamptz(6)
+  lastHeartbeatAt          DateTime?                      @map("last_heartbeat_at") @db.Timestamptz(6)
+  attempt                  Int                            @default(0)
+  discoveredCount          Int                            @default(0) @map("discovered_count")
+  processedCount           Int                            @default(0) @map("processed_count")
+  errorCount               Int                            @default(0) @map("error_count")
+  parserVersion            String                         @map("parser_version") @db.VarChar(64)
+  mappingVersion           String                         @map("mapping_version") @db.VarChar(64)
+  sourceVersion            String?                        @map("source_version") @db.VarChar(160)
+  errorCode                String?                        @map("error_code") @db.VarChar(128)
+  cancelRequestedAt        DateTime?                      @map("cancel_requested_at") @db.Timestamptz(6)
+  cancelRequestedByActorId String?                        @map("cancel_requested_by_actor_id") @db.Uuid
+  cancellationReason       String?                        @map("cancellation_reason") @db.VarChar(512)
+  cancelledAt              DateTime?                      @map("cancelled_at") @db.Timestamptz(6)
+  auditContext             Json                           @map("audit_context") @db.JsonB
+  createdAt                DateTime                       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                DateTime                       @updatedAt @map("updated_at") @db.Timestamptz(6)
+  catalogSource            CatalogSource                  @relation(fields: [catalogSourceId], references: [id], onDelete: Restrict)
   snapshots                SourceSnapshot[]
   items                    CatalogSyncItem[]
   differences              CatalogSyncDifference[]
@@ -761,9 +804,9 @@ model CatalogBulkCommand {
   idempotencyKey             String                  @unique(map: "catalog_bulk_command_idempotency_key") @map("idempotency_key") @db.VarChar(255)
   createdAt                  DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
   catalogSource              CatalogSource           @relation(fields: [catalogSourceId], references: [id], onDelete: Restrict)
-  syncRun                    CatalogSyncRun           @relation(fields: [syncRunId], references: [id], onDelete: Restrict)
-  catalogVersion             CatalogVersion           @relation(fields: [catalogVersionId], references: [id], onDelete: Restrict)
-  appliedByActor             ActorIdentity            @relation(fields: [appliedByActorId], references: [id], onDelete: Restrict)
+  syncRun                    CatalogSyncRun          @relation(fields: [syncRunId], references: [id], onDelete: Restrict)
+  catalogVersion             CatalogVersion          @relation(fields: [catalogVersionId], references: [id], onDelete: Restrict)
+  appliedByActor             ActorIdentity           @relation(fields: [appliedByActorId], references: [id], onDelete: Restrict)
 
   @@index([catalogVersionId, createdAt], map: "catalog_bulk_command_version_time_idx")
   @@index([syncRunId, selectorMode, createdAt], map: "catalog_bulk_command_run_selector_idx")
@@ -771,29 +814,29 @@ model CatalogBulkCommand {
 }
 
 model CatalogVersion {
-  id                 String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  versionNumber      Int                   @unique(map: "catalog_version_number_key") @map("version_number")
-  status             CatalogVersionStatus  @default(DRAFT)
-  activationKey      String?               @unique(map: "catalog_version_activation_key") @map("activation_key") @db.VarChar(64)
-  syncRunId          String                @map("sync_run_id") @db.Uuid
-  createdAt          DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
-  publishedAt        DateTime?             @map("published_at") @db.Timestamptz(6)
-  sourceManifest     Json                  @map("source_manifest") @db.JsonB
-  sourceVersion      String?               @map("source_version") @db.VarChar(160)
-  captureChecksum    String                @map("capture_checksum") @db.Char(64)
-  differenceChecksum String                @map("difference_checksum") @db.Char(64)
-  approvedByActorId  String?               @map("approved_by_actor_id") @db.Uuid
-  approvedAt         DateTime?             @map("approved_at") @db.Timestamptz(6)
-  activatedByActorId String?               @map("activated_by_actor_id") @db.Uuid
-  activatedAt        DateTime?             @map("activated_at") @db.Timestamptz(6)
-  predecessorId      String?               @map("predecessor_id") @db.Uuid
-  rollbackTargetId   String?               @map("rollback_target_id") @db.Uuid
-  safeNotes          String?               @map("safe_notes") @db.Text
-  syncRun            CatalogSyncRun        @relation(fields: [syncRunId], references: [id], onDelete: Restrict)
-  predecessor        CatalogVersion?       @relation("catalog_version_predecessor", fields: [predecessorId], references: [id], onDelete: Restrict)
-  successors         CatalogVersion[]      @relation("catalog_version_predecessor")
-  rollbackTarget     CatalogVersion?       @relation("catalog_version_rollback", fields: [rollbackTargetId], references: [id], onDelete: Restrict)
-  rollbackSources    CatalogVersion[]      @relation("catalog_version_rollback")
+  id                 String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  versionNumber      Int                            @unique(map: "catalog_version_number_key") @map("version_number")
+  status             CatalogVersionStatus           @default(DRAFT)
+  activationKey      String?                        @unique(map: "catalog_version_activation_key") @map("activation_key") @db.VarChar(64)
+  syncRunId          String                         @map("sync_run_id") @db.Uuid
+  createdAt          DateTime                       @default(now()) @map("created_at") @db.Timestamptz(6)
+  publishedAt        DateTime?                      @map("published_at") @db.Timestamptz(6)
+  sourceManifest     Json                           @map("source_manifest") @db.JsonB
+  sourceVersion      String?                        @map("source_version") @db.VarChar(160)
+  captureChecksum    String                         @map("capture_checksum") @db.Char(64)
+  differenceChecksum String                         @map("difference_checksum") @db.Char(64)
+  approvedByActorId  String?                        @map("approved_by_actor_id") @db.Uuid
+  approvedAt         DateTime?                      @map("approved_at") @db.Timestamptz(6)
+  activatedByActorId String?                        @map("activated_by_actor_id") @db.Uuid
+  activatedAt        DateTime?                      @map("activated_at") @db.Timestamptz(6)
+  predecessorId      String?                        @map("predecessor_id") @db.Uuid
+  rollbackTargetId   String?                        @map("rollback_target_id") @db.Uuid
+  safeNotes          String?                        @map("safe_notes") @db.Text
+  syncRun            CatalogSyncRun                 @relation(fields: [syncRunId], references: [id], onDelete: Restrict)
+  predecessor        CatalogVersion?                @relation("catalog_version_predecessor", fields: [predecessorId], references: [id], onDelete: Restrict)
+  successors         CatalogVersion[]               @relation("catalog_version_predecessor")
+  rollbackTarget     CatalogVersion?                @relation("catalog_version_rollback", fields: [rollbackTargetId], references: [id], onDelete: Restrict)
+  rollbackSources    CatalogVersion[]               @relation("catalog_version_rollback")
   entries            CatalogVersionEntry[]
   differenceReviews  CatalogDifferenceReviewBatch[]
   bulkCommands       CatalogBulkCommand[]
@@ -1128,25 +1171,25 @@ model SourcePriceRecord {
 }
 
 model PriceVersion {
-  id                 String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  versionNumber      Int                  @unique(map: "price_version_number_key") @map("version_number")
-  status             PriceVersionStatus   @default(DRAFT)
-  activationKey      String?              @unique(map: "price_version_activation_key") @map("activation_key") @db.VarChar(64)
-  syncRunId          String               @map("sync_run_id") @db.Uuid
-  sourceManifest     Json                 @map("source_manifest") @db.JsonB
-  differenceChecksum String               @map("difference_checksum") @db.Char(64)
-  approvedByActorId  String?              @map("approved_by_actor_id") @db.Uuid
-  approvedAt         DateTime?            @map("approved_at") @db.Timestamptz(6)
-  activatedByActorId String?              @map("activated_by_actor_id") @db.Uuid
-  activatedAt        DateTime?            @map("activated_at") @db.Timestamptz(6)
-  predecessorId      String?              @map("predecessor_id") @db.Uuid
-  rollbackTargetId   String?              @map("rollback_target_id") @db.Uuid
-  createdAt          DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
-  syncRun            CatalogSyncRun       @relation(fields: [syncRunId], references: [id], onDelete: Restrict)
-  predecessor        PriceVersion?        @relation("price_version_predecessor", fields: [predecessorId], references: [id], onDelete: Restrict)
-  successors         PriceVersion[]       @relation("price_version_predecessor")
-  rollbackTarget     PriceVersion?        @relation("price_version_rollback", fields: [rollbackTargetId], references: [id], onDelete: Restrict)
-  rollbackSources    PriceVersion[]       @relation("price_version_rollback")
+  id                 String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  versionNumber      Int                            @unique(map: "price_version_number_key") @map("version_number")
+  status             PriceVersionStatus             @default(DRAFT)
+  activationKey      String?                        @unique(map: "price_version_activation_key") @map("activation_key") @db.VarChar(64)
+  syncRunId          String                         @map("sync_run_id") @db.Uuid
+  sourceManifest     Json                           @map("source_manifest") @db.JsonB
+  differenceChecksum String                         @map("difference_checksum") @db.Char(64)
+  approvedByActorId  String?                        @map("approved_by_actor_id") @db.Uuid
+  approvedAt         DateTime?                      @map("approved_at") @db.Timestamptz(6)
+  activatedByActorId String?                        @map("activated_by_actor_id") @db.Uuid
+  activatedAt        DateTime?                      @map("activated_at") @db.Timestamptz(6)
+  predecessorId      String?                        @map("predecessor_id") @db.Uuid
+  rollbackTargetId   String?                        @map("rollback_target_id") @db.Uuid
+  createdAt          DateTime                       @default(now()) @map("created_at") @db.Timestamptz(6)
+  syncRun            CatalogSyncRun                 @relation(fields: [syncRunId], references: [id], onDelete: Restrict)
+  predecessor        PriceVersion?                  @relation("price_version_predecessor", fields: [predecessorId], references: [id], onDelete: Restrict)
+  successors         PriceVersion[]                 @relation("price_version_predecessor")
+  rollbackTarget     PriceVersion?                  @relation("price_version_rollback", fields: [rollbackTargetId], references: [id], onDelete: Restrict)
+  rollbackSources    PriceVersion[]                 @relation("price_version_rollback")
   records            PriceVersionRecord[]
   differenceReviews  CatalogDifferenceReviewBatch[]
 
@@ -1163,6 +1206,118 @@ model PriceVersionRecord {
 
   @@unique([priceVersionId, sourcePriceRecordId], map: "price_version_record_key")
   @@map("price_version_record")
+}
+
+model PricingRule {
+  id                    String                        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  priceVersionId        String                        @map("price_version_id") @db.Uuid
+  catalogVersionId      String                        @map("catalog_version_id") @db.Uuid
+  ruleKey               String                        @map("rule_key") @db.VarChar(128)
+  kind                  PricingRuleKind
+  verificationStatus    PricingRuleVerificationStatus @map("verification_status")
+  parityStatus          PricingParityStatus           @map("parity_status")
+  productFamilyId       String                        @map("product_family_id") @db.Uuid
+  productSystemId       String                        @map("product_system_id") @db.Uuid
+  configuratorModelId   String                        @map("configurator_model_id") @db.Uuid
+  productModelSourceId  String                        @map("product_model_source_id") @db.VarChar(64)
+  productModelCode      String                        @map("product_model_code") @db.VarChar(64)
+  productModelName      String                        @map("product_model_name") @db.VarChar(255)
+  materialVariantId     String                        @map("material_variant_id") @db.Uuid
+  sourceReference       String                        @map("source_reference") @db.VarChar(255)
+  sourceVersion         String                        @map("source_version") @db.VarChar(160)
+  sourceCapturedAt      DateTime                      @map("source_captured_at") @db.Timestamptz(6)
+  verifiedAt            DateTime                      @map("verified_at") @db.Timestamptz(6)
+  sourcePriceCategory   String?                       @map("source_price_category") @db.VarChar(64)
+  currency              String                        @db.Char(3)
+  basePriceMinor        Int?                          @map("base_price_minor")
+  roundingRule          String                        @map("rounding_rule") @db.VarChar(64)
+  minimumWidthMm        Int                           @map("minimum_width_mm")
+  maximumWidthMm        Int                           @map("maximum_width_mm")
+  minimumHeightMm       Int                           @map("minimum_height_mm")
+  maximumHeightMm       Int                           @map("maximum_height_mm")
+  ruleData              Json                          @map("rule_data") @db.JsonB
+  optionData            Json                          @map("option_data") @db.JsonB
+  testExamples          Json                          @map("test_examples") @db.JsonB
+  fixtureCount          Int                           @map("fixture_count")
+  maximumDeviationMinor Int                           @map("maximum_deviation_minor")
+  safeExplanation       String                        @map("safe_explanation") @db.Text
+  createdAt             DateTime                      @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@unique([priceVersionId, ruleKey], map: "pricing_rule_version_key")
+  @@index([priceVersionId, parityStatus], map: "pricing_rule_version_parity_idx")
+  @@index([productFamilyId, productSystemId, materialVariantId], map: "pricing_rule_configuration_idx")
+  @@map("pricing_rule")
+}
+
+model PricingParityRun {
+  id                    String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  priceVersionId        String              @map("price_version_id") @db.Uuid
+  status                PricingParityStatus
+  sourceVersion         String              @map("source_version") @db.VarChar(160)
+  fixtureCount          Int                 @map("fixture_count")
+  passedCount           Int                 @map("passed_count")
+  failedCount           Int                 @map("failed_count")
+  maximumDeviationMinor Int                 @map("maximum_deviation_minor")
+  safeDetails           Json                @map("safe_details") @db.JsonB
+  runByActorId          String?             @map("run_by_actor_id") @db.Uuid
+  correlationId         String              @map("correlation_id") @db.VarChar(128)
+  idempotencyKey        String              @unique(map: "pricing_parity_run_idempotency_key") @map("idempotency_key") @db.VarChar(255)
+  createdAt             DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([priceVersionId, createdAt], map: "pricing_parity_run_version_time_idx")
+  @@map("pricing_parity_run")
+}
+
+model PricingCalculation {
+  id               String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  publicToken      String                   @unique(map: "pricing_calculation_public_token_key") @map("public_token") @db.VarChar(64)
+  idempotencyKey   String                   @unique(map: "pricing_calculation_idempotency_key") @map("idempotency_key") @db.VarChar(255)
+  requestDigest    String                   @map("request_digest") @db.Char(64)
+  catalogVersionId String                   @map("catalog_version_id") @db.Uuid
+  priceVersionId   String?                  @map("price_version_id") @db.Uuid
+  status           PricingCalculationStatus
+  inputSnapshot    Json                     @map("input_snapshot") @db.JsonB
+  resultSnapshot   Json                     @map("result_snapshot") @db.JsonB
+  correlationId    String                   @map("correlation_id") @db.VarChar(128)
+  createdAt        DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([createdAt], map: "pricing_calculation_created_idx")
+  @@map("pricing_calculation")
+}
+
+model QuoteSnapshot {
+  id                    String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  publicToken           String                   @unique(map: "quote_snapshot_public_token_key") @map("public_token") @db.VarChar(64)
+  calculationId         String                   @unique(map: "quote_snapshot_calculation_key") @map("calculation_id") @db.Uuid
+  saveIdempotencyKey    String                   @unique(map: "quote_snapshot_save_idempotency_key") @map("save_idempotency_key") @db.VarChar(255)
+  status                PricingCalculationStatus
+  catalogVersionId      String                   @map("catalog_version_id") @db.Uuid
+  priceVersionId        String?                  @map("price_version_id") @db.Uuid
+  sourceVersion         String?                  @map("source_version") @db.VarChar(160)
+  configurationSnapshot Json                     @map("configuration_snapshot") @db.JsonB
+  breakdownSnapshot     Json                     @map("breakdown_snapshot") @db.JsonB
+  grandTotalMinor       Int?                     @map("grand_total_minor")
+  correlationId         String                   @map("correlation_id") @db.VarChar(128)
+  createdAt             DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([createdAt], map: "quote_snapshot_created_idx")
+  @@map("quote_snapshot")
+}
+
+model PricingVersionDecision {
+  id             String                       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  priceVersionId String                       @map("price_version_id") @db.Uuid
+  action         PricingVersionDecisionAction
+  actorId        String                       @map("actor_id") @db.Uuid
+  beforeState    Json                         @map("before_state") @db.JsonB
+  afterState     Json                         @map("after_state") @db.JsonB
+  safeReason     String                       @map("safe_reason") @db.VarChar(512)
+  correlationId  String                       @map("correlation_id") @db.VarChar(128)
+  idempotencyKey String                       @unique(map: "pricing_version_decision_idempotency_key") @map("idempotency_key") @db.VarChar(255)
+  createdAt      DateTime                     @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([priceVersionId, createdAt], map: "pricing_version_decision_version_time_idx")
+  @@map("pricing_version_decision")
 }
 
 model BusinessCatalogEntry {

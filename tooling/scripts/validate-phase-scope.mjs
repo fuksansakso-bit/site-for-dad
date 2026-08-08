@@ -151,7 +151,7 @@ const schemaPath = join(repositoryRoot, 'packages', 'db', 'prisma', 'schema.pris
 const schema = await readFile(schemaPath, 'utf8');
 for (const match of schema.matchAll(/^model\s+([A-Za-z][A-Za-z0-9_]*)\s*\{/gm)) {
   if (!allowedPrismaModels.has(match[1])) {
-    errors.push(`packages/db/prisma/schema.prisma: model ${match[1]} is outside Phase 1C`);
+    errors.push(`packages/db/prisma/schema.prisma: model ${match[1]} is outside Phase 1D`);
   }
 }
 
@@ -161,7 +161,7 @@ for (const file of await collectFiles(migrationRoot)) {
   const sql = await readFile(file, 'utf8');
   for (const match of sql.matchAll(/CREATE\s+TABLE\s+(?:"public"\.)?"?([a-z_][a-z0-9_]*)"?/gi)) {
     if (!allowedPhaseTables.has(match[1].toLowerCase())) {
-      errors.push(`${relative(repositoryRoot, file)}: table ${match[1]} is outside Phase 1C`);
+      errors.push(`${relative(repositoryRoot, file)}: table ${match[1]} is outside Phase 1D`);
     }
   }
 }
@@ -184,10 +184,12 @@ const allowedRouteFiles = new Set([
   'apps/web/app/api/v1/quotes/[token]/route.ts',
   'apps/web/app/api/v1/quotes/route.ts',
   'apps/web/app/api/v1/previews/[id]/asset/route.ts',
+  'apps/web/app/api/v1/previews/[id]/layers/[role]/route.ts',
   'apps/web/app/api/v1/previews/[id]/route.ts',
   'apps/web/app/api/v1/previews/eligibility/route.ts',
   'apps/web/app/api/v1/previews/route.ts',
   'apps/web/app/api/v1/previews/scenes/route.ts',
+  'apps/web/app/api/v1/previews/scenes/[sceneId]/asset/route.ts',
 ]);
 const allowedPageFiles = new Set([
   'apps/web/app/admin/catalog/page.tsx',

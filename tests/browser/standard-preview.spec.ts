@@ -1,8 +1,8 @@
 import type {
   ConfiguratorBootstrapResponse,
   PricingCalculationResponse,
-} from '@project-name/contracts';
-import type { StandardPreviewStateResponse } from '@project-name/contracts/preview';
+} from '../../packages/contracts/src/index.js';
+import type { StandardPreviewStateResponse } from '../../packages/contracts/src/preview.js';
 import { expect, test, type Page } from '@playwright/test';
 
 const enabled = process.env['PHASE1D_BROWSER'] === 'true';

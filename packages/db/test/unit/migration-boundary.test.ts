@@ -5,8 +5,8 @@ import { describe, expect, it } from 'vitest';
 const migrationsRoot = new URL('../../prisma/migrations/', import.meta.url);
 const forbiddenLaterPhaseEntity = /\b(?:customer[_ ]?photos?|orders?|visualizations?|carts?)\b/i;
 
-describe('Phase 1C migration boundary', () => {
-  it('contains only reviewed Foundation, catalog and Phase 1C pricing tables', async () => {
+describe('Phase 1D migration boundary', () => {
+  it('contains only reviewed Foundation, catalog, pricing and standard-preview tables', async () => {
     const migrationDirectories = (await readdir(migrationsRoot, { withFileTypes: true }))
       .filter((entry) => entry.isDirectory())
       .map((entry) => entry.name)
@@ -28,6 +28,7 @@ describe('Phase 1C migration boundary', () => {
       '20260803226000_phase_1b2_ambiguous_price_parser',
       '20260803227000_phase_1b2_media_join_index',
       '20260808150000_phase_1c_configurator_pricing',
+      '20260808190000_phase_1d_standard_preview',
     ]);
 
     const tables = new Set<string>();
@@ -35,6 +36,9 @@ describe('Phase 1C migration boundary', () => {
       const sql = await readFile(new URL(`${directory}/migration.sql`, migrationsRoot), 'utf8');
       if (directory === '20260808150000_phase_1c_configurator_pricing') {
         expect(sql).toContain('Phase 1C configurator/pricing append-only rule');
+        expect(sql).toContain('Recovery uses forward compensation');
+      } else if (directory === '20260808190000_phase_1d_standard_preview') {
+        expect(sql).toContain('PLAN-1D migration risk: MEDIUM');
         expect(sql).toContain('Recovery uses forward compensation');
       } else {
         expect(sql).toMatch(/PLAN-(?:1A|1B1|1B2) migration risk: (?:LOW|MEDIUM)/);
@@ -92,6 +96,7 @@ describe('Phase 1C migration boundary', () => {
       'source_media_asset',
       'source_price_record',
       'source_snapshot',
+      'standard_preview_state',
       'supplier',
       'supplier_relationship',
       'synthetic_session',
@@ -109,6 +114,7 @@ describe('Phase 1C migration boundary', () => {
     expect(schema).toContain('model PricingRule');
     expect(schema).toContain('model PricingCalculation');
     expect(schema).toContain('model QuoteSnapshot');
+    expect(schema).toContain('model StandardPreviewState');
     expect(schema).toContain('@@unique([catalogSourceId, sourceType, sourceId]');
     expect(schema).toContain(
       '@@index([materialId, article], map: "material_variant_material_article_idx")',
@@ -202,5 +208,16 @@ describe('Phase 1C migration boundary', () => {
     expect(pricingSql).toContain('pricing_calculation_append_only');
     expect(pricingSql).toContain('quote_snapshot_append_only');
     expect(pricingSql).toContain('pricing_version_decision_append_only');
+
+    const previewSql = await readFile(
+      new URL(
+        '../../prisma/migrations/20260808190000_phase_1d_standard_preview/migration.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    );
+    expect(previewSql).toContain('standard_preview_state_owner_hash_check');
+    expect(previewSql).toContain('standard_preview_state_scene_check');
+    expect(previewSql).toContain('ON DELETE RESTRICT');
   });
 });

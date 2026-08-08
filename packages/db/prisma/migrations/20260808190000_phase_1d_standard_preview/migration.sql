@@ -1,3 +1,8 @@
+-- PLAN-1D migration risk: MEDIUM. Adds an ownership-scoped preview working-state table only.
+-- Recovery uses forward compensation: disable preview writes, expire/delete temporary states, then retire the additive objects in a reviewed follow-up migration.
+
+BEGIN;
+
 CREATE TYPE "preview_asset_quality" AS ENUM (
   'EXACT_SWATCH',
   'PRODUCT_IMAGE_CROP',
@@ -34,7 +39,7 @@ CREATE TABLE "standard_preview_state" (
   "correlation_id" VARCHAR(128) NOT NULL,
   "expires_at" TIMESTAMPTZ(6) NOT NULL DEFAULT NOW() + INTERVAL '24 hours',
   "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  "updated_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updated_at" TIMESTAMPTZ(6) NOT NULL,
   CONSTRAINT "standard_preview_state_pkey" PRIMARY KEY ("id"),
   CONSTRAINT "standard_preview_state_public_token_key" UNIQUE ("public_token"),
   CONSTRAINT "standard_preview_state_idempotency_key" UNIQUE ("idempotency_key"),
@@ -48,16 +53,18 @@ CREATE TABLE "standard_preview_state" (
     "normalized_color" IS NULL OR "normalized_color" ~ '^#[0-9A-F]{6}$'
   ),
   CONSTRAINT "standard_preview_state_hardware_color_check" CHECK ("hardware_color" ~ '^#[0-9A-F]{6}$'),
-  CONSTRAINT "standard_preview_state_source_calculation_fkey" FOREIGN KEY ("source_calculation_id") REFERENCES "pricing_calculation"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT "standard_preview_state_quote_snapshot_fkey" FOREIGN KEY ("quote_snapshot_id") REFERENCES "quote_snapshot"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT "standard_preview_state_catalog_version_fkey" FOREIGN KEY ("catalog_version_id") REFERENCES "catalog_version"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT "standard_preview_state_price_version_fkey" FOREIGN KEY ("price_version_id") REFERENCES "price_version"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT "standard_preview_state_product_family_fkey" FOREIGN KEY ("product_family_id") REFERENCES "product_family"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT "standard_preview_state_product_system_fkey" FOREIGN KEY ("product_system_id") REFERENCES "product_system"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT "standard_preview_state_material_variant_fkey" FOREIGN KEY ("material_variant_id") REFERENCES "material_variant"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT "standard_preview_state_material_asset_fkey" FOREIGN KEY ("material_asset_id") REFERENCES "media_asset"("id") ON DELETE RESTRICT ON UPDATE CASCADE
+  CONSTRAINT "standard_preview_state_source_calculation_id_fkey" FOREIGN KEY ("source_calculation_id") REFERENCES "pricing_calculation"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT "standard_preview_state_quote_snapshot_id_fkey" FOREIGN KEY ("quote_snapshot_id") REFERENCES "quote_snapshot"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT "standard_preview_state_catalog_version_id_fkey" FOREIGN KEY ("catalog_version_id") REFERENCES "catalog_version"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT "standard_preview_state_price_version_id_fkey" FOREIGN KEY ("price_version_id") REFERENCES "price_version"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT "standard_preview_state_product_family_id_fkey" FOREIGN KEY ("product_family_id") REFERENCES "product_family"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT "standard_preview_state_product_system_id_fkey" FOREIGN KEY ("product_system_id") REFERENCES "product_system"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT "standard_preview_state_material_variant_id_fkey" FOREIGN KEY ("material_variant_id") REFERENCES "material_variant"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT "standard_preview_state_material_asset_id_fkey" FOREIGN KEY ("material_asset_id") REFERENCES "media_asset"("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 CREATE INDEX "standard_preview_state_owner_updated_idx" ON "standard_preview_state"("owner_token_hash", "updated_at");
 CREATE INDEX "standard_preview_state_expiry_idx" ON "standard_preview_state"("expires_at");
 CREATE INDEX "standard_preview_state_material_quality_idx" ON "standard_preview_state"("material_variant_id", "asset_quality");
+
+COMMIT;

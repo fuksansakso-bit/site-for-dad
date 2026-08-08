@@ -7,8 +7,10 @@ import {
   createCatalogManagementAdapter,
   createCatalogReadAdapter,
   createPricingAdapter,
+  createStandardPreviewAdapter,
   type CatalogManagementAdapter,
   type PricingAdapter,
+  type StandardPreviewAdapter,
 } from '@project-name/db';
 import {
   createSyntheticIdentityAdapter,
@@ -23,6 +25,7 @@ let identity: SyntheticIdentityAdapter | undefined;
 let jobPool: ReturnType<typeof createFoundationJobPool> | undefined;
 let objectStorage: ReturnType<typeof createS3ObjectStorage> | undefined;
 let pricing: PricingAdapter | undefined;
+let preview: StandardPreviewAdapter | undefined;
 
 function databaseEnvironment() {
   return parseDatabaseEnvironment(process.env);
@@ -63,4 +66,9 @@ export function getWebObjectStorage(): ReturnType<typeof createS3ObjectStorage> 
 export function getWebPricing(): PricingAdapter {
   pricing ??= createPricingAdapter(databaseEnvironment());
   return pricing;
+}
+
+export function getWebStandardPreview(): StandardPreviewAdapter {
+  preview ??= createStandardPreviewAdapter(databaseEnvironment());
+  return preview;
 }

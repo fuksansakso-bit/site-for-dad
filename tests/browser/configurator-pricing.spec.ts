@@ -1,7 +1,10 @@
 import { expect, test, type Page } from '@playwright/test';
 
 test.describe('QG-267 Phase 1C configurator browser acceptance', () => {
-  test.skip(process.env['PHASE1C_BROWSER'] !== 'true', 'Runs against the real local Phase 1C catalog.');
+  test.skip(
+    process.env['PHASE1C_BROWSER'] !== 'true',
+    'Runs against the real local Phase 1C catalog.',
+  );
 
   async function chooseRoller(page: Page, width = '400', height = '500', quantity = '2') {
     await page.goto('/configure');
@@ -28,7 +31,9 @@ test.describe('QG-267 Phase 1C configurator browser acceptance', () => {
     await page.getByRole('spinbutton').fill(quantity);
   }
 
-  test('calculates quantity server-side, shows free services and saves immutable quote', async ({ page }, testInfo) => {
+  test('calculates quantity server-side, shows free services and saves immutable quote', async ({
+    page,
+  }, testInfo) => {
     await chooseRoller(page);
     await page.getByRole('button', { name: 'Рассчитать на сервере' }).click();
     await expect(page.getByText('CALCULATED', { exact: true })).toBeVisible();
@@ -44,7 +49,9 @@ test.describe('QG-267 Phase 1C configurator browser acceptance', () => {
     await expect(page).toHaveURL(/\/quote\/[A-Za-z0-9_-]{32}$/u);
     await expect(page.getByRole('heading', { name: 'Предварительная стоимость' })).toBeVisible();
     if (testInfo.project.name === 'chromium-narrow') {
-      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+      ).toBe(true);
     }
   });
 
@@ -68,17 +75,39 @@ test.describe('QG-267 Phase 1C configurator browser acceptance', () => {
     await chooseRoller(page);
     await page.route('**/api/v1/pricing/calculate', async (route) => {
       const now = new Date().toISOString();
-      await route.fulfill({ contentType: 'application/json', status: 200, body: JSON.stringify({
-        calculationId: '00000000-0000-4000-8000-000000000001', calculationToken: 'm'.repeat(32),
-        correlationId: 'browser-minimum-test', result: { appliedOverrides: [], appliedRules: [],
-          calculatedAt: now, currency: 'RUB', deliveryKopecks: 0, grandTotalKopecks: 300000,
-          installationKopecks: 0, measurementKopecks: 0, minimumPriceApplied: true,
-          minimumPriceKopecks: 150000, optionsTotalKopecks: 0,
-          priceVersionId: '00000000-0000-4000-8000-000000000002', productsSubtotalKopecks: 300000,
-          quantity: 2, safeExplanation: 'Минимальная цена применена отдельно к каждому изделию.',
-          sourceVersion: 'browser-fixture', status: 'CALCULATED', unitBasePriceKopecks: 100000,
-          unitFinalPriceKopecks: 150000, unitPriceBeforeMinimumKopecks: 100000,
-          validationDetails: [], warnings: [] } }) });
+      await route.fulfill({
+        contentType: 'application/json',
+        status: 200,
+        body: JSON.stringify({
+          calculationId: '00000000-0000-4000-8000-000000000001',
+          calculationToken: 'm'.repeat(32),
+          correlationId: 'browser-minimum-test',
+          result: {
+            appliedOverrides: [],
+            appliedRules: [],
+            calculatedAt: now,
+            currency: 'RUB',
+            deliveryKopecks: 0,
+            grandTotalKopecks: 300000,
+            installationKopecks: 0,
+            measurementKopecks: 0,
+            minimumPriceApplied: true,
+            minimumPriceKopecks: 150000,
+            optionsTotalKopecks: 0,
+            priceVersionId: '00000000-0000-4000-8000-000000000002',
+            productsSubtotalKopecks: 300000,
+            quantity: 2,
+            safeExplanation: 'Минимальная цена применена отдельно к каждому изделию.',
+            sourceVersion: 'browser-fixture',
+            status: 'CALCULATED',
+            unitBasePriceKopecks: 100000,
+            unitFinalPriceKopecks: 150000,
+            unitPriceBeforeMinimumKopecks: 100000,
+            validationDetails: [],
+            warnings: [],
+          },
+        }),
+      });
     });
     await page.getByRole('button', { name: 'Рассчитать на сервере' }).click();
     await expect(page.getByText('Минимум за изделие')).toBeVisible();

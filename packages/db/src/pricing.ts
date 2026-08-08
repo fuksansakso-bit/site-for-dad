@@ -218,8 +218,12 @@ function mapRule(row: RuleRow): PricingRuleProfile {
 }
 
 function publicProfile(profile: PricingRuleProfile): PublicPricingProfile {
-  const { ruleData: _ruleData, sourceReference: _sourceReference, testExamples: _tests, ...safe } =
-    profile;
+  const {
+    ruleData: _ruleData,
+    sourceReference: _sourceReference,
+    testExamples: _tests,
+    ...safe
+  } = profile;
   return safe;
 }
 
@@ -251,7 +255,13 @@ function unavailableResult(
     unitPriceBeforeMinimumKopecks: null,
     validationDetails:
       status === 'CONFIGURATION_INVALID'
-        ? [{ code: 'INCOMPATIBLE_SELECTION', field: 'configuration', message: 'Выбранное сочетание недоступно.' }]
+        ? [
+            {
+              code: 'INCOMPATIBLE_SELECTION',
+              field: 'configuration',
+              message: 'Выбранное сочетание недоступно.',
+            },
+          ]
         : [],
     warnings: [],
   };
@@ -300,7 +310,8 @@ async function eligibleProfiles(
   state: ActiveStateRow,
 ): Promise<readonly PricingRuleProfile[]> {
   if (state.price_version_id === null) return [];
-  const rows = await client.query<RuleRow>(`${ruleSelect}
+  const rows = await client.query<RuleRow>(
+    `${ruleSelect}
     JOIN business_catalog_entry business ON business.material_variant_id = rule.material_variant_id
     JOIN catalog_version_entry member
       ON member.business_catalog_entry_id = business.id
@@ -320,7 +331,9 @@ async function eligibleProfiles(
           AND compatible.material_variant_id = rule.material_variant_id
       )
     ORDER BY (rule.option_data->>'familyName'), (rule.option_data->>'systemName'), rule.rule_key
-  `, [state.catalog_version_id, state.price_version_id]);
+  `,
+    [state.catalog_version_id, state.price_version_id],
+  );
   return rows.rows.map(mapRule);
 }
 
@@ -329,7 +342,8 @@ async function publishedSelection(
   state: ActiveStateRow,
   selection: PricingSelection,
 ): Promise<boolean> {
-  const result = await client.query<{ readonly valid: boolean }>(`
+  const result = await client.query<{ readonly valid: boolean }>(
+    `
     SELECT EXISTS (
       SELECT 1
       FROM material_variant variant
@@ -352,7 +366,14 @@ async function publishedSelection(
             AND compatible.material_variant_id = variant.id
         )
     ) AS valid
-  `, [state.catalog_version_id, selection.materialVariantId, selection.productSystemId, selection.productFamilyId]);
+  `,
+    [
+      state.catalog_version_id,
+      selection.materialVariantId,
+      selection.productSystemId,
+      selection.productFamilyId,
+    ],
+  );
   return result.rows[0]?.valid === true;
 }
 
@@ -364,7 +385,8 @@ async function localOverride(
     readonly amount_minor: number;
     readonly id: string;
     readonly reason: string;
-  }>(`
+  }>(
+    `
     SELECT override.id::text, override.amount_minor, override.reason
     FROM business_catalog_entry business
     JOIN local_price_override override ON override.business_catalog_entry_id = business.id
@@ -373,7 +395,9 @@ async function localOverride(
       AND override.effective_from <= NOW()
       AND (override.effective_to IS NULL OR override.effective_to > NOW())
     ORDER BY override.effective_from DESC LIMIT 1
-  `, [materialVariantId]);
+  `,
+    [materialVariantId],
+  );
   const row = result.rows[0];
   return row === undefined
     ? undefined
@@ -404,21 +428,24 @@ function configurationSnapshot(profile: PricingRuleProfile, selection: PricingSe
   };
 }
 
-async function authorizePricingAdmin(
-  client: Pool | PoolClient,
-  actorId: string,
-): Promise<void> {
-  const result = await client.query<{ readonly allowed: boolean }>(`
+async function authorizePricingAdmin(client: Pool | PoolClient, actorId: string): Promise<void> {
+  const result = await client.query<{ readonly allowed: boolean }>(
+    `
     SELECT bool_or(grant_row.role IN ('OWNER', 'ADMIN')) AS allowed
     FROM actor_identity actor
     JOIN role_grant grant_row ON grant_row.actor_id = actor.id
     WHERE actor.id = $1::uuid AND actor.disabled_at IS NULL AND grant_row.revoked_at IS NULL
     GROUP BY actor.id
-  `, [actorId]);
+  `,
+    [actorId],
+  );
   if (result.rows[0]?.allowed !== true) throw new PricingStoreError('PRICING_AUTHORIZATION');
 }
 
-async function transaction<T>(pool: Pool, operation: (client: PoolClient) => Promise<T>): Promise<T> {
+async function transaction<T>(
+  pool: Pool,
+  operation: (client: PoolClient) => Promise<T>,
+): Promise<T> {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -435,14 +462,23 @@ async function transaction<T>(pool: Pool, operation: (client: PoolClient) => Pro
 
 async function audit(
   client: PoolClient,
-  input: { action: string; actorId: string; correlationId: string; reasonCode: string; targetId: string },
+  input: {
+    action: string;
+    actorId: string;
+    correlationId: string;
+    reasonCode: string;
+    targetId: string;
+  },
 ) {
-  await client.query(`
+  await client.query(
+    `
     INSERT INTO audit_event (
       actor_type, actor_identity_id, action, outcome, correlation_id,
       target_type, target_id, reason_code
     ) VALUES ('IDENTITY',$1::uuid,$2,'SUCCEEDED',$3,'PriceVersion',$4,$5)
-  `, [input.actorId, input.action, input.correlationId, input.targetId, input.reasonCode]);
+  `,
+    [input.actorId, input.action, input.correlationId, input.targetId, input.reasonCode],
+  );
 }
 
 async function claimAdminCommand(
@@ -453,25 +489,39 @@ async function claimAdminCommand(
 ): Promise<boolean> {
   assertOpaque(key, 180);
   const payloadDigest = digest(payload);
-  const inserted = await client.query(`
+  const inserted = await client.query(
+    `
     INSERT INTO idempotency_record (scope, key, payload_digest, status, locked_until, updated_at)
     VALUES ($1,$2,$3,'IN_PROGRESS',NOW() + INTERVAL '30 seconds',NOW())
     ON CONFLICT (scope, key) DO NOTHING
-  `, [scope, key, payloadDigest]);
+  `,
+    [scope, key, payloadDigest],
+  );
   if (inserted.rowCount === 1) return true;
-  const existing = await client.query<{ payload_digest: string; status: string }>(`
+  const existing = await client.query<{ payload_digest: string; status: string }>(
+    `
     SELECT payload_digest, status::text FROM idempotency_record WHERE scope = $1 AND key = $2
-  `, [scope, key]);
+  `,
+    [scope, key],
+  );
   const row = existing.rows[0];
   if (row?.payload_digest !== payloadDigest) throw new PricingStoreError('PRICING_CONFLICT');
   if (row.status === 'SUCCEEDED') return false;
   throw new PricingStoreError('PRICING_CONFLICT');
 }
 
-async function completeAdminCommand(client: PoolClient, scope: string, key: string, result: unknown) {
-  await client.query(`UPDATE idempotency_record
+async function completeAdminCommand(
+  client: PoolClient,
+  scope: string,
+  key: string,
+  result: unknown,
+) {
+  await client.query(
+    `UPDATE idempotency_record
     SET status = 'SUCCEEDED', result_digest = $3, completed_at = NOW(), locked_until = NULL, updated_at = NOW()
-    WHERE scope = $1 AND key = $2`, [scope, key, digest(result)]);
+    WHERE scope = $1 AND key = $2`,
+    [scope, key, digest(result)],
+  );
 }
 
 function quoteView(row: QuoteRow): QuoteSnapshotView {
@@ -506,7 +556,8 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
         }
         const [profiles, familyRows] = await Promise.all([
           eligibleProfiles(pool, state),
-          pool.query<{ automatic_pricing: boolean; code: string; id: string; name: string }>(`
+          pool.query<{ automatic_pricing: boolean; code: string; id: string; name: string }>(
+            `
             SELECT family.id::text, family.code, family.name,
                    EXISTS (
                      SELECT 1 FROM pricing_rule rule
@@ -525,7 +576,9 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
                 AND business.visibility = 'VISIBLE' AND publication.status = 'PUBLISHED'
             )
             ORDER BY automatic_pricing DESC, family.sort_order, family.name
-          `, [state.catalog_version_id, state.price_version_id]),
+          `,
+            [state.catalog_version_id, state.price_version_id],
+          ),
         ]);
         return {
           catalogVersionId: state.catalog_version_id,
@@ -549,7 +602,17 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
       try {
         const state = await activeState(pool);
         if (selection.catalogVersionId !== state.catalog_version_id) {
-          return { details: [{ code: 'CATALOG_VERSION_INACTIVE', field: 'catalogVersionId', message: 'Версия каталога устарела.' }], status: 'INVALID', warnings: [] };
+          return {
+            details: [
+              {
+                code: 'CATALOG_VERSION_INACTIVE',
+                field: 'catalogVersionId',
+                message: 'Версия каталога устарела.',
+              },
+            ],
+            status: 'INVALID',
+            warnings: [],
+          };
         }
         const profile = (await eligibleProfiles(pool, state)).find(
           (item) =>
@@ -561,7 +624,17 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
         if (profile !== undefined) return validatePricingSelection(profile, selection);
         return (await publishedSelection(pool, state, selection))
           ? { details: [], status: 'VALID', warnings: ['Цена рассчитывается по запросу.'] }
-          : { details: [{ code: 'INCOMPATIBLE_SELECTION', field: 'configuration', message: 'Выбранное сочетание недоступно.' }], status: 'INVALID', warnings: [] };
+          : {
+              details: [
+                {
+                  code: 'INCOMPATIBLE_SELECTION',
+                  field: 'configuration',
+                  message: 'Выбранное сочетание недоступно.',
+                },
+              ],
+              status: 'INVALID',
+              warnings: [],
+            };
       } catch (error) {
         throw mapError(error);
       }
@@ -572,25 +645,41 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
       assertOpaque(input.correlationId, 128);
       const requestDigest = digest(input.selection);
       try {
-        const previous = await pool.query<CalculationRow>(`
+        const previous = await pool.query<CalculationRow>(
+          `
           SELECT id::text, public_token, request_digest, catalog_version_id::text,
                  price_version_id::text, status::text, input_snapshot,
                  result_snapshot, created_at
           FROM pricing_calculation WHERE idempotency_key = $1
-        `, [input.idempotencyKey]);
+        `,
+          [input.idempotencyKey],
+        );
         const existing = previous.rows[0];
         if (existing !== undefined) {
-          if (existing.request_digest !== requestDigest) throw new PricingStoreError('PRICING_CONFLICT');
-          return { calculationId: existing.id, calculationToken: existing.public_token, result: existing.result_snapshot };
+          if (existing.request_digest !== requestDigest)
+            throw new PricingStoreError('PRICING_CONFLICT');
+          return {
+            calculationId: existing.id,
+            calculationToken: existing.public_token,
+            result: existing.result_snapshot,
+          };
         }
 
         const state = await activeState(pool);
         let profile: PricingRuleProfile | undefined;
         let result: PricingResult;
         if (input.selection.catalogVersionId !== state.catalog_version_id) {
-          result = unavailableResult(input.selection, 'CONFIGURATION_INVALID', 'Версия каталога устарела. Обновите конфигуратор.');
+          result = unavailableResult(
+            input.selection,
+            'CONFIGURATION_INVALID',
+            'Версия каталога устарела. Обновите конфигуратор.',
+          );
         } else if (state.price_version_id === null) {
-          result = unavailableResult(input.selection, 'PRICE_VERSION_INACTIVE', 'Активная версия цены недоступна.');
+          result = unavailableResult(
+            input.selection,
+            'PRICE_VERSION_INACTIVE',
+            'Активная версия цены недоступна.',
+          );
         } else {
           profile = (await eligibleProfiles(pool, state)).find(
             (item) =>
@@ -601,8 +690,16 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
           );
           if (profile === undefined) {
             result = (await publishedSelection(pool, state, input.selection))
-              ? calculatePrice({ calculatedAt: new Date().toISOString(), profile: null, selection: input.selection })
-              : unavailableResult(input.selection, 'CONFIGURATION_INVALID', 'Выбранное сочетание недоступно.');
+              ? calculatePrice({
+                  calculatedAt: new Date().toISOString(),
+                  profile: null,
+                  selection: input.selection,
+                })
+              : unavailableResult(
+                  input.selection,
+                  'CONFIGURATION_INVALID',
+                  'Выбранное сочетание недоступно.',
+                );
           } else {
             const override = await localOverride(pool, profile.materialVariantId);
             result = calculatePrice({
@@ -614,10 +711,12 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
           }
         }
         const calculationToken = token();
-        const configuration = profile === undefined
-          ? { ids: input.selection }
-          : configurationSnapshot(profile, input.selection);
-        const inserted = await pool.query<CalculationRow>(`
+        const configuration =
+          profile === undefined
+            ? { ids: input.selection }
+            : configurationSnapshot(profile, input.selection);
+        const inserted = await pool.query<CalculationRow>(
+          `
           INSERT INTO pricing_calculation (
             public_token, idempotency_key, request_digest, catalog_version_id,
             price_version_id, status, input_snapshot, result_snapshot, correlation_id
@@ -625,27 +724,42 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
           ON CONFLICT (idempotency_key) DO NOTHING
           RETURNING id::text, public_token, request_digest, catalog_version_id::text,
                     price_version_id::text, status::text, input_snapshot, result_snapshot, created_at
-        `, [
-          calculationToken,
-          input.idempotencyKey,
-          requestDigest,
-          state.catalog_version_id,
-          result.priceVersionId,
-          result.status,
-          JSON.stringify(configuration),
-          JSON.stringify(result),
-          input.correlationId,
-        ]);
+        `,
+          [
+            calculationToken,
+            input.idempotencyKey,
+            requestDigest,
+            state.catalog_version_id,
+            result.priceVersionId,
+            result.status,
+            JSON.stringify(configuration),
+            JSON.stringify(result),
+            input.correlationId,
+          ],
+        );
         const saved = inserted.rows[0];
-        if (saved !== undefined) return { calculationId: saved.id, calculationToken: saved.public_token, result: saved.result_snapshot };
-        const raced = await pool.query<CalculationRow>(`
+        if (saved !== undefined)
+          return {
+            calculationId: saved.id,
+            calculationToken: saved.public_token,
+            result: saved.result_snapshot,
+          };
+        const raced = await pool.query<CalculationRow>(
+          `
           SELECT id::text, public_token, request_digest, catalog_version_id::text,
                  price_version_id::text, status::text, input_snapshot, result_snapshot, created_at
           FROM pricing_calculation WHERE idempotency_key = $1
-        `, [input.idempotencyKey]);
+        `,
+          [input.idempotencyKey],
+        );
         const row = raced.rows[0];
-        if (row === undefined || row.request_digest !== requestDigest) throw new PricingStoreError('PRICING_CONFLICT');
-        return { calculationId: row.id, calculationToken: row.public_token, result: row.result_snapshot };
+        if (row === undefined || row.request_digest !== requestDigest)
+          throw new PricingStoreError('PRICING_CONFLICT');
+        return {
+          calculationId: row.id,
+          calculationToken: row.public_token,
+          result: row.result_snapshot,
+        };
       } catch (error) {
         throw mapError(error);
       }
@@ -656,17 +770,21 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
       assertOpaque(input.idempotencyKey, 180);
       assertOpaque(input.correlationId, 128);
       try {
-        const calculation = await pool.query<CalculationRow>(`
+        const calculation = await pool.query<CalculationRow>(
+          `
           SELECT id::text, public_token, request_digest, catalog_version_id::text,
                  price_version_id::text, status::text, input_snapshot, result_snapshot, created_at
           FROM pricing_calculation WHERE public_token = $1
-        `, [input.calculationToken]);
+        `,
+          [input.calculationToken],
+        );
         const source = calculation.rows[0];
         if (source === undefined || !['CALCULATED', 'SOURCE_DATA_STALE'].includes(source.status)) {
           throw new PricingStoreError('PRICING_NOT_FOUND');
         }
         const quoteToken = token();
-        const inserted = await pool.query<QuoteRow>(`
+        const inserted = await pool.query<QuoteRow>(
+          `
           INSERT INTO quote_snapshot (
             public_token, calculation_id, save_idempotency_key, status,
             catalog_version_id, price_version_id, source_version,
@@ -676,25 +794,34 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
           RETURNING public_token, status::text, catalog_version_id::text,
                     price_version_id::text, source_version, configuration_snapshot,
                     breakdown_snapshot, created_at
-        `, [
-          quoteToken,
-          source.id,
-          input.idempotencyKey,
-          source.status,
-          source.catalog_version_id,
-          source.price_version_id,
-          source.result_snapshot.sourceVersion,
-          JSON.stringify(source.input_snapshot),
-          JSON.stringify(source.result_snapshot),
-          source.result_snapshot.grandTotalKopecks,
-          input.correlationId,
-        ]);
-        const saved = inserted.rows[0] ?? (await pool.query<QuoteRow>(`
+        `,
+          [
+            quoteToken,
+            source.id,
+            input.idempotencyKey,
+            source.status,
+            source.catalog_version_id,
+            source.price_version_id,
+            source.result_snapshot.sourceVersion,
+            JSON.stringify(source.input_snapshot),
+            JSON.stringify(source.result_snapshot),
+            source.result_snapshot.grandTotalKopecks,
+            input.correlationId,
+          ],
+        );
+        const saved =
+          inserted.rows[0] ??
+          (
+            await pool.query<QuoteRow>(
+              `
           SELECT public_token, status::text, catalog_version_id::text,
                  price_version_id::text, source_version, configuration_snapshot,
                  breakdown_snapshot, created_at
           FROM quote_snapshot WHERE save_idempotency_key = $1
-        `, [input.idempotencyKey])).rows[0];
+        `,
+              [input.idempotencyKey],
+            )
+          ).rows[0];
         if (saved === undefined) throw new PricingStoreError('PRICING_CONFLICT');
         return quoteView(saved);
       } catch (error) {
@@ -705,12 +832,15 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
     async getQuote(publicToken) {
       assertOpaque(publicToken, 64);
       try {
-        const result = await pool.query<QuoteRow>(`
+        const result = await pool.query<QuoteRow>(
+          `
           SELECT public_token, status::text, catalog_version_id::text,
                  price_version_id::text, source_version, configuration_snapshot,
                  breakdown_snapshot, created_at
           FROM quote_snapshot WHERE public_token = $1
-        `, [publicToken]);
+        `,
+          [publicToken],
+        );
         const row = result.rows[0];
         if (row === undefined) throw new PricingStoreError('PRICING_NOT_FOUND');
         return quoteView(row);
@@ -723,10 +853,18 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
       try {
         const [versions, auditRows] = await Promise.all([
           pool.query<{
-            activated_at: Date | null; change_count: string; created_at: Date;
-            fixture_count: string; id: string; maximum_deviation_minor: number | null;
-            parity_status: 'FAILED' | 'PASSED' | 'PENDING' | null; rule_count: string;
-            source_version: string | null; status: string; unsupported_count: string; version_number: number;
+            activated_at: Date | null;
+            change_count: string;
+            created_at: Date;
+            fixture_count: string;
+            id: string;
+            maximum_deviation_minor: number | null;
+            parity_status: 'FAILED' | 'PASSED' | 'PENDING' | null;
+            rule_count: string;
+            source_version: string | null;
+            status: string;
+            unsupported_count: string;
+            version_number: number;
           }>(`
             SELECT version.id::text, version.version_number, version.status::text,
                    version.activated_at, version.created_at,
@@ -748,8 +886,12 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
             ORDER BY version.version_number DESC LIMIT 12
           `),
           pool.query<{
-            action: string; actor_id: string | null; created_at: Date; outcome: string;
-            reason_code: string; target_id: string;
+            action: string;
+            actor_id: string | null;
+            created_at: Date;
+            outcome: string;
+            reason_code: string;
+            target_id: string;
           }>(`
             SELECT action, actor_identity_id::text AS actor_id, created_at, outcome::text,
                    reason_code, target_id
@@ -793,28 +935,48 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
       assertOpaque(input.idempotencyKey, 180);
       await transaction(pool, async (client) => {
         await authorizePricingAdmin(client, input.actorId);
-        if (!await claimAdminCommand(client, 'pricing.parity', input.idempotencyKey, input)) return;
-        const rows = await client.query<RuleRow>(`${ruleSelect}
+        if (!(await claimAdminCommand(client, 'pricing.parity', input.idempotencyKey, input)))
+          return;
+        const rows = await client.query<RuleRow>(
+          `${ruleSelect}
           WHERE rule.price_version_id = $1::uuid ORDER BY rule.rule_key
-        `, [input.priceVersionId]);
+        `,
+          [input.priceVersionId],
+        );
         const profiles = rows.rows.map((row) => ({ ...mapRule(row), priceVersionActive: true }));
         const parity = verifyPricingParity(profiles, new Date().toISOString());
         const sourceVersion = profiles[0]?.sourceVersion;
         if (sourceVersion === undefined) throw new PricingStoreError('PRICING_NOT_FOUND');
-        await client.query(`
+        await client.query(
+          `
           INSERT INTO pricing_parity_run (
             price_version_id, status, source_version, fixture_count, passed_count,
             failed_count, maximum_deviation_minor, safe_details, run_by_actor_id,
             correlation_id, idempotency_key
           ) VALUES ($1::uuid,$2::pricing_parity_status,$3,$4,$5,$6,$7,$8::jsonb,$9::uuid,$10,$11)
           ON CONFLICT (idempotency_key) DO NOTHING
-        `, [input.priceVersionId, parity.status, sourceVersion, parity.fixtureCount,
-          parity.passedCount, parity.failedCount, parity.maximumDeviationMinor,
-          JSON.stringify({ ruleResults: parity.ruleResults }), input.actorId,
-          input.correlationId, input.idempotencyKey]);
-        await audit(client, { action: 'PRICING_PARITY_VERIFIED', actorId: input.actorId,
-          correlationId: input.correlationId, reasonCode: parity.status === 'PASSED' ? 'PARITY_PASSED' : 'PARITY_FAILED',
-          targetId: input.priceVersionId });
+        `,
+          [
+            input.priceVersionId,
+            parity.status,
+            sourceVersion,
+            parity.fixtureCount,
+            parity.passedCount,
+            parity.failedCount,
+            parity.maximumDeviationMinor,
+            JSON.stringify({ ruleResults: parity.ruleResults }),
+            input.actorId,
+            input.correlationId,
+            input.idempotencyKey,
+          ],
+        );
+        await audit(client, {
+          action: 'PRICING_PARITY_VERIFIED',
+          actorId: input.actorId,
+          correlationId: input.correlationId,
+          reasonCode: parity.status === 'PASSED' ? 'PARITY_PASSED' : 'PARITY_FAILED',
+          targetId: input.priceVersionId,
+        });
         await completeAdminCommand(client, 'pricing.parity', input.idempotencyKey, parity);
       });
     },
@@ -823,12 +985,16 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
       assertOpaque(input.idempotencyKey, 180);
       await transaction(pool, async (client) => {
         await authorizePricingAdmin(client, input.actorId);
-        if (!await claimAdminCommand(client, 'pricing.activate', input.idempotencyKey, input)) return;
+        if (!(await claimAdminCommand(client, 'pricing.activate', input.idempotencyKey, input)))
+          return;
         const version = await client.query<{ status: string }>(
-          `SELECT status::text FROM price_version WHERE id = $1::uuid FOR UPDATE`, [input.priceVersionId]);
+          `SELECT status::text FROM price_version WHERE id = $1::uuid FOR UPDATE`,
+          [input.priceVersionId],
+        );
         const current = version.rows[0];
         if (current === undefined) throw new PricingStoreError('PRICING_NOT_FOUND');
-        const gate = await client.query<{ passed: boolean }>(`
+        const gate = await client.query<{ passed: boolean }>(
+          `
           SELECT EXISTS (
             SELECT 1 FROM pricing_parity_run run
             WHERE run.price_version_id = $1::uuid AND run.status = 'PASSED' AND run.failed_count = 0
@@ -836,26 +1002,50 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
             SELECT 1 FROM pricing_rule rule WHERE rule.price_version_id = $1::uuid
               AND rule.verification_status = 'VERIFIED' AND rule.parity_status = 'PASSED'
           ) AS passed
-        `, [input.priceVersionId]);
+        `,
+          [input.priceVersionId],
+        );
         if (gate.rows[0]?.passed !== true) throw new PricingStoreError('PRICING_PARITY_BLOCKED');
-        await client.query(`UPDATE price_version SET status = 'SUPERSEDED', activation_key = NULL
-          WHERE status = 'ACTIVE' AND id <> $1::uuid`, [input.priceVersionId]);
-        const changed = await client.query(`UPDATE price_version SET status = 'ACTIVE',
+        await client.query(
+          `UPDATE price_version SET status = 'SUPERSEDED', activation_key = NULL
+          WHERE status = 'ACTIVE' AND id <> $1::uuid`,
+          [input.priceVersionId],
+        );
+        const changed = await client.query(
+          `UPDATE price_version SET status = 'ACTIVE',
           approved_by_actor_id = $2::uuid, approved_at = NOW(), activated_by_actor_id = $2::uuid,
           activated_at = NOW(), activation_key = 'PUBLIC'
           WHERE id = $1::uuid AND status IN ('AWAITING_APPROVAL','APPROVED')`,
-        [input.priceVersionId, input.actorId]);
-        if (changed.rowCount !== 1 && current.status !== 'ACTIVE') throw new PricingStoreError('PRICING_CONFLICT');
-        await client.query(`INSERT INTO pricing_version_decision (
+          [input.priceVersionId, input.actorId],
+        );
+        if (changed.rowCount !== 1 && current.status !== 'ACTIVE')
+          throw new PricingStoreError('PRICING_CONFLICT');
+        await client.query(
+          `INSERT INTO pricing_version_decision (
           price_version_id, action, actor_id, before_state, after_state, safe_reason,
           correlation_id, idempotency_key
         ) VALUES ($1::uuid,'ACTIVATE',$2::uuid,$3::jsonb,$4::jsonb,$5,$6,$7)
-        ON CONFLICT (idempotency_key) DO NOTHING`, [input.priceVersionId, input.actorId,
-          JSON.stringify({ status: current.status }), JSON.stringify({ status: 'ACTIVE' }),
-          input.reason, input.correlationId, input.idempotencyKey]);
-        await audit(client, { action: 'PRICING_VERSION_ACTIVATED', actorId: input.actorId,
-          correlationId: input.correlationId, reasonCode: 'ADMIN_REVIEW_AND_PARITY_PASSED', targetId: input.priceVersionId });
-        await completeAdminCommand(client, 'pricing.activate', input.idempotencyKey, { status: 'ACTIVE' });
+        ON CONFLICT (idempotency_key) DO NOTHING`,
+          [
+            input.priceVersionId,
+            input.actorId,
+            JSON.stringify({ status: current.status }),
+            JSON.stringify({ status: 'ACTIVE' }),
+            input.reason,
+            input.correlationId,
+            input.idempotencyKey,
+          ],
+        );
+        await audit(client, {
+          action: 'PRICING_VERSION_ACTIVATED',
+          actorId: input.actorId,
+          correlationId: input.correlationId,
+          reasonCode: 'ADMIN_REVIEW_AND_PARITY_PASSED',
+          targetId: input.priceVersionId,
+        });
+        await completeAdminCommand(client, 'pricing.activate', input.idempotencyKey, {
+          status: 'ACTIVE',
+        });
       });
     },
 
@@ -863,54 +1053,98 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
       assertOpaque(input.idempotencyKey, 180);
       await transaction(pool, async (client) => {
         await authorizePricingAdmin(client, input.actorId);
-        if (!await claimAdminCommand(client, 'pricing.reject', input.idempotencyKey, input)) return;
-        const changed = await client.query<{ status: string }>(`
+        if (!(await claimAdminCommand(client, 'pricing.reject', input.idempotencyKey, input)))
+          return;
+        const changed = await client.query<{ status: string }>(
+          `
           UPDATE price_version SET status = 'REJECTED', activation_key = NULL
           WHERE id = $1::uuid AND status IN ('DRAFT','AWAITING_APPROVAL','APPROVED')
           RETURNING status::text
-        `, [input.priceVersionId]);
+        `,
+          [input.priceVersionId],
+        );
         if (changed.rowCount !== 1) throw new PricingStoreError('PRICING_CONFLICT');
-        await client.query(`INSERT INTO pricing_version_decision (
+        await client.query(
+          `INSERT INTO pricing_version_decision (
           price_version_id, action, actor_id, before_state, after_state, safe_reason,
           correlation_id, idempotency_key
         ) VALUES ($1::uuid,'REJECT',$2::uuid,'{}'::jsonb,$3::jsonb,$4,$5,$6)
-        ON CONFLICT (idempotency_key) DO NOTHING`, [input.priceVersionId, input.actorId,
-          JSON.stringify({ status: 'REJECTED' }), input.reason, input.correlationId, input.idempotencyKey]);
-        await audit(client, { action: 'PRICING_VERSION_REJECTED', actorId: input.actorId,
-          correlationId: input.correlationId, reasonCode: 'ADMIN_REVIEW_REJECTED', targetId: input.priceVersionId });
-        await completeAdminCommand(client, 'pricing.reject', input.idempotencyKey, { status: 'REJECTED' });
+        ON CONFLICT (idempotency_key) DO NOTHING`,
+          [
+            input.priceVersionId,
+            input.actorId,
+            JSON.stringify({ status: 'REJECTED' }),
+            input.reason,
+            input.correlationId,
+            input.idempotencyKey,
+          ],
+        );
+        await audit(client, {
+          action: 'PRICING_VERSION_REJECTED',
+          actorId: input.actorId,
+          correlationId: input.correlationId,
+          reasonCode: 'ADMIN_REVIEW_REJECTED',
+          targetId: input.priceVersionId,
+        });
+        await completeAdminCommand(client, 'pricing.reject', input.idempotencyKey, {
+          status: 'REJECTED',
+        });
       });
     },
 
     async setLocalOverride(input) {
-      if (!Number.isSafeInteger(input.amountMinor) || input.amountMinor <= 0 || input.reason.trim().length < 3) {
+      if (
+        !Number.isSafeInteger(input.amountMinor) ||
+        input.amountMinor <= 0 ||
+        input.reason.trim().length < 3
+      ) {
         throw new PricingStoreError('PRICING_INVALID_INPUT');
       }
       return transaction(pool, async (client) => {
         await authorizePricingAdmin(client, input.actorId);
-        const fresh = await claimAdminCommand(client, 'pricing.override.set', input.idempotencyKey, input);
+        const fresh = await claimAdminCommand(
+          client,
+          'pricing.override.set',
+          input.idempotencyKey,
+          input,
+        );
         if (!fresh) {
           const current = await localOverride(client, input.materialVariantId);
           if (current === undefined) throw new PricingStoreError('PRICING_CONFLICT');
           return current.id;
         }
-        const business = await client.query<{ id: string }>(`
+        const business = await client.query<{ id: string }>(
+          `
           SELECT id::text FROM business_catalog_entry WHERE material_variant_id = $1::uuid FOR UPDATE
-        `, [input.materialVariantId]);
+        `,
+          [input.materialVariantId],
+        );
         const businessId = business.rows[0]?.id;
         if (businessId === undefined) throw new PricingStoreError('PRICING_NOT_FOUND');
-        await client.query(`UPDATE local_price_override SET status = 'REMOVED', removed_at = NOW(),
+        await client.query(
+          `UPDATE local_price_override SET status = 'REMOVED', removed_at = NOW(),
           effective_to = GREATEST(effective_from, NOW())
-          WHERE business_catalog_entry_id = $1::uuid AND status IN ('ACTIVE','SCHEDULED') AND removed_at IS NULL`, [businessId]);
-        const inserted = await client.query<{ id: string }>(`INSERT INTO local_price_override (
+          WHERE business_catalog_entry_id = $1::uuid AND status IN ('ACTIVE','SCHEDULED') AND removed_at IS NULL`,
+          [businessId],
+        );
+        const inserted = await client.query<{ id: string }>(
+          `INSERT INTO local_price_override (
           business_catalog_entry_id, amount_minor, currency, status, reason, decided_by_actor_id
         ) VALUES ($1::uuid,$2,'RUB','ACTIVE',$3,$4::uuid) RETURNING id::text`,
-        [businessId, input.amountMinor, input.reason, input.actorId]);
+          [businessId, input.amountMinor, input.reason, input.actorId],
+        );
         const overrideId = inserted.rows[0]?.id;
         if (overrideId === undefined) throw new PricingStoreError('PRICING_DATABASE');
-        await audit(client, { action: 'PRICING_LOCAL_OVERRIDE_SET', actorId: input.actorId,
-          correlationId: input.correlationId, reasonCode: 'OWNER_OR_ADMIN_LOCAL_AUTHORITY', targetId: overrideId });
-        await completeAdminCommand(client, 'pricing.override.set', input.idempotencyKey, { overrideId });
+        await audit(client, {
+          action: 'PRICING_LOCAL_OVERRIDE_SET',
+          actorId: input.actorId,
+          correlationId: input.correlationId,
+          reasonCode: 'OWNER_OR_ADMIN_LOCAL_AUTHORITY',
+          targetId: overrideId,
+        });
+        await completeAdminCommand(client, 'pricing.override.set', input.idempotencyKey, {
+          overrideId,
+        });
         return overrideId;
       });
     },
@@ -918,8 +1152,12 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
     async removeLocalOverride(input) {
       await transaction(pool, async (client) => {
         await authorizePricingAdmin(client, input.actorId);
-        if (!await claimAdminCommand(client, 'pricing.override.remove', input.idempotencyKey, input)) return;
-        const removed = await client.query<{ id: string }>(`
+        if (
+          !(await claimAdminCommand(client, 'pricing.override.remove', input.idempotencyKey, input))
+        )
+          return;
+        const removed = await client.query<{ id: string }>(
+          `
           UPDATE local_price_override override SET status = 'REMOVED', removed_at = NOW(),
                  effective_to = GREATEST(effective_from, NOW()),
                  reason = LEFT(reason || ' | removed: ' || $2, 512)
@@ -928,12 +1166,21 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
             AND business.material_variant_id = $1::uuid
             AND override.status IN ('ACTIVE','SCHEDULED') AND override.removed_at IS NULL
           RETURNING override.id::text
-        `, [input.materialVariantId, input.reason]);
+        `,
+          [input.materialVariantId, input.reason],
+        );
         const overrideId = removed.rows[0]?.id;
         if (overrideId === undefined) throw new PricingStoreError('PRICING_NOT_FOUND');
-        await audit(client, { action: 'PRICING_LOCAL_OVERRIDE_REMOVED', actorId: input.actorId,
-          correlationId: input.correlationId, reasonCode: 'OWNER_OR_ADMIN_LOCAL_AUTHORITY', targetId: overrideId });
-        await completeAdminCommand(client, 'pricing.override.remove', input.idempotencyKey, { overrideId });
+        await audit(client, {
+          action: 'PRICING_LOCAL_OVERRIDE_REMOVED',
+          actorId: input.actorId,
+          correlationId: input.correlationId,
+          reasonCode: 'OWNER_OR_ADMIN_LOCAL_AUTHORITY',
+          targetId: overrideId,
+        });
+        await completeAdminCommand(client, 'pricing.override.remove', input.idempotencyKey, {
+          overrideId,
+        });
       });
     },
   };

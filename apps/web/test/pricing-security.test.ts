@@ -29,8 +29,14 @@ describe('QG-258 pricing mutation boundary', () => {
   it('requires a signed double-submit token, same origin and idempotency', () => {
     const token = issuePricingCsrfToken(key);
     expect(requirePricingMutation(request(token), key)).toBe('pricing-security-test');
-    expect(() => requirePricingMutation(request(token, { Origin: 'https://attacker.example' }), key)).toThrow('PERMISSION_DENIED');
-    expect(() => requirePricingMutation(request(token, { 'X-CSRF-Token': 'invalid' }), key)).toThrow('PERMISSION_DENIED');
-    expect(() => requirePricingMutation(request(token, { 'Idempotency-Key': 'short' }), key)).toThrow('VALIDATION_ERROR');
+    expect(() =>
+      requirePricingMutation(request(token, { Origin: 'https://attacker.example' }), key),
+    ).toThrow('PERMISSION_DENIED');
+    expect(() =>
+      requirePricingMutation(request(token, { 'X-CSRF-Token': 'invalid' }), key),
+    ).toThrow('PERMISSION_DENIED');
+    expect(() =>
+      requirePricingMutation(request(token, { 'Idempotency-Key': 'short' }), key),
+    ).toThrow('VALIDATION_ERROR');
   });
 });

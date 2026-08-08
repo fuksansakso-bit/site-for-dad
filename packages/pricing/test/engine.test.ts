@@ -13,7 +13,12 @@ import {
   type PricingSelection,
 } from '../src/index.js';
 
-const zeroOption = (id: string, name = id): ConfiguratorOption => ({ amountMinor: 0, code: id, id, name });
+const zeroOption = (id: string, name = id): ConfiguratorOption => ({
+  amountMinor: 0,
+  code: id,
+  id,
+  name,
+});
 
 function profile(overrides: Partial<PricingRuleProfile> = {}): PricingRuleProfile {
   return {
@@ -60,7 +65,11 @@ function profile(overrides: Partial<PricingRuleProfile> = {}): PricingRuleProfil
     sourcePriceCategory: '1',
     sourceReference: 'TEST-SOURCE',
     sourceVersion: 'test-v1',
-    testExamples: Array.from({ length: 10 }, () => ({ expectedMinor: 150_000, heightMm: 1_000, widthMm: 1_000 })),
+    testExamples: Array.from({ length: 10 }, () => ({
+      expectedMinor: 150_000,
+      heightMm: 1_000,
+      widthMm: 1_000,
+    })),
     verificationStatus: 'VERIFIED',
     verifiedAt: '2026-08-08T11:11:38.636Z',
     ...overrides,
@@ -89,12 +98,18 @@ describe('QG-241..QG-249 deterministic integer pricing', () => {
   it('rounds rational integer conversion half up without float money', () => {
     expect(multiplyDivideRoundHalfUp(101, 5, 10)).toBe(51);
     expect(multiplyDivideRoundHalfUp(100, 5, 10)).toBe(50);
-    expect(() => multiplyDivideRoundHalfUp(Number.MAX_SAFE_INTEGER, 2, 1)).toThrow('INTEGER_MONEY_OVERFLOW');
+    expect(() => multiplyDivideRoundHalfUp(Number.MAX_SAFE_INTEGER, 2, 1)).toThrow(
+      'INTEGER_MONEY_OVERFLOW',
+    );
   });
 
   it('applies the 1500 RUB minimum to each unit before quantity', () => {
     const rule = profile();
-    const result = calculatePrice({ calculatedAt: rule.createdAt, profile: rule, selection: selection(rule, { quantity: 3 }) });
+    const result = calculatePrice({
+      calculatedAt: rule.createdAt,
+      profile: rule,
+      selection: selection(rule, { quantity: 3 }),
+    });
     expect(result).toMatchObject({
       grandTotalKopecks: 450_000,
       minimumPriceApplied: true,
@@ -108,8 +123,12 @@ describe('QG-241..QG-249 deterministic integer pricing', () => {
 
   it('keeps measurement, delivery and installation as separate free lines', () => {
     const rule = profile();
-    expect(calculatePrice({ calculatedAt: rule.createdAt, profile: rule, selection: selection(rule) })).toMatchObject({
-      deliveryKopecks: 0, installationKopecks: 0, measurementKopecks: 0,
+    expect(
+      calculatePrice({ calculatedAt: rule.createdAt, profile: rule, selection: selection(rule) }),
+    ).toMatchObject({
+      deliveryKopecks: 0,
+      installationKopecks: 0,
+      measurementKopecks: 0,
     });
   });
 
@@ -117,7 +136,11 @@ describe('QG-241..QG-249 deterministic integer pricing', () => {
     const rule = profile();
     const result = calculatePrice({
       calculatedAt: rule.createdAt,
-      localOverride: { amountMinor: 210_000, id: '00000000-0000-4000-8000-000000000009', reason: 'Owner decision' },
+      localOverride: {
+        amountMinor: 210_000,
+        id: '00000000-0000-4000-8000-000000000009',
+        reason: 'Owner decision',
+      },
       profile: rule,
       selection: selection(rule),
     });
@@ -127,25 +150,46 @@ describe('QG-241..QG-249 deterministic integer pricing', () => {
 
   it('adds only selected compatible options', () => {
     const rule = profile();
-    const result = calculatePrice({ calculatedAt: rule.createdAt, profile: rule,
-      selection: selection(rule, { additionalOptionIds: ['option'] }) });
+    const result = calculatePrice({
+      calculatedAt: rule.createdAt,
+      profile: rule,
+      selection: selection(rule, { additionalOptionIds: ['option'] }),
+    });
     expect(result.optionsTotalKopecks).toBe(5_000);
   });
 
   it('does not use inactive or unverified versions and never returns fake zero', () => {
     const inactive = profile({ priceVersionActive: false });
-    expect(calculatePrice({ calculatedAt: inactive.createdAt, profile: inactive, selection: selection(inactive) })).toMatchObject({
-      grandTotalKopecks: null, status: 'PRICE_VERSION_INACTIVE',
+    expect(
+      calculatePrice({
+        calculatedAt: inactive.createdAt,
+        profile: inactive,
+        selection: selection(inactive),
+      }),
+    ).toMatchObject({
+      grandTotalKopecks: null,
+      status: 'PRICE_VERSION_INACTIVE',
     });
-    const request = calculatePrice({ calculatedAt: inactive.createdAt, profile: null, selection: selection(inactive) });
+    const request = calculatePrice({
+      calculatedAt: inactive.createdAt,
+      profile: null,
+      selection: selection(inactive),
+    });
     expect(request).toMatchObject({ grandTotalKopecks: null, status: 'PRICE_ON_REQUEST' });
   });
 
   it('rejects incompatible choices and sends unconfirmed dimensions to manual review', () => {
     const rule = profile();
-    expect(validatePricingSelection(rule, selection(rule, { hardwareOptionId: 'hidden' })).status).toBe('INVALID');
-    expect(calculatePrice({ calculatedAt: rule.createdAt, profile: rule,
-      selection: selection(rule, { widthMm: 3_001 }) }).status).toBe('MANUAL_REVIEW_REQUIRED');
+    expect(
+      validatePricingSelection(rule, selection(rule, { hardwareOptionId: 'hidden' })).status,
+    ).toBe('INVALID');
+    expect(
+      calculatePrice({
+        calculatedAt: rule.createdAt,
+        profile: rule,
+        selection: selection(rule, { widthMm: 3_001 }),
+      }).status,
+    ).toBe('MANUAL_REVIEW_REQUIRED');
   });
 
   it.each([
@@ -156,27 +200,57 @@ describe('QG-241..QG-249 deterministic integer pricing', () => {
     [{ widthMm: 100_001 }, 'CONFIGURATION_INVALID'],
   ] as const)('handles boundary input %j', (change, status) => {
     const rule = profile();
-    expect(calculatePrice({ calculatedAt: rule.createdAt, profile: rule, selection: selection(rule, change) }).status).toBe(status);
+    expect(
+      calculatePrice({
+        calculatedAt: rule.createdAt,
+        profile: rule,
+        selection: selection(rule, change),
+      }).status,
+    ).toBe(status);
   });
 });
 
 interface FixtureRule {
-  readonly additionalOptions: ConfiguratorOption[]; readonly basePriceMinor: number | null;
-  readonly categoryId: string; readonly categoryName: string; readonly controlTypes: ConfiguratorOption[];
-  readonly familyId: string; readonly familyName: string; readonly fixtures: PricingRuleProfile['testExamples'];
-  readonly hardwareOptions: ConfiguratorOption[]; readonly id: string; readonly kind: PricingRuleProfile['kind'];
-  readonly materialArticle: string; readonly materialColor: string; readonly materialName: string;
-  readonly materialVariantId: string; readonly maximumHeightMm: number; readonly maximumWidthMm: number;
-  readonly minimumHeightMm: number; readonly minimumWidthMm: number; readonly modelCode: string;
-  readonly modelId: string; readonly modelName: string; readonly modelSourceId: string;
-  readonly mountingTypes: ConfiguratorOption[]; readonly roundingRule: PricingRuleProfile['roundingRule'];
-  readonly ruleKey: string; readonly safeExplanation: string; readonly sourcePriceCategory: string;
-  readonly systemId: string; readonly systemName: string;
+  readonly additionalOptions: ConfiguratorOption[];
+  readonly basePriceMinor: number | null;
+  readonly categoryId: string;
+  readonly categoryName: string;
+  readonly controlTypes: ConfiguratorOption[];
+  readonly familyId: string;
+  readonly familyName: string;
+  readonly fixtures: PricingRuleProfile['testExamples'];
+  readonly hardwareOptions: ConfiguratorOption[];
+  readonly id: string;
+  readonly kind: PricingRuleProfile['kind'];
+  readonly materialArticle: string;
+  readonly materialColor: string;
+  readonly materialName: string;
+  readonly materialVariantId: string;
+  readonly maximumHeightMm: number;
+  readonly maximumWidthMm: number;
+  readonly minimumHeightMm: number;
+  readonly minimumWidthMm: number;
+  readonly modelCode: string;
+  readonly modelId: string;
+  readonly modelName: string;
+  readonly modelSourceId: string;
+  readonly mountingTypes: ConfiguratorOption[];
+  readonly roundingRule: PricingRuleProfile['roundingRule'];
+  readonly ruleKey: string;
+  readonly safeExplanation: string;
+  readonly sourcePriceCategory: string;
+  readonly systemId: string;
+  readonly systemName: string;
 }
 
 it('QG-263 verifies 40 dated fixtures, at least 10 per MVP family, within 1 RUB', async () => {
-  const fixture = JSON.parse(await readFile(new URL('./fixtures/amigo-phase1c-parity.json', import.meta.url), 'utf8')) as {
-    capturedAt: string; sourceReference: string; sourceVersion: string; rules: FixtureRule[];
+  const fixture = JSON.parse(
+    await readFile(new URL('./fixtures/amigo-phase1c-parity.json', import.meta.url), 'utf8'),
+  ) as {
+    capturedAt: string;
+    sourceReference: string;
+    sourceVersion: string;
+    rules: FixtureRule[];
   };
   const profiles = fixture.rules.map((rule): PricingRuleProfile => ({
     ...profile(),
@@ -190,19 +264,33 @@ it('QG-263 verifies 40 dated fixtures, at least 10 per MVP family, within 1 RUB'
     maximumWidthMm: rule.maximumWidthMm,
     minimumHeightMm: rule.minimumHeightMm,
     minimumWidthMm: rule.minimumWidthMm,
-    optionData: { additionalOptions: rule.additionalOptions, categoryId: rule.categoryId,
-      categoryName: rule.categoryName, controlTypes: rule.controlTypes, familyName: rule.familyName,
-      hardwareOptions: rule.hardwareOptions, materialArticle: rule.materialArticle,
-      materialColor: rule.materialColor, materialName: rule.materialName,
-      mountingTypes: rule.mountingTypes, systemName: rule.systemName },
+    optionData: {
+      additionalOptions: rule.additionalOptions,
+      categoryId: rule.categoryId,
+      categoryName: rule.categoryName,
+      controlTypes: rule.controlTypes,
+      familyName: rule.familyName,
+      hardwareOptions: rule.hardwareOptions,
+      materialArticle: rule.materialArticle,
+      materialColor: rule.materialColor,
+      materialName: rule.materialName,
+      mountingTypes: rule.mountingTypes,
+      systemName: rule.systemName,
+    },
     productFamilyId: rule.familyId,
     productModelCode: rule.modelCode,
     productModelName: rule.modelName,
     productModelSourceId: rule.modelSourceId,
     productSystemId: rule.systemId,
     roundingRule: rule.roundingRule,
-    ruleData: rule.kind === 'AREA_MINIMUM' ? { minimumBillableAreaSquareMm: 1_000_000 }
-      : { pricesMinor: Object.fromEntries(rule.fixtures.map((item) => [`${item.widthMm}x${item.heightMm}`, item.expectedMinor])) },
+    ruleData:
+      rule.kind === 'AREA_MINIMUM'
+        ? { minimumBillableAreaSquareMm: 1_000_000 }
+        : {
+            pricesMinor: Object.fromEntries(
+              rule.fixtures.map((item) => [`${item.widthMm}x${item.heightMm}`, item.expectedMinor]),
+            ),
+          },
     ruleKey: rule.ruleKey,
     safeExplanation: rule.safeExplanation,
     sourceCapturedAt: fixture.capturedAt,
@@ -215,5 +303,10 @@ it('QG-263 verifies 40 dated fixtures, at least 10 per MVP family, within 1 RUB'
   const result = verifyPricingParity(profiles, fixture.capturedAt);
   expect(profiles).toHaveLength(4);
   expect(profiles.every((item) => item.fixtureCount >= 10)).toBe(true);
-  expect(result).toMatchObject({ failedCount: 0, fixtureCount: 40, maximumDeviationMinor: 100, status: 'PASSED' });
+  expect(result).toMatchObject({
+    failedCount: 0,
+    fixtureCount: 40,
+    maximumDeviationMinor: 100,
+    status: 'PASSED',
+  });
 });

@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { ProductConfigurator } from './product-configurator';
 
 export const metadata: Metadata = {
-  description: 'Пошаговый расчёт жалюзи по активному локальному каталогу и проверенной версии цены.',
+  description:
+    'Пошаговый расчёт жалюзи по активному локальному каталогу и проверенной версии цены.',
   robots: { follow: false, index: false },
   title: 'Конфигуратор жалюзи · PROJECT_NAME',
 };

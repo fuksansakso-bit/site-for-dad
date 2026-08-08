@@ -4,7 +4,11 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { getWebCatalogSigningKey, getWebPricing } from '../../../../lib/catalog-runtime';
 import { requestTelemetryContext } from '../../../../lib/health-handler';
 import { parsePricingJson, pricingRouteErrorCode } from '../../../../lib/pricing-route';
-import { pricingNoStoreHeaders, pricingSafeFailure, requirePricingMutation } from '../../../../lib/pricing-security';
+import {
+  pricingNoStoreHeaders,
+  pricingSafeFailure,
+  requirePricingMutation,
+} from '../../../../lib/pricing-security';
 
 export const dynamic = 'force-dynamic';
 

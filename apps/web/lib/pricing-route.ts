@@ -14,12 +14,17 @@ export function pricingRouteErrorCode(error: unknown) {
   }
   if (error instanceof PricingStoreError) {
     switch (error.code) {
-      case 'PRICING_AUTHORIZATION': return 'PERMISSION_DENIED' as const;
+      case 'PRICING_AUTHORIZATION':
+        return 'PERMISSION_DENIED' as const;
       case 'PRICING_CONFLICT':
-      case 'PRICING_PARITY_BLOCKED': return 'CONFLICT' as const;
-      case 'PRICING_INVALID_INPUT': return 'VALIDATION_ERROR' as const;
-      case 'PRICING_NOT_FOUND': return 'NOT_FOUND' as const;
-      case 'PRICING_DATABASE': return 'DEPENDENCY_UNAVAILABLE' as const;
+      case 'PRICING_PARITY_BLOCKED':
+        return 'CONFLICT' as const;
+      case 'PRICING_INVALID_INPUT':
+        return 'VALIDATION_ERROR' as const;
+      case 'PRICING_NOT_FOUND':
+        return 'NOT_FOUND' as const;
+      case 'PRICING_DATABASE':
+        return 'DEPENDENCY_UNAVAILABLE' as const;
     }
   }
   return 'INTERNAL_ERROR' as const;

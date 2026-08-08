@@ -1,6 +1,10 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 
-import { createSafeErrorResponse, foundationErrorDefinitions, type FoundationErrorCode } from '@project-name/contracts/error';
+import {
+  createSafeErrorResponse,
+  foundationErrorDefinitions,
+  type FoundationErrorCode,
+} from '@project-name/contracts/error';
 import { type NextRequest, NextResponse } from 'next/server';
 
 export const pricingCsrfCookieName = 'project_name_pricing_csrf';
@@ -29,13 +33,17 @@ function tokenValid(token: string, key: string): boolean {
   if (nonce === undefined || supplied === undefined || extra !== undefined) return false;
   const expectedBuffer = Buffer.from(signature(nonce, key));
   const suppliedBuffer = Buffer.from(supplied);
-  return suppliedBuffer.length === expectedBuffer.length && timingSafeEqual(suppliedBuffer, expectedBuffer);
+  return (
+    suppliedBuffer.length === expectedBuffer.length &&
+    timingSafeEqual(suppliedBuffer, expectedBuffer)
+  );
 }
 
 function enforceRateBoundary(request: NextRequest): void {
-  const key = request.cookies.get(pricingCsrfCookieName)?.value
-    ?? request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-    ?? 'anonymous';
+  const key =
+    request.cookies.get(pricingCsrfCookieName)?.value ??
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    'anonymous';
   const now = Date.now();
   const current = counters.get(key);
   if (current === undefined || current.resetAt <= now) {
@@ -76,7 +84,12 @@ export function requirePricingMutation(
   if (options.csrf) {
     const cookie = request.cookies.get(pricingCsrfCookieName)?.value;
     const header = request.headers.get('x-csrf-token');
-    if (cookie === undefined || header === null || cookie !== header || !tokenValid(header, signingKey)) {
+    if (
+      cookie === undefined ||
+      header === null ||
+      cookie !== header ||
+      !tokenValid(header, signingKey)
+    ) {
       throw new PricingRequestError('PERMISSION_DENIED');
     }
   }

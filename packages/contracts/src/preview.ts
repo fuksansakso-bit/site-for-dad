@@ -111,7 +111,7 @@ export const previewSceneSchema = z
     description: z.string().min(1).max(255),
     id: previewSceneIdSchema,
     label: z.string().min(1).max(96),
-    version: z.literal(1),
+    version: z.literal(2),
   })
   .strict();
 
@@ -158,7 +158,7 @@ export const standardPreviewStateResponseSchema = z
       })
       .strict(),
     id: z.string().regex(/^[A-Za-z0-9_-]{32}$/u),
-    rendererVersion: z.literal('standard-svg-v1'),
+    rendererVersion: z.literal('standard-svg-v2'),
     sceneId: previewSceneIdSchema,
     stateChecksum: z.string().regex(/^[0-9a-f]{64}$/u),
     stateVersion: z.literal(1),

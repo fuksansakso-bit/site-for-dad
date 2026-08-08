@@ -63,7 +63,8 @@ async function createPreview(
   await page.goto(created.href);
   if (expectLoadedRenderer) {
     await expect(page.locator(`[data-family-renderer="${familyCode}"]`)).toBeVisible();
-    await expect(page.locator('.standard-preview-svg image')).toHaveCount(1);
+    await expect(page.locator('[data-preview-layer="supplier-interior"]')).toBeVisible();
+    await expect(page.locator('[data-preview-layer="material-source"]')).toHaveCount(1);
   }
   await page.waitForLoadState('networkidle');
   return created;
@@ -195,10 +196,10 @@ test.describe('QG-296..QG-304 Phase 1D browser acceptance', () => {
         system: { id: '00000000-0000-4000-8000-000000000004', name: 'WOOD' },
       },
       controls: {
-        openingPosition: 76,
-        slatAngle: 18,
-        verticalSpread: 86,
-        zebraAlignment: 32,
+        openingPosition: 100,
+        slatAngle: 0,
+        verticalSpread: 100,
+        zebraAlignment: 50,
         zoom: 100,
       },
       correlationId: 'browser-fallback',
@@ -215,7 +216,7 @@ test.describe('QG-296..QG-304 Phase 1D browser acceptance', () => {
         verticalOpeningDirection: null,
       },
       id: token,
-      rendererVersion: 'standard-svg-v1',
+      rendererVersion: 'standard-svg-v2',
       sceneId: 'WINDOW_CLOSEUP',
       stateChecksum: 'f'.repeat(64),
       stateVersion: 1,
@@ -236,8 +237,8 @@ test.describe('QG-296..QG-304 Phase 1D browser acceptance', () => {
         body: JSON.stringify({
           correlationId: 'browser-scenes',
           scenes: [
-            { description: 'Окно', id: 'WINDOW_CLOSEUP', label: 'Окно крупным планом', version: 1 },
-            { description: 'Комната', id: 'ROOM_WINDOW', label: 'Комната с окном', version: 1 },
+            { description: 'Окно', id: 'WINDOW_CLOSEUP', label: 'Окно крупным планом', version: 2 },
+            { description: 'Комната', id: 'ROOM_WINDOW', label: 'Комната с окном', version: 2 },
           ],
         }),
       });
@@ -262,7 +263,8 @@ test.describe('QG-296..QG-304 Phase 1D browser acceptance', () => {
     await expect(
       page.getByText('Предварительное отображение цвета без точной фактуры'),
     ).toBeVisible();
-    await expect(page.locator('.standard-preview-svg image')).toHaveCount(0);
+    await expect(page.locator('[data-preview-layer="supplier-interior"]')).toBeVisible();
+    await expect(page.locator('[data-preview-layer="material-source"]')).toHaveCount(0);
     await expect(page.locator('[data-family-renderer="ROLLER"]')).toBeVisible();
   });
 
@@ -270,9 +272,12 @@ test.describe('QG-296..QG-304 Phase 1D browser acceptance', () => {
     page,
   }, testInfo) => {
     test.skip(testInfo.project.name !== 'chromium', 'Recovery contract is browser-independent.');
-    await page.route('**/api/v1/previews/*/asset', async (route) => {
-      await route.fulfill({ body: 'not-an-image', contentType: 'image/webp', status: 200 });
-    });
+    await page.route(
+      /\/api\/v1\/previews\/[A-Za-z0-9_-]{32}\/layers\/MATERIAL_VISUALIZATION/u,
+      async (route) => {
+        await route.fulfill({ body: 'not-an-image', contentType: 'image/webp', status: 200 });
+      },
+    );
     await createPreview(page, 'ROLLER', false);
     await expect(
       page.getByText('Локальный файл материала временно не загрузился. Попробуйте ещё раз.'),

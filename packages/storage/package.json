@@ -17,6 +17,7 @@
     "build": "tsc -p tsconfig.build.json",
     "lint": "eslint . --max-warnings=0",
     "storage:provision:local": "tsx src/provision-local.ts",
+    "storage:provision:preview": "tsx src/provision-preview-assets.ts",
     "storage:restart:persistence": "tsx test/integration/restart-persistence.ts",
     "test": "vitest run --config vitest.config.ts",
     "test:coverage": "vitest run --coverage --config vitest.config.ts",

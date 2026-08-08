@@ -88,7 +88,7 @@ describe('STD-PREV-018/020 preview HTTP contracts', () => {
         verticalOpeningDirection: null,
       },
       id: 'd'.repeat(32),
-      rendererVersion: 'standard-svg-v1',
+      rendererVersion: 'standard-svg-v2',
       sceneId: 'WINDOW_CLOSEUP',
       stateChecksum: 'e'.repeat(64),
       stateVersion: 1,

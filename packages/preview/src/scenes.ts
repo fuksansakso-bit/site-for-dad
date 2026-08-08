@@ -2,18 +2,22 @@ import type { PreviewSceneDefinition, PreviewSceneId } from './types.js';
 
 export const previewScenes: readonly PreviewSceneDefinition[] = [
   {
-    description: 'Крупный план светлого окна с защищённой рамой, ручкой и подоконником.',
+    backgroundAssetId: 'SCENE_BEDROOM',
+    camera: { height: 600, width: 960, x: 275, y: 44 },
+    description: 'Крупный план настоящего двухстворчатого окна в светлой спальне.',
     id: 'WINDOW_CLOSEUP',
     label: 'Окно крупным планом',
-    version: 1,
-    window: { height: 552, width: 560, x: 320, y: 98 },
+    version: 2,
+    window: { height: 650, width: 300, x: 405, y: 88 },
   },
   {
-    description: 'Оригинальная светлая комната с диваном, торшером и окном в глубине.',
+    backgroundAssetId: 'SCENE_KITCHEN',
+    camera: { height: 937, width: 1500, x: 0, y: 0 },
+    description: 'Тёмная современная кухня с настоящим двухстворчатым окном.',
     id: 'ROOM_WINDOW',
     label: 'Комната с окном',
-    version: 1,
-    window: { height: 382, width: 292, x: 706, y: 116 },
+    version: 2,
+    window: { height: 650, width: 300, x: 405, y: 88 },
   },
 ] as const;
 

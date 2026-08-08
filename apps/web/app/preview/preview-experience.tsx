@@ -46,16 +46,29 @@ function mergePending(previous: PendingUpdate, next: PendingUpdate): PendingUpda
 }
 
 function resetControls(state: StandardPreviewStateResponse): PendingUpdate {
-  const common: PreviewControlPatch = { openingPosition: 76, zoom: 100 };
+  const common: PreviewControlPatch = { openingPosition: 100, zoom: 100 };
   const controls =
     state.family === 'ZEBRA'
-      ? { ...common, zebraAlignment: 32 }
+      ? { ...common, zebraAlignment: 50 }
       : state.family === 'HORIZONTAL_ALUMINUM'
-        ? { ...common, slatAngle: 18 }
+        ? { ...common, slatAngle: 0 }
         : state.family === 'VERTICAL'
-          ? { slatAngle: 18, verticalSpread: 86, zoom: 100 }
+          ? { slatAngle: 0, verticalSpread: 100, zoom: 100 }
           : common;
   return { controls, sceneId: 'WINDOW_CLOSEUP' };
+}
+
+function assetQualityLabel(quality: StandardPreviewStateResponse['asset']['quality']): string {
+  switch (quality) {
+    case 'EXACT_SWATCH':
+      return 'Точная фактура материала';
+    case 'PRODUCT_IMAGE_CROP':
+      return 'Точный локальный слой изделия по артикулу';
+    case 'NORMALIZED_COLOR_ONLY':
+      return 'Только подтверждённый цвет';
+    case 'PREVIEW_UNAVAILABLE':
+      return 'Визуальный источник недоступен';
+  }
 }
 
 function RangeControl({
@@ -225,12 +238,15 @@ export function PreviewExperience({
       <section className="preview-stage" aria-labelledby="preview-title">
         <div className="preview-stage-heading">
           <div>
-            <p className="preview-kicker">Демонстрационное окно</p>
+            <p className="preview-kicker">Реалистичная слоевая примерка</p>
             <h1 id="preview-title">{state.configuration.material.name}</h1>
           </div>
-          <span className="preview-save-state" aria-live="polite">
-            {saving ? 'Сохраняем…' : 'Изменения сохранены'}
-          </span>
+          <div className="preview-stage-status">
+            <span className="preview-source-badge">{assetQualityLabel(state.asset.quality)}</span>
+            <span className="preview-save-state" aria-live="polite">
+              {saving ? 'Сохраняем…' : 'Изменения сохранены'}
+            </span>
+          </div>
         </div>
         {previewAvailable ? (
           <div className="preview-canvas-frame">
@@ -251,26 +267,28 @@ export function PreviewExperience({
             ) : null}
           </div>
         )}
-        {state.asset.quality === 'NORMALIZED_COLOR_ONLY' ? (
-          <p className="preview-quality-note">
-            Предварительное отображение цвета без точной фактуры
+        <div className="preview-stage-notices">
+          {state.asset.quality === 'NORMALIZED_COLOR_ONLY' ? (
+            <p className="preview-quality-note">
+              Предварительное отображение цвета без точной фактуры
+            </p>
+          ) : null}
+          <p className="preview-disclaimer">
+            Сцена демонстрационная: восприятие оттенка зависит от экрана и освещения, итоговый
+            размер — от замера.
           </p>
-        ) : null}
-        <p className="preview-disclaimer">
-          Демонстрационная сцена иллюстративна: восприятие оттенка зависит от экрана и освещения,
-          итоговый размер — от замера.
-        </p>
-        {state.eligibility.warnings.length === 0 ? null : (
-          <p className="preview-warning">
-            Конфигурация или версия цены изменилась. Вернитесь в конфигуратор для повторной
-            проверки.
-          </p>
-        )}
-        {error === null ? null : (
-          <p className="preview-inline-error" role="alert">
-            {error}
-          </p>
-        )}
+          {state.eligibility.warnings.length === 0 ? null : (
+            <p className="preview-warning">
+              Конфигурация или версия цены изменилась. Вернитесь в конфигуратор для повторной
+              проверки.
+            </p>
+          )}
+          {error === null ? null : (
+            <p className="preview-inline-error" role="alert">
+              {error}
+            </p>
+          )}
+        </div>
       </section>
 
       <aside className="preview-side-panel" aria-label="Управление стандартной примеркой">

@@ -453,6 +453,7 @@ try {
     )) -FailureMessage 'VersityGW Compose startup failed'
     $storageStarted = $true
     Invoke-Checked -Executable $pnpmExecutable -Arguments @('--dir', $repositoryRoot, '--filter', '@project-name/storage', 'storage:provision:local') -FailureMessage 'Local storage provisioning failed'
+    Invoke-Checked -Executable $pnpmExecutable -Arguments @('--dir', $repositoryRoot, '--filter', '@project-name/storage', 'storage:provision:preview') -FailureMessage 'Preview asset provisioning failed'
 
     Invoke-Checked -Executable $pnpmExecutable -Arguments @('--dir', $repositoryRoot, 'exec', 'turbo', 'run', 'build', '--filter=@project-name/web', '--filter=@project-name/worker') -FailureMessage 'Foundation application build failed'
     $webProcess = Start-Process -FilePath $nodeExecutable -ArgumentList @('node_modules/next/dist/bin/next', 'dev', '--hostname', '127.0.0.1', '--port', "$WebPort") -WorkingDirectory (Join-Path $repositoryRoot 'apps\web') -WindowStyle Hidden -RedirectStandardOutput (Join-Path $logRoot 'web.out.log') -RedirectStandardError (Join-Path $logRoot 'web.err.log') -PassThru

@@ -61,10 +61,10 @@ export function selectPreviewAsset(
 
 export function defaultPreviewControls(): PreviewControls {
   return {
-    openingPosition: 76,
-    slatAngle: 18,
-    verticalSpread: 86,
-    zebraAlignment: 32,
+    openingPosition: 100,
+    slatAngle: 0,
+    verticalSpread: 100,
+    zebraAlignment: 50,
     zoom: 100,
   };
 }

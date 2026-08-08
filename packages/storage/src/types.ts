@@ -3,10 +3,12 @@ export type ObjectZone = (typeof objectZones)[number];
 
 export const syntheticObjectSource = 'SYNTHETIC_TEST' as const;
 export const amigoAuthorizedCatalogObjectSource = 'AMIGO_AUTHORIZED_CATALOG' as const;
+export const amigoAuthorizedPreviewObjectSource = 'AMIGO_AUTHORIZED_PREVIEW' as const;
 export const objectSources = [
   syntheticObjectSource,
   'AMIGO_CATALOG_PILOT',
   amigoAuthorizedCatalogObjectSource,
+  amigoAuthorizedPreviewObjectSource,
 ] as const;
 export type ObjectSource = (typeof objectSources)[number];
 

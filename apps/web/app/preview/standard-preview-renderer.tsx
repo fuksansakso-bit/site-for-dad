@@ -1,256 +1,225 @@
 import type { StandardPreviewStateResponse } from '@project-name/contracts/preview';
-import {
-  buildPreviewRenderModel,
-  horizontalSlatLayout,
-  type PreviewRenderModel,
-  verticalSlatLayout,
-} from '@project-name/preview';
+import { buildPreviewRenderModel, type PreviewRenderModel } from '@project-name/preview';
 
 import { PreviewSceneSvg } from './preview-scene';
 
-function HardwareRail({
-  model,
-  y,
+const ATLAS_WIDTH = 1500;
+const ATLAS_HEIGHT = 937;
+
+function rounded(value: number): number {
+  return Math.round(value * 10_000) / 10_000;
+}
+
+function scaleAt(anchorX: number, anchorY: number, scaleX: number, scaleY: number): string {
+  return `translate(${anchorX} ${anchorY}) scale(${rounded(scaleX)} ${rounded(scaleY)}) translate(${-anchorX} ${-anchorY})`;
+}
+
+function deploymentScale(position: number): number {
+  return rounded(0.12 + (Math.min(100, Math.max(0, position)) / 100) * 0.88);
+}
+
+function angleScale(angle: number): number {
+  const radians = (Math.min(75, Math.max(-75, angle)) * Math.PI) / 180;
+  return rounded(0.8 + Math.abs(Math.cos(radians)) * 0.2);
+}
+
+function SupplierImage({
+  dataLayer,
+  href,
+  onAssetError,
 }: {
-  readonly model: PreviewRenderModel;
-  readonly y: number;
+  readonly dataLayer?: string | undefined;
+  readonly href: string;
+  readonly onAssetError?: (() => void) | undefined;
 }): React.JSX.Element {
-  const { width, x } = model.product;
-  const railHeight = Math.max(6, Math.min(15, model.product.height * 0.025));
   return (
-    <g aria-hidden="true">
-      <rect
-        fill={model.hardwareColor}
-        filter={`url(#${model.ids.shadow})`}
-        height={railHeight}
-        rx={railHeight / 3}
-        stroke="#596160"
-        strokeOpacity="0.34"
-        strokeWidth="1"
-        width={width}
-        x={x}
-        y={y - railHeight / 2}
-      />
-      <path
-        d={`M${x + railHeight} ${y - railHeight * 0.12} H${x + width - railHeight}`}
-        opacity="0.44"
-        stroke="#FFFFFF"
-        strokeLinecap="round"
-        strokeWidth={Math.max(1, railHeight * 0.11)}
-      />
-    </g>
+    <image
+      data-preview-layer={dataLayer}
+      height={ATLAS_HEIGHT}
+      href={href}
+      onError={onAssetError}
+      preserveAspectRatio="none"
+      width={ATLAS_WIDTH}
+      x="0"
+      y="0"
+    />
   );
 }
 
-function Chain({
-  model,
-  deployedHeight,
+function HardwareLayer({
+  clipId,
+  color,
+  href,
+  maskId,
+  onAssetError,
+  transform,
 }: {
-  readonly model: PreviewRenderModel;
-  readonly deployedHeight: number;
+  readonly clipId?: string | undefined;
+  readonly color: string;
+  readonly href: string;
+  readonly maskId: string;
+  readonly onAssetError?: (() => void) | undefined;
+  readonly transform?: string | undefined;
 }): React.JSX.Element {
-  const { controlSide } = model.familyParameters;
-  const { height, width, x, y } = model.product;
-  const sideX = controlSide === 'LEFT' ? x + width * 0.035 : x + width * 0.965;
-  const chainLength = Math.min(height * 0.72, Math.max(height * 0.3, deployedHeight * 0.76));
-  const beadRadius = Math.max(1.2, Math.min(2.5, width * 0.006));
-  const beads = Array.from({ length: 18 }, (_, index) => index);
+  const isWhite = color === '#FFFFFF';
   return (
-    <g aria-hidden="true" fill={model.hardwareColor} stroke="#5E625F" strokeWidth="0.5">
-      {beads.map((index) => {
-        const progress = index / (beads.length - 1);
-        const goingDown = progress <= 0.5;
-        const local = goingDown ? progress * 2 : (progress - 0.5) * 2;
-        return (
-          <circle
-            cx={sideX + (goingDown ? -beadRadius * 2.1 : beadRadius * 2.1)}
-            cy={y + 12 + local * chainLength}
-            key={index}
-            r={beadRadius}
-          />
-        );
-      })}
-    </g>
-  );
-}
-
-function SideGuides({ model }: { readonly model: PreviewRenderModel }): React.JSX.Element | null {
-  if (!model.familyParameters.hasGuides) return null;
-  const { height, width, x, y } = model.product;
-  const guide = Math.max(3, Math.min(7, width * 0.016));
-  return (
-    <g aria-hidden="true" fill={model.hardwareColor} opacity="0.9">
-      <rect height={height} rx={guide / 2} width={guide} x={x} y={y} />
-      <rect height={height} rx={guide / 2} width={guide} x={x + width - guide} y={y} />
-    </g>
-  );
-}
-
-function RollerLayer({ model }: { readonly model: PreviewRenderModel }): React.JSX.Element {
-  const { height, width, x, y } = model.product;
-  const deployedHeight = Math.max(height * 0.025, height * (model.controls.openingPosition / 100));
-  const lowerRailHeight = Math.max(5, Math.min(13, height * 0.022));
-  const cassetteHeight = model.familyParameters.hasCassette
-    ? Math.max(14, Math.min(28, height * 0.052))
-    : 0;
-  return (
-    <g data-family-renderer="ROLLER">
-      <rect
-        fill={`url(#${model.ids.materialPattern})`}
-        height={Math.max(1, deployedHeight - cassetteHeight / 2)}
-        width={width}
-        x={x}
-        y={y + cassetteHeight / 2}
-      />
-      <rect
-        fill="#243031"
-        height={Math.max(1, deployedHeight - cassetteHeight / 2)}
-        opacity="0.07"
-        width={Math.max(2, width * 0.025)}
-        x={x + width * 0.975}
-        y={y + cassetteHeight / 2}
-      />
-      <HardwareRail model={model} y={y + deployedHeight - lowerRailHeight / 2} />
-      {model.familyParameters.hasCassette ? (
-        <HardwareRail model={model} y={y + cassetteHeight / 2} />
-      ) : null}
-      <SideGuides model={model} />
-      <Chain deployedHeight={deployedHeight} model={model} />
-    </g>
-  );
-}
-
-function ZebraLayer({ model }: { readonly model: PreviewRenderModel }): React.JSX.Element {
-  const { height, width, x, y } = model.product;
-  const deployedHeight = Math.max(height * 0.04, height * (model.controls.openingPosition / 100));
-  const phase = (model.controls.zebraAlignment / 100) * height * 0.24;
-  const cassetteHeight = model.familyParameters.hasCassette
-    ? Math.max(14, Math.min(28, height * 0.052))
-    : 0;
-  return (
-    <g data-family-renderer="ZEBRA">
-      <rect
-        fill={`url(#${model.ids.materialPattern})`}
-        height={Math.max(1, deployedHeight - cassetteHeight / 2)}
-        width={width}
-        x={x}
-        y={y + cassetteHeight / 2}
-      />
-      <g clipPath={`url(#${model.ids.clip})`} opacity="0.46" transform={`translate(0 ${phase})`}>
+    <g clipPath={clipId === undefined ? undefined : `url(#${clipId})`} transform={transform}>
+      <SupplierImage href={href} onAssetError={onAssetError} />
+      {isWhite ? null : (
         <rect
-          fill={`url(#${model.ids.materialPattern})`}
-          height={Math.max(1, deployedHeight - cassetteHeight / 2)}
-          width={width}
-          x={x}
-          y={y + cassetteHeight / 2 - phase * 2}
+          fill={color}
+          height={ATLAS_HEIGHT}
+          mask={`url(#${maskId})`}
+          opacity="0.62"
+          style={{ mixBlendMode: 'multiply' }}
+          width={ATLAS_WIDTH}
+          x="0"
+          y="0"
         />
-      </g>
-      <HardwareRail model={model} y={y + deployedHeight} />
-      <HardwareRail model={model} y={y + cassetteHeight / 2} />
-      <SideGuides model={model} />
-      <Chain deployedHeight={deployedHeight} model={model} />
+      )}
     </g>
   );
 }
 
-function HorizontalLayer({ model }: { readonly model: PreviewRenderModel }): React.JSX.Element {
-  const { height, width, x, y } = model.product;
-  const slatWidthMm = model.familyParameters.horizontalSlatWidthMm;
-  if (slatWidthMm === null) return <UnavailableLayer model={model} />;
-  const layout = horizontalSlatLayout({
-    angleDegrees: model.controls.slatAngle,
-    heightMm: model.heightMm,
-    openingPosition: model.controls.openingPosition,
-    productHeight: height,
-    productY: y,
-    slatWidthMm,
-  });
-  const cordX = [x + width * 0.24, x + width * 0.76];
+function SupplierAtlasLayer({
+  model,
+  onAssetError,
+  state,
+}: {
+  readonly model: PreviewRenderModel;
+  readonly onAssetError?: (() => void) | undefined;
+  readonly state: StandardPreviewStateResponse;
+}): React.JSX.Element {
+  const materialUrl = `/api/v1/previews/${state.id}/layers/MATERIAL_VISUALIZATION?v=2`;
+  const hardwareUrl = `/api/v1/previews/${state.id}/layers/SYSTEM_HARDWARE?v=2`;
+  const chainOnlyHardware = state.family === 'ROLLER' || state.family === 'ZEBRA';
+  const hardwareClipId = `${model.ids.hardwareMask}-visible`;
+  const family = state.family;
+  const deployment = deploymentScale(state.controls.openingPosition);
+  let materialTransform: string | undefined;
+  let hardwareTransform: string | undefined;
+
+  if (family === 'ROLLER') {
+    materialTransform = scaleAt(0, 88, 1, deployment);
+    hardwareTransform = materialTransform;
+  } else if (family === 'ZEBRA') {
+    const bandOffset = rounded(((state.controls.zebraAlignment - 50) / 50) * 18);
+    materialTransform = `${scaleAt(0, 88, 1, deployment)} translate(0 ${bandOffset})`;
+    hardwareTransform = scaleAt(0, 88, 1, deployment);
+  } else if (family === 'HORIZONTAL_ALUMINUM') {
+    const slatScale = rounded(deployment * angleScale(state.controls.slatAngle));
+    materialTransform = scaleAt(0, 24, 1, slatScale);
+  } else if (family === 'VERTICAL') {
+    const spreadScale = 0.12 + (state.controls.verticalSpread / 100) * 0.88;
+    const slatScale = rounded(spreadScale * angleScale(state.controls.slatAngle));
+    const anchorX =
+      state.familyParameters.verticalOpeningDirection === 'LEFT'
+        ? 365
+        : state.familyParameters.verticalOpeningDirection === 'RIGHT'
+          ? 1025
+          : 695;
+    materialTransform = scaleAt(anchorX, 0, slatScale, 1);
+  }
+
   return (
-    <g data-family-renderer="HORIZONTAL_ALUMINUM">
-      {layout.slats.map((slat) => (
-        <g key={slat.index}>
-          <rect
-            fill={`url(#${model.ids.materialPattern})`}
-            height={layout.slatHeight}
-            rx={Math.min(2, layout.slatHeight / 3)}
-            stroke="#3D4849"
-            strokeOpacity="0.18"
-            strokeWidth="0.7"
-            width={width}
-            x={x}
-            y={slat.y}
+    <g
+      data-family-renderer={family ?? 'UNAVAILABLE'}
+      data-material-article={state.configuration.material.article}
+      data-renderer-source="supplier-pixel-aligned-atlas"
+    >
+      <defs>
+        {chainOnlyHardware ? (
+          <clipPath id={hardwareClipId}>
+            <rect height="585" width="34" x="394" y="150" />
+            <rect height="585" width="34" x="922" y="150" />
+          </clipPath>
+        ) : null}
+        <mask
+          height={ATLAS_HEIGHT}
+          id={model.ids.hardwareMask}
+          maskUnits="userSpaceOnUse"
+          style={{ maskType: 'alpha' }}
+          width={ATLAS_WIDTH}
+          x="0"
+          y="0"
+        >
+          <SupplierImage href={hardwareUrl} onAssetError={onAssetError} />
+        </mask>
+      </defs>
+      <g transform={materialTransform}>
+        <SupplierImage dataLayer="material-source" href={materialUrl} onAssetError={onAssetError} />
+      </g>
+      {family === 'ZEBRA' ? (
+        <g data-preview-correction="zebra-perspective-aligned-hardware">
+          <path
+            d="M780 153 L939 167"
+            opacity="0.42"
+            stroke="#545957"
+            strokeLinecap="round"
+            strokeWidth="15"
           />
           <path
-            d={`M${x + 3} ${slat.y + layout.slatHeight * 0.22} H${x + width - 3}`}
-            opacity={model.controls.slatAngle >= 0 ? 0.34 : 0.15}
+            d="M780 153 L939 167"
+            stroke={model.hardwareColor}
+            strokeLinecap="round"
+            strokeWidth="11"
+          />
+          <path
+            d="M783 150 L937 164"
+            opacity="0.76"
             stroke="#FFFFFF"
-            strokeWidth={Math.max(0.5, layout.slatHeight * 0.08)}
+            strokeLinecap="round"
+            strokeWidth="2"
           />
         </g>
-      ))}
-      {cordX.map((cord) => (
-        <path
-          d={`M${cord} ${y} V${Math.min(y + height, layout.stackBottomY + layout.slatHeight)}`}
-          key={cord}
-          opacity="0.62"
-          stroke={model.hardwareColor}
-          strokeWidth={Math.max(1, width * 0.004)}
-        />
-      ))}
-      <HardwareRail model={model} y={y + 3} />
-      <HardwareRail
-        model={model}
-        y={Math.min(y + height - 3, layout.stackBottomY + layout.slatHeight)}
+      ) : null}
+      <HardwareLayer
+        clipId={chainOnlyHardware ? hardwareClipId : undefined}
+        color={model.hardwareColor}
+        href={hardwareUrl}
+        maskId={model.ids.hardwareMask}
+        onAssetError={onAssetError}
+        transform={hardwareTransform}
       />
     </g>
   );
 }
 
-function VerticalLayer({ model }: { readonly model: PreviewRenderModel }): React.JSX.Element {
+function ColorOnlyLayer({
+  model,
+  state,
+}: {
+  readonly model: PreviewRenderModel;
+  readonly state: StandardPreviewStateResponse;
+}): React.JSX.Element {
   const { height, width, x, y } = model.product;
-  const lamellaWidthMm = model.familyParameters.verticalLamellaWidthMm;
-  if (lamellaWidthMm === null) return <UnavailableLayer model={model} />;
-  const layout = verticalSlatLayout({
-    angleDegrees: model.controls.slatAngle,
-    lamellaWidthMm,
-    openingDirection: model.familyParameters.verticalOpeningDirection,
-    productWidth: width,
-    productX: x,
-    spread: model.controls.verticalSpread,
-    widthMm: model.widthMm,
-  });
-  const railHeight = Math.max(8, Math.min(18, height * 0.03));
-  const lamellaHeight = Math.max(1, height - railHeight * 1.35);
+  const opening =
+    state.family === 'VERTICAL' ? state.controls.verticalSpread : state.controls.openingPosition;
+  const visibleHeight = Math.max(4, height * (opening / 100));
+  const visibleWidth = Math.max(4, width * (opening / 100));
+  const anchorRight = state.familyParameters.verticalOpeningDirection === 'RIGHT';
+  const drawWidth = state.family === 'VERTICAL' ? visibleWidth : width;
+  const drawHeight = state.family === 'VERTICAL' ? height : visibleHeight;
+  const drawX = state.family === 'VERTICAL' && anchorRight ? x + width - drawWidth : x;
   return (
-    <g data-family-renderer="VERTICAL">
-      {layout.slats.map((slat) => (
-        <g key={slat.index}>
-          <rect
-            fill={`url(#${model.ids.materialPattern})`}
-            height={lamellaHeight}
-            rx={Math.min(2.5, layout.lamellaWidth / 4)}
-            stroke="#394647"
-            strokeOpacity="0.16"
-            strokeWidth="0.8"
-            width={layout.lamellaWidth}
-            x={slat.x}
-            y={y + railHeight}
-          />
-          <path
-            d={`M${slat.x + layout.lamellaWidth * 0.24} ${y + railHeight + 4} V${y + railHeight + lamellaHeight - 4}`}
-            opacity={model.controls.slatAngle >= 0 ? 0.25 : 0.12}
-            stroke="#FFFFFF"
-            strokeWidth={Math.max(0.5, layout.lamellaWidth * 0.05)}
-          />
-        </g>
-      ))}
-      <HardwareRail model={model} y={y + railHeight / 2} />
+    <g
+      data-family-renderer={state.family ?? 'UNAVAILABLE'}
+      data-renderer-source="normalized-color-only"
+    >
+      <rect
+        fill={model.normalizedColor ?? '#B9AA96'}
+        height={drawHeight}
+        stroke="#303837"
+        strokeOpacity="0.36"
+        strokeWidth="1"
+        width={drawWidth}
+        x={drawX}
+        y={y}
+      />
       <path
-        d={`M${x + width * 0.96} ${y + railHeight} V${y + Math.min(height * 0.58, railHeight + lamellaHeight * 0.58)}`}
-        opacity="0.7"
+        d={`M${drawX} ${y + 2} H${drawX + drawWidth}`}
         stroke={model.hardwareColor}
-        strokeWidth={Math.max(1, width * 0.005)}
+        strokeWidth="6"
       />
     </g>
   );
@@ -293,26 +262,24 @@ export function StandardPreviewRenderer({
     widthMm: state.configuration.dimensions.widthMm,
   });
   const label = `Стандартная примерка: ${state.configuration.family.name}, ${state.configuration.material.name}, сцена «${model.scene.label}»`;
-  const layer =
-    state.asset.quality === 'PREVIEW_UNAVAILABLE' ? (
-      <UnavailableLayer model={model} />
-    ) : state.family === 'ROLLER' ? (
-      <RollerLayer model={model} />
-    ) : state.family === 'ZEBRA' ? (
-      <ZebraLayer model={model} />
-    ) : state.family === 'HORIZONTAL_ALUMINUM' ? (
-      <HorizontalLayer model={model} />
-    ) : state.family === 'VERTICAL' ? (
-      <VerticalLayer model={model} />
-    ) : (
-      <UnavailableLayer model={model} />
-    );
+  const supported =
+    state.asset.quality !== 'PREVIEW_UNAVAILABLE' &&
+    state.family !== null &&
+    ['ROLLER', 'ZEBRA', 'HORIZONTAL_ALUMINUM', 'VERTICAL'].includes(state.family);
   return (
     <PreviewSceneSvg
       accessibleLabel={label}
       model={model}
       onAssetError={onAssetError}
-      productLayer={layer}
+      productLayer={
+        state.asset.quality === 'NORMALIZED_COLOR_ONLY' && state.asset.normalizedColor !== null ? (
+          <ColorOnlyLayer model={model} state={state} />
+        ) : supported ? (
+          <SupplierAtlasLayer model={model} onAssetError={onAssetError} state={state} />
+        ) : (
+          <UnavailableLayer model={model} />
+        )
+      }
     />
   );
 }

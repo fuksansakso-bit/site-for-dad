@@ -39,7 +39,7 @@ function renderInput(overrides: Partial<PreviewRenderInput> = {}): PreviewRender
     hardwareColor: '#FFFFFF',
     heightMm: 1_100,
     normalizedColor: null,
-    rendererVersion: 'standard-svg-v1',
+    rendererVersion: 'standard-svg-v2',
     sceneId: 'WINDOW_CLOSEUP',
     stateChecksum: 'b'.repeat(64),
     widthMm: 700,
@@ -195,9 +195,13 @@ describe('STD-PREV-005 deterministic slat geometry', () => {
 });
 
 describe('STD-PREV-007/008 deterministic scene model', () => {
-  it('publishes exactly two versioned original vector scenes', () => {
+  it('publishes exactly two versioned supplier-authorized photoreal scenes', () => {
     expect(previewScenes.map((scene) => scene.id)).toEqual(['WINDOW_CLOSEUP', 'ROOM_WINDOW']);
-    expect(previewScenes.every((scene) => scene.version === 1)).toBe(true);
+    expect(previewScenes.every((scene) => scene.version === 2)).toBe(true);
+    expect(previewScenes.map((scene) => scene.backgroundAssetId)).toEqual([
+      'SCENE_BEDROOM',
+      'SCENE_KITCHEN',
+    ]);
   });
 
   it('produces the same canonical state and render model for the same input', () => {

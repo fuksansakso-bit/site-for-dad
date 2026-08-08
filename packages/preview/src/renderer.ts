@@ -17,7 +17,7 @@ export interface PreviewRenderInput {
   readonly hardwareColor: string;
   readonly heightMm: number;
   readonly normalizedColor: string | null;
-  readonly rendererVersion: 'standard-svg-v1';
+  readonly rendererVersion: 'standard-svg-v2';
   readonly sceneId: PreviewSceneId;
   readonly stateChecksum: string;
   readonly widthMm: number;
@@ -27,10 +27,12 @@ export interface PreviewRenderModel extends PreviewRenderInput {
   readonly deterministicKey: string;
   readonly ids: {
     readonly clip: string;
-    readonly glassGradient: string;
+    readonly hardwareMask: string;
     readonly materialPattern: string;
-    readonly roomGradient: string;
     readonly shadow: string;
+    readonly zebraBands: string;
+    readonly zebraDeployment: string;
+    readonly zebraGeometryMask: string;
   };
   readonly product: {
     readonly height: number;
@@ -39,7 +41,7 @@ export interface PreviewRenderModel extends PreviewRenderInput {
     readonly y: number;
   };
   readonly scene: ReturnType<typeof getPreviewScene>;
-  readonly viewBox: '0 0 1200 780';
+  readonly viewBox: string;
 }
 
 function boundedAspect(widthMm: number, heightMm: number): number {
@@ -83,7 +85,7 @@ export function buildPreviewRenderModel(input: PreviewRenderInput): PreviewRende
     width = height * aspect;
   }
   const x = scene.window.x + (scene.window.width - width) / 2;
-  const y = scene.window.y + (scene.window.height - height) / 2;
+  const y = scene.window.y + scene.window.height * 0.025;
   const prefix = `preview-${input.stateChecksum.slice(0, 12)}`;
   const normalizedInput: PreviewRenderInput = {
     ...input,
@@ -94,13 +96,15 @@ export function buildPreviewRenderModel(input: PreviewRenderInput): PreviewRende
     deterministicKey: canonicalPreviewInput(normalizedInput),
     ids: {
       clip: `${prefix}-clip`,
-      glassGradient: `${prefix}-glass`,
+      hardwareMask: `${prefix}-hardware-mask`,
       materialPattern: `${prefix}-material`,
-      roomGradient: `${prefix}-room`,
       shadow: `${prefix}-shadow`,
+      zebraBands: `${prefix}-zebra-bands`,
+      zebraDeployment: `${prefix}-zebra-deployment`,
+      zebraGeometryMask: `${prefix}-zebra-geometry-mask`,
     },
     product: { height, width, x, y },
     scene,
-    viewBox: '0 0 1200 780',
+    viewBox: `${scene.camera.x} ${scene.camera.y} ${scene.camera.width} ${scene.camera.height}`,
   };
 }

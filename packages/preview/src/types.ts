@@ -1,4 +1,4 @@
-export const previewRendererVersion = 'standard-svg-v1' as const;
+export const previewRendererVersion = 'standard-svg-v2' as const;
 export const previewStateVersion = 1 as const;
 
 export const previewFamilyCodes = ['ROLLER', 'ZEBRA', 'HORIZONTAL_ALUMINUM', 'VERTICAL'] as const;
@@ -97,10 +97,17 @@ export interface PreviewFamilyParameters {
 }
 
 export interface PreviewSceneDefinition {
+  readonly backgroundAssetId: 'SCENE_BEDROOM' | 'SCENE_KITCHEN';
+  readonly camera: {
+    readonly height: number;
+    readonly width: number;
+    readonly x: number;
+    readonly y: number;
+  };
   readonly description: string;
   readonly id: PreviewSceneId;
   readonly label: string;
-  readonly version: 1;
+  readonly version: 2;
   readonly window: {
     readonly height: number;
     readonly width: number;

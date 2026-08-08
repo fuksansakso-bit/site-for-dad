@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Версия gate | 1.13.0 |
-| Проверяемая входная база | Phase 0B baseline `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`; Phase 0C baseline `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; Phase 1A completion `943d4a2efa5e05f0d05493633cf5eb549e072a22`; Phase 1B.1 completion baseline `af8411d2b854e572b6b61b214d3e99a88b96cafc`; Phase 1C merged-main / Phase 1D baseline `58eb25dcde460291ad98fde157956d7f264a666d`; `GLOBAL_SPEC.md` 0.18.0 |
+| Версия gate | 1.14.0 |
+| Проверяемая входная база | Phase 0B baseline `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`; Phase 0C baseline `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; Phase 1A completion `943d4a2efa5e05f0d05493633cf5eb549e072a22`; Phase 1B.1 completion baseline `af8411d2b854e572b6b61b214d3e99a88b96cafc`; Phase 1C merged-main / Phase 1D baseline `58eb25dcde460291ad98fde157956d7f264a666d`; `GLOBAL_SPEC.md` 0.19.0 |
 | Дата последнего self-audit | 2026-08-08, Europe/Moscow |
 | Решение по входу в 0B | **PASSED** |
 | Основание письменного решения | Приложенное владельцем задание «AUTHORIZED AMIGO FUNCTIONAL PARITY AND SPECIALIZED SPECS» и повторное указание «так приступай к работе» |
@@ -22,8 +22,8 @@
 | Phase 1C Entry Gate | **AUTHORIZED_PHASE_1C_IN_PROGRESS** — QG-231–240 закрыты 2026-08-08 |
 | Phase 1C Completion Gate | **PASSED_PHASE_1C_CONFIGURATOR_PRICING** — QG-241–270 закрыты 2026-08-08 |
 | Phase 1D Entry Gate | **AUTHORIZED_PHASE_1D_IN_PROGRESS** — QG-271–280 закрыты 2026-08-08 |
-| Phase 1D Completion Gate | **IN PROGRESS** — QG-281–310 требуют implementation evidence |
-| Разрешённая реализация | Только Phase 1D standard preview; Phase 1E+ и production запрещены |
+| Phase 1D Completion Gate | **PASSED_PHASE_1D_STANDARD_PREVIEW** — QG-281–310 закрыты 2026-08-08 |
+| Разрешённая реализация | Phase 1D завершена; Phase 1E+ и production по-прежнему запрещены без отдельного письменного решения |
 
 Entry gate подтверждает, что исправления 0A.1 внесены и письменное решение начать документную фазу 0B получено. Он не означает готовность ценовой формулы, импорта, приложения или запуска. Открытые TBD блокируют утверждение зависимой спецификации или функции, но не отменяют разрешение создавать документацию 0B с безопасным поведением.
 
@@ -460,11 +460,11 @@ Entry result: **AUTHORIZED_PHASE_1D_IN_PROGRESS**. Completion evidence is not in
 - [x] **QG-305 — MUST:** targeted admin diagnostics expose aggregate preview eligibility/evidence/gaps without private state or internal storage credentials.
 - [x] **QG-306 — MUST:** format/docs/scope/boundary/lint/type/test/coverage/database/build/browser/security and CI-equivalent gates pass; any skipped check is recorded. The final `pnpm ci:verify` run completed 9/9 stages with exit code 0 in 363.9 seconds.
 - [x] **QG-307 — MUST:** affected documentation and completion report match actual routes/families/scenes/counts/technology/tests/visual/mobile/gaps evidence without rewriting unrelated Phase 1C mappings.
-- [ ] **QG-308 — MUST:** exact logical commit sequence is preserved, final worktree is clean, branch is pushed and an unmerged Draft PR titled `Phase 1D: deterministic standard window preview` targets `main`.
+- [x] **QG-308 — MUST:** exact logical commit sequence is preserved, final worktree is clean, branch is pushed and unmerged Draft PR [#3](https://github.com/bataevabdullah2009-pixel/site-for-dad/pull/3) titled `Phase 1D: deterministic standard window preview` targets `main`.
 - [x] **QG-309 — MUST:** client photo/upload/segmentation/AI, cart/order/WhatsApp/installment/payment/final landing/starfield/redesign/production deployment and Phase 1E are absent.
 - [x] **QG-310 — MUST:** completion report records every requested handoff fact and confirms the Phase 1D acceptance gate result.
 
-Completion result: **IN PROGRESS**.
+Completion result: **PASSED_PHASE_1D_STANDARD_PREVIEW**. Every `QG-281`–`QG-310` item has repository/runtime evidence; the branch is pushed and Draft PR #3 remains unmerged. Phase 1E was not started.
 
 ## 12. История изменений
 
@@ -484,5 +484,6 @@ Completion result: **IN PROGRESS**.
 | 1.11.0 | 2026-08-08 | `OWNER-DECISION-013` and QG-231–240 authorize only Phase 1C after merged-main/catalog/volume/public-calculator evidence; QG-241–270 remain open until configurator/pricing/quote/admin/parity/CI/PR acceptance. |
 | 1.12.0 | 2026-08-08 | QG-241–270 closed on active PostgreSQL configurator, four verified pricing scopes, 40 parity fixtures, immutable quotes, authorized admin, server/API/browser/migration/security evidence, exact 9/9 CI-equivalent gate, clean push and unmerged Draft PR #2; Phase 1D+ remains prohibited. |
 | 1.13.0 | 2026-08-08 | `OWNER-DECISION-014` and QG-271–280 authorize only Phase 1D from merged Phase 1C baseline; QG-281–310 define deterministic renderer/state/API/family/asset/UX/visual/recovery/CI/PR acceptance while Phase 1E+ remains prohibited. |
+| 1.14.0 | 2026-08-08 | QG-281–310 closed on the deterministic four-family renderer, two local photoreal scenes, owned preview state/API, authorized local layers, rectified Zebra geometry, mobile/visual/recovery evidence, 9/9 CI-equivalent gate, clean push and unmerged Draft PR #3; Phase 1E remains prohibited. |
 | 0.2.0 | 2026-08-02 | Entry gate обновлён для `GLOBAL_SPEC` 0.4.0 и partner-authorized scope; письменное поручение владельца зафиксировано как разрешение начать 0B; добавлен отдельный completion gate 0B. |
 | 0.1.0 | 2026-08-02 | Предыдущий self-audit 0A.1 для версии 0.3.1; проверки `QG-001`–`087` впоследствии зарезервированы. |

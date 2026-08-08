@@ -2,7 +2,7 @@
 
 ## 0. Result
 
-Implementation and CI evidence passed on 2026-08-08; only the final push/Draft-PR boundary remains before `PASSED_PHASE_1D_STANDARD_PREVIEW`. The phase delivers a guest-owned deterministic photoreal standard preview without client photos, AI, paid APIs or runtime AMIGO. Phase 1E was not started.
+`PASSED_PHASE_1D_STANDARD_PREVIEW` on 2026-08-08. The phase delivers a guest-owned deterministic photoreal standard preview without client photos, AI, paid APIs or runtime AMIGO. Phase 1E was not started.
 
 ## 1. Исходный commit
 
@@ -10,7 +10,7 @@ Implementation and CI evidence passed on 2026-08-08; only the final push/Draft-P
 
 ## 2. Ветка и commits
 
-Branch `phase/1d-standard-preview`. Logical commits: `8642066` authorization, `5054ef7` domain, `37d33b0` renderer, `957b94d` Roller/Zebra, `668ea15` horizontal/vertical, `c79d685` configurator integration, `032ab38` responsive controls, `6632815` tests, `6df98d5` authorized photoreal layers and `c6226fe` Zebra physical rectification. The completion-documentation commit follows this report.
+Branch `phase/1d-standard-preview`. Logical commits: `8642066` authorization, `5054ef7` domain, `37d33b0` renderer, `957b94d` Roller/Zebra, `668ea15` horizontal/vertical, `c79d685` configurator integration, `032ab38` responsive controls, `6632815` tests, `6df98d5` authorized photoreal layers, `c6226fe` Zebra physical rectification, `562e984` acceptance fixes and `dea3d64` completion preparation. The final documentation commit closes this report.
 
 ## 3. URL preview
 
@@ -62,15 +62,15 @@ No production deployment/provider/secret, customer photo, upload/segmentation/AI
 
 ## 15. Acceptance Gate
 
-QG-271–307 and QG-309–310 passed: real configurator handoff/return, local approved layers, deterministic four-family rendering, honest fallback/evidence, mobile and visual/recovery/build/security boundaries all pass. QG-308 awaits only the final clean push and Draft PR. Public runtime AMIGO request count is zero; no random material substitution exists.
+QG-271–310 passed: real configurator handoff/return, local approved layers, deterministic four-family rendering, honest fallback/evidence, mobile and visual/recovery/build/security boundaries all pass. Public runtime AMIGO request count is zero; no random material substitution exists.
 
 ## 16. Draft PR
 
-Pending final push: the unmerged Draft PR will target `main` with title `Phase 1D: deterministic standard window preview` and will be recorded here without merging.
+Unmerged Draft PR [#3](https://github.com/bataevabdullah2009-pixel/site-for-dad/pull/3) targets `main` with title `Phase 1D: deterministic standard window preview`.
 
 ## 17. Git status
 
-The implementation is committed; final push and clean-worktree evidence are recorded after PR metadata. Docker named volumes were preserved; `main` history was not rewritten.
+The branch is committed and pushed with a clean final worktree after PR metadata is recorded. Docker named volumes were preserved; `main` history was not rewritten.
 
 ## 18. Phase boundary
 

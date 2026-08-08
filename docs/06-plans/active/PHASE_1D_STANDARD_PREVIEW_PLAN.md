@@ -25,7 +25,7 @@ Deliver a guest `/preview` flow opened from the real configurator through an opa
 - [x] Add responsive accessible controls, honest fallbacks and targeted diagnostics.
 - [x] Record real mapping/asset-quality gaps and counts from the active catalog.
 - [x] Pass unit, contract, integration, browser, visual, recovery, build and CI-equivalent gates.
-- [ ] Complete affected documentation, preserve logical commits, push and open an unmerged Draft PR.
+- [x] Complete affected documentation, preserve logical commits, push and open an unmerged Draft PR.
 
 ## 3. Safety and evidence boundary
 

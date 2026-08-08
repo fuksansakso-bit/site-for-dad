@@ -387,6 +387,8 @@ model ActorIdentity {
   auditEvents              AuditEvent[]
   catalogDifferenceReviews CatalogDifferenceReviewBatch[]
   catalogBulkCommands      CatalogBulkCommand[]
+  pricingParityRuns        PricingParityRun[]
+  pricingVersionDecisions  PricingVersionDecision[]
 
   @@unique([provider, subject], map: "actor_identity_provider_subject_key")
   @@map("actor_identity")
@@ -840,6 +842,9 @@ model CatalogVersion {
   entries            CatalogVersionEntry[]
   differenceReviews  CatalogDifferenceReviewBatch[]
   bulkCommands       CatalogBulkCommand[]
+  pricingRules       PricingRule[]
+  pricingCalculations PricingCalculation[]
+  quoteSnapshots     QuoteSnapshot[]
 
   @@index([status, createdAt], map: "catalog_version_status_idx")
   @@map("catalog_version")
@@ -858,6 +863,7 @@ model ProductFamily {
   categories     ProductCategory[]
   systems        ProductSystem[]
   materials      Material[]
+  pricingRules   PricingRule[]
 
   @@map("product_family")
 }
@@ -906,6 +912,7 @@ model ProductSystem {
   dimensionConstraints DimensionConstraint[]
   sourceMediaAssets    SourceMediaAsset[]
   businessEntries      BusinessCatalogEntry[]
+  pricingRules         PricingRule[]
 
   @@index([familyId, sortOrder], map: "product_system_family_order_idx")
   @@map("product_system")
@@ -992,6 +999,7 @@ model MaterialVariant {
   dimensionConstraints DimensionConstraint[]
   sourcePrices         SourcePriceRecord[]
   businessEntries      BusinessCatalogEntry[]
+  pricingRules         PricingRule[]
 
   @@index([materialId, article], map: "material_variant_material_article_idx")
   @@index([colorId], map: "material_variant_color_idx")
@@ -1192,6 +1200,11 @@ model PriceVersion {
   rollbackSources    PriceVersion[]                 @relation("price_version_rollback")
   records            PriceVersionRecord[]
   differenceReviews  CatalogDifferenceReviewBatch[]
+  pricingRules       PricingRule[]
+  parityRuns         PricingParityRun[]
+  calculations       PricingCalculation[]
+  quoteSnapshots     QuoteSnapshot[]
+  decisions          PricingVersionDecision[]
 
   @@index([status, createdAt], map: "price_version_status_idx")
   @@map("price_version")
@@ -1242,6 +1255,11 @@ model PricingRule {
   maximumDeviationMinor Int                           @map("maximum_deviation_minor")
   safeExplanation       String                        @map("safe_explanation") @db.Text
   createdAt             DateTime                      @default(now()) @map("created_at") @db.Timestamptz(6)
+  priceVersion          PriceVersion                  @relation(fields: [priceVersionId], references: [id], onDelete: Restrict)
+  catalogVersion        CatalogVersion                @relation(fields: [catalogVersionId], references: [id], onDelete: Restrict)
+  productFamily         ProductFamily                 @relation(fields: [productFamilyId], references: [id], onDelete: Restrict)
+  productSystem         ProductSystem                 @relation(fields: [productSystemId], references: [id], onDelete: Restrict)
+  materialVariant       MaterialVariant               @relation(fields: [materialVariantId], references: [id], onDelete: Restrict)
 
   @@unique([priceVersionId, ruleKey], map: "pricing_rule_version_key")
   @@index([priceVersionId, parityStatus], map: "pricing_rule_version_parity_idx")
@@ -1263,6 +1281,8 @@ model PricingParityRun {
   correlationId         String              @map("correlation_id") @db.VarChar(128)
   idempotencyKey        String              @unique(map: "pricing_parity_run_idempotency_key") @map("idempotency_key") @db.VarChar(255)
   createdAt             DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  priceVersion          PriceVersion        @relation(fields: [priceVersionId], references: [id], onDelete: Restrict)
+  runByActor            ActorIdentity?      @relation(fields: [runByActorId], references: [id], onDelete: Restrict, map: "pricing_parity_run_actor_id_fkey")
 
   @@index([priceVersionId, createdAt], map: "pricing_parity_run_version_time_idx")
   @@map("pricing_parity_run")
@@ -1280,6 +1300,9 @@ model PricingCalculation {
   resultSnapshot   Json                     @map("result_snapshot") @db.JsonB
   correlationId    String                   @map("correlation_id") @db.VarChar(128)
   createdAt        DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+  catalogVersion   CatalogVersion           @relation(fields: [catalogVersionId], references: [id], onDelete: Restrict)
+  priceVersion     PriceVersion?            @relation(fields: [priceVersionId], references: [id], onDelete: Restrict)
+  quoteSnapshot    QuoteSnapshot?
 
   @@index([createdAt], map: "pricing_calculation_created_idx")
   @@map("pricing_calculation")
@@ -1299,6 +1322,9 @@ model QuoteSnapshot {
   grandTotalMinor       Int?                     @map("grand_total_minor")
   correlationId         String                   @map("correlation_id") @db.VarChar(128)
   createdAt             DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+  calculation           PricingCalculation       @relation(fields: [calculationId], references: [id], onDelete: Restrict)
+  catalogVersion        CatalogVersion           @relation(fields: [catalogVersionId], references: [id], onDelete: Restrict)
+  priceVersion          PriceVersion?            @relation(fields: [priceVersionId], references: [id], onDelete: Restrict)
 
   @@index([createdAt], map: "quote_snapshot_created_idx")
   @@map("quote_snapshot")
@@ -1315,6 +1341,8 @@ model PricingVersionDecision {
   correlationId  String                       @map("correlation_id") @db.VarChar(128)
   idempotencyKey String                       @unique(map: "pricing_version_decision_idempotency_key") @map("idempotency_key") @db.VarChar(255)
   createdAt      DateTime                     @default(now()) @map("created_at") @db.Timestamptz(6)
+  priceVersion   PriceVersion                 @relation(fields: [priceVersionId], references: [id], onDelete: Restrict)
+  actor          ActorIdentity                @relation(fields: [actorId], references: [id], onDelete: Restrict)
 
   @@index([priceVersionId, createdAt], map: "pricing_version_decision_version_time_idx")
   @@map("pricing_version_decision")

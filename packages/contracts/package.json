@@ -19,6 +19,10 @@
     "./health": {
       "types": "./dist/health.d.ts",
       "import": "./dist/health.js"
+    },
+    "./preview": {
+      "types": "./dist/preview.d.ts",
+      "import": "./dist/preview.js"
     }
   },
   "scripts": {
@@ -44,7 +48,8 @@
       ".",
       "./catalog",
       "./error",
-      "./health"
+      "./health",
+      "./preview"
     ]
   }
 }

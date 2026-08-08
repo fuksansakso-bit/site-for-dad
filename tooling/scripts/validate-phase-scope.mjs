@@ -11,7 +11,6 @@ const forbiddenPathSegments = new Set([
   'installment',
   'orders',
   'photos',
-  'preview',
   'starfield',
   'uploads',
   'visualizer',
@@ -64,6 +63,7 @@ const allowedPrismaModels = new Set([
   'PricingCalculation',
   'QuoteSnapshot',
   'PricingVersionDecision',
+  'StandardPreviewState',
 ]);
 const allowedPhaseTables = new Set([
   '_prisma_migrations',
@@ -113,6 +113,7 @@ const allowedPhaseTables = new Set([
   'pricing_calculation',
   'quote_snapshot',
   'pricing_version_decision',
+  'standard_preview_state',
 ]);
 
 async function collectFiles(directory) {
@@ -171,6 +172,7 @@ const allowedRouteFiles = new Set([
   'apps/web/app/api/v1/admin/pricing/parity/route.ts',
   'apps/web/app/api/v1/admin/pricing/reject/route.ts',
   'apps/web/app/api/v1/admin/pricing/route.ts',
+  'apps/web/app/api/v1/admin/previews/diagnostics/route.ts',
   'apps/web/app/api/v1/catalog/materials/[id]/route.ts',
   'apps/web/app/api/v1/catalog/materials/route.ts',
   'apps/web/app/api/v1/catalog/media/[id]/route.ts',
@@ -181,34 +183,41 @@ const allowedRouteFiles = new Set([
   'apps/web/app/api/v1/pricing/calculate/route.ts',
   'apps/web/app/api/v1/quotes/[token]/route.ts',
   'apps/web/app/api/v1/quotes/route.ts',
+  'apps/web/app/api/v1/previews/[id]/asset/route.ts',
+  'apps/web/app/api/v1/previews/[id]/route.ts',
+  'apps/web/app/api/v1/previews/eligibility/route.ts',
+  'apps/web/app/api/v1/previews/route.ts',
+  'apps/web/app/api/v1/previews/scenes/route.ts',
 ]);
 const allowedPageFiles = new Set([
   'apps/web/app/admin/catalog/page.tsx',
   'apps/web/app/admin/pricing/page.tsx',
+  'apps/web/app/admin/preview/page.tsx',
   'apps/web/app/catalog/[slug]/page.tsx',
   'apps/web/app/catalog/page.tsx',
   'apps/web/app/configure/page.tsx',
   'apps/web/app/page.tsx',
+  'apps/web/app/preview/page.tsx',
   'apps/web/app/quote/[token]/page.tsx',
 ]);
 for (const file of await collectFiles(join(repositoryRoot, 'apps', 'web', 'app'))) {
   const repositoryPath = relative(repositoryRoot, file).replaceAll('\\', '/');
   if (file.endsWith('route.ts') && !allowedRouteFiles.has(repositoryPath)) {
-    errors.push(`${repositoryPath}: route is outside the current Phase 1C allowlist`);
+    errors.push(`${repositoryPath}: route is outside the current Phase 1D allowlist`);
   }
   if (file.endsWith('page.tsx') && !allowedPageFiles.has(repositoryPath)) {
-    errors.push(`${repositoryPath}: page is outside the current Phase 1C allowlist`);
+    errors.push(`${repositoryPath}: page is outside the current Phase 1D allowlist`);
   }
 }
 
 if (errors.length > 0) {
   process.stderr.write(
-    ['Phase 1C scope validation failed:', ...errors.map((error) => `- ${error}`)].join('\n'),
+    ['Phase 1D scope validation failed:', ...errors.map((error) => `- ${error}`)].join('\n'),
   );
   process.stderr.write('\n');
   process.exitCode = 1;
 } else {
   process.stdout.write(
-    'Phase 1C scope validation passed: only Foundation, catalog and authorized configurator/pricing surfaces exist.\n',
+    'Phase 1D scope validation passed: only Foundation, catalog, configurator/pricing and deterministic standard-preview surfaces exist.\n',
   );
 }

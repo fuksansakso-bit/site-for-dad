@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 
 import { StorageError, type ObjectStorage } from '@project-name/storage';
+import type { StandardPreviewAdapter } from '@project-name/db';
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -21,7 +22,7 @@ export const dynamic = 'force-dynamic';
 const stateIdSchema = z.string().regex(/^[A-Za-z0-9_-]{32}$/u);
 
 export interface PreviewAssetDependencies {
-  readonly preview: ReturnType<typeof getWebStandardPreview>;
+  readonly preview: Pick<StandardPreviewAdapter, 'getAsset'>;
   readonly storage: Pick<ObjectStorage, 'get'>;
 }
 

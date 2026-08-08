@@ -272,8 +272,10 @@ function UnavailableLayer({ model }: { readonly model: PreviewRenderModel }): Re
 }
 
 export function StandardPreviewRenderer({
+  onAssetError,
   state,
 }: {
+  readonly onAssetError?: (() => void) | undefined;
   readonly state: StandardPreviewStateResponse;
 }): React.JSX.Element {
   const model = buildPreviewRenderModel({
@@ -305,5 +307,12 @@ export function StandardPreviewRenderer({
     ) : (
       <UnavailableLayer model={model} />
     );
-  return <PreviewSceneSvg accessibleLabel={label} model={model} productLayer={layer} />;
+  return (
+    <PreviewSceneSvg
+      accessibleLabel={label}
+      model={model}
+      onAssetError={onAssetError}
+      productLayer={layer}
+    />
+  );
 }

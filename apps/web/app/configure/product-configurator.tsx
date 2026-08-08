@@ -178,7 +178,11 @@ export function ProductConfigurator(): React.JSX.Element {
       version: 1,
       widthMm,
     };
-    globalThis.sessionStorage.setItem(configuratorSessionKey, JSON.stringify(saved));
+    try {
+      globalThis.sessionStorage.setItem(configuratorSessionKey, JSON.stringify(saved));
+    } catch {
+      // The configurator remains usable when session storage is disabled or full.
+    }
   }, [
     additionalOptionIds,
     bootstrap,

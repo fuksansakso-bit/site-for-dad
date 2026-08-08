@@ -138,7 +138,13 @@ function ProtectedWindowFrame({
   );
 }
 
-function SceneDefinitions({ model }: { readonly model: PreviewRenderModel }): React.JSX.Element {
+function SceneDefinitions({
+  model,
+  onAssetError,
+}: {
+  readonly model: PreviewRenderModel;
+  readonly onAssetError?: (() => void) | undefined;
+}): React.JSX.Element {
   const materialFill = model.normalizedColor ?? '#B9AA96';
   const { height, width, x, y } = model.product;
   return (
@@ -171,6 +177,7 @@ function SceneDefinitions({ model }: { readonly model: PreviewRenderModel }): Re
           <image
             height={height}
             href={model.assetUrl}
+            onError={onAssetError}
             preserveAspectRatio="xMidYMid slice"
             width={width}
             x={x}
@@ -185,10 +192,12 @@ function SceneDefinitions({ model }: { readonly model: PreviewRenderModel }): Re
 export function PreviewSceneSvg({
   accessibleLabel,
   model,
+  onAssetError,
   productLayer,
 }: {
   readonly accessibleLabel: string;
   readonly model: PreviewRenderModel;
+  readonly onAssetError?: (() => void) | undefined;
   readonly productLayer: ReactNode;
 }): React.JSX.Element {
   const centerX = model.scene.window.x + model.scene.window.width / 2;
@@ -206,7 +215,7 @@ export function PreviewSceneSvg({
       role="img"
       viewBox={model.viewBox}
     >
-      <SceneDefinitions model={model} />
+      <SceneDefinitions model={model} onAssetError={onAssetError} />
       <g transform={transform}>
         {model.sceneId === 'WINDOW_CLOSEUP' ? (
           <CloseupBackground model={model} />

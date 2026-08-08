@@ -102,6 +102,7 @@ export function PreviewExperience({
   const [state, setState] = useState<StandardPreviewStateResponse | null>(null);
   const [scenes, setScenes] = useState<readonly SceneChoice[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [assetFailed, setAssetFailed] = useState(false);
   const [saving, setSaving] = useState(false);
   const pendingRef = useRef<PendingUpdate>({});
   const inFlightRef = useRef(false);
@@ -180,12 +181,14 @@ export function PreviewExperience({
   });
 
   const queueUpdate = (update: PendingUpdate, immediate = false) => {
-    if (state === null) return;
     pendingRef.current = mergePending(pendingRef.current, update);
-    setState({
-      ...state,
-      controls: { ...state.controls, ...update.controls },
-      sceneId: update.sceneId ?? state.sceneId,
+    setState((current) => {
+      if (current === null) return current;
+      return {
+        ...current,
+        controls: { ...current.controls, ...update.controls },
+        sceneId: update.sceneId ?? current.sceneId,
+      };
     });
     if (timerRef.current !== null) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => void senderRef.current(), immediate ? 0 : 140);
@@ -215,7 +218,7 @@ export function PreviewExperience({
   }
 
   const previewAvailable =
-    state.eligibility.eligible && state.asset.quality !== 'PREVIEW_UNAVAILABLE';
+    !assetFailed && state.eligibility.eligible && state.asset.quality !== 'PREVIEW_UNAVAILABLE';
   const openingControl = ['ROLLER', 'ZEBRA', 'HORIZONTAL_ALUMINUM'].includes(state.family ?? '');
   return (
     <div className="preview-workspace">
@@ -231,12 +234,21 @@ export function PreviewExperience({
         </div>
         {previewAvailable ? (
           <div className="preview-canvas-frame">
-            <StandardPreviewRenderer state={state} />
+            <StandardPreviewRenderer onAssetError={() => setAssetFailed(true)} state={state} />
           </div>
         ) : (
           <div className="preview-unavailable" role="status">
             <strong>Для этого материала стандартная примерка пока недоступна</strong>
-            <p>Мы не показываем случайную или неподтверждённую фактуру.</p>
+            <p>
+              {assetFailed
+                ? 'Локальный файл материала временно не загрузился. Попробуйте ещё раз.'
+                : 'Мы не показываем случайную или неподтверждённую фактуру.'}
+            </p>
+            {assetFailed ? (
+              <button className="preview-reset" onClick={() => setAssetFailed(false)} type="button">
+                Повторить загрузку
+              </button>
+            ) : null}
           </div>
         )}
         {state.asset.quality === 'NORMALIZED_COLOR_ONLY' ? (
@@ -244,6 +256,10 @@ export function PreviewExperience({
             Предварительное отображение цвета без точной фактуры
           </p>
         ) : null}
+        <p className="preview-disclaimer">
+          Демонстрационная сцена иллюстративна: восприятие оттенка зависит от экрана и освещения,
+          итоговый размер — от замера.
+        </p>
         {state.eligibility.warnings.length === 0 ? null : (
           <p className="preview-warning">
             Конфигурация или версия цены изменилась. Вернитесь в конфигуратор для повторной

@@ -3906,7 +3906,8 @@ input[type='checkbox'] {
 
 .preview-quality-note,
 .preview-warning,
-.preview-inline-error {
+.preview-inline-error,
+.preview-disclaimer {
   margin: 14px 0 0;
   border-left: 3px solid var(--brass);
   padding: 10px 14px;
@@ -3918,6 +3919,11 @@ input[type='checkbox'] {
 .preview-inline-error {
   border-color: var(--brick);
   color: #742920;
+}
+
+.preview-disclaimer {
+  border-left-color: var(--sage);
+  color: rgb(29 29 27 / 66%);
 }
 
 .preview-unavailable,

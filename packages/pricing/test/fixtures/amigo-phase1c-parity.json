@@ -1,0 +1,289 @@
+{
+  "capturedAt": "2026-08-08T11:11:38.636Z",
+  "sourceReference": "SOURCE-AMIGO-CALCULATOR-001",
+  "sourceVersion": "amigo-public-calculator-2026-08-08-9f9246330385",
+  "sourceHash": "9f92463303857984a6dbf799a2de47e7974cfea3e834f9340ddd3c03508431cd",
+  "sourceContext": "Grozny, Chechen Republic",
+  "rules": [
+    {
+      "id": "1c400001-0000-4000-8000-000000000001",
+      "ruleKey": "roller-mini-material-93",
+      "kind": "EXACT_LOOKUP",
+      "familyId": "85c5605d-8347-4e06-ae0f-ce1e92bf38cd",
+      "familyName": "Рулонные жалюзи",
+      "categoryId": "849e1c5d-0a99-4499-873d-7c81f567d9b1",
+      "categoryName": "Рулонные ткани",
+      "systemId": "26fd6972-e2f8-4766-93fc-7b473d178104",
+      "systemName": "ROLLA Кассета",
+      "modelId": "1c000001-0000-4000-8000-000000000001",
+      "modelSourceId": "1",
+      "modelCode": "MINI",
+      "modelName": "MINI",
+      "materialVariantId": "237b40d6-3583-4b8a-976f-eefe8580d244",
+      "materialName": "ЛИНА BLACK-OUT 2259 — магнолия",
+      "materialArticle": "2259",
+      "materialColor": "магнолия",
+      "sourcePriceCategory": "1",
+      "basePriceMinor": null,
+      "roundingRule": "NONE_EXACT_LOOKUP",
+      "minimumWidthMm": 400,
+      "maximumWidthMm": 1200,
+      "minimumHeightMm": 500,
+      "maximumHeightMm": 1800,
+      "mountingTypes": [
+        {
+          "id": "1c100001-0000-4000-8000-000000000001",
+          "code": "STANDARD_MEASURED",
+          "name": "Стандартный монтаж — подтвердить на замере",
+          "amountMinor": 0
+        }
+      ],
+      "hardwareOptions": [
+        {
+          "id": "1c200001-0000-4000-8000-000000000001",
+          "code": "WHITE",
+          "name": "Белая фурнитура",
+          "amountMinor": 0
+        }
+      ],
+      "controlTypes": [
+        {
+          "id": "1c300001-0000-4000-8000-000000000001",
+          "code": "LEFT",
+          "name": "Слева",
+          "amountMinor": 0
+        },
+        {
+          "id": "1c300001-0000-4000-8000-000000000002",
+          "code": "RIGHT",
+          "name": "Справа",
+          "amountMinor": 0
+        }
+      ],
+      "additionalOptions": [],
+      "safeExplanation": "Цена MINI рассчитана по точному проверенному примеру AMIGO; бесплатные услуги показаны отдельно.",
+      "fixtures": [
+        { "widthMm": 400, "heightMm": 500, "expectedMinor": 152400 },
+        { "widthMm": 500, "heightMm": 500, "expectedMinor": 167500 },
+        { "widthMm": 600, "heightMm": 800, "expectedMinor": 196500 },
+        { "widthMm": 700, "heightMm": 1000, "expectedMinor": 221100 },
+        { "widthMm": 800, "heightMm": 1200, "expectedMinor": 250500 },
+        { "widthMm": 900, "heightMm": 1500, "expectedMinor": 285500 },
+        { "widthMm": 1000, "heightMm": 1800, "expectedMinor": 303700 },
+        { "widthMm": 1200, "heightMm": 1600, "expectedMinor": 325300 },
+        { "widthMm": 1100, "heightMm": 1800, "expectedMinor": 319100 },
+        { "widthMm": 1200, "heightMm": 1800, "expectedMinor": 334200 }
+      ]
+    },
+    {
+      "id": "1c400001-0000-4000-8000-000000000002",
+      "ruleKey": "zebra-mini-material-772",
+      "kind": "EXACT_LOOKUP",
+      "familyId": "3a2fd204-67dc-4203-b862-8f52d54fb725",
+      "familyName": "Зебра / День-Ночь",
+      "categoryId": "a3826f51-0aba-483d-a618-b6a82dc8270c",
+      "categoryName": "Рулонные ткани Зебра",
+      "systemId": "cf78715d-73b4-4101-b09a-698bfe2d7c4d",
+      "systemName": "Классика LVT-зебра",
+      "modelId": "1c000001-0000-4000-8000-000000000002",
+      "modelSourceId": "6",
+      "modelCode": "ZEBRA_MINI",
+      "modelName": "Зебра MINI",
+      "materialVariantId": "9cad64f7-80d6-4947-99ff-1a2bd5769ba2",
+      "materialName": "зебра СТАНДАРТ 5992 — бирюза",
+      "materialArticle": "5992",
+      "materialColor": "бирюза",
+      "sourcePriceCategory": "E",
+      "basePriceMinor": null,
+      "roundingRule": "NONE_EXACT_LOOKUP",
+      "minimumWidthMm": 400,
+      "maximumWidthMm": 1300,
+      "minimumHeightMm": 500,
+      "maximumHeightMm": 1800,
+      "mountingTypes": [
+        {
+          "id": "1c100001-0000-4000-8000-000000000002",
+          "code": "STANDARD_MEASURED",
+          "name": "Стандартный монтаж — подтвердить на замере",
+          "amountMinor": 0
+        }
+      ],
+      "hardwareOptions": [
+        {
+          "id": "1c200001-0000-4000-8000-000000000002",
+          "code": "STANDARD",
+          "name": "Стандартная фурнитура",
+          "amountMinor": 0
+        }
+      ],
+      "controlTypes": [
+        {
+          "id": "1c300001-0000-4000-8000-000000000003",
+          "code": "LEFT",
+          "name": "Слева",
+          "amountMinor": 0
+        },
+        {
+          "id": "1c300001-0000-4000-8000-000000000004",
+          "code": "RIGHT",
+          "name": "Справа",
+          "amountMinor": 0
+        }
+      ],
+      "additionalOptions": [],
+      "safeExplanation": "Цена Зебра MINI рассчитана по точному проверенному примеру AMIGO; бесплатные услуги показаны отдельно.",
+      "fixtures": [
+        { "widthMm": 400, "heightMm": 500, "expectedMinor": 225500 },
+        { "widthMm": 500, "heightMm": 700, "expectedMinor": 294200 },
+        { "widthMm": 600, "heightMm": 900, "expectedMinor": 374100 },
+        { "widthMm": 700, "heightMm": 1100, "expectedMinor": 465200 },
+        { "widthMm": 800, "heightMm": 1200, "expectedMinor": 548800 },
+        { "widthMm": 900, "heightMm": 1400, "expectedMinor": 674900 },
+        { "widthMm": 1000, "heightMm": 1500, "expectedMinor": 753800 },
+        { "widthMm": 1100, "heightMm": 1600, "expectedMinor": 829300 },
+        { "widthMm": 1200, "heightMm": 1700, "expectedMinor": 927200 },
+        { "widthMm": 1300, "heightMm": 1800, "expectedMinor": 1030800 }
+      ]
+    },
+    {
+      "id": "1c400001-0000-4000-8000-000000000003",
+      "ruleKey": "horizontal-classic-25-material-918",
+      "kind": "AREA_MINIMUM",
+      "familyId": "39546e59-e0c2-49c4-8da7-9bb4bcaf56ed",
+      "familyName": "Горизонтальные алюминиевые жалюзи",
+      "categoryId": "2514507d-fb96-4856-925a-7245c636ed3c",
+      "categoryName": "Горизонтальные ленты для алюминиевых жалюзи",
+      "systemId": "6e4a9faa-f0fc-4ce3-bca5-4470edaa2fb0",
+      "systemName": "Жалюзи с лентой 16/25 мм",
+      "modelId": "1c000001-0000-4000-8000-000000000003",
+      "modelSourceId": "28",
+      "modelCode": "CLASSIC_25",
+      "modelName": "Классика 25",
+      "materialVariantId": "5fb426ea-2b8f-463d-a85b-e9a375efa386",
+      "materialName": "Лента 25x0.18, 8012 — 8012",
+      "materialArticle": "8012",
+      "materialColor": "8012",
+      "sourcePriceCategory": "2",
+      "basePriceMinor": 241800,
+      "roundingRule": "INTEGER_HALF_UP",
+      "minimumWidthMm": 435,
+      "maximumWidthMm": 1300,
+      "minimumHeightMm": 500,
+      "maximumHeightMm": 1800,
+      "mountingTypes": [
+        {
+          "id": "1c100001-0000-4000-8000-000000000003",
+          "code": "STANDARD_MEASURED",
+          "name": "Стандартный монтаж — подтвердить на замере",
+          "amountMinor": 0
+        }
+      ],
+      "hardwareOptions": [
+        {
+          "id": "1c200001-0000-4000-8000-000000000003",
+          "code": "STANDARD",
+          "name": "Стандартная фурнитура",
+          "amountMinor": 0
+        }
+      ],
+      "controlTypes": [
+        {
+          "id": "1c300001-0000-4000-8000-000000000005",
+          "code": "LEFT",
+          "name": "Слева",
+          "amountMinor": 0
+        },
+        {
+          "id": "1c300001-0000-4000-8000-000000000006",
+          "code": "RIGHT",
+          "name": "Справа",
+          "amountMinor": 0
+        }
+      ],
+      "additionalOptions": [],
+      "safeExplanation": "Цена Классика 25 рассчитана по проверенной площади с минимальной расчётной площадью 1 м².",
+      "fixtures": [
+        { "widthMm": 450, "heightMm": 600, "expectedMinor": 241800 },
+        { "widthMm": 500, "heightMm": 700, "expectedMinor": 241800 },
+        { "widthMm": 600, "heightMm": 900, "expectedMinor": 241800 },
+        { "widthMm": 700, "heightMm": 1100, "expectedMinor": 241800 },
+        { "widthMm": 800, "heightMm": 1200, "expectedMinor": 241800 },
+        { "widthMm": 900, "heightMm": 1400, "expectedMinor": 304700 },
+        { "widthMm": 1000, "heightMm": 1500, "expectedMinor": 362700 },
+        { "widthMm": 1100, "heightMm": 1600, "expectedMinor": 425600 },
+        { "widthMm": 1200, "heightMm": 1700, "expectedMinor": 493300 },
+        { "widthMm": 1300, "heightMm": 1800, "expectedMinor": 565900 }
+      ]
+    },
+    {
+      "id": "1c400001-0000-4000-8000-000000000004",
+      "ruleKey": "vertical-fabric-material-1006",
+      "kind": "AREA_MINIMUM",
+      "familyId": "cc43cf97-e289-4530-b5b7-3f7b04223c09",
+      "familyName": "Вертикальные жалюзи",
+      "categoryId": "f58ac931-5cc5-4279-9f76-49fbb0fdbaa4",
+      "categoryName": "Вертикальные ткани для жалюзи",
+      "systemId": "498aeef9-34be-4968-9073-1a7bd980a1c6",
+      "systemName": "С тканевой текстурой",
+      "modelId": "1c000001-0000-4000-8000-000000000004",
+      "modelSourceId": "43",
+      "modelCode": "FABRIC",
+      "modelName": "Ткань",
+      "materialVariantId": "86c6b861-cadc-491d-8b29-1e1f9de02399",
+      "materialName": "БАЛИ 5612 — т.зеленый",
+      "materialArticle": "5612",
+      "materialColor": "т.зеленый",
+      "sourcePriceCategory": "2",
+      "basePriceMinor": 158500,
+      "roundingRule": "INTEGER_HALF_UP",
+      "minimumWidthMm": 400,
+      "maximumWidthMm": 1300,
+      "minimumHeightMm": 500,
+      "maximumHeightMm": 1800,
+      "mountingTypes": [
+        {
+          "id": "1c100001-0000-4000-8000-000000000004",
+          "code": "STANDARD_MEASURED",
+          "name": "Стандартный монтаж — подтвердить на замере",
+          "amountMinor": 0
+        }
+      ],
+      "hardwareOptions": [
+        {
+          "id": "1c200001-0000-4000-8000-000000000004",
+          "code": "STANDARD",
+          "name": "Стандартная фурнитура",
+          "amountMinor": 0
+        }
+      ],
+      "controlTypes": [
+        {
+          "id": "1c300001-0000-4000-8000-000000000007",
+          "code": "LEFT",
+          "name": "Слева",
+          "amountMinor": 0
+        },
+        {
+          "id": "1c300001-0000-4000-8000-000000000008",
+          "code": "RIGHT",
+          "name": "Справа",
+          "amountMinor": 0
+        }
+      ],
+      "additionalOptions": [],
+      "safeExplanation": "Цена вертикальной ткани рассчитана по проверенной площади с минимальной расчётной площадью 1 м².",
+      "fixtures": [
+        { "widthMm": 400, "heightMm": 500, "expectedMinor": 158500 },
+        { "widthMm": 500, "heightMm": 700, "expectedMinor": 158500 },
+        { "widthMm": 600, "heightMm": 900, "expectedMinor": 158500 },
+        { "widthMm": 700, "heightMm": 1100, "expectedMinor": 158500 },
+        { "widthMm": 800, "heightMm": 1200, "expectedMinor": 158500 },
+        { "widthMm": 900, "heightMm": 1400, "expectedMinor": 199700 },
+        { "widthMm": 1000, "heightMm": 1500, "expectedMinor": 237800 },
+        { "widthMm": 1100, "heightMm": 1600, "expectedMinor": 279000 },
+        { "widthMm": 1200, "heightMm": 1700, "expectedMinor": 323400 },
+        { "widthMm": 1300, "heightMm": 1800, "expectedMinor": 370900 }
+      ]
+    }
+  ]
+}

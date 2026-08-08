@@ -1,3 +1,5 @@
+export { calculatePrice, minimumUnitPriceKopecks, multiplyDivideRoundHalfUp } from './engine.js';
+export { verifyPricingParity } from './parity.js';
 export { filterCompatibleProfiles, validatePricingSelection } from './validation.js';
 export {
   calculationStatuses,
@@ -5,8 +7,11 @@ export {
   type AppliedPriceRule,
   type CalculationStatus,
   type ConfiguratorOption,
+  type ParityVerificationResult,
+  type PricingCalculationInput,
   type PricingFixture,
   type PricingParityStatus,
+  type PricingResult,
   type PricingRuleKind,
   type PricingRuleOptions,
   type PricingRuleProfile,

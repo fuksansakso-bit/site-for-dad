@@ -16,10 +16,10 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const context = requestTelemetryContext(request);
   try {
-    requirePricingMutation(request, getWebCatalogSigningKey(), { csrf: false });
+    const idempotencyKey = requirePricingMutation(request, getWebCatalogSigningKey(), { csrf: false });
     const [principal, input] = await Promise.all([requireCatalogAdminPrincipal(), parsePricingJson(request, pricingOverrideSetSchema)]);
     const id = await getWebPricing().setLocalOverride({ actorId: principal.actorId, amountMinor: input.amountMinor,
-      correlationId: context.correlationId, materialVariantId: input.materialVariantId, reason: input.reason });
+      correlationId: context.correlationId, idempotencyKey: `admin:override:set:${idempotencyKey}`, materialVariantId: input.materialVariantId, reason: input.reason });
     return NextResponse.json(pricingAdminMutationResponseSchema.parse({ correlationId: context.correlationId, id, ok: true }),
       { headers: pricingNoStoreHeaders(context.correlationId), status: 201 });
   } catch (error) {
@@ -30,10 +30,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 export async function DELETE(request: NextRequest): Promise<NextResponse> {
   const context = requestTelemetryContext(request);
   try {
-    requirePricingMutation(request, getWebCatalogSigningKey(), { csrf: false });
+    const idempotencyKey = requirePricingMutation(request, getWebCatalogSigningKey(), { csrf: false });
     const [principal, input] = await Promise.all([requireCatalogAdminPrincipal(), parsePricingJson(request, pricingOverrideRemoveSchema)]);
     await getWebPricing().removeLocalOverride({ actorId: principal.actorId, correlationId: context.correlationId,
-      materialVariantId: input.materialVariantId, reason: input.reason });
+      idempotencyKey: `admin:override:remove:${idempotencyKey}`, materialVariantId: input.materialVariantId, reason: input.reason });
     return NextResponse.json(pricingAdminMutationResponseSchema.parse({ correlationId: context.correlationId, ok: true }),
       { headers: pricingNoStoreHeaders(context.correlationId) });
   } catch (error) {

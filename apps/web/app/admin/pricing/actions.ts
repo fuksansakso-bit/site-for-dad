@@ -70,13 +70,13 @@ export async function rejectPriceVersion(form: FormData): Promise<never> {
 export async function setPricingOverride(form: FormData): Promise<never> {
   return finish(async () => {
     const principal = await requireCatalogAdminPrincipal();
-    await getWebPricing().setLocalOverride({ actorId: principal.actorId, amountMinor: minor(form), correlationId: identity('override-set').correlationId, materialVariantId: uuid(form, 'materialVariantId'), reason: text(form, 'reason') });
+    await getWebPricing().setLocalOverride({ actorId: principal.actorId, amountMinor: minor(form), ...identity('override-set'), materialVariantId: uuid(form, 'materialVariantId'), reason: text(form, 'reason') });
   }, 'PRICING_OVERRIDE_SET');
 }
 
 export async function removePricingOverride(form: FormData): Promise<never> {
   return finish(async () => {
     const principal = await requireCatalogAdminPrincipal();
-    await getWebPricing().removeLocalOverride({ actorId: principal.actorId, correlationId: identity('override-remove').correlationId, materialVariantId: uuid(form, 'materialVariantId'), reason: text(form, 'reason') });
+    await getWebPricing().removeLocalOverride({ actorId: principal.actorId, ...identity('override-remove'), materialVariantId: uuid(form, 'materialVariantId'), reason: text(form, 'reason') });
   }, 'PRICING_OVERRIDE_REMOVED');
 }

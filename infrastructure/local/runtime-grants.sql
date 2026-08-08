@@ -46,5 +46,10 @@ GRANT SELECT, INSERT ON
     catalog_bulk_command,
     source_price_record,
     price_version_record,
-    catalog_version_entry
+    catalog_version_entry,
+    pricing_rule,
+    pricing_parity_run,
+    pricing_calculation,
+    quote_snapshot,
+    pricing_version_decision
 TO foundation_runtime;

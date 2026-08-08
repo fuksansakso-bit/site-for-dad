@@ -172,3 +172,71 @@ export interface ParityVerificationResult {
   }[];
   readonly status: PricingParityStatus;
 }
+
+export type PublicPricingProfile = Omit<
+  PricingRuleProfile,
+  'ruleData' | 'sourceReference' | 'testExamples'
+>;
+
+export interface ConfiguratorFamilyOption {
+  readonly automaticPricing: boolean;
+  readonly code: string;
+  readonly id: string;
+  readonly name: string;
+}
+
+export interface ConfiguratorBootstrap {
+  readonly catalogVersionId: string;
+  readonly catalogVersionNumber: number;
+  readonly families: readonly ConfiguratorFamilyOption[];
+  readonly priceVersionId: string;
+  readonly priceVersionNumber: number;
+  readonly profiles: readonly PublicPricingProfile[];
+}
+
+export interface StoredPricingCalculation {
+  readonly calculationId: string;
+  readonly calculationToken: string;
+  readonly result: PricingResult;
+}
+
+export interface QuoteSnapshotView {
+  readonly breakdown: PricingResult;
+  readonly catalogVersionId: string;
+  readonly configuration: Readonly<Record<string, unknown>>;
+  readonly createdAt: string;
+  readonly priceVersionId: string | null;
+  readonly quoteToken: string;
+  readonly sourceVersion: string | null;
+  readonly status: CalculationStatus;
+}
+
+export interface PricingVersionSummary {
+  readonly activatedAt: string | null;
+  readonly changeCount: number;
+  readonly createdAt: string;
+  readonly fixtureCount: number;
+  readonly id: string;
+  readonly maximumDeviationMinor: number | null;
+  readonly parityStatus: PricingParityStatus | null;
+  readonly ruleCount: number;
+  readonly sourceVersion: string | null;
+  readonly status: string;
+  readonly unsupportedCount: number;
+  readonly versionNumber: number;
+}
+
+export interface PricingAuditEntry {
+  readonly action: string;
+  readonly actorId: string | null;
+  readonly createdAt: string;
+  readonly outcome: string;
+  readonly reasonCode: string;
+  readonly targetId: string;
+}
+
+export interface PricingAdminOverview {
+  readonly activePriceVersionId: string | null;
+  readonly audit: readonly PricingAuditEntry[];
+  readonly versions: readonly PricingVersionSummary[];
+}

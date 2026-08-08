@@ -19,4 +19,12 @@ export {
   type PricingValidationDetail,
   type PricingValidationResult,
   type PricingVerificationStatus,
+  type PublicPricingProfile,
+  type ConfiguratorFamilyOption,
+  type ConfiguratorBootstrap,
+  type StoredPricingCalculation,
+  type QuoteSnapshotView,
+  type PricingVersionSummary,
+  type PricingAuditEntry,
+  type PricingAdminOverview,
 } from './types.js';

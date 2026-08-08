@@ -7,6 +7,7 @@
 
 ### Added
 
+- `OWNER-DECISION-014` authorizes only Phase 1D from merged-main commit `58eb25dcde460291ad98fde157956d7f264a666d`; added the active standard-preview plan and QG-271–310 with two local scenes, four deterministic family profiles, exact/local asset evidence, guest-owned state/API, responsive controls and visual regression boundaries. Phase 1E+, client photo/AI/cart/order/WhatsApp/payment/final redesign/production remain prohibited.
 - Completed Phase 1C guest configurator at `/configure`, backed by bounded active PostgreSQL catalog projections, dynamic compatibility, server-side dimension validation, responsive stateful steps, safe `PRICE_ON_REQUEST`/`MANUAL_REVIEW_REQUIRED` fallbacks and immutable public quote views.
 - Added the independent server-only `@project-name/pricing` integer-kopeck engine, active reviewed PriceVersion v5, four verified MVP rule scopes, per-unit 150,000-kopeck minimum, quantity-safe totals, separate zero-cost service lines, local override precedence, audit/idempotency and immutable calculation/snapshot persistence.
 - Added minimal OWNER/ADMIN pricing administration for version diff/parity/activation/rejection, source-price override restore and audit history. Forty dated AMIGO fixtures pass with maximum deviation 100 kopecks; unit/contract/real-PostgreSQL/browser/property boundaries and the CI-equivalent gate cover the Phase 1C acceptance surface.

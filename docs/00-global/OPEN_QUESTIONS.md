@@ -249,7 +249,7 @@ Risk отражает последствия неверного предполо
 | TBD-DESIGN-004 | P1 | Какие реальные фото работ разрешены для главной и портфолио? | Business Owner определяет состав local portfolio по `OWNER-DECISION-008`; для закрытия всё ещё нужны конкретные исходники, качество, права/согласие, PII review и подписи. | Владелец контента | Открыт; portfolio authority решена, asset inventory нет |
 | TBD-DESIGN-005 | P1 | Какая формулировка предупреждает о приблизительности экранного цвета и визуализации? | Нужен понятный, юридически проверенный текст. | Product / юрист | Открыт |
 | TBD-DESIGN-006 | P2 | Нужны ли дополнительные языки кроме русского? | Влияет на контент-модель, SEO и layout. | Владелец | Открыт |
-| TBD-PREVIEW-001 | P1 | Какие `SceneProfile`, renderer profiles, family states и assets образуют проверяемое покрытие standard preview первого запуска? | Нужны versioned scene/geometry/material mappings, rights approval, visual baselines и fallback для каждого из четырёх MVP-семейств; без них Phase 1D не активируется. | Product / дизайн / мастер / контент | Открыт |
+| TBD-PREVIEW-001 | P1 | Какие `SceneProfile`, renderer profiles, family states и assets образуют проверяемое покрытие standard preview первого запуска? | Решён initial-launch aspect 2026-08-08: `WINDOW_CLOSEUP`/`ROOM_WINDOW`, `standard-svg-v2`, Roller/Zebra/horizontal aluminium/vertical, 11-entry approved local manifest, four visual baselines and honest fallback; broader scene/family/exact-swatch expansion remains in the mapping-gap register. Evidence: `OWNER-DECISION-014/015`, Phase 1D report. | Product / дизайн / мастер / контент | Решён |
 
 ## AI и computer vision
 
@@ -310,7 +310,7 @@ Risk отражает последствия неверного предполо
 
 Семь P0, ранее имевшие `OWNER_DECISION_REQUIRED`, решены 2026-08-02: `TBD-BIZ-001`, `TBD-PRICE-007`, `TBD-MIN-PRICE-001`, `TBD-PRICE-SOURCE-002`, `TBD-PRICE-PARITY-001`, `TBD-INVENTORY-002` и `TBD-INFRA-002`. External AMIGO data и `BLOCKER_BEFORE_FEATURE` по-прежнему закрываются перед указанными Phase 1B–1G activations, а не в Foundation.
 
-Phase 1B.1 и отдельно разрешённая `OWNER-DECISION-012` Phase 1B.2 завершены на owner-authorized public-page transport. `OWNER-DECISION-013` Phase 1C также завершена: четыре rule scope доказаны dated fixtures, а все остальные остаются request/manual. `TBD-SOURCE-AMIGO-002` остаётся открыт только для official API/export/file/schema aspect, если такой канал существует. Phase 1D и любая следующая фаза не разрешены автоматически.
+Phase 1A–1D завершены; `OWNER-DECISION-015` фиксирует explicit partner permission for the locally mirrored photoreal Phase 1D layers. `TBD-SOURCE-AMIGO-002` остаётся открыт только для official API/export/file/schema aspect, если такой канал существует. Phase 1E и любая следующая фаза не разрешены автоматически.
 
 `OWNER-DECISION-011` закрывает только local/CI emulator choice: VersityGW в Docker/POSIX named volumes. `TBD-INFRA-010` явно сохраняет выбор production storage открытым; local choice не свидетельствует в пользу Supabase Storage, Cloudflare R2, AWS S3 или иного provider.
 

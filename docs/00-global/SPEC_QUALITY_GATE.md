@@ -433,36 +433,36 @@ Entry result: **AUTHORIZED_PHASE_1D_IN_PROGRESS**. Completion evidence is not in
 
 ### 11.2. Completion gate
 
-- [ ] **QG-281 — MUST:** `/configure` creates preview through an opaque server-side reference and `/preview` restores the validated selected family/system/model/material/options without placing price or a trusted configuration object in the URL.
-- [ ] **QG-282 — MUST:** `StandardPreviewState` is versioned, separate from immutable quotes, persists scene/renderer/family/material/quality/controls/hardware/timestamps/correlation and enforces guest ownership on get/update/delete.
-- [ ] **QG-283 — MUST:** scene, eligibility, asset, create/get/update/delete contracts use runtime schemas, safe IDs/errors, correlation, no-store state, same-origin/rate/idempotency boundaries and no stack/storage credential/internal URL disclosure.
-- [ ] **QG-284 — MUST:** eligibility revalidates active compatibility and detects stale catalog, changed PriceVersion, hidden material and unsupported family without mutating the source calculation or quote.
-- [ ] **QG-285 — MUST:** exact current approved material bytes are retrieved only through `StoragePort`; missing, damaged, wrong-MIME or unavailable storage never yields a substituted material.
-- [ ] **QG-286 — MUST:** `EXACT_SWATCH`, `PRODUCT_IMAGE_CROP`, `NORMALIZED_COLOR_ONLY` and `PREVIEW_UNAVAILABLE` are selected deterministically in priority order and color-only/unavailable disclosures are visible.
-- [ ] **QG-287 — MUST:** two original local scenes render with stable geometry and a data-driven registry that can add future rooms/light profiles without remote runtime backgrounds.
-- [ ] **QG-288 — MUST:** Roller profile renders fabric/texture/opening/lower bar/cassette or guides only when confirmed/chain/hardware color without invented options.
-- [ ] **QG-289 — MUST:** Zebra profile uses the exact mapped material swatch when available and deterministic dense/transparent period/alignment/opening/cassette/hardware behavior, never random stripes.
-- [ ] **QG-290 — MUST:** horizontal aluminium profile uses confirmed slat width, height-relative count, angle/lift/headrail/cord and selected color deterministically.
-- [ ] **QG-291 — MUST:** vertical profile uses confirmed lamella width/count/angle/spread/opening direction where evidenced and selected color/texture deterministically.
-- [ ] **QG-292 — MUST:** every unsupported family/profile gets an honest unavailable summary rather than a generic supported-family renderer.
-- [ ] **QG-293 — MUST:** scene/opening/Zebra alignment/slat angle/vertical spread/hardware/zoom/reset controls are family-relevant, bounded, keyboard/touch operable and do not change price.
-- [ ] **QG-294 — MUST:** return to `/configure` preserves the user's selection and no registration is required.
-- [ ] **QG-295 — MUST:** desktop and narrow mobile layouts have no horizontal overflow/covered window, have sufficient touch targets/focus/ARIA/loading/empty/error recovery and respect reduced motion/high contrast.
-- [ ] **QG-296 — MUST:** identical canonical input and renderer version produce identical deterministic state/checksum and stable visual output at fixed viewport/test data.
-- [ ] **QG-297 — MUST:** preview loads only the current configuration asset, uses versioned immutable asset caching, never publicly caches state and avoids unnecessary rerender/large decode/layout shift.
-- [ ] **QG-298 — MUST:** unit tests pass for eligibility, renderer selection, evidence priority, opening/Zebra/horizontal/vertical layout, determinism and unsupported fallback.
-- [ ] **QG-299 — MUST:** contract tests pass for preview APIs, `StoragePort` retrieval, persistence, ownership and safe errors.
-- [ ] **QG-300 — MUST:** PostgreSQL integration tests pass for configuration→preview, exact asset/compatibility lookup, state lifecycle, return reference and no-AMIGO runtime.
-- [ ] **QG-301 — MUST:** browser tests pass for four supported families, scene/control changes, mobile, unavailable/color-only and return to configurator.
-- [ ] **QG-302 — MUST:** at least one fixed visual baseline per supported family passes at a documented threshold with fixed viewport/data and deterministic renderer version.
-- [ ] **QG-303 — MUST:** recovery tests pass for missing/corrupt asset, storage outage, stale configuration, hidden material and changed PriceVersion with safe recoverable UX.
-- [ ] **QG-304 — MUST:** mapping gaps list family/system/model/MaterialVariant/source ID/reason/missing compatibility/missing asset role/blocking/future correction without adding a second catalog or invented data.
-- [ ] **QG-305 — MUST:** targeted admin diagnostics expose aggregate preview eligibility/evidence/gaps without private state or internal storage credentials.
-- [ ] **QG-306 — MUST:** format/docs/scope/boundary/lint/type/test/coverage/database/build/browser/security and CI-equivalent gates pass; any skipped check is recorded.
-- [ ] **QG-307 — MUST:** affected documentation and completion report match actual routes/families/scenes/counts/technology/tests/visual/mobile/gaps evidence without rewriting unrelated Phase 1C mappings.
+- [x] **QG-281 — MUST:** `/configure` creates preview through an opaque server-side reference and `/preview` restores the validated selected family/system/model/material/options without placing price or a trusted configuration object in the URL.
+- [x] **QG-282 — MUST:** `StandardPreviewState` is versioned, separate from immutable quotes, persists scene/renderer/family/material/quality/controls/hardware/timestamps/correlation and enforces guest ownership on get/update/delete.
+- [x] **QG-283 — MUST:** scene, eligibility, asset, create/get/update/delete contracts use runtime schemas, safe IDs/errors, correlation, no-store state, same-origin/rate/idempotency boundaries and no stack/storage credential/internal URL disclosure.
+- [x] **QG-284 — MUST:** eligibility revalidates active compatibility and detects stale catalog, changed PriceVersion, hidden material and unsupported family without mutating the source calculation or quote.
+- [x] **QG-285 — MUST:** exact current approved material bytes are retrieved only through `StoragePort`; missing, damaged, wrong-MIME or unavailable storage never yields a substituted material.
+- [x] **QG-286 — MUST:** `EXACT_SWATCH`, `PRODUCT_IMAGE_CROP`, `NORMALIZED_COLOR_ONLY` and `PREVIEW_UNAVAILABLE` are selected deterministically in priority order and color-only/unavailable disclosures are visible.
+- [x] **QG-287 — MUST:** two approved locally stored photoreal scenes render with stable geometry and a data-driven registry that can add future rooms/light profiles without remote runtime backgrounds.
+- [x] **QG-288 — MUST:** Roller profile renders fabric/texture/opening/lower bar/cassette or guides only when confirmed/chain/hardware color without invented options.
+- [x] **QG-289 — MUST:** Zebra profile uses the exact mapped approved product layer when no exact swatch exists and deterministic dense/transparent period/alignment/opening/cassette/hardware behavior, never random stripes.
+- [x] **QG-290 — MUST:** horizontal aluminium profile uses confirmed slat width, height-relative count, angle/lift/headrail/cord and selected color deterministically.
+- [x] **QG-291 — MUST:** vertical profile uses confirmed lamella width/count/angle/spread/opening direction where evidenced and selected color/texture deterministically.
+- [x] **QG-292 — MUST:** every unsupported family/profile gets an honest unavailable summary rather than a generic supported-family renderer.
+- [x] **QG-293 — MUST:** scene/opening/Zebra alignment/slat angle/vertical spread/hardware/zoom/reset controls are family-relevant, bounded, keyboard/touch operable and do not change price.
+- [x] **QG-294 — MUST:** return to `/configure` preserves the user's selection and no registration is required.
+- [x] **QG-295 — MUST:** desktop and narrow mobile layouts have no horizontal overflow/covered window, have sufficient touch targets/focus/ARIA/loading/empty/error recovery and respect reduced motion/high contrast.
+- [x] **QG-296 — MUST:** identical canonical input and renderer version produce identical deterministic state/checksum and stable visual output at fixed viewport/test data.
+- [x] **QG-297 — MUST:** preview loads only the current configuration asset, uses versioned immutable asset caching, never publicly caches state and avoids unnecessary rerender/large decode/layout shift.
+- [x] **QG-298 — MUST:** unit tests pass for eligibility, renderer selection, evidence priority, opening/Zebra/horizontal/vertical layout, determinism and unsupported fallback.
+- [x] **QG-299 — MUST:** contract tests pass for preview APIs, `StoragePort` retrieval, persistence, ownership and safe errors.
+- [x] **QG-300 — MUST:** PostgreSQL integration tests pass for configuration→preview, exact asset/compatibility lookup, state lifecycle, return reference and no-AMIGO runtime.
+- [x] **QG-301 — MUST:** browser tests pass for four supported families, scene/control changes, mobile, unavailable/color-only and return to configurator.
+- [x] **QG-302 — MUST:** at least one fixed visual baseline per supported family passes at a documented threshold with fixed viewport/data and deterministic renderer version.
+- [x] **QG-303 — MUST:** recovery tests pass for missing/corrupt asset, storage outage, stale configuration, hidden material and changed PriceVersion with safe recoverable UX.
+- [x] **QG-304 — MUST:** mapping gaps list family/system/model/MaterialVariant/source ID/reason/missing compatibility/missing asset role/blocking/future correction without adding a second catalog or invented data.
+- [x] **QG-305 — MUST:** targeted admin diagnostics expose aggregate preview eligibility/evidence/gaps without private state or internal storage credentials.
+- [x] **QG-306 — MUST:** format/docs/scope/boundary/lint/type/test/coverage/database/build/browser/security and CI-equivalent gates pass; any skipped check is recorded. The final `pnpm ci:verify` run completed 9/9 stages with exit code 0 in 363.9 seconds.
+- [x] **QG-307 — MUST:** affected documentation and completion report match actual routes/families/scenes/counts/technology/tests/visual/mobile/gaps evidence without rewriting unrelated Phase 1C mappings.
 - [ ] **QG-308 — MUST:** exact logical commit sequence is preserved, final worktree is clean, branch is pushed and an unmerged Draft PR titled `Phase 1D: deterministic standard window preview` targets `main`.
-- [ ] **QG-309 — MUST:** client photo/upload/segmentation/AI, cart/order/WhatsApp/installment/payment/final landing/starfield/redesign/production deployment and Phase 1E are absent.
-- [ ] **QG-310 — MUST:** completion report records every requested handoff fact and confirms the Phase 1D acceptance gate result.
+- [x] **QG-309 — MUST:** client photo/upload/segmentation/AI, cart/order/WhatsApp/installment/payment/final landing/starfield/redesign/production deployment and Phase 1E are absent.
+- [x] **QG-310 — MUST:** completion report records every requested handoff fact and confirms the Phase 1D acceptance gate result.
 
 Completion result: **IN PROGRESS**.
 

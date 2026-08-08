@@ -4,7 +4,7 @@
 
 | Поле | Значение |
 |---|---|
-| Фаза | Phase 1A–1C passed; Phase 1D authorized in progress; Phase 1E+ hold |
+| Фаза | Phase 1A–1D passed; Phase 1E+ hold |
 | Версия | 1.12.0 |
 | Дата | 2026-08-08, Europe/Moscow |
 | Состояние покрытия | `COVERED_WITH_VISIBLE_TBD` |
@@ -50,7 +50,7 @@
 | `FR-CATALOG-016` | [CATALOG_INVENTORY_SPEC](../specs/02-domain/CATALOG_INVENTORY_SPEC.md) | [US-ADMIN-001](../specs/01-product/USER_STORIES.md) | [AC-CATALOG-DYNAMIC-001](../specs/01-product/ACCEPTANCE_CRITERIA.md) | [TS-CATALOG-DYNAMIC-001](../quality/TEST_STRATEGY.md) | `COVERED` |
 | `FR-CONFIG-001` | [PRODUCT_CONFIGURATOR_SPEC](../specs/02-domain/PRODUCT_CONFIGURATOR_SPEC.md) | [US-GUEST-003](../specs/01-product/USER_STORIES.md) | [AC-CONFIG-001](../specs/01-product/ACCEPTANCE_CRITERIA.md) | [TS-CONFIG-001](../quality/TEST_STRATEGY.md) | `COVERED_WITH_VISIBLE_TBD`: размеры/compatibility |
 | `FR-PRICE-001` | [PRICING_CALCULATOR_SPEC](../specs/02-domain/PRICING_CALCULATOR_SPEC.md) | [US-GUEST-004](../specs/01-product/USER_STORIES.md) | [AC-PRICE-001](../specs/01-product/ACCEPTANCE_CRITERIA.md) | [TS-PRICE-001](../quality/TEST_STRATEGY.md) | `COVERED_WITH_VISIBLE_TBD`: active PriceVersion/formula/source fixtures; parity tolerance resolved |
-| `FR-STANDARD-PREVIEW-001` | [STANDARD_INTERIOR_PREVIEW_SPEC](../specs/02-domain/STANDARD_INTERIOR_PREVIEW_SPEC.md) | [US-GUEST-005](../specs/01-product/USER_STORIES.md) | [AC-STANDARD-PREVIEW-001](../specs/01-product/ACCEPTANCE_CRITERIA.md) | [TS-STANDARD-PREVIEW-001](../quality/TEST_STRATEGY.md) | `COVERED_WITH_VISIBLE_TBD`: `TBD-PREVIEW-001` profiles/assets |
+| `FR-STANDARD-PREVIEW-001` | [STANDARD_INTERIOR_PREVIEW_SPEC](../specs/02-domain/STANDARD_INTERIOR_PREVIEW_SPEC.md) | [US-GUEST-005](../specs/01-product/USER_STORIES.md) | [AC-STANDARD-PREVIEW-001](../specs/01-product/ACCEPTANCE_CRITERIA.md) | [TS-STANDARD-PREVIEW-001](../quality/TEST_STRATEGY.md) | `IMPLEMENTED_PHASE_1D`: launch profiles/assets passed; broader gaps remain explicit |
 | `FR-AI-VIS-001` | [AI_WINDOW_VISUALIZER_SPEC](../specs/02-domain/AI_WINDOW_VISUALIZER_SPEC.md) | [US-GUEST-006](../specs/01-product/USER_STORIES.md) | [AC-AI-VIS-001](../specs/01-product/ACCEPTANCE_CRITERIA.md) | [TS-AI-VIS-001](../quality/TEST_STRATEGY.md) | `COVERED_WITH_VISIBLE_TBD`: benchmark/privacy/provider |
 | `FR-CART-001` | [CART_CHECKOUT_ORDERS_SPEC](../specs/02-domain/CART_CHECKOUT_ORDERS_SPEC.md) | [US-GUEST-007](../specs/01-product/USER_STORIES.md) | [AC-CART-001](../specs/01-product/ACCEPTANCE_CRITERIA.md) | [TS-CART-001](../quality/TEST_STRATEGY.md) | `COVERED` |
 | `FR-ORDER-001` | [CART_CHECKOUT_ORDERS_SPEC](../specs/02-domain/CART_CHECKOUT_ORDERS_SPEC.md) | [US-MANAGER-001](../specs/01-product/USER_STORIES.md) | [AC-ORDER-001](../specs/01-product/ACCEPTANCE_CRITERIA.md) | [TS-ORDER-001](../quality/TEST_STRATEGY.md) | `COVERED_WITH_VISIBLE_TBD`: business state machine |
@@ -141,7 +141,7 @@
 | `OWNER-DECISION-011` | No production TBD closed; `TBD-INFRA-010` created to preserve provider selection gate | `GLOBAL_SPEC`, ADR-0009, architecture/storage/media/security/deployment/test specs, local/CI scripts, README and dependency baseline | `STORAGE-SPEC-022`–`027`, `TEST-SPEC-019`–`021`; VersityGW 15/15 contract and Docker restart persistence passed 2026-08-03 |
 | `OWNER-DECISION-012` | No TBD closed in advance; accepted evidence later closed `TBD-ASSORT-002`, `TBD-ASSORT-006` and catalog PriceVersion aspect `TBD-PRICE-001` | `GLOBAL_SPEC`, source/rights/pricing policies, implementation/spec roadmaps, QG-195–230, stable plan and completion report | QG-195–230 passed; Phase 1C+ explicitly excluded |
 | `OWNER-DECISION-013` | Active calculation aspect of `TBD-PRICE-001` resolved; `TBD-PRICE-002`–`005` and `TBD-SIZE-001` partially evidenced only for four scopes | `GLOBAL_SPEC`, configurator/pricing/data/API/architecture/test specs, QG-231–270, dated fixtures, stable plan and completion report | QG-231–270 passed; Phase 1D+ explicitly excluded |
-| `OWNER-DECISION-014` | Initial two-scene/four-family implementation evidence will resolve the launch-profile aspect of `TBD-PREVIEW-001`; individual mapping gaps remain explicit | `GLOBAL_SPEC`, standard preview/configurator/media/storage/data/API/architecture/security/performance/test specs, QG-271–310 and active plan | QG-271–280 passed; QG-281–310 in progress; Phase 1E+ excluded |
+| `OWNER-DECISION-014/015` | Initial two-scene/four-family launch aspect of `TBD-PREVIEW-001` resolved with registered photoreal partner layers; individual exact-swatch gaps remain explicit | `GLOBAL_SPEC`, standard preview/configurator/media/storage/data/API/architecture/security/performance/test specs, QG-271–310, plan/report and mapping-gap register | `PASSED_PHASE_1D_STANDARD_PREVIEW`; Phase 1E+ excluded |
 
 ## 7. Phase 0C MVP and implementation traceability
 
@@ -158,7 +158,7 @@
 | `MVP-020/026` | `SCOPE-007/041/042`, AI visualizer/pipeline/evaluation | `US-GUEST-006`, `US-AI-001`–`003` and linked AC/tests | 1G | Provider/privacy/TTL/evaluation/cost gates |
 | `ROADMAP-1A-001`, `PLAN-1A-001` | Architecture + accepted ADR-0007–0010 | `PLAN-1A-AC-001`–`010` execution evidence in [Phase 1A report](../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md) | 1A | `PASSED_PHASE_1A_FOUNDATION`; Phase 1B forbidden |
 | `ROADMAP-1C-001`, `OWNER-DECISION-013` | `FR-CONFIG-*`, `FR-PRICE-*`, `FR-CALC-*`, active catalog/price/quote/admin contracts | Pricing unit/contract/integration/parity and browser evidence in [Phase 1C report](../06-plans/completed/PHASE_1C_CONFIGURATOR_PRICING_REPORT.md) | 1C | `PASSED_PHASE_1C_CONFIGURATOR_PRICING`; Phase 1D forbidden |
-| `ROADMAP-1D-001`, `OWNER-DECISION-014` | `FR-STANDARD-PREVIEW-*`, `STD-PREV-*`, ADR-0004/0006 and active local catalog/configuration | Preview domain/API/renderer/browser/visual/recovery evidence in [Phase 1D plan](../06-plans/active/PHASE_1D_STANDARD_PREVIEW_PLAN.md) | 1D | QG-271–280 passed; QG-281–310 in progress; Phase 1E forbidden |
+| `ROADMAP-1D-001`, `OWNER-DECISION-014/015` | `FR-STANDARD-PREVIEW-*`, `STD-PREV-*`, ADR-0004/0006 and active local catalog/configuration | Preview domain/API/renderer/browser/visual/recovery evidence in [Phase 1D report](../06-plans/completed/PHASE_1D_STANDARD_PREVIEW_REPORT.md) | 1D | QG-271–310 passed; Phase 1E forbidden |
 | `ROADMAP-1H-001` | deployment/security/performance/a11y/test specs | NFR stories/AC/tests + recovery/admin chains | 1H | Full launch checklist and go/no-go |
 
 Post-MVP IDs `POST-MVP-001`–`015` have no Phase 1 delivery commitment and MUST NOT be inferred from existing general feature stories without a future scope/traceability update.
@@ -235,13 +235,13 @@ Detailed runtime versions, commit list, skipped production-only checks and accep
 | Phase 1B.1 acceptance | QG-169–194 passed; real 32-ID/59-media publication pilot and final CI completed |
 | Phase 1B.2 acceptance | QG-195–230 passed; real full manifest, active v2 versions, media/restart/no-op/public/CI evidence completed |
 | Phase 1C acceptance | QG-231–270 passed; four verified scopes, 40 fixtures, active calculation v5, immutable quotes, admin and CI evidence completed |
-| Phase 1D acceptance | Entry QG-271–280 passed; completion QG-281–310 in progress |
+| Phase 1D acceptance | `PASSED_PHASE_1D_STANDARD_PREVIEW`; QG-271–310 passed |
 
 ## 10. Completion conditions
 
 Покрытие считается валидным, если автоматическая проверка подтверждает существование всех linked files и каждого ID, stories сохраняют полный шаблон, acceptance содержит позитивное и негативное проверяемое поведение, test strategy содержит level/preconditions/input/expected result/status, а открытые TBD не обозначены как выполненные tests.
 
-Матрица отражает завершённые Phase 1A–1C и авторизованную Phase 1D по [active plan](../06-plans/active/PHASE_1D_STANDARD_PREVIEW_PLAN.md). Phase 1E+ и production deployment не разрешены.
+Матрица отражает завершённые Phase 1A–1D; Phase 1D evidence is in the [completion report](../06-plans/completed/PHASE_1D_STANDARD_PREVIEW_REPORT.md). Phase 1E+ и production deployment не разрешены.
 
 ## 11. История изменений
 
@@ -261,3 +261,4 @@ Detailed runtime versions, commit list, skipped production-only checks and accep
 | 1.10.0 | 2026-08-04 | Linked accepted real run/manifest, active v2 pair, 2 818 media objects, bulk/rollback/restart/no-op/public/scale/CI evidence and QG-203–230; later-phase hold preserved. |
 | 1.11.0 | 2026-08-08 | Linked `OWNER-DECISION-013`, active catalog/calculation v5, four verified scopes/40 fixtures/≤1 RUB parity, configurator/quote/admin/security/tests and QG-231–270; Phase 1D+ hold preserved. |
 | 1.12.0 | 2026-08-08 | Linked `OWNER-DECISION-014`, standard preview requirements/ADR, active plan and QG-271–310; Phase 1D entry passed while completion evidence and mapping gaps remain open, and Phase 1E+ stays prohibited. |
+| 1.13.0 | 2026-08-08 | Closed Phase 1D traceability with `OWNER-DECISION-015`, photoreal local layers, four renderer/visual profiles, state/API/storage/mobile/recovery evidence, gap register and QG-271–310; Phase 1E stays prohibited. |

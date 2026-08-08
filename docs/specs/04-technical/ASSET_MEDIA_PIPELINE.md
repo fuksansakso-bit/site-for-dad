@@ -4,15 +4,15 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1B.2 full authorized catalog media intake accepted; user media/production pipeline gated |
-| Версия | 0.8.0 |
-| Дата | 2026-08-04 |
+| Статус | Phase 1B.2 catalog intake and Phase 1D approved preview-layer publication accepted; user media/production pipeline gated |
+| Версия | 0.9.0 |
+| Дата | 2026-08-08 |
 | Rights | [ASSET_RIGHTS_REGISTER.md](../../00-global/ASSET_RIGHTS_REGISTER.md) |
 | Storage | [STORAGE_MEDIA.md](STORAGE_MEDIA.md) |
 
 ## 1. Purpose and boundaries
 
-The pipeline registers, validates, stores, maps, reviews, publishes, revokes and deletes owner/partner media with full provenance. `OWNER-DECISION-012` authorized Phase 1B.2 to extend the same verified importer from the frozen pilot to media references discovered for the full authorized catalog through the local private-by-default storage port; that bounded intake is now accepted. User upload, production storage and any source outside the typed controlled discovery remain gated.
+The pipeline registers, validates, stores, maps, reviews, publishes, revokes and deletes owner/partner media with full provenance. Phase 1D additionally registers the explicitly owner-approved photoreal AMIGO scene/product layers in a checksum-bound local manifest under `OWNER-DECISION-015`; they are provisioned/read through the same private-by-default `StoragePort` and never hotlinked at runtime. User upload and production storage remain gated.
 
 Out of scope: bulk scraping, hotlink, watermark removal, authorship change, training use, client-photo public content and arbitrary transformations beyond rights/profile.
 
@@ -159,9 +159,13 @@ The bounded AMIGO transport processed only the frozen 32-ID allowlist with concu
 
 The accepted run accounts for 3 053 typed references: 2 940 material, 12 category, 52 system and 49 model. Exact typed mappings produced 4 708 normalized media sync items and 1 655 manifests; checksum-based deduplication retained provenance while storing 2 818 distinct private objects totaling 519 671 532 bytes. All 1 655 MaterialVariant have local primary media, all 2 818 objects are `PARTNER_LICENSE` + `PUBLICATION_APPROVED`, and item-level failures/hotlinks are zero. Acceptance re-read every object by length/SHA-256 after two full restarts and confirmed that the semantic no-op repeat created no candidate/diff. Missing/conflicting object and terminal failure regressions remain fail closed before review.
 
+### Phase 1D preview-layer evidence (2026-08-08)
+
+The preview manifest contains 11 runtime entries: two 1500×937 photoreal scenes and exact system/material visualization layers for the four validated configuration scopes. Each entry records source URL, local file, immutable object key, SHA-256, byte length, MIME, dimensions, `PARTNER_LICENSE`, `PUBLICATION_APPROVED` and the owner-confirmed permission basis. The original Zebra 5992 source is retained locally; its runtime derivative records source hash, four source/destination quadrilateral coordinates and `PERSPECTIVE_RECTIFICATION_V1`. Provisioning writes the governed `AMIGO_AUTHORIZED_PREVIEW` source marker. Delivery rechecks marker/MIME/length/hash and exposes neither object key nor source URL.
+
 ## 14. Dependencies, risks and open questions
 
-Dependencies: rights/source/catalog/content/storage/admin/sync/AI/security/performance. Open: official partner export/media channel, exact attribution/brand guidelines, derivative formats/quality profiles, retention/cache purge and color-management tolerances. Current public-page transport and Phase 1B.2 asset inventory are accepted only for the recorded source version. Risks: wrong SKU image, license scope drift, metadata PII, parser exploit, color degradation, hotlink, incomplete revoke and training misuse.
+Dependencies: rights/source/catalog/content/storage/admin/sync/AI/security/performance. Open: official partner export/media channel, exact attribution/brand guidelines, broader swatch mappings, retention/cache purge and physical color-management tolerances. Risks: wrong SKU image, license scope drift, color degradation, hotlink, incomplete revoke and training misuse.
 
 ## 15. History
 
@@ -175,3 +179,4 @@ Dependencies: rights/source/catalog/content/storage/admin/sync/AI/security/perfo
 | 0.6.0 | 2026-08-03 | Authorized the same controlled importer for typed full-catalog material/category/system/model media with exact-target mapping, bounded continuation batches, restart verification, legacy-source compatibility and fail-closed missing-object behavior. |
 | 0.7.0 | 2026-08-03 | Required OWNER publication preparation to review all typed current-run catalog media while preserving hash deduplication, reference provenance and active-composition-only delivery. |
 | 0.8.0 | 2026-08-04 | Recorded accepted 3 053 typed references, 2 818 approved private objects/519 671 532 bytes, 1 655/1 655 primary mappings, zero failures/hotlinks and complete restart/no-op integrity evidence. |
+| 0.9.0 | 2026-08-08 | Recorded the 11-entry preview manifest, owner-confirmed partner permission, local `StoragePort` provisioning, checksum delivery and deterministic Zebra source-derived rectification. |

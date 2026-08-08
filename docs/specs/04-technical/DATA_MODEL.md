@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A–1C schema implemented and verified; later business/private-media aggregates gated |
-| Версия | 0.12.0 |
+| Статус | Phase 1A–1D schema implemented and verified; later business/private-media aggregates gated |
+| Версия | 0.13.0 |
 | Дата | 2026-08-08 |
 | Architecture | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | Glossary | [GLOSSARY.md](../../00-global/GLOSSARY.md) |
@@ -52,7 +52,7 @@ This specification defines aggregate ownership, entities, keys/revisions, relati
 | Material | Material, MaterialVariant, properties/values | Catalog systems, MediaAsset, price category |
 | Configuration | Configuration + immutable revisions/selections/validation | Catalog/schema/rules/material |
 | Pricing | PriceVersion, PriceRule, Override, Quote/revisions/breakdown/parity case | Configuration, source context, actor |
-| Preview | Scene/Profile, PreviewRevision/derivative | Configuration, MediaAsset |
+| Preview | `StandardPreviewState`, Scene/Profile and checksum-bound render assets | PricingCalculation/QuoteSnapshot, Configuration, MediaAsset |
 | Visualization | Photo graph, geometry/masks/jobs/revisions/share/delete | Project/config/media/account/provider refs |
 | Project/Cart | Project, Cart, CartItem, ownership | Configuration/quote/preview |
 | Lead/Order | Handoff, Lead, Measurement, Order, WarrantyClaim, transitions | Project/customer/quote/staff |
@@ -105,7 +105,7 @@ Historical quote does not foreign-key only to mutable current configuration or a
 
 ## 8. Preview and visualization model
 
-Standard PreviewRevision links configuration, SceneProfile, ProductRenderProfile, MaterialRenderProfile/assets and output derivative; it contains no user photo.
+`StandardPreviewState` has an opaque 32-character ID, owner key hash, state/renderer version, pricing-calculation or immutable quote reference, scene, canonical family/material/asset-quality snapshot, bounded controls/family parameters/hardware, state checksum, correlation ID and timestamps. It is mutable working state stored separately from immutable `PricingCalculation`/`QuoteSnapshot`; update revalidates ownership and compatibility, delete removes only the guest preview state, and it contains no user photo or rendered customer image.
 
 Private graph:
 
@@ -184,7 +184,7 @@ Append-only database triggers prevent update/delete of rules, parity runs, calcu
 
 ## 18. Dependencies, risks and open questions
 
-Dependencies: all domain specs, API/storage/security/deployment, ADRs and `OWNER-DECISION-008/009/010/012/013`. PostgreSQL/Prisma is fixed; completed Phase 1C physicalizes only the authorized configuration/pricing/parity/quote/admin evidence described above. Production storage/index/search, PII/legal/commercial workflows and Phase 1D+ remain gated. Risks: over-normalization vs opaque blobs, revision explosion, accidental cascade deletion, mutable history, projection drift, enum lock-in and private data in generic metadata.
+Dependencies: all domain specs, API/storage/security/deployment, ADRs and `OWNER-DECISION-008/009/010/012/013/014/015`. PostgreSQL/Prisma remains fixed; Phase 1D adds only standard-preview state and indexes while approved layer bytes remain behind `StoragePort`. Production storage/index/search, PII/legal/commercial workflows and Phase 1E+ remain gated. Risks: accidental ownership bypass, stale version references, mutable quote history, projection drift and private data in generic metadata.
 
 ## 19. History
 
@@ -202,3 +202,4 @@ Dependencies: all domain specs, API/storage/security/deployment, ADRs and `OWNER
 | 0.10.0 | 2026-08-03 | Added semantic material-media placement rebinding to the current source reference while retaining historical source evidence and checksum-based binary deduplication. |
 | 0.11.0 | 2026-08-04 | Recorded accepted fifteen-migration Phase 1B.2 schema, pilot compatibility fixes, non-unique article identity, active v2 composition/price/media evidence and final migration/recovery verification without later-phase aggregates. |
 | 0.12.0 | 2026-08-08 | Recorded the additive Phase 1C pricing-rule/parity/calculation/immutable-quote/version-decision schema, append-only triggers, lookup indexes and preserved Phase 1B.2 data/volumes without Phase 1D aggregates. |
+| 0.13.0 | 2026-08-08 | Recorded the separate ownership-scoped `StandardPreviewState`, opaque lookup/indexes, immutable calculation/quote references and no-customer-photo boundary delivered in Phase 1D. |

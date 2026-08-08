@@ -5,7 +5,7 @@
 | Поле | Значение |
 |---|---|
 | Статус | Нормативный глобальный реестр; Phase 1B.2 catalog accepted and Phase 1C dated calculator verification active; official export remains unproved |
-| Версия | 1.9.0 |
+| Версия | 1.10.0 |
 | Дата проверки источников | 2026-08-08, Europe/Moscow |
 | Главный источник правды | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) |
 | Связанные политики | [PRICING_SOURCE_POLICY.md](PRICING_SOURCE_POLICY.md), [ASSET_RIGHTS_REGISTER.md](ASSET_RIGHTS_REGISTER.md) |
@@ -364,6 +364,21 @@
 | Fallback | Документированная parity snapshot и локальный собственный configurator |
 | Связанные требования | `AMIGO-PARITY-001`–`005`, `AMIGO-SYNC-001`–`006`, `FR-CONFIG-*` |
 
+### SOURCE-AMIGO-PREVIEW-ASSETS-001
+
+| Поле | Значение |
+|---|---|
+| Организация | AMIGO |
+| URL | `https://94467d4a238359fbf34ad21ca461e711.customizer.amigo.ru/storage-new/` exact paths recorded per asset in `assets/preview/manifest.json`; volatile acquisition host, never runtime authority |
+| Назначение | Phase 1D photoreal demonstration scenes and exact product/system visualization layers for four validated configuration scopes |
+| Разрешённые данные | Two interior backgrounds, Roller/Zebra/horizontal/vertical material/system PNG layers explicitly requested and permitted by the Product Owner under partner relationship |
+| Запрещённые данные/действия | Runtime hotlink, arbitrary crawling, frontend code/DOM copying, credentials, watermark removal, authorship change, customer-photo/AI/training use |
+| Статус доступа | `AUTHORIZED_PARTNER_SOURCE`; `OWNER-DECISION-015`; locally mirrored and checksum-bound |
+| Последняя проверка | 2026-08-08; 1500×937 PNG, local manifest/storage/browser integrity passed |
+| Изменяемость | Высокая upstream; immutable local hash/version used by runtime |
+| Fallback | Honest `NORMALIZED_COLOR_ONLY` disclosure or `PREVIEW_UNAVAILABLE`; never remote request/random material |
+| Связанные требования | `STD-PREV-003/004/017`, `MEDIA-PIPE-013`, `ASSET-005/013/016`, `QG-285`–`289` |
+
 ## 5. Границы ассортимента при обновлении
 
 Импорт или ручная фиксация данных MAY регистрировать любую текущую или будущую категорию AMIGO без изменения программного кода ядра. Наличие сущности на странице AMIGO не активирует локальную публикацию, наличие, pricing readiness, visualizer support или orderability. Эти состояния управляются независимо; сложные категории MAY оставаться `POST_MVP_CANDIDATE` для отдельных функций.
@@ -395,3 +410,4 @@
 | 1.7.0 | 2026-08-03 | Зафиксирован успешный dated full public-page discovery: 114 safe pages, 28 categories, 56 systems, 9 models, 1655 variants, 0 failures, semantic source hash и explicit warning/zero-price behavior; official export и import/activation gates сохранены. |
 | 1.8.0 | 2026-08-04 | Зафиксированы accepted full manifest/import, active CatalogVersion/PriceVersion v2, 1 655 variants, 2 818 approved local objects, no-op/restart evidence и закрытие current inventory aspect; official partner API/export/file/schema остаётся открытым. |
 | 1.9.0 | 2026-08-08 | Added hash/versioned Grozny-context public calculator verification for Phase 1C, four bounded MVP rule scopes and an explicit no-live-AMIGO runtime boundary. |
+| 1.10.0 | 2026-08-08 | Registered the exact Phase 1D customizer scene/product asset paths, owner-confirmed partner permission, checksum-bound local serving and no-runtime-hotlink/code-copy boundary. |

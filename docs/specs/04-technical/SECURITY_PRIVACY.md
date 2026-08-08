@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A baseline and Phase 1B.1 non-PII catalog/media/RBAC controls verified; user media/AI/production gated |
-| Версия | 0.5.0 |
-| Дата | 2026-08-03 |
+| Статус | Phase 1A–1D non-PII public/catalog/configuration/standard-preview controls verified; user media/AI/production gated |
+| Версия | 0.6.0 |
+| Дата | 2026-08-08 |
 | Data model | [DATA_MODEL.md](DATA_MODEL.md) |
 | Roles | [ROLES_PERMISSIONS.md](../01-product/ROLES_PERMISSIONS.md) |
 
@@ -146,6 +146,8 @@ Phase 1A controls include typed server/public configuration, fail-fast secrets, 
 
 Phase 1B.1 used real partner catalog media but no customer PII, customer upload, external identity or production credential. The bounded source transport enforced allowlisted HTTPS paths, SSRF/redirect/rate/size/MIME/dimension/decompression controls and generated object keys. OWNER and ADMIN duties remained separate; admin tokens are HttpOnly/server-side, public DTOs omit raw/source/object/credential data, media delivery rechecks MIME/length/SHA, and storage/data outages fail closed without internal detail. Anonymous list/read/write remained denied, repository and 3,354-file generated-canary artifact scans passed, and 25/25 multi-browser degraded-state scenarios passed. Evidence: [Phase 1B.1 report](../../06-plans/completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md).
 
+Phase 1D introduces no customer photo, upload, AI provider, paid API or production secret. Preview state ownership is bound to a random guest key whose hash is stored server-side; safe 32-character state IDs alone cannot authorize read/update/delete. Create/update mutations enforce origin, signed CSRF, rate and idempotency boundaries. Family/model/article and layer role are resolved from active PostgreSQL plus an allowlisted manifest, never from a client URL. Storage responses recheck source marker/MIME/length/SHA and omit source URL, object key and credentials; state is `no-store`, errors are correlation-only and stack-free. Admin diagnostics expose only aggregates.
+
 ## 19. Dependencies, risks and open questions
 
 Dependencies: all specs, legal review, provider/hosting/storage/auth/AI ADR/evaluation. Open: `TBD-PRIV-*`, `TBD-ACCOUNT-*`, `TBD-INFRA-*`, controller/legal docs, exact retention/RPO/RTO, providers/regions/subprocessors, incident owners/timings, vulnerability SLAs and support access. Risks: legal incompleteness, public storage, IDOR, provider training/retention, secret/log leakage, incomplete deletion and security controls deferred after launch.
@@ -159,3 +161,4 @@ Dependencies: all specs, legal review, provider/hosting/storage/auth/AI ADR/eval
 | 0.3.0 | 2026-08-02 | Added Phase 1B.1 non-PII catalog/media security boundary without enabling user media or production providers. |
 | 0.4.0 | 2026-08-03 | Applied local VersityGW loopback/all-private/environment-secret/log-redaction controls from `OWNER-DECISION-011`. |
 | 0.5.0 | 2026-08-03 | Recorded verified Phase 1B.1 SSRF/media integrity, role separation, fail-closed public delivery, secret scans and no-PII/no-production boundary. |
+| 0.6.0 | 2026-08-08 | Recorded Phase 1D opaque guest ownership, origin/CSRF/rate/idempotency, manifest allowlist, storage integrity, safe caching/errors and explicit no-photo/no-AI boundary. |

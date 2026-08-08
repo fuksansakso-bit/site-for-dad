@@ -16,7 +16,7 @@
 
 `OWNER-DECISION-013` разрешила только **Phase 1C — PRODUCT CONFIGURATOR AND VERIFIED PRICING ENGINE**. Фаза завершена 2026-08-08 со статусом `PASSED_PHASE_1C_CONFIGURATOR_PRICING`: гостевой `/configure` использует активный PostgreSQL-каталог, server-only integer pricing и immutable quote snapshots. Активная расчётная PriceVersion v5 содержит четыре проверенных rule scope и 40 parity fixtures с максимальным отклонением 1 ₽; остальные сочетания безопасно возвращают `PRICE_ON_REQUEST` или `MANUAL_REVIEW_REQUIRED`. Evidence: [pricing verification](docs/research/AMIGO_PRICING_VERIFICATION_2026-08-08.md) и [completion report](docs/06-plans/completed/PHASE_1C_CONFIGURATOR_PRICING_REPORT.md).
 
-`OWNER-DECISION-014` разрешила только **Phase 1D — DETERMINISTIC STANDARD WINDOW PREVIEW** на ветке `phase/1d-standard-preview` от merged-main commit `58eb25dcde460291ad98fde157956d7f264a666d`. Реализуется гостевой `/preview` с локальными сценами/материалами, четырьмя deterministic family profiles, server-side preview state и visual regression; фото клиента/AI, cart/order/WhatsApp/payment, production и Phase 1E+ запрещены. Текущий план: [PHASE_1D_STANDARD_PREVIEW_PLAN.md](docs/06-plans/active/PHASE_1D_STANDARD_PREVIEW_PLAN.md).
+**Phase 1D — DETERMINISTIC STANDARD WINDOW PREVIEW** завершена на ветке `phase/1d-standard-preview` от merged-main commit `58eb25dcde460291ad98fde157956d7f264a666d`. Гостевой `/preview` использует две локальные photoreal scenes, четыре deterministic family profiles, approved partner layers через `StoragePort`, server-side preview state и visual regression. [План](docs/06-plans/active/PHASE_1D_STANDARD_PREVIEW_PLAN.md), [отчёт](docs/06-plans/completed/PHASE_1D_STANDARD_PREVIEW_REPORT.md) и [mapping gaps](docs/06-plans/PREVIEW_AND_CONFIGURATOR_MAPPING_GAPS.md). Фото клиента/AI, cart/order/WhatsApp/payment, production и Phase 1E+ не начинались.
 
 ## С чего начать
 
@@ -39,7 +39,7 @@
 - `docs/specs/` содержит глобальную и 33 нормативные профильные спецификации product/domain/UX/technical.
 - `docs/00-global/` содержит управляющие и справочные документы: реестры, политики, roadmap, quality gate, допущения и открытые вопросы.
 - `docs/quality/` и `docs/evaluations/` содержат test/evaluation artifacts, а `docs/adr/` — десять принятых решений об устойчивых архитектурных границах.
-- `docs/06-plans/` содержит frozen MVP, critical-spec audit, implementation roadmap, technology evaluation, records завершённых Phase 1A–1C и активный [Phase 1D plan](docs/06-plans/active/PHASE_1D_STANDARD_PREVIEW_PLAN.md).
+- `docs/06-plans/` содержит frozen MVP, critical-spec audit, implementation roadmap, technology evaluation и records завершённых Phase 1A–1D.
 
 ## Референсы
 
@@ -86,4 +86,4 @@ pnpm.cmd --filter @project-name/db pricing:bootstrap
 
 ## Текущая граница работы
 
-Phase 1A–1C завершены. Phase 1D выполняется по `OWNER-DECISION-014` и активному плану; разрешён только deterministic standard preview. Photo/AI, cart/order/WhatsApp/payment, production deployment и Phase 1E+ не разрешены.
+Phase 1A–1D завершены. Photo/AI, cart/order/WhatsApp/payment, production deployment и Phase 1E+ не разрешены.

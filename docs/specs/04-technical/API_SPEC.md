@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A health/error, Phase 1B catalog and Phase 1C configurator/pricing/quote/admin contracts implemented; later routes gated |
-| Версия | 0.9.0 |
+| Статус | Phase 1A health/error, Phase 1B catalog, Phase 1C pricing and Phase 1D standard-preview contracts implemented; later routes gated |
+| Версия | 0.10.0 |
 | Дата | 2026-08-08 |
 | Architecture/data | [ARCHITECTURE.md](ARCHITECTURE.md), [DATA_MODEL.md](DATA_MODEL.md) |
 | Security | [SECURITY_PRIVACY.md](SECURITY_PRIVACY.md) |
@@ -103,8 +103,16 @@ Implemented Phase 1C contracts:
 
 | Command/query | Privacy | Result |
 |---|---|---|
-| `POST /v1/previews` | Public-approved assets, owned config | Standard preview job/revision |
-| `GET /v1/previews/{id}` | Owner or public-safe output scope | Status/text summary/output grant if permitted |
+| `GET /api/v1/previews/scenes` | Public, fixed registry | Two safe scene descriptors; no storage locator/source URL |
+| `POST /api/v1/previews/eligibility` | Guest calculation/quote ownership | Revalidated family/material/compatibility/evidence result |
+| `POST /api/v1/previews` | Same-origin/CSRF/idempotency plus owned opaque calculation/quote | Guest-owned state ID and `/preview?state={id}` only |
+| `GET /api/v1/previews/{id}` | Guest owner cookie | Private no-store state and safe same-origin layer references |
+| `PATCH /api/v1/previews/{id}` | Guest owner, strict family-aware bounded patch | Revalidated state/checksum; immutable source snapshot untouched |
+| `DELETE /api/v1/previews/{id}` | Guest owner | Deletes only temporary preview state |
+| `GET /api/v1/previews/{id}/asset` | Guest owner | Exact current material bytes through `StoragePort` with MIME/hash/length checks |
+| `GET /api/v1/previews/{id}/layers/{role}` | Guest owner, allowlisted role | Exact configuration product/hardware layer; no arbitrary URL |
+| `GET /api/v1/previews/scenes/{sceneId}/asset` | Allowlisted scene | Immutable approved local photoreal scene bytes |
+| `GET /api/v1/admin/previews/diagnostics` | OWNER/ADMIN | Aggregate eligibility/evidence/gap counts without private state/credentials |
 | `POST /v1/visualizations/uploads:initiate` | Owner/purpose/notice | Short-lived upload grant and upload ID, constraints |
 | `POST /v1/visualizations/uploads/{id}:complete` | Ownership/hash/metadata | Validation job, no trust of client claims |
 | `GET /v1/visualizations/{id}/candidates` | Owner only | Candidate geometry metadata and authorized display grant |
@@ -188,13 +196,15 @@ TLS, secure session/CSRF/CORS/CSP, object authorization, rate/abuse, schema vali
 
 Contract tests cover schemas/unknown fields as policy, auth/object matrix, idempotency, version conflicts, errors, exact money, pagination/cursors, upload spoof/completion, late callback/delete, public/private caching, redaction, event compatibility/dedup/order, provider outages and old/new client rolling compatibility. Domain AC/TS map to endpoints but API tests do not replace business tests.
 
-## 14. Phase 1A–1C implementation record
+## 14. Phase 1A–1D implementation record
 
 Phase 1A concrete routes remain `GET /api/v1/health/live` and `GET /api/v1/health/ready`. Phase 1B implements the server-authorized `/admin/catalog` slice through Next.js Server Actions rather than a generic CRUD route. The Phase 1B.2 staff read model covers the complete selected AMIGO source with bounded server filters/pages, hierarchy facets, safe sealed-manifest counts, run stages/checkpoints, differences and immutable review/bulk history; object keys, credentials, source hashes, raw snapshots and parser-internal payloads remain redacted. Every mutation re-evaluates the HttpOnly SameSite session and role server-side. OWNER/ADMIN commands keep preparation, exact two-step bulk apply, composition, selected/all difference review, approval, activation, rollback, cancellation and retry distinct and bind them to exact source/run/version/checksum/count state with generated correlation/idempotency evidence.
 
 The Phase 1B.2 public catalog implements `GET /api/v1/catalog/materials` and `GET /api/v1/catalog/materials/{slugOrId}` with strict unknown-field rejection, a maximum page size of 50, active hierarchy/facets, allowlisted search/category/system/color/availability/blackout/zebra filters, four allowlisted sort modes and an opaque HMAC cursor bound to the exact query plus active catalog and price version IDs. Both routes resolve only one compatible `ACTIVE/PUBLIC` immutable `CatalogVersion` and `PriceVersion` pair; no active pair yields a safe empty catalog and no staging/source fallback. List/detail DTOs expose safe display fields, category path, explicit availability/price status and same-origin media references but no object key, source hash, raw snapshot or storage credential. `GET /api/v1/catalog/media/{assetId}?v={catalogVersionId}` accepts only a media asset pinned in the current active composition with approved rights/publication, loads through the provider-neutral storage port and verifies MIME, byte length and SHA-256 again before delivery. Stale entity/version/asset references are neutral `404`; database/storage/integrity failure is safe `503`; no signed provider URL or anonymous bucket is exposed.
 
 Phase 1C routes use strict shared runtime schemas, 32 KiB mutation bodies, same-origin signed double-submit CSRF, an explicit 60-request/minute in-process boundary, correlation IDs, idempotent calculation/save/admin mutations and `Cache-Control: no-store` for pricing and snapshots. The adapter resolves all labels, compatibility, rules, active versions and totals from PostgreSQL in one server trust boundary. Safe statuses include `CALCULATED`, `PRICE_ON_REQUEST`, `MANUAL_REVIEW_REQUIRED`, `CONFIGURATION_INVALID`, `SOURCE_DATA_STALE`, `PRICE_VERSION_INACTIVE` and `DEPENDENCY_UNAVAILABLE`; SQL, stack traces, secret values and internal dependency details are excluded.
+
+Phase 1D preview routes reuse the same origin/CSRF/rate/idempotency/correlation boundary and accept only Zod-validated safe IDs, scene IDs, layer roles and bounded controls. Every private read/update/delete resolves the owner-key hash from the HttpOnly guest cookie; state responses are `no-store`. Product assets resolve server-side from the validated family/model/article mapping and checksum-bound manifest, then `StoragePort` revalidates source marker, MIME, length and SHA-256. No route accepts a remote URL, trusted price or full configuration object, and safe errors expose neither stack traces nor object-storage credentials.
 
 ## 15. Dependencies, risks and open questions
 
@@ -212,3 +222,4 @@ Dependencies: all domain/technical specs, auth/provider/hosting ADRs. Next.js sa
 | 0.7.0 | 2026-08-03 | Recorded the Phase 1B.2 full-source admin read model and separately authorized typed Server Actions for safe manifest/progress/diff/history display, exact bulk/review/composition/activation/rollback flows and per-submit server authorization. |
 | 0.8.0 | 2026-08-03 | Recorded the full active-only public hierarchy/list/detail contracts, allowlisted sort and descendant filters, query/version-bound HMAC cursor, safe DTO/ETag behavior and PostgreSQL-only runtime with version-pinned local media. |
 | 0.9.0 | 2026-08-08 | Recorded the concrete configurator/validation/calculation/quote and pricing-admin routes with strict schemas, active-version authority, CSRF/origin/rate/idempotency/correlation/no-store boundaries and safe statuses delivered in Phase 1C. |
+| 0.10.0 | 2026-08-08 | Recorded the scenes/eligibility/state/asset/layer/delete/admin-diagnostics contracts, guest ownership, safe caching/errors and local-only asset resolution delivered in Phase 1D. |

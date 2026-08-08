@@ -4,10 +4,10 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A/1B.1/1B.2/1C verified; Phase 1D+/production gated |
-| Версия | 0.10.0 |
+| Статус | Phase 1A/1B.1/1B.2/1C/1D verified; Phase 1E+/production gated |
+| Версия | 0.11.0 |
 | Дата | 2026-08-08 |
-| Global baseline | [GLOBAL_SPEC.md](../GLOBAL_SPEC.md) 0.17.0 |
+| Global baseline | [GLOBAL_SPEC.md](../GLOBAL_SPEC.md) 0.19.0 |
 | Decisions | [docs/adr](../../adr/) |
 
 ## 1. Назначение and boundaries
@@ -110,7 +110,7 @@ Only `ACTIVE` is catalog truth for runtime decisions. `DERIVED` is rebuildable f
 | Catalog | Source/local entities, mappings, readiness, compatibility | Sync/media/price refs; catalog-version events |
 | Configuration | Draft/revisions and validation evidence | Catalog/schema/rules; valid revision events |
 | Pricing | Versions/rules/overrides/quotes/parity | Valid config; quote/version events |
-| Standard Preview | Scene/product/material profiles and outputs | Config/catalog/media; preview events |
+| Standard Preview | Guest-owned state, scene registry, deterministic renderer and approved layer mapping | Pricing calculation/quote, active catalog, `StoragePort`; preview lifecycle |
 | Visualization | Private photo/geometry/masks/jobs/revisions/deletion | Config/media/AI adapters; private events |
 | Cart/Orders | Project/cart/handoff/lead/measurement/order/warranty | Config/quote/preview/account; state events |
 | Identity/RBAC | Accounts/sessions/guest ownership/capabilities | Authorization decisions/audit |
@@ -216,7 +216,9 @@ Completed Phase 1C adds one independent `packages/pricing` domain boundary and s
 
 ## 18. Dependencies, risks and open questions
 
-Dependencies: all specs, ADR/evaluations, data/API/sync/media/AI/storage/security/performance/observability/deployment and `OWNER-DECISION-008/009/013`. Foundation runtime/framework/database/queue boundaries are fixed by ADR-0007–0010; open: production object/auth/telemetry/hosting providers, search, AI, region/network and RPO/RTO. Phase 1C implements the already accepted ADR-0003 boundary without selecting later providers or workflows. Risks: premature microservices, distributed inconsistency, provider lock-in, hidden live-source/staging dependency, derived-projection drift, destructive import, privacy boundary collapse and untestable recovery.
+Phase 1D keeps the accepted modular/BFF topology: `/configure` creates an opaque `StandardPreviewState` through a server use case; `/preview` lazy-loads `standard-svg-v2`; the renderer consumes canonical state plus same-origin scene/product layers. Layer descriptors are an allowlisted server mapping from active family/model/article to a checksum-bound manifest. Bytes are provisioned and read through provider-neutral `StoragePort`; the browser never receives object keys or calls AMIGO. Approved supplier raster layers are composed by project-owned SVG/controls, not supplier frontend code. Preview state and immutable pricing snapshots remain separate.
+
+Dependencies: all specs, ADR/evaluations, data/API/sync/media/AI/storage/security/performance/observability/deployment and `OWNER-DECISION-008/009/013/014/015`. Foundation runtime/framework/database/queue boundaries are fixed by ADR-0007–0010; open: production object/auth/telemetry/hosting providers, search, AI, region/network and RPO/RTO. Risks: premature microservices, provider lock-in, hidden live-source dependency, derived-projection drift, asset/profile mismatch, privacy boundary collapse and untestable recovery.
 
 ## 19. История изменений
 
@@ -232,3 +234,4 @@ Dependencies: all specs, ADR/evaluations, data/API/sync/media/AI/storage/securit
 | 0.8.0 | 2026-08-03 | Recorded Phase 1B.2 full discovery inside the existing adapter boundary, including dynamic hierarchy/models/pagination, semantic source hashing and real 28/56/9/1655 evidence without activation or Phase 1C. |
 | 0.9.0 | 2026-08-04 | Recorded completed Phase 1B.2 resumable import, active v2 governance, local media, public/admin, rollback/restart/no-op evidence inside the existing adapter/PostgreSQL/StoragePort boundaries; later phases remain gated. |
 | 0.10.0 | 2026-08-08 | Recorded the independent pricing package, active PostgreSQL adapter, same-origin BFF, immutable quote/admin transaction boundaries, version-keyed reference cache and completed Phase 1C without Phase 1D topology. |
+| 0.11.0 | 2026-08-08 | Recorded the Phase 1D guest-state/BFF, lazy deterministic SVG renderer, allowlisted local supplier-layer manifest, `StoragePort` delivery and zero-runtime-AMIGO boundary. |

@@ -4,7 +4,7 @@
 
 | Field | Value |
 |---|---|
-| Status | `IN_PROGRESS`; only Phase 1D is authorized |
+| Status | `COMPLETED`; `PASSED_PHASE_1D_STANDARD_PREVIEW`; only Phase 1D was executed |
 | Owner decision | `OWNER-DECISION-014` |
 | Base commit | `58eb25dcde460291ad98fde157956d7f264a666d` |
 | Branch | `phase/1d-standard-preview` |
@@ -13,18 +13,18 @@
 
 ## 1. Verifiable outcome
 
-Deliver a guest `/preview` flow opened from the real configurator through an opaque server-side state ID. Two original local scenes and a deterministic lightweight renderer must show the exact selected local material where evidence permits, support Roller, Zebra, horizontal aluminium and vertical controls, retain the configurator choice on return, and use an explicit color-only or unavailable fallback without a runtime AMIGO request.
+Deliver a guest `/preview` flow opened from the real configurator through an opaque server-side state ID. Two approved locally stored photoreal scene profiles and a deterministic lightweight renderer show the selected locally mirrored partner layer where evidence permits, support Roller, Zebra, horizontal aluminium and vertical controls, retain the configurator choice on return, and use an explicit color-only or unavailable fallback without a runtime AMIGO request.
 
 ## 2. Stages
 
 - [x] Verify merged Phase 1C, clean baseline, routes, server pricing, PostgreSQL, worker and local object storage without deleting volumes.
 - [x] Authorize only Phase 1D in canonical specifications and define entry/completion gates.
-- [ ] Add versioned preview domain/contracts, PostgreSQL state and ownership-scoped API.
-- [ ] Add two original SVG scenes and deterministic family renderer profiles.
-- [ ] Integrate `/configure` → `/preview` → `/configure` without losing selection.
-- [ ] Add responsive accessible controls, honest fallbacks and targeted diagnostics.
-- [ ] Record real mapping/asset-quality gaps and counts from the active catalog.
-- [ ] Pass unit, contract, integration, browser, visual, recovery, build and CI-equivalent gates.
+- [x] Add versioned preview domain/contracts, PostgreSQL state and ownership-scoped API.
+- [x] Add two approved local photoreal scenes and deterministic family renderer profiles.
+- [x] Integrate `/configure` → `/preview` → `/configure` without losing selection.
+- [x] Add responsive accessible controls, honest fallbacks and targeted diagnostics.
+- [x] Record real mapping/asset-quality gaps and counts from the active catalog.
+- [x] Pass unit, contract, integration, browser, visual, recovery, build and CI-equivalent gates.
 - [ ] Complete affected documentation, preserve logical commits, push and open an unmerged Draft PR.
 
 ## 3. Safety and evidence boundary
@@ -49,4 +49,4 @@ Deliver a guest `/preview` flow opened from the real configurator through an opa
 
 ## 5. Blockers and decisions
 
-No entry blocker remains. Individual missing material/profile/compatibility evidence degrades independently and is recorded in `PREVIEW_AND_CONFIGURATOR_MAPPING_GAPS.md`; it does not block valid supported configurations. Phase 1E is not authorized and will not be started.
+No blocker remains. `OWNER-DECISION-015` records the owner's explicit partner permission and request for locally mirrored photoreal AMIGO scene/product layers; no AMIGO frontend code was copied. Individual missing evidence degrades independently and is recorded in `PREVIEW_AND_CONFIGURATOR_MAPPING_GAPS.md`. Phase 1E is not authorized and was not started.

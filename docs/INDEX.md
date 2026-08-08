@@ -2,7 +2,7 @@
 
 ## 0. Статус
 
-Phase 1A–1C завершены. `OWNER-DECISION-014` разрешила только Phase 1D deterministic standard preview на branch `phase/1d-standard-preview` от merged-main commit `58eb25dcde460291ad98fde157956d7f264a666d`; entry QG-271–280 пройдены, completion evidence ещё собирается. Client photo/AI, cart/order/WhatsApp/payment/final design, production and Phase 1E+ remain prohibited.
+Phase 1A–1D завершены. Phase 1D delivered deterministic photoreal `/preview` under `OWNER-DECISION-014/015`; QG-271–310 passed. Client photo/AI, cart/order/WhatsApp/payment/final design, production and Phase 1E+ remain prohibited.
 
 ## 1. Порядок обязательного чтения
 
@@ -16,7 +16,7 @@ Phase 1A–1C завершены. `OWNER-DECISION-014` разрешила тол
 8. [PRICING_SOURCE_POLICY.md](00-global/PRICING_SOURCE_POLICY.md) — snapshots, версии, overrides, fallback и parity.
 9. [ASSUMPTIONS.md](00-global/ASSUMPTIONS.md) и [OPEN_QUESTIONS.md](00-global/OPEN_QUESTIONS.md) — неподтверждённые решения и пробелы.
 10. Релевантная профильная спека из разделов ниже.
-11. Для implementation readiness — [MVP scope](06-plans/MVP_SCOPE.md), [critical audit](06-plans/SPEC_READINESS_AUDIT.md), [roadmap](06-plans/IMPLEMENTATION_ROADMAP.md), Phase 1A–1C records и активный [Phase 1D plan](06-plans/active/PHASE_1D_STANDARD_PREVIEW_PLAN.md).
+11. Для implementation readiness — [MVP scope](06-plans/MVP_SCOPE.md), [critical audit](06-plans/SPEC_READINESS_AUDIT.md), [roadmap](06-plans/IMPLEMENTATION_ROADMAP.md) и Phase 1A–1D records.
 12. [CHANGELOG.md](../CHANGELOG.md) — история содержательных изменений.
 
 При конфликте действует repository precedence: `GLOBAL_SPEC` (включая перенесённые owner/partner decisions) → accepted ADR → approved профильная спецификация → governed dynamic snapshot → assumptions/open questions. Противоречие останавливает зависимую работу.
@@ -34,7 +34,7 @@ Phase 1A–1C завершены. `OWNER-DECISION-014` разрешила тол
 | [OPEN_QUESTIONS.md](00-global/OPEN_QUESTIONS.md) | Канонический реестр `TBD-*`, владельцев, влияния и критериев закрытия |
 | [SPEC_ROADMAP.md](00-global/SPEC_ROADMAP.md) | Фактический комплект 0B/0C, accepted Foundation ADR, gates и последовательность 1A–1H |
 | [TRACEABILITY_MATRIX.md](00-global/TRACEABILITY_MATRIX.md) | 18 critical chains и полная 40-story связь со спеками, AC и tests |
-| [SPEC_QUALITY_GATE.md](00-global/SPEC_QUALITY_GATE.md) | Passed gates through Phase 1C; Phase 1D entry QG-271–280 passed and QG-281–310 in progress |
+| [SPEC_QUALITY_GATE.md](00-global/SPEC_QUALITY_GATE.md) | Passed gates through Phase 1D; QG-271–310 closed, Phase 1E remains unauthorized |
 
 ## 3. Product specifications
 
@@ -113,6 +113,8 @@ Phase 1A–1C завершены. `OWNER-DECISION-014` разрешила тол
 | [PHASE_1C_CONFIGURATOR_PRICING_PLAN.md](06-plans/active/PHASE_1C_CONFIGURATOR_PRICING_PLAN.md) | Authorized Phase 1C scope, proven-rule boundary, stages, logical commits, acceptance and Phase 1D hold |
 | [PHASE_1C_CONFIGURATOR_PRICING_REPORT.md](06-plans/completed/PHASE_1C_CONFIGURATOR_PRICING_REPORT.md) | PostgreSQL/configurator/pricing/parity/quote/admin/test/CI/PR evidence and final Phase 1C acceptance |
 | [PHASE_1D_STANDARD_PREVIEW_PLAN.md](06-plans/active/PHASE_1D_STANDARD_PREVIEW_PLAN.md) | Authorized deterministic preview scope, stages, asset/fallback safety, exact commits, acceptance and Phase 1E hold |
+| [PHASE_1D_STANDARD_PREVIEW_REPORT.md](06-plans/completed/PHASE_1D_STANDARD_PREVIEW_REPORT.md) | Routes, four photoreal family profiles, scenes/assets/counts, visual/mobile/recovery/CI/PR evidence and final acceptance |
+| [PREVIEW_AND_CONFIGURATOR_MAPPING_GAPS.md](06-plans/PREVIEW_AND_CONFIGURATOR_MAPPING_GAPS.md) | Exact active family/system/model/variant/source gaps without expanding Phase 1C catalog or pricing |
 
 ## 9. Architecture decisions
 
@@ -162,7 +164,7 @@ Research snapshot не является вечным catalog/price fact. Нор�
 - Кто может выполнить действие — `ROLES_PERMISSIONS` и relevant domain spec.
 - Каких данных не хватает — `OPEN_QUESTIONS` по уникальному `TBD-*`.
 - Как требование проверяется — `TRACEABILITY_MATRIX`, AC и `TEST_STRATEGY`.
-- Можно ли начинать следующий код — только Phase 1D standard preview по `OWNER-DECISION-014`; Phase 1E+, photo/AI/cart/order/WhatsApp/payment и production запрещены.
+- Можно ли начинать следующий код — нет: Phase 1D завершена, а Phase 1E+, photo/AI/cart/order/WhatsApp/payment и production не разрешены.
 
 ## 13. Правило навигации
 

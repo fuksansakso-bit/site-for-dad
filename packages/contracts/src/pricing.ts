@@ -141,7 +141,18 @@ export const pricingResultSchema = z.object({
   unitPriceBeforeMinimumKopecks: z.number().int().nonnegative().nullable(),
   validationDetails: z.array(pricingValidationDetailSchema).max(50),
   warnings: z.array(z.string().min(1).max(255)).max(24),
-}).strict();
+}).strict().superRefine((result, context) => {
+  const hasAmount = result.grandTotalKopecks !== null;
+  const calculated = result.status === 'CALCULATED' || result.status === 'SOURCE_DATA_STALE';
+  if (calculated !== hasAmount) {
+    context.addIssue({ code: 'custom', message: 'Pricing status and amount are inconsistent.', path: ['grandTotalKopecks'] });
+  }
+  if (!calculated && [result.unitBasePriceKopecks, result.unitFinalPriceKopecks,
+    result.unitPriceBeforeMinimumKopecks, result.optionsTotalKopecks,
+    result.productsSubtotalKopecks].some((value) => value !== null)) {
+    context.addIssue({ code: 'custom', message: 'Unavailable pricing must not contain amounts.', path: ['status'] });
+  }
+});
 
 export const pricingCalculationResponseSchema = z.object({
   calculationId: z.uuid(),

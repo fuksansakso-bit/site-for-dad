@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD` for Foundation; each configuration path remains blocked before Phase 1C activation until its compatibility/limits are proven |
-| Версия | 0.1.0 |
-| Дата | 2026-08-02 |
+| Статус | Phase 1C implemented and verified for four evidence-backed rule scopes; other active catalog combinations degrade safely |
+| Версия | 0.2.0 |
+| Дата | 2026-08-08 |
 | Catalog model | [CATALOG_INVENTORY_SPEC.md](CATALOG_INVENTORY_SPEC.md) |
 | Pricing | [PRICING_CALCULATOR_SPEC.md](PRICING_CALCULATOR_SPEC.md) |
 
@@ -16,7 +16,7 @@
 
 In scope: selection sequence, dynamic schema, dependencies, compatibility, dimensions, materials/filters, options, validation, drafts/revisions, quote/preview/cart handoffs.
 
-Out of scope: exact formulas/technical limits until evidence, DOM/pixel behavior, order confirmation, payment, production implementation and arbitrary free-form rules.
+Out of scope: formulas/technical limits without evidence, DOM/pixel behavior, preview, cart/order confirmation, WhatsApp, payment, production deployment and arbitrary free-form rules.
 
 ## 2. Акторы, роли и permissions
 
@@ -163,8 +163,15 @@ Dependencies: catalog, pricing, preview, AI, cart, accounts, admin, data/API. Op
 
 Links: `FR-CONFIG-001`–`008`, `FTR-006/007`, `CAT-INV-*`, `CONFIG-SPEC-001`–`020`.
 
+### 15.1. Phase 1C implementation record
+
+Guest route `/configure` reads bounded family/category/system/model/material and option projections from the active PostgreSQL CatalogVersion. Each transition is revalidated server-side against publication, visibility, availability and compatibility; the browser never supplies an accepted price. The responsive 11-step flow preserves state, supports Back, shows a compact summary and saves a successful calculation as an immutable quote snapshot.
+
+Automatic configuration/pricing is enabled only for the four dated roller, Zebra, horizontal-aluminium and vertical rule scopes in the AMIGO verification record. Confirmed envelopes expose minimum/maximum millimetres; unknown or out-of-evidence dimensions return `MANUAL_REVIEW_REQUIRED` with «Размер требует проверки мастером». Other active combinations remain discoverable and return `PRICE_ON_REQUEST` without an amount. Preview, client photos, cart, order and Phase 1D handoffs were not added.
+
 ## 16. История изменений
 
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Созданы data-driven step schema, configuration aggregate, validation precedence, state machine, fallbacks and test coverage. |
+| 0.2.0 | 2026-08-08 | Recorded the PostgreSQL-only guest flow, dynamic server validation, four verified scopes, safe non-numeric fallbacks, responsive state preservation and immutable quote handoff delivered in Phase 1C. |

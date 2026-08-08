@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A, Phase 1B.1 and Phase 1B.2 passed; Phase 1C authorized and in progress; Phase 1D+ hold |
-| Версия | 0.16.0 |
+| Статус | Phase 1A, Phase 1B.1, Phase 1B.2 and Phase 1C passed; Phase 1D+ hold |
+| Версия | 0.17.0 |
 | Дата | 2026-08-08, Europe/Moscow |
 | Владелец документа | Product Owner — владелец проекта; Business Owner — отец владельца проекта (`OWNER-DECISION-001`) |
 | Продукт | `PROJECT_NAME` до отдельного решения о бренде |
@@ -38,6 +38,7 @@
 - [Phase 1B.2 completion report](../06-plans/completed/PHASE_1B2_FULL_AMIGO_CATALOG_REPORT.md)
 - [Phase 1C configurator/pricing plan](../06-plans/active/PHASE_1C_CONFIGURATOR_PRICING_PLAN.md)
 - [Phase 1C AMIGO pricing verification](../research/AMIGO_PRICING_VERIFICATION_2026-08-08.md)
+- [Phase 1C completion report](../06-plans/completed/PHASE_1C_CONFIGURATOR_PRICING_REPORT.md)
 - [Правила работы](../../AGENTS.md)
 - [История изменений](../../CHANGELOG.md)
 - [Правила референсов](../../reference/README.md)
@@ -63,6 +64,7 @@
 | 0.14.0 | 2026-08-03 | Реальный full discovery существующим adapter подтвердил 28 динамических категорий, 56 систем, 9 моделей и 1655 MaterialVariant при 0 failure diagnostics; semantic source version исключает volatile HTML/form tokens, source `0` нормализуется в `PRICE_ON_REQUEST`, а discovery остаётся staged без activation и без Phase 1C. |
 | 0.15.0 | 2026-08-04 | Phase 1B.2 завершена: принят 21 019-item manifest, вручную активированы CatalogVersion/PriceVersion v2, 1 655 variants и 2 818 approved local media objects, проверены rollback/restart/no-op/public/full CI; Phase 1C+ и production не разрешены. |
 | 0.16.0 | 2026-08-08 | `OWNER-DECISION-013` отдельно разрешил только Phase 1C: PostgreSQL-only configurator, verified server pricing, per-unit minimum, immutable quote snapshot, price administration and parity tests; Phase 1D+, cart/order/WhatsApp/photo/AI/payment/final design/production remain prohibited. |
+| 0.17.0 | 2026-08-08 | Phase 1C завершена: `/configure`, active-only integer pricing v5, four verified scopes/40 fixtures/≤1 RUB parity, local overrides, immutable quote snapshots, minimal pricing admin and acceptance tests реализованы; Phase 1D+ и production не начаты. |
 
 ## 1. Нормативный язык и приоритет источников
 
@@ -111,7 +113,7 @@
 
 ### 2.2. Решения владельца для implementation governance и будущих feature gates
 
-Источник `OWNER-DECISION-*` — письменные решения Product Owner от 2026-08-02, 2026-08-03 и 2026-08-08. Они задают бизнес- и архитектурные границы; implementation scope расширяется только явным transition decision. Phase 1A, Phase 1B.1 и Phase 1B.2 завершены; `OWNER-DECISION-013` разрешает только Phase 1C, а Phase 1D+ остаются запрещены.
+Источник `OWNER-DECISION-*` — письменные решения Product Owner от 2026-08-02, 2026-08-03 и 2026-08-08. Они задают бизнес- и архитектурные границы; implementation scope расширяется только явным transition decision. Phase 1A, Phase 1B.1, Phase 1B.2 и Phase 1C завершены; Phase 1D+ остаются запрещены.
 
 - **OWNER-DECISION-001 — MUST:** Product Owner — владелец проекта; Business Owner — отец владельца проекта. Product Owner утверждает продуктовые решения, UX, технические этапы, приоритеты и MVP. Business Owner утверждает цены, ассортимент, наличие, правила изготовления, гарантийные решения и коммерческие условия.
 - **OWNER-DECISION-002 — MUST:** новую `PriceVersion` может активировать только actor с ролью `OWNER` или `ADMIN`, после просмотра точного diff и явного подтверждения; каждая попытка и успешная активация MUST попадать в audit log.
@@ -158,6 +160,8 @@ Public Catalog (explicit administrator activation)
 7. Search index, cache, filter facets и analytics/read projections MAY использоваться только как rebuildable производные точной активной `CatalogVersion` из PostgreSQL. Они MUST быть version-pinned, MUST NOT принимать AMIGO/staging напрямую и MUST NOT становиться независимым mutation source.
 
 Phase 1B.2 acceptance 2026-08-04 зафиксировал этот pipeline на semantic source version `sha256:3cf971b0aabe17091ef0804e8d8368fb37182939533a4eef8ee4346f4c59711d`: active CatalogVersion v2 `8975b18c-d7de-49cc-a6e6-d7566b69460a`, active PriceVersion v2 `9fdc0a74-9fab-4d63-b4b6-015f534e117d`, 1 739 composition entries, 1 655 public variants и 2 818 approved local media objects. Repeat run `ae9b8759-7b14-4ca6-9b13-b518113a63b0` создал zero versions/differences; v1 сохранена как rollback target. Эти динамические значения являются dated governed evidence, а не неизменяемым ассортиментным enum.
+
+Phase 1C acceptance 2026-08-08 сохранил CatalogVersion v2 и активировал отдельную расчётную PriceVersion v5 `7618714e-0baf-463a-8311-e9cf84879dd1`, source version `amigo-public-calculator-2026-08-08-9f9246330385`. Четыре точных rule scope покрыты 40 fixtures; максимальное отклонение составляет 100 kopecks. Public runtime рассчитывает только server-side из PostgreSQL, сохраняет immutable quote snapshot и не присваивает сумму неподтверждённым сочетаниям.
 
 Причины решения:
 
@@ -1008,7 +1012,7 @@ Phase 1B.2 acceptance 2026-08-04 зафиксировал этот pipeline на
 
 - бизнес/гарантия: `TBD-BIZ-*`, `TBD-WARRANTY-001`;
 - ассортимент и совместимость: `TBD-ASSORT-*`, `TBD-SIZE-001`, `TBD-ASSET-*`;
-- цена и источник: открытые `TBD-PRICE-001`–`006`, `TBD-PRICE-008`–`010`, `TBD-PRICE-SOURCE-001`, `TBD-SOURCE-AMIGO-002`, `TBD-MECHANISM-001`; решённые `TBD-PRICE-007`, `TBD-PRICE-SOURCE-002`, `TBD-PRICE-PARITY-001`, `TBD-MIN-PRICE-001`, `TBD-SOURCE-AMIGO-001` и `TBD-PRICE-CATEGORY-001` сохраняются исторически;
+- цена и источник: частично открытые `TBD-PRICE-002`–`005`, открытые `TBD-PRICE-006`, `TBD-PRICE-008`–`010`, `TBD-SOURCE-AMIGO-002`, `TBD-MECHANISM-001`; решённые `TBD-PRICE-001`, `TBD-PRICE-007`, `TBD-PRICE-SOURCE-001`–`002`, `TBD-PRICE-PARITY-001`, `TBD-MIN-PRICE-001`, `TBD-SOURCE-AMIGO-001` и `TBD-PRICE-CATEGORY-001` сохраняются исторически;
 - рассрочка: `TBD-INSTALLMENT-001`–`013`;
 - наличие/размеры: `TBD-INVENTORY-*`, `TBD-DIM-*`;
 - монтаж/доставка/аккаунты: `TBD-INSTALL-*`, `TBD-DELIVERY-*`, `TBD-ACCOUNT-*`;

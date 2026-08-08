@@ -4,7 +4,7 @@
 
 | Field | Value |
 |---|---|
-| Status | `IN_PROGRESS` |
+| Status | `COMPLETED`; acceptance evidence is frozen in the completion report |
 | Authorized scope | Phase 1C only; no preview, photo/AI, cart, order, WhatsApp, payment, final landing or production deployment |
 | Base commit | `3f1f70c986bd29518364a059393e9abd1b284a02` |
 | Branch | `phase/1c-configurator-pricing` |
@@ -21,13 +21,13 @@ Deliver a guest `/configure` flow backed only by the active PostgreSQL catalog, 
 - [x] Read required governance/specification/ADR/report documents; verify merged Phase 1B.2, clean baseline, preserved Docker volumes, real public/admin catalog surfaces and active versions.
 - [x] Capture bounded public AMIGO calculator evidence without login, CAPTCHA bypass, secrets or runtime dependency; classify only proven rules as automatic.
 - [x] Authorize Phase 1C in canonical governance and commit the dated evidence.
-- [ ] **IN_PROGRESS:** add immutable schema, indexes and PostgreSQL adapters for rule versions, compatibility, dimensions, overrides, idempotency, parity and quote snapshots.
-- [ ] Add independent deterministic pricing/configuration packages and contracts.
-- [ ] Add public configuration, validation, pricing and quote APIs with safe errors, correlation, rate/origin/idempotency boundaries.
-- [ ] Add responsive `/configure` flow and immutable quote view.
-- [ ] Extend the existing admin surface for price review, activation/rejection, override, audit and parity verification.
-- [ ] Add unit, property/boundary, contract, integration, parity and browser verification.
-- [ ] Update only affected documentation, run acceptance/CI gates, create logical commits, push and open the Draft PR.
+- [x] Add immutable schema, indexes and PostgreSQL adapters for rule versions, compatibility, dimensions, overrides, idempotency, parity and quote snapshots.
+- [x] Add independent deterministic pricing/configuration packages and contracts.
+- [x] Add public configuration, validation, pricing and quote APIs with safe errors, correlation, rate/origin/idempotency boundaries.
+- [x] Add responsive `/configure` flow and immutable quote view.
+- [x] Extend the existing admin surface for price review, activation/rejection, override, audit and parity verification.
+- [x] Add unit, property/boundary, contract, integration, parity and browser verification.
+- [x] Update only affected documentation, run acceptance/CI gates, create logical commits, push and open the Draft PR.
 
 ## 3. Pricing safety boundary
 

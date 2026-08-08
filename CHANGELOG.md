@@ -7,6 +7,9 @@
 
 ### Added
 
+- Completed Phase 1C guest configurator at `/configure`, backed by bounded active PostgreSQL catalog projections, dynamic compatibility, server-side dimension validation, responsive stateful steps, safe `PRICE_ON_REQUEST`/`MANUAL_REVIEW_REQUIRED` fallbacks and immutable public quote views.
+- Added the independent server-only `@project-name/pricing` integer-kopeck engine, active reviewed PriceVersion v5, four verified MVP rule scopes, per-unit 150,000-kopeck minimum, quantity-safe totals, separate zero-cost service lines, local override precedence, audit/idempotency and immutable calculation/snapshot persistence.
+- Added minimal OWNER/ADMIN pricing administration for version diff/parity/activation/rejection, source-price override restore and audit history. Forty dated AMIGO fixtures pass with maximum deviation 100 kopecks; unit/contract/real-PostgreSQL/browser/property boundaries and the CI-equivalent gate cover the Phase 1C acceptance surface.
 - `OWNER-DECISION-013` authorizes only Phase 1C from merged-main commit `3f1f70c986bd29518364a059393e9abd1b284a02`; added the active configurator/pricing plan, QG-231–270 and dated AMIGO calculator evidence with four proven MVP rule scopes and 40 normalized fixtures. Phase 1D+, preview/photo/AI/cart/order/WhatsApp/payment/final design/production remain prohibited.
 
 - Added reproducible `test:catalog-full` and the Phase 1B.2 completion report. Accepted run `7d19a6e8-abcc-4bc6-a180-c0a5b59e17d6` completed 21,019/21,019 items with zero errors and a complete checksum-bound manifest; OWNER/ADMIN activated CatalogVersion/PriceVersion v2, all 1,655 variants and 2,818 approved local objects passed public/storage/restart verification, recovery history remained immutable, and repeat `ae9b8759-7b14-4ca6-9b13-b518113a63b0` created zero versions or differences.

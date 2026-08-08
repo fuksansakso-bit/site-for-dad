@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD` for Foundation; numeric pricing activation is blocked before Phase 1C until formula, PriceVersion and parity approval exist |
-| Версия | 0.4.0 |
-| Дата | 2026-08-02 |
+| Статус | Phase 1C implemented and verified for four AMIGO-backed rule scopes; unsupported scopes remain non-numeric |
+| Версия | 0.5.0 |
+| Дата | 2026-08-08 |
 | Policy | [PRICING_SOURCE_POLICY.md](../../00-global/PRICING_SOURCE_POLICY.md) 1.4.0 |
 | Inputs | [PRODUCT_CONFIGURATOR_SPEC.md](PRODUCT_CONFIGURATOR_SPEC.md) |
 
@@ -14,7 +14,7 @@
 
 Документ определяет versioned, deterministic, auditable preliminary pricing without inventing AMIGO formulas. It covers provider contract, source/local layers, exact arithmetic, status, breakdown, history, activation, fallback and parity testing.
 
-Out of scope until confirmed: actual price tables, area rounding, minimum billable area, system formulas, option surcharges, tax display, discount rules and price validity period. The 1500-ruble per-item scope is confirmed by `OWNER-DECISION-003`, but its engine is out of Phase 1A. No other sample number in this spec is a business price.
+Out of scope until confirmed: price tables and formulas outside the four dated Phase 1C scopes, unverified option surcharges, tax display, discount rules and price validity period. The 1500-ruble per-item minimum is confirmed by `OWNER-DECISION-003` and implemented only after all Phase 1C activation gates. No other sample number in this spec is a business price.
 
 ## 2. Термины, акторы и roles
 
@@ -203,7 +203,13 @@ AC: `AC-PRICE-001`, `AC-PRICE-ACTIVATE-001`, `AC-QUOTE-HISTORY-001`, `AC-QUOTE-C
 
 Tests: unit rule components, table/property dimension/rounding, provider contracts, version activation concurrency, override precedence/conflict, exact arithmetic, replay checksum, parity fixtures, cart mixed states, security/RBAC, source/engine/audit/cache failures and historical reproducibility.
 
-Dependencies: catalog/configurator/cart/admin/sync/data/API/security/test strategy. Open blockers: `TBD-PRICE-001`–`006`, `TBD-PRICE-008`–`010`, `TBD-PRICE-SOURCE-001`, `TBD-MECHANISM-001`, `TBD-DIM-*`, `TBD-SIZE-001` and legal/tax display. Resolved IDs `TBD-PRICE-007`, `TBD-PRICE-SOURCE-002`, `TBD-PRICE-PARITY-001`, `TBD-MIN-PRICE-001` remain traceable. Risks: invented formulas, mixed versions, floating-point errors, hidden overrides, false zero, wrong minimum application, source/runtime coupling and unverifiable parity.
+Dependencies: catalog/configurator/cart/admin/sync/data/API/security/test strategy. Remaining blockers affect expansion only: partially resolved `TBD-PRICE-002`–`005` and `TBD-SIZE-001`, plus open `TBD-PRICE-006`, `TBD-PRICE-008`–`010`, `TBD-MECHANISM-001`, `TBD-DIM-*` and legal/tax display. Resolved `TBD-PRICE-001`, `TBD-PRICE-007`, `TBD-PRICE-SOURCE-001`–`002`, `TBD-PRICE-PARITY-001` and `TBD-MIN-PRICE-001` remain traceable. Risks: invented formulas, mixed versions, floating-point errors, hidden overrides, false zero, wrong minimum application, source/runtime coupling and unverifiable parity.
+
+### 15.1. Phase 1C implementation record
+
+Active calculation version v5 `7618714e-0baf-463a-8311-e9cf84879dd1` pins source version `amigo-public-calculator-2026-08-08-9f9246330385`, four reviewed rules and 40 dated fixtures. Roller MINI and Zebra MINI use exact dimension lookups. Horizontal model 28/material 918 and vertical model 43/material 1006 use verified integer half-up area rules within their captured envelopes; maximum observed parity deviation is 100 kopecks. A parity failure above the approved tolerance blocks rule activation.
+
+The independent server-only engine accepts integer millimetres and emits integer kopecks. It resolves active local override before source price, applies `max(unitPriceBeforeMinimum, 150000)` to each unit before quantity and lists measurement, delivery and installation separately at zero. Public calculation rejects inactive versions and unverified combinations without a fabricated amount. Successful quote snapshots pin labels/articles, selections, breakdown, active CatalogVersion/PriceVersion/source version, override/minimum evidence and correlation ID. OWNER/ADMIN operations are authorization-checked, idempotent and audited; MANAGER cannot activate a version.
 
 ## 16. Связанные требования и история
 
@@ -215,3 +221,4 @@ Links: `PRICING-SOURCE-*`, `PRICING-SNAPSHOT-*`, `PRICING-VERSION-*`, `PRICING-L
 | 0.2.0 | 2026-08-02 | Зафиксированы per-item minimum, `OWNER`/`ADMIN` activation с diff/audit и parity tolerance ≤1 рубля; pricing implementation остаётся вне Phase 1A. |
 | 0.3.0 | 2026-08-02 | По `OWNER-DECISION-008` AMIGO base-price authority отделена от Business Owner overrides/commercial conditions и PostgreSQL operational storage; Phase 1C gates сохранены. |
 | 0.4.0 | 2026-08-02 | По `OWNER-DECISION-009` public calculation path ограничен совместимыми active approved PostgreSQL `CatalogVersion`/`PriceVersion`; direct AMIGO/staging/derived-source reads запрещены, quote pinning уточнён. |
+| 0.5.0 | 2026-08-08 | Recorded active pricing v5, four verified rule scopes/40 fixtures/≤1 RUB parity, integer per-unit minimum, free-service lines, overrides, immutable quotes, safe fallbacks and audited administration delivered in Phase 1C. |

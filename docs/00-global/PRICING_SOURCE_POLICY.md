@@ -4,14 +4,14 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Нормативная политика; Phase 1C verified server pricing authorized and in progress |
-| Версия | 2.0.0 |
+| Статус | Нормативная политика; Phase 1C verified server pricing implemented and accepted |
+| Версия | 2.1.0 |
 | Дата | 2026-08-08, Europe/Moscow |
 | Главный источник правды | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) |
 | Внешние источники | [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md) |
 | Будущая детализация | `PRICING_CALCULATOR_SPEC.md` и `TEST_STRATEGY.md`, запланированные в [SPEC_ROADMAP.md](SPEC_ROADMAP.md) |
 
-Политика задаёт происхождение, версии, подтверждение и деградацию цены. Phase 1B.2 импортировала source/base/card prices; `OWNER-DECISION-013` разрешает Phase 1C применять только reviewed rules from dated AMIGO evidence, integer local minimum and immutable quote snapshots. Unproved combinations remain non-numeric.
+Политика задаёт происхождение, версии, подтверждение и деградацию цены. Phase 1B.2 импортировала source/base/card prices; Phase 1C применяет только reviewed rules from dated AMIGO evidence, integer local minimum and immutable quote snapshots. Unproved combinations remain non-numeric.
 
 ## 1. Основные требования владельца
 
@@ -187,6 +187,8 @@ PricingProvider
 
 Accepted PriceVersion v2 `9fdc0a74-9fab-4d63-b4b6-015f534e117d` закрепляет ровно 1 664 current-run revisions: 1 655 MaterialVariant и 9 ProductModel; `AVAILABLE = 1 596`, `PRICE_ON_REQUEST = 68`, observed numeric range `127 600`–`5 301 700` minor RUB units. Exact price diff checksum `9fb6b6f927d07b535baac471cb172c4aa6441670b8e6cbba9ed4581724062e27` принят OWNER и активирован ADMIN; no-op repeat создал zero price versions/differences, а v1 сохранена как rollback target. Это закрывает `TBD-PRICE-001` только как вопрос активной проверенной AMIGO-origin catalog PriceVersion и не превращает card/base/price-from facts в dimensional calculation.
 
+Active calculation PriceVersion v5 `7618714e-0baf-463a-8311-e9cf84879dd1` pins `amigo-public-calculator-2026-08-08-9f9246330385`, four reviewed automatic scopes and 40 committed parity fixtures. Maximum deviation is 100 kopecks; local overrides remain separate, take precedence at runtime and do not mutate the source records. This is the accepted Phase 1C dimensional pricing version, not evidence for any other material/system scope.
+
 `TBD-PRICE-002`–`005` and `TBD-SIZE-001` are resolved only for the exact rule scopes recorded in `AMIGO_PRICING_VERIFICATION_2026-08-08.md`; all other systems/materials/dimensions keep manual/request fallback. `TBD-PRICE-006`, `TBD-MECHANISM-001`, official export aspect `TBD-SOURCE-AMIGO-002` and quote expiry `TBD-PRICE-008` remain open and receive no invented value or claim.
 
 `OWNER-DECISION-008` закрывает authority слоёв, а `OWNER-DECISION-009` — public-serving PostgreSQL topology, diff/approval/no-delete/override/audit/version rules. Phase 1B.2 completion report отдельно доказывает active CatalogVersion/PriceVersion v2 и complete current-run card/base-price accounting; ни решения, ни report не доказывают dimensional formula, source region, compatibility или parity fixtures и поэтому не закрывают оставшиеся pricing TBD.
@@ -204,3 +206,4 @@ Accepted PriceVersion v2 `9fdc0a74-9fab-4d63-b4b6-015f534e117d` закрепля
 | 1.8.0 | 2026-08-03 | Real full-catalog evidence established fail-closed handling for cards with multiple context-dependent price labels: provenance is retained and the normalized value is `PRICE_ON_REQUEST`, never concatenated or guessed. |
 | 1.9.0 | 2026-08-04 | Зафиксированы accepted 1 664-record PriceVersion v2, exact diff/OWNER approval/ADMIN activation, no-op/rollback evidence и закрытие `TBD-PRICE-001` для catalog price version без утверждения dimensional calculator inputs. |
 | 2.0.0 | 2026-08-08 | `OWNER-DECISION-013` authorizes reviewed Phase 1C pricing only: four dated rule scopes, integer half-up/kopecks, per-unit minimum, active-version runtime, immutable quote and non-numeric fallback elsewhere. |
+| 2.1.0 | 2026-08-08 | Recorded accepted calculation PriceVersion v5, four rules/40 fixtures/100-kopeck maximum deviation, source/override separation, immutable snapshots and completed Phase 1C activation. |

@@ -2,7 +2,7 @@
 
 ## 0. Статус
 
-Phase 1A, Phase 1B.1 and Phase 1B.2 завершены. `OWNER-DECISION-013` разрешает только Phase 1C на branch `phase/1c-configurator-pricing` от merged-main commit `3f1f70c986bd29518364a059393e9abd1b284a02`: configurator, verified server pricing, immutable quotes, minimal pricing admin and parity verification. Phase 1D+, preview/photo/AI/cart/order/WhatsApp/payment/final design and production deployment remain prohibited.
+Phase 1A, Phase 1B.1, Phase 1B.2 and Phase 1C завершены. `OWNER-DECISION-013` реализована на branch `phase/1c-configurator-pricing` от merged-main commit `3f1f70c986bd29518364a059393e9abd1b284a02`: configurator, verified server pricing, immutable quotes, minimal pricing admin and parity verification получили статус `PASSED_PHASE_1C_CONFIGURATOR_PRICING`. Phase 1D+, preview/photo/AI/cart/order/WhatsApp/payment/final design and production deployment remain prohibited.
 
 ## 1. Порядок обязательного чтения
 
@@ -16,7 +16,7 @@ Phase 1A, Phase 1B.1 and Phase 1B.2 завершены. `OWNER-DECISION-013` р�
 8. [PRICING_SOURCE_POLICY.md](00-global/PRICING_SOURCE_POLICY.md) — snapshots, версии, overrides, fallback и parity.
 9. [ASSUMPTIONS.md](00-global/ASSUMPTIONS.md) и [OPEN_QUESTIONS.md](00-global/OPEN_QUESTIONS.md) — неподтверждённые решения и пробелы.
 10. Релевантная профильная спека из разделов ниже.
-11. Для implementation readiness — [MVP scope](06-plans/MVP_SCOPE.md), [critical audit](06-plans/SPEC_READINESS_AUDIT.md), [roadmap](06-plans/IMPLEMENTATION_ROADMAP.md), стабильные Phase 1A/1B.1/1B.2 records, [Phase 1C plan](06-plans/active/PHASE_1C_CONFIGURATOR_PRICING_PLAN.md) и dated pricing evidence.
+11. Для implementation readiness — [MVP scope](06-plans/MVP_SCOPE.md), [critical audit](06-plans/SPEC_READINESS_AUDIT.md), [roadmap](06-plans/IMPLEMENTATION_ROADMAP.md), стабильные Phase 1A–1C records, [Phase 1C plan](06-plans/active/PHASE_1C_CONFIGURATOR_PRICING_PLAN.md), [report](06-plans/completed/PHASE_1C_CONFIGURATOR_PRICING_REPORT.md) и dated pricing evidence.
 12. [CHANGELOG.md](../CHANGELOG.md) — история содержательных изменений.
 
 При конфликте действует repository precedence: `GLOBAL_SPEC` (включая перенесённые owner/partner decisions) → accepted ADR → approved профильная спецификация → governed dynamic snapshot → assumptions/open questions. Противоречие останавливает зависимую работу.
@@ -34,7 +34,7 @@ Phase 1A, Phase 1B.1 and Phase 1B.2 завершены. `OWNER-DECISION-013` р�
 | [OPEN_QUESTIONS.md](00-global/OPEN_QUESTIONS.md) | Канонический реестр `TBD-*`, владельцев, влияния и критериев закрытия |
 | [SPEC_ROADMAP.md](00-global/SPEC_ROADMAP.md) | Фактический комплект 0B/0C, accepted Foundation ADR, gates и последовательность 1A–1H |
 | [TRACEABILITY_MATRIX.md](00-global/TRACEABILITY_MATRIX.md) | 18 critical chains и полная 40-story связь со спеками, AC и tests |
-| [SPEC_QUALITY_GATE.md](00-global/SPEC_QUALITY_GATE.md) | Passed gates 0B/0C/1A/1B.1/1B.2; Phase 1C entry QG-231–240 and completion QG-241–270 |
+| [SPEC_QUALITY_GATE.md](00-global/SPEC_QUALITY_GATE.md) | Passed gates 0B/0C/1A/1B.1/1B.2/1C; Phase 1C evidence QG-231–270 |
 
 ## 3. Product specifications
 
@@ -111,6 +111,7 @@ Phase 1A, Phase 1B.1 and Phase 1B.2 завершены. `OWNER-DECISION-013` р�
 | [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN.md](06-plans/active/PHASE_1B2_FULL_AMIGO_CATALOG_PLAN.md) | Authorized full-catalog expansion scope, ownership/runtime boundaries, stages, exact commits, stop and acceptance conditions |
 | [PHASE_1B2_FULL_AMIGO_CATALOG_REPORT.md](06-plans/completed/PHASE_1B2_FULL_AMIGO_CATALOG_REPORT.md) | Real manifest/version/media/governance/restart/no-op/public/CI evidence and final Phase 1B.2 acceptance |
 | [PHASE_1C_CONFIGURATOR_PRICING_PLAN.md](06-plans/active/PHASE_1C_CONFIGURATOR_PRICING_PLAN.md) | Authorized Phase 1C scope, proven-rule boundary, stages, logical commits, acceptance and Phase 1D hold |
+| [PHASE_1C_CONFIGURATOR_PRICING_REPORT.md](06-plans/completed/PHASE_1C_CONFIGURATOR_PRICING_REPORT.md) | PostgreSQL/configurator/pricing/parity/quote/admin/test/CI/PR evidence and final Phase 1C acceptance |
 
 ## 9. Architecture decisions
 
@@ -160,7 +161,7 @@ Research snapshot не является вечным catalog/price fact. Нор�
 - Кто может выполнить действие — `ROLES_PERMISSIONS` и relevant domain spec.
 - Каких данных не хватает — `OPEN_QUESTIONS` по уникальному `TBD-*`.
 - Как требование проверяется — `TRACEABILITY_MATRIX`, AC и `TEST_STRATEGY`.
-- Можно ли начинать следующий код — нет: Phase 1B.2 завершена, а Phase 1C+, dimensional pricing/configurator/preview/cart/AI и production требуют нового письменного разрешения.
+- Можно ли начинать следующий код — нет: Phase 1C завершена, а Phase 1D+, preview/photo/AI/cart/order/WhatsApp/payment и production требуют нового письменного разрешения.
 
 ## 13. Правило навигации
 

@@ -10,9 +10,11 @@
 
 [Phase 1A Acceptance Gate](docs/00-global/SPEC_QUALITY_GATE.md#7-phase-1a-foundation-acceptance-gate) имеет статус `PASSED_PHASE_1A_FOUNDATION`. Отдельно разрешённая `OWNER-DECISION-010` **Phase 1B.1 — AMIGO CATALOG PILOT AND LOCAL PUBLICATION LAYER** завершена 2026-08-03 со статусом `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT`: опубликованы ровно 32 allowlisted AMIGO-материала, 59 локальных media assets, CatalogVersion/PriceVersion v1 и минимальные `/catalog`/`/admin/catalog`; storage/restart/idempotency/browser/CI gates прошли.
 
-`OWNER-DECISION-012` разрешила только **Phase 1B.2 — FULL AUTHORIZED AMIGO CATALOG EXPANSION** в ветке `phase/1b2-amigo-full-catalog` от commit `af8411d2b854e572b6b61b214d3e99a88b96cafc`. Фаза завершена 2026-08-04 со статусом `PASSED_PHASE_1B2_FULL_AMIGO_CATALOG`; Phase 1C, dimensional calculator/configurator/preview/AI/cart/order/WhatsApp/account/final landing и production deployment не разрешены.
+`OWNER-DECISION-012` разрешила **Phase 1B.2 — FULL AUTHORIZED AMIGO CATALOG EXPANSION**; фаза завершена 2026-08-04 со статусом `PASSED_PHASE_1B2_FULL_AMIGO_CATALOG`.
 
-Принятый run обработал 114 safe pages и 21 019 normalized items: 28 categories, 56 systems, 9 models и 1 655 variants. Активны CatalogVersion/PriceVersion v2, 2 818 локальных approved media objects проверены после перезапуска, полный repeat создал zero versions/differences, а public `/catalog` обслуживает все 1 655 variants только из PostgreSQL/local storage. Evidence: [transport discovery](docs/research/AMIGO_FULL_CATALOG_TRANSPORT_DISCOVERY_2026-08-03.md) и [completion report](docs/06-plans/completed/PHASE_1B2_FULL_AMIGO_CATALOG_REPORT.md).
+Принятый run обработал 114 safe pages и 21 019 normalized items: 28 categories, 56 systems, 9 models и 1 655 variants. Активны CatalogVersion v2 и каталожная PriceVersion v2, 2 818 локальных approved media objects проверены после перезапуска, а public `/catalog` обслуживает каталог только из PostgreSQL/local storage. Evidence: [transport discovery](docs/research/AMIGO_FULL_CATALOG_TRANSPORT_DISCOVERY_2026-08-03.md) и [completion report](docs/06-plans/completed/PHASE_1B2_FULL_AMIGO_CATALOG_REPORT.md).
+
+`OWNER-DECISION-013` разрешила только **Phase 1C — PRODUCT CONFIGURATOR AND VERIFIED PRICING ENGINE**. Фаза завершена 2026-08-08 со статусом `PASSED_PHASE_1C_CONFIGURATOR_PRICING`: гостевой `/configure` использует активный PostgreSQL-каталог, server-only integer pricing и immutable quote snapshots. Активная расчётная PriceVersion v5 содержит четыре проверенных rule scope и 40 parity fixtures с максимальным отклонением 1 ₽; остальные сочетания безопасно возвращают `PRICE_ON_REQUEST` или `MANUAL_REVIEW_REQUIRED`. Evidence: [pricing verification](docs/research/AMIGO_PRICING_VERIFICATION_2026-08-08.md) и [completion report](docs/06-plans/completed/PHASE_1C_CONFIGURATOR_PRICING_REPORT.md). Phase 1D и production deployment не начаты.
 
 ## С чего начать
 
@@ -35,7 +37,7 @@
 - `docs/specs/` содержит глобальную и 33 нормативные профильные спецификации product/domain/UX/technical.
 - `docs/00-global/` содержит управляющие и справочные документы: реестры, политики, roadmap, quality gate, допущения и открытые вопросы.
 - `docs/quality/` и `docs/evaluations/` содержат test/evaluation artifacts, а `docs/adr/` — десять принятых решений об устойчивых архитектурных границах.
-- `docs/06-plans/` содержит frozen MVP, critical-spec audit, implementation roadmap, technology evaluation, стабильные планы Phase 1A/Phase 1B.1/Phase 1B.2 и их completion reports, включая [Phase 1B.2 report](docs/06-plans/completed/PHASE_1B2_FULL_AMIGO_CATALOG_REPORT.md).
+- `docs/06-plans/` содержит frozen MVP, critical-spec audit, implementation roadmap, technology evaluation, стабильные планы завершённых Phase 1A–1C и их completion reports, включая [Phase 1C report](docs/06-plans/completed/PHASE_1C_CONFIGURATOR_PRICING_REPORT.md).
 
 ## Референсы
 
@@ -51,7 +53,7 @@
 - По `OWNER-DECISION-008` AMIGO является authority для AMIGO-origin products/materials/technical data/catalog images/base prices, а Business Owner — для local availability/visibility/price overrides/portfolio/commercial conditions. Phase 1B.2 приняла полный текущий source inventory и вручную активировала reviewed local v2 composition; ни один этап не переносит authority между слоями.
 - По `OWNER-DECISION-009` публичная часть никогда не читает AMIGO напрямую: единственным каноническим runtime-источником является активная одобренная PostgreSQL `CatalogVersion` и связанные транзакционные записи. Любое обновление проходит staged import, validation/diff, Business Owner approval и явную admin activation; auto-delete локальных данных запрещён, overrides приоритетны в публичной проекции, версии и изменения аудируются. Это не разрешает Phase 1B.
 - Каталожная модель динамически поддерживает все текущие и будущие source categories AMIGO; импорт не означает автоматические публикацию, наличие, расчётную готовность или возможность заказа.
-- Базовая цена имеет provenance AMIGO. Активная PriceVersion v2 содержит 1 664 проверенных source card/base/price-from records (`AVAILABLE = 1 596`, `PRICE_ON_REQUEST = 68`); формулы, compatibility, расчёт по размерам, minimum-price engine и parity matrix остаются Phase 1C и не реализованы.
+- Базовая цена имеет provenance AMIGO. Каталожная v2 сохраняет 1 664 source card/base/price-from records; отдельная активная расчётная PriceVersion v5 фиксирует четыре проверенных rule scope, source metadata, parity evidence и local override precedence. Не доказанные формулы не получают числовую цену.
 - Рассрочка входит в scope только как нейтральный ручной WhatsApp-сценарий; подробные условия, eligibility, порядок заявки и география остаются `TBD-INSTALLMENT-001`–`013`.
 - Изображения AMIGO разрешены в партнёрском scope; hotlink, снятие водяных знаков, смена авторства и training use запрещены, а локальная публикация требует asset-level `PUBLICATION_APPROVED`.
 - Окончательный бренд, хостинг и AI-провайдер не выбраны.
@@ -71,6 +73,7 @@ pnpm.cmd test:catalog-pilot
 pnpm.cmd test:catalog-full
 pnpm.cmd test:catalog-browser
 pnpm.cmd test:catalog-scale
+pnpm.cmd --filter @project-name/db pricing:bootstrap
 ```
 
 `pnpm.cmd dev` одной командой поднимает loopback-only PostgreSQL, применяет reviewed migrations, запускает Graphile Worker migrations, private-by-default VersityGW buckets, web и отдельный worker. S3 API слушает `127.0.0.1:4569`, Admin API — `127.0.0.1:4570`; object data, versioning и IAM хранятся в Docker named volumes `project_name_catalog_s3_data`, `project_name_catalog_s3_versioning`, `project_name_catalog_s3_iam`, без bind mount в NTFS. Состояние и диагностические журналы находятся только в игнорируемом `.local/foundation-environment/`; credentials генерируются локально и в вывод не попадают.
@@ -81,4 +84,4 @@ pnpm.cmd test:catalog-scale
 
 ## Текущая граница работы
 
-Phase 1B.1 и Phase 1B.2 завершены по стабильным планам и completion reports. Работа остановлена на `PASSED_PHASE_1B2_FULL_AMIGO_CATALOG`: calculation, compatibility для точного расчёта, privacy/legal production gates и production provider остаются видимыми TBD. Phase 1C+ и production deployment требуют нового письменного решения Product Owner.
+Phase 1A, Phase 1B.1, Phase 1B.2 и Phase 1C завершены по стабильным планам и completion reports. Работа остановлена на `PASSED_PHASE_1C_CONFIGURATOR_PRICING`: автоматический расчёт ограничен четырьмя доказанными scope, остальные combinations деградируют безопасно. Preview, photo/AI, cart/order/WhatsApp/payment, production deployment и Phase 1D+ требуют нового письменного решения Product Owner.

@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A health/error and Phase 1B.2 full catalog/admin contracts implemented within the authorized phase; other business routes gated |
-| Версия | 0.8.0 |
-| Дата | 2026-08-03 |
+| Статус | Phase 1A health/error, Phase 1B catalog and Phase 1C configurator/pricing/quote/admin contracts implemented; later routes gated |
+| Версия | 0.9.0 |
+| Дата | 2026-08-08 |
 | Architecture/data | [ARCHITECTURE.md](ARCHITECTURE.md), [DATA_MODEL.md](DATA_MODEL.md) |
 | Security | [SECURITY_PRIVACY.md](SECURITY_PRIVACY.md) |
 
@@ -89,6 +89,16 @@ Unpublished/blocked entities return neutral not-found/inquiry projection per pol
 
 Dimension inputs carry raw string/value/unit; server normalizes under rule version. Price unavailable is a valid domain response status, not transport success with amount `0`.
 
+Implemented Phase 1C contracts:
+
+| Route | Authoritative behavior |
+|---|---|
+| `GET /api/v1/configurator` | Returns only bounded compatible next values from the active PostgreSQL catalog; progressive query fields select the current step |
+| `POST /api/v1/configurator/validate` | Strictly validates the current IDs/options/integer millimetres and returns safe field details/status |
+| `POST /api/v1/pricing/calculate` | Re-authorizes the active CatalogVersion/PriceVersion and computes the server result; no client amount field exists |
+| `POST /api/v1/quotes` | Saves only an authoritative successful calculation by idempotency key as an immutable snapshot |
+| `GET /api/v1/quotes/{token}` | Returns the no-store public-safe historical snapshot through an opaque high-entropy token |
+
 ## 6. Preview and visualization contracts
 
 | Command/query | Privacy | Result |
@@ -141,6 +151,8 @@ Admin endpoints use same resources/commands under privileged versioned namespace
 
 Each mutation requires capability, exact object/revision/environment, reason, and approval evidence as policy. Generic `PATCH any field` is prohibited for state/approval/security changes.
 
+Phase 1C implements `GET /api/v1/admin/pricing`, `POST /api/v1/admin/pricing/activate`, `POST /api/v1/admin/pricing/reject`, `POST /api/v1/admin/pricing/parity` and `POST`/`DELETE /api/v1/admin/pricing/overrides`. Mutations require a current OWNER/ADMIN session, exact version/rule state, signed same-origin request, idempotency key, reason and correlation; MANAGER and anonymous actors fail closed. Responses expose safe diff/parity/audit summaries, never raw source payloads or internals.
+
 ## 9. Event and webhook contract
 
 Event envelope: `eventId`, `eventType`, `schemaVersion`, `occurredAt`, aggregate type/ID/revision, actor type/ID safe, correlation/causation/command, business scope, redacted payload refs and classification. Consumers store processed event ID.
@@ -176,11 +188,13 @@ TLS, secure session/CSRF/CORS/CSP, object authorization, rate/abuse, schema vali
 
 Contract tests cover schemas/unknown fields as policy, auth/object matrix, idempotency, version conflicts, errors, exact money, pagination/cursors, upload spoof/completion, late callback/delete, public/private caching, redaction, event compatibility/dedup/order, provider outages and old/new client rolling compatibility. Domain AC/TS map to endpoints but API tests do not replace business tests.
 
-## 14. Phase 1A / Phase 1B implementation record
+## 14. Phase 1A–1C implementation record
 
 Phase 1A concrete routes remain `GET /api/v1/health/live` and `GET /api/v1/health/ready`. Phase 1B implements the server-authorized `/admin/catalog` slice through Next.js Server Actions rather than a generic CRUD route. The Phase 1B.2 staff read model covers the complete selected AMIGO source with bounded server filters/pages, hierarchy facets, safe sealed-manifest counts, run stages/checkpoints, differences and immutable review/bulk history; object keys, credentials, source hashes, raw snapshots and parser-internal payloads remain redacted. Every mutation re-evaluates the HttpOnly SameSite session and role server-side. OWNER/ADMIN commands keep preparation, exact two-step bulk apply, composition, selected/all difference review, approval, activation, rollback, cancellation and retry distinct and bind them to exact source/run/version/checksum/count state with generated correlation/idempotency evidence.
 
 The Phase 1B.2 public catalog implements `GET /api/v1/catalog/materials` and `GET /api/v1/catalog/materials/{slugOrId}` with strict unknown-field rejection, a maximum page size of 50, active hierarchy/facets, allowlisted search/category/system/color/availability/blackout/zebra filters, four allowlisted sort modes and an opaque HMAC cursor bound to the exact query plus active catalog and price version IDs. Both routes resolve only one compatible `ACTIVE/PUBLIC` immutable `CatalogVersion` and `PriceVersion` pair; no active pair yields a safe empty catalog and no staging/source fallback. List/detail DTOs expose safe display fields, category path, explicit availability/price status and same-origin media references but no object key, source hash, raw snapshot or storage credential. `GET /api/v1/catalog/media/{assetId}?v={catalogVersionId}` accepts only a media asset pinned in the current active composition with approved rights/publication, loads through the provider-neutral storage port and verifies MIME, byte length and SHA-256 again before delivery. Stale entity/version/asset references are neutral `404`; database/storage/integrity failure is safe `503`; no signed provider URL or anonymous bucket is exposed.
+
+Phase 1C routes use strict shared runtime schemas, 32 KiB mutation bodies, same-origin signed double-submit CSRF, an explicit 60-request/minute in-process boundary, correlation IDs, idempotent calculation/save/admin mutations and `Cache-Control: no-store` for pricing and snapshots. The adapter resolves all labels, compatibility, rules, active versions and totals from PostgreSQL in one server trust boundary. Safe statuses include `CALCULATED`, `PRICE_ON_REQUEST`, `MANUAL_REVIEW_REQUIRED`, `CONFIGURATION_INVALID`, `SOURCE_DATA_STALE`, `PRICE_VERSION_INACTIVE` and `DEPENDENCY_UNAVAILABLE`; SQL, stack traces, secret values and internal dependency details are excluded.
 
 ## 15. Dependencies, risks and open questions
 
@@ -197,3 +211,4 @@ Dependencies: all domain/technical specs, auth/provider/hosting ADRs. Next.js sa
 | 0.6.0 | 2026-08-03 | Recorded the active-version-only public catalog/material-media routes, allowlisted facets, version-bound HMAC cursor, safe empty/degraded behavior and byte/MIME/SHA delivery checks without object-locator disclosure. |
 | 0.7.0 | 2026-08-03 | Recorded the Phase 1B.2 full-source admin read model and separately authorized typed Server Actions for safe manifest/progress/diff/history display, exact bulk/review/composition/activation/rollback flows and per-submit server authorization. |
 | 0.8.0 | 2026-08-03 | Recorded the full active-only public hierarchy/list/detail contracts, allowlisted sort and descendant filters, query/version-bound HMAC cursor, safe DTO/ETag behavior and PostgreSQL-only runtime with version-pinned local media. |
+| 0.9.0 | 2026-08-08 | Recorded the concrete configurator/validation/calculation/quote and pricing-admin routes with strict schemas, active-version authority, CSRF/origin/rate/idempotency/correlation/no-store boundaries and safe statuses delivered in Phase 1C. |

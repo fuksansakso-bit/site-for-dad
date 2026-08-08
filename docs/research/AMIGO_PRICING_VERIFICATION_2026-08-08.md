@@ -37,7 +37,7 @@ All values are source rubles before any PROJECT_NAME local override and before t
 | Horizontal aluminium | `450×600→2418`; `500×700→2418`; `600×900→2418`; `700×1100→2418`; `800×1200→2418`; `900×1400→3047`; `1000×1500→3627`; `1100×1600→4256`; `1200×1700→4933`; `1300×1800→5659` |
 | Vertical | `400×500→1585`; `500×700→1585`; `600×900→1585`; `700×1100→1585`; `800×1200→1585`; `900×1400→1997`; `1000×1500→2378`; `1100×1600→2790`; `1200×1700→3234`; `1300×1800→3709` |
 
-The captured boundary `400×500` for horizontal model 28 was rejected by AMIGO because width is below 435 mm and is preserved as a negative constraint fixture. Integer half-up evaluation of the two continuous rules reproduces all listed outputs exactly; the exact lookup scopes reproduce their listed outputs exactly. Maximum observed deviation is 0 RUB.
+The captured boundary `400×500` for horizontal model 28 was rejected by AMIGO because width is below 435 mm and is preserved as a negative constraint fixture. The exact lookup scopes reproduce their listed outputs exactly. Integer half-up evaluation of the two continuous rules differs by at most 100 kopecks on the committed fixtures (`1300×1800` horizontal and `1200×1700` vertical); this is a tolerance-bounded verified rule, not a claim about AMIGO's hidden formula. Maximum observed deviation is 1 RUB, within `OWNER-DECISION-006`.
 
 ## 3. Source artifact hashes
 

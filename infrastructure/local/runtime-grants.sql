@@ -7,7 +7,8 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON
     synthetic_session,
     outbox_event,
     idempotency_record,
-    service_heartbeat
+    service_heartbeat,
+    standard_preview_state
 TO foundation_runtime;
 GRANT SELECT, INSERT ON audit_event TO foundation_runtime;
 GRANT SELECT, INSERT, UPDATE ON

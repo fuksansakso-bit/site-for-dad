@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD`; deterministic contract is ready, Phase 1D activation requires approved `SceneProfile`/renderer coverage and assets |
-| Версия | 0.1.0 |
-| Дата | 2026-08-02 |
+| Статус | Phase 1D `PASSED_PHASE_1D_STANDARD_PREVIEW`; Phase 1E not authorized |
+| Версия | 0.3.0 |
+| Дата | 2026-08-08 |
 | Configuration | [PRODUCT_CONFIGURATOR_SPEC.md](PRODUCT_CONFIGURATOR_SPEC.md) |
 | Separate private flow | [AI_WINDOW_VISUALIZER_SPEC.md](AI_WINDOW_VISUALIZER_SPEC.md) |
 
@@ -14,9 +14,9 @@
 
 Standard preview shows the selected source-backed product/material on a controlled demonstration interior/window without a client photo and without generative AI. It provides immediate deterministic visual feedback, not measurement proof or guarantee of physical color/scale.
 
-In scope: scene profiles, family-specific product geometry, layer composition, exact asset mapping, interactive position/light/view variants, deterministic revisions, accessible summary and export/share-safe output.
+Implemented in Phase 1D: two approved locally mirrored photoreal partner scene profiles, family-specific supplier atlases, layered SVG rendering, exact variant-to-layer mapping or labelled evidence fallback, interactive position/view variants, mutable ownership-scoped `StandardPreviewState`, accessible summary and deterministic visual baselines. `OWNER-DECISION-015` records the partner permission and photoreal requirement; no supplier frontend code is reused.
 
-Out of scope: client-photo detection, personalized geometry, production renderer technology, automatic source hotlink, photometric/color guarantee and AI refinement.
+Out of scope: client-photo detection/upload, personalized geometry, raster export/share, remote background loading, automatic source hotlink, photometric/color guarantee and AI refinement.
 
 ## 2. Actors, roles and permissions
 
@@ -31,6 +31,7 @@ Guest/customer reads and changes preview controls for owned configuration. Conte
 | `ProductRenderProfile` | Family/system layer/geometry/behavior mapping |
 | `MaterialRenderProfile` | Asset, repeat/scale/orientation/color-space and transparency mapping |
 | `PreviewRevision` | Immutable inputs, renderer/profile/asset versions, controls and output/checksum |
+| `StandardPreviewState` | Versioned guest-owned working state linked to a validated server-side pricing calculation or immutable quote without mutating either |
 | `ProtectedLayer` | Scene part that product cannot overwrite (frame, handle, foreground) |
 
 ## 4. Нормативные требования
@@ -51,16 +52,20 @@ Guest/customer reads and changes preview controls for owned configuration. Conte
 - **STD-PREV-014 — MUST:** export/share contains configuration/preview opaque reference or safe raster plus approved attribution; no internal storage/source URL.
 - **STD-PREV-015 — MUST:** scene/profile publication and rollback are versioned, approved and audited.
 - **STD-PREV-016 — MUST:** public output cannot imply AMIGO example is a PROJECT_NAME completed work.
+- **STD-PREV-017 — MUST:** Phase 1D visual evidence is classified as `EXACT_SWATCH`, `PRODUCT_IMAGE_CROP`, `NORMALIZED_COLOR_ONLY` or `PREVIEW_UNAVAILABLE` in that priority order; color-only and unavailable states are explicitly disclosed.
+- **STD-PREV-018 — MUST:** public preview state uses an opaque server-generated ID and guest-owner secret, validates every update by family schema, is private/no-store, and never accepts an arbitrary remote asset URL.
+- **STD-PREV-019 — MUST:** Phase 1D supports Roller, Zebra, horizontal aluminium and vertical profiles; every other family returns `PREVIEW_UNAVAILABLE`, not invented geometry.
+- **STD-PREV-020 — MUST:** opening, Zebra alignment, slat angle, vertical spread, scene and zoom controls change preview state only and MUST NOT affect price; a real price option is revalidated by the configurator first.
 
 ## 5. Input/output contract
 
-Input fields:
+Phase 1D input fields:
 
-`configurationRevisionId`, family/system/model/material variant and asset revisions, hardware/control/options, preview control values, `sceneProfileId/revision`, requested viewport/export size, locale/accessibility preferences and idempotency key.
+Opaque `pricingCalculationToken` or `quoteSnapshotToken`, family/system/model/material variant and approved asset revisions resolved server-side, hardware/control/options, bounded preview controls, `sceneProfileId`, renderer version, owner cookie, correlation and idempotency key.
 
-Output fields:
+Phase 1D output fields:
 
-`previewRevisionId`, status, input checksum, renderer/profile/asset versions, output asset reference/derivatives, accessible text summary, warnings/disclosure, created/expiry/cache metadata and typed errors. Public outputs may be cacheable; project attachment retains revision reference.
+`previewStateId`, eligibility/status, deterministic input checksum, renderer/scene/asset versions, exact same-origin asset reference when available, asset-quality classification, accessible summary, warnings/disclosure and timestamps. State responses are private/no-store; state-owned product-layer responses remain private and checksum validated, while non-private immutable scene bytes use version-pinned caching.
 
 ## 6. Layer composition
 
@@ -95,7 +100,7 @@ Unsupported family remains available in catalog/configuration according to readi
 
 ## 8. Scene profiles and controls
 
-Minimum conceptual scene set: neutral modern interior with standard window; additional scene/light presets are content assets, not required for parity. Each profile contains aspect/viewport variants, window reference geometry, protected masks, color profile, light presets, product anchor and supported family list.
+Phase 1D publishes two approved local photoreal scene profiles: `WINDOW_CLOSEUP` and `ROOM_WINDOW`. Each is a checksum-bound 1500×937 partner-licensed background composed inside the project's own responsive SVG UI with stable viewBox/window anchors and supported-family registry. Later living room, bedroom, kitchen, office, light/dark and day/evening variants can be added as approved data without changing renderer selection. The Zebra 5992 right-sash layer uses the manifest-recorded deterministic perspective rectification, not generated or random pixels.
 
 Controls MAY include scene, day/night or light preset, view framing, open/closed percentage, slat angle/stripe alignment where supported, zoom and before/neutral comparison. Controls cannot alter product identity or price inputs silently; price-affecting changes must return to configurator.
 
@@ -148,7 +153,7 @@ Tests: exact variant mapping; deterministic snapshots; family profiles; control 
 
 ## 14. Dependencies, risks and open questions
 
-Dependencies: catalog/configurator/media/storage/data/API/UX/performance/testing. Open: initial scene/profile/family coverage (`TBD-PREVIEW-001`), color/export/retention details and rights/attribution (`TBD-ASSET-AMIGO-003`, `TBD-ASSET-RETENTION-001`). Risks: wrong material, misleading scale/color, generic shape for unsupported family, protected-layer overwrite, stale revoked asset, inaccessible canvas and heavy initial load.
+Dependencies: catalog/configurator/media/storage/data/API/UX/performance/testing. Phase 1D implementation and visual evidence close the initial scene/profile/family aspect of `TBD-PREVIEW-001`; unimplemented export and broader content profiles remain outside this phase. The registered partner-license basis, source URL, checksum, publication state and derived-layer provenance apply to every current preview asset. Risks remaining for later work: exact swatch gaps, misleading physical color/scale, stale revoked assets and broader family/profile coverage.
 
 ## 15. Связанные требования и история
 
@@ -157,3 +162,5 @@ Links: `FR-STANDARD-PREVIEW-001`–`008`, `FTR-012/013`, `ASSET-*`, `STD-PREV-00
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Определены deterministic renderer profiles, layers, family behaviors, state/errors, accessibility, export and tests. |
+| 0.2.0 | 2026-08-08 | `OWNER-DECISION-014` authorizes Phase 1D; fixed two-scene SVG scope, four family profiles, asset-quality priority, ownership-scoped state/API and honest fallback boundaries. |
+| 0.3.0 | 2026-08-08 | Phase 1D passed with two local photoreal scene profiles, `standard-svg-v2`, four exact variant-to-product-layer mappings, deterministic Zebra rectification, responsive controls, visual baselines and zero runtime AMIGO requests under `OWNER-DECISION-015`. |

@@ -11,6 +11,26 @@ import { useEffect, useMemo, useState } from 'react';
 
 type Result = PricingCalculationResponse['result'];
 
+interface PersistedConfiguratorSelection {
+  readonly additionalOptionIds: readonly string[];
+  readonly catalogVersionId: string;
+  readonly categoryId: string;
+  readonly controlTypeId: string;
+  readonly familyId: string;
+  readonly hardwareOptionId: string;
+  readonly heightMm: number;
+  readonly materialVariantId: string;
+  readonly modelId: string;
+  readonly mountingTypeId: string;
+  readonly quantity: number;
+  readonly step: number;
+  readonly systemId: string;
+  readonly version: 1;
+  readonly widthMm: number;
+}
+
+const configuratorSessionKey = 'project-name:configurator-selection:v1';
+
 const steps = [
   'Семейство',
   'Категория',
@@ -55,6 +75,42 @@ async function jsonRequest<T>(url: string, init?: RequestInit): Promise<T> {
   return value as T;
 }
 
+function persistedSelection(catalogVersionId: string): PersistedConfiguratorSelection | null {
+  try {
+    const raw = globalThis.sessionStorage.getItem(configuratorSessionKey);
+    if (raw === null || raw.length > 16_384) return null;
+    const value = JSON.parse(raw) as Partial<PersistedConfiguratorSelection>;
+    const stringFields = [
+      'categoryId',
+      'controlTypeId',
+      'familyId',
+      'hardwareOptionId',
+      'materialVariantId',
+      'modelId',
+      'mountingTypeId',
+      'systemId',
+    ] as const;
+    if (
+      value.version !== 1 ||
+      value.catalogVersionId !== catalogVersionId ||
+      stringFields.some(
+        (field) => typeof value[field] !== 'string' || (value[field]?.length ?? 0) > 96,
+      ) ||
+      !Number.isSafeInteger(value.widthMm) ||
+      !Number.isSafeInteger(value.heightMm) ||
+      !Number.isSafeInteger(value.quantity) ||
+      !Number.isSafeInteger(value.step) ||
+      !Array.isArray(value.additionalOptionIds) ||
+      value.additionalOptionIds.some((id) => typeof id !== 'string' || id.length > 96)
+    ) {
+      return null;
+    }
+    return value as PersistedConfiguratorSelection;
+  } catch {
+    return null;
+  }
+}
+
 export function ProductConfigurator(): React.JSX.Element {
   const [bootstrap, setBootstrap] = useState<ConfiguratorBootstrapResponse | null>(null);
   const [step, setStep] = useState(0);
@@ -74,13 +130,76 @@ export function ProductConfigurator(): React.JSX.Element {
   const [calculationToken, setCalculationToken] = useState<string | null>(null);
   const [quote, setQuote] = useState<QuoteSnapshotResponse | null>(null);
   const [pending, setPending] = useState(false);
+  const [previewPending, setPreviewPending] = useState(false);
+  const [selectionRestored, setSelectionRestored] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     void jsonRequest<ConfiguratorBootstrapResponse>('/api/v1/configurator')
-      .then(setBootstrap)
+      .then((loaded) => {
+        setBootstrap(loaded);
+        const saved = persistedSelection(loaded.catalogVersionId);
+        if (saved !== null) {
+          setAdditionalOptionIds([...saved.additionalOptionIds]);
+          setCategoryId(saved.categoryId);
+          setControlTypeId(saved.controlTypeId);
+          setFamilyId(saved.familyId);
+          setHardwareOptionId(saved.hardwareOptionId);
+          setHeightMm(saved.heightMm);
+          setMaterialVariantId(saved.materialVariantId);
+          setModelId(saved.modelId);
+          setMountingTypeId(saved.mountingTypeId);
+          setQuantity(saved.quantity);
+          setStep(Math.min(9, Math.max(0, saved.step)));
+          setSystemId(saved.systemId);
+          setWidthMm(saved.widthMm);
+        }
+        setSelectionRestored(true);
+      })
       .catch(() => setError('Конфигуратор временно недоступен. Попробуйте обновить страницу.'));
   }, []);
+
+  useEffect(() => {
+    if (bootstrap === null || !selectionRestored) return;
+    const saved: PersistedConfiguratorSelection = {
+      additionalOptionIds,
+      catalogVersionId: bootstrap.catalogVersionId,
+      categoryId,
+      controlTypeId,
+      familyId,
+      hardwareOptionId,
+      heightMm,
+      materialVariantId,
+      modelId,
+      mountingTypeId,
+      quantity,
+      step: Math.min(step, 9),
+      systemId,
+      version: 1,
+      widthMm,
+    };
+    try {
+      globalThis.sessionStorage.setItem(configuratorSessionKey, JSON.stringify(saved));
+    } catch {
+      // The configurator remains usable when session storage is disabled or full.
+    }
+  }, [
+    additionalOptionIds,
+    bootstrap,
+    categoryId,
+    controlTypeId,
+    familyId,
+    hardwareOptionId,
+    heightMm,
+    materialVariantId,
+    modelId,
+    mountingTypeId,
+    quantity,
+    selectionRestored,
+    step,
+    systemId,
+    widthMm,
+  ]);
 
   const family = bootstrap?.families.find((item) => item.id === familyId);
   const familyProfiles = useMemo(
@@ -108,6 +227,7 @@ export function ProductConfigurator(): React.JSX.Element {
     setControlTypeId('');
     setAdditionalOptionIds([]);
     setResult(null);
+    setCalculationToken(null);
     setQuote(null);
     setError(null);
   };
@@ -209,6 +329,30 @@ export function ProductConfigurator(): React.JSX.Element {
       setError('Не удалось сохранить расчёт. Повторите попытку.');
     } finally {
       setPending(false);
+    }
+  };
+
+  const openPreview = async () => {
+    if (bootstrap === null || calculationToken === null) return;
+    setPreviewPending(true);
+    setError(null);
+    try {
+      const response = await jsonRequest<{ readonly href: string }>('/api/v1/previews', {
+        body: JSON.stringify({ calculationToken }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotency-Key': requestId('preview'),
+          'X-CSRF-Token': bootstrap.csrfToken,
+        },
+        method: 'POST',
+      });
+      if (!/^\/preview\?state=[A-Za-z0-9_-]{32}$/u.test(response.href)) {
+        throw new Error('PREVIEW_HREF_INVALID');
+      }
+      globalThis.location.assign(response.href);
+    } catch {
+      setError('Не удалось открыть стандартную примерку. Повторите попытку.');
+      setPreviewPending(false);
     }
   };
 
@@ -427,7 +571,15 @@ export function ProductConfigurator(): React.JSX.Element {
           </label>
         ) : null}
         {step === 10 && result !== null ? (
-          <ResultPanel pending={pending} quote={quote} result={result} saveQuote={saveQuote} />
+          <ResultPanel
+            openPreview={openPreview}
+            pending={pending}
+            previewAvailable={calculationToken !== null}
+            previewPending={previewPending}
+            quote={quote}
+            result={result}
+            saveQuote={saveQuote}
+          />
         ) : null}
 
         <div className="configurator-controls">
@@ -520,12 +672,18 @@ function ChoiceGrid({
 }
 
 function ResultPanel({
+  openPreview,
   pending,
+  previewAvailable,
+  previewPending,
   quote,
   result,
   saveQuote,
 }: {
+  readonly openPreview: () => Promise<void>;
   readonly pending: boolean;
+  readonly previewAvailable: boolean;
+  readonly previewPending: boolean;
   readonly quote: QuoteSnapshotResponse | null;
   readonly result: Result;
   readonly saveQuote: () => Promise<void>;
@@ -563,6 +721,16 @@ function ResultPanel({
             <dd>{money(result.installationKopecks)}</dd>
           </dl>
           <p>{result.safeExplanation}</p>
+          {previewAvailable ? (
+            <button
+              className="preview-launch-button"
+              disabled={pending || previewPending}
+              onClick={() => void openPreview()}
+              type="button"
+            >
+              {previewPending ? 'Открываем примерку…' : 'Посмотреть на окне'}
+            </button>
+          ) : null}
           {quote === null ? (
             <button
               className="configurator-next"

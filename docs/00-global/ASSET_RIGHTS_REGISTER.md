@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Нормативный global rights register; Phase 1B.2 controlled full-catalog media intake accepted under per-asset gate |
-| Версия | 1.5.0 |
-| Дата | 2026-08-04, Europe/Moscow |
+| Статус | Нормативный global rights register; Phase 1B.2 catalog and Phase 1D preview assets accepted under per-asset gate |
+| Версия | 1.6.0 |
+| Дата | 2026-08-08, Europe/Moscow |
 | Главный источник правды | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) |
 | Реестр происхождения | [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md) |
 
@@ -214,6 +214,8 @@ AMIGO-source asset MUST NOT иметь роль `LOCAL_PORTFOLIO`. Только 
 
 Phase 1B.2 evidence: accepted run учёл 3 053 typed references (`2 940` material, `12` category, `52` system, `49` model), сохранил 2 818 distinct SHA-256 objects общим объёмом 519 671 532 bytes и связал local primary media со всеми 1 655 MaterialVariant. OWNER отдельно перевёл все 2 818 assets в `PUBLICATION_APPROVED`; item-level failures и hotlinks равны нулю, а restart acceptance повторно проверил length/SHA-256 каждого объекта. Это принятие не расширяет derivative/AI/training rights и не отменяет обязательность derivative profiles `ASSET-IMPORT-006` для соответствующих будущих поверхностей.
 
+Phase 1D evidence: `OWNER-DECISION-015` explicitly confirms partner permission for the requested AMIGO customizer interiors and product/system layers. The local manifest records permission basis, source URL, SHA-256, byte length, dimensions, `PARTNER_LICENSE` and `PUBLICATION_APPROVED`. The Zebra 5992 perspective-corrected layer remains `SUPPLIER_PRODUCT_IMAGE`, records the raw source hash and deterministic transform coordinates, and does not become a local work or exact swatch. Runtime access is only through `StoragePort`; training use, customer-photo processing and supplier frontend-code reuse remain prohibited.
+
 ## 6. Остановочные условия
 
 Публикация или AI-использование MUST быть остановлены, если неизвестен правообладатель, нет доказательства согласия/лицензии, неясна территория или цель, истёк срок, требуется удалённая атрибуция, которую продукт не может выполнить, либо актив невозможно однозначно связать с правильным `MaterialVariant`.
@@ -227,3 +229,4 @@ Phase 1B.2 evidence: accepted run учёл 3 053 typed references (`2 940` mater
 | 1.3.0 | 2026-08-02 | `OWNER-DECISION-010` разрешил только bounded media import для frozen Phase 1B.1 manifest с private storage, validation/dedup и отдельным publication gate. |
 | 1.4.0 | 2026-08-03 | `OWNER-DECISION-012` разрешил controlled full-catalog media manifest/import через existing pipeline; per-asset rights/publication, no-hotlink, private storage, validation/dedup и local approved placeholder сохранены. |
 | 1.5.0 | 2026-08-04 | Зафиксированы accepted 3 053 typed media references, 2 818 distinct approved private objects, 1 655/1 655 primary mappings, zero failures/hotlinks и post-restart integrity без расширения derivative/AI/training scope. |
+| 1.6.0 | 2026-08-08 | Registered the explicitly permitted Phase 1D photoreal customizer assets, per-file local manifest and deterministic Zebra derivative provenance without changing authorship, portfolio role or AI/training scope. |

@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A, Phase 1B.1, Phase 1B.2 and Phase 1C gates passed; Phase 1D+/production tests gated |
-| Версия | 1.0.0 |
+| Статус | Phase 1A–1D gates passed; Phase 1E+/production tests gated |
+| Версия | 1.1.0 |
 | Дата | 2026-08-08 |
 | Requirements | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) and profile specs |
 | Acceptance | [ACCEPTANCE_CRITERIA.md](../specs/01-product/ACCEPTANCE_CRITERIA.md) |
@@ -197,6 +197,12 @@ Targeted Playwright acceptance passed 8/8 scenarios across Chromium desktop and 
 
 The final exact-toolchain CI-equivalent execution passed all 9/9 stages in 429.9 seconds: frozen install; format/docs/scope/boundary; lint/type/coverage; clean/repeat/upgrade/drift/recovery PostgreSQL paths; 15-case VersityGW storage contract; production build/artifact and catalog-scale checks; 25/25 fail-closed baseline browser scenarios plus 5/5 active-catalog profiles; secret scan and the configured critical-severity dependency gate. The advisory scan reported one high-severity finding below that critical gate; it is not represented as a clean production dependency audit.
 
+### 13.7. Phase 1D standard-preview acceptance
+
+The preview package passes 18 deterministic unit cases covering evidence priority, family selection, bounded opening/Zebra/slat/vertical controls, checksums, scene registry and unsupported fallback. Shared contracts pass 13 tests; storage passes 6 unit cases including the governed preview source marker; the web package passes 30 tests including eligibility, state lifecycle, ownership/safe errors, exact local asset lookup, storage failure/corruption, stale/hidden/version changes and diagnostics. The retained PostgreSQL/browser environment proves configuration → calculation → opaque preview state → persisted update → configurator return without a runtime AMIGO request.
+
+Targeted Chromium acceptance passes 9/9 scenarios: full configurator handoff/return, Roller, Zebra, horizontal aluminium and vertical rendering, scene/family controls, 375×812 one-hand mobile layout, unavailable/color-only disclosure and damaged-asset recovery. Four fixed 1280×900 family baselines use `standard-svg-v2`, fixed active data and `maxDiffPixelRatio = 0.005`. The 0.5% allowance is limited to platform raster/font antialiasing; product geometry, material or scene changes affect a materially larger region and fail. Zebra 5992 includes a manifest-recorded deterministic source rectification so the right sash has parallel bands and rectangular edges.
+
 ## 14. Dependencies, risks and open questions
 
 Dependencies: all specs/ADRs/evaluations, implementation stack/environments, approved fixtures/business data/support matrix. Open: numeric budgets/thresholds, dimensional pricing/parity fixtures, browser/AT matrix, provider sandboxes, test tooling/owners, UAT roles, security test scope and retention of artifacts. Risks: fake fixtures mistaken production truth, flaky E2E, unlicensed media, provider dependence, automated a11y/AI false confidence and unsafe production testing.
@@ -215,3 +221,4 @@ Dependencies: all specs/ADRs/evaluations, implementation stack/environments, app
 | 0.8.0 | 2026-08-03 | Added the executed 2,048-material synthetic scale gate with bounded fixture persistence, constant query-plan counts, cursor completeness, zero temporary-block spill and atomic bulk evidence. |
 | 0.9.0 | 2026-08-04 | Added and recorded real full-catalog manifest/version/public/object/restart/recovery/semantic no-op acceptance and the final Phase 1B.2 exact-toolchain CI gate without claiming later-feature or production readiness. |
 | 1.0.0 | 2026-08-08 | Added and recorded Phase 1C unit/property, contract, real-PostgreSQL, parity, exact 9/9 CI-equivalent and desktop/mobile configurator evidence, including immutable quotes, override/minimum/idempotency/rollback/audit boundaries and ≤1 RUB parity. |
+| 1.1.0 | 2026-08-08 | Added and recorded Phase 1D unit/contract/storage/web/PostgreSQL/browser/recovery evidence plus four fixed family visual baselines at a justified 0.5% threshold. |

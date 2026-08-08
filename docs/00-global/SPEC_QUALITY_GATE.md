@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Версия gate | 1.12.0 |
-| Проверяемая входная база | Phase 0B baseline `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`; Phase 0C baseline `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; Phase 1A completion `943d4a2efa5e05f0d05493633cf5eb549e072a22`; Phase 1B.1 completion baseline `af8411d2b854e572b6b61b214d3e99a88b96cafc`; merged Phase 1B.2 main / Phase 1C baseline `3f1f70c986bd29518364a059393e9abd1b284a02`; `GLOBAL_SPEC.md` 0.17.0 |
+| Версия gate | 1.14.0 |
+| Проверяемая входная база | Phase 0B baseline `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`; Phase 0C baseline `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; Phase 1A completion `943d4a2efa5e05f0d05493633cf5eb549e072a22`; Phase 1B.1 completion baseline `af8411d2b854e572b6b61b214d3e99a88b96cafc`; Phase 1C merged-main / Phase 1D baseline `58eb25dcde460291ad98fde157956d7f264a666d`; `GLOBAL_SPEC.md` 0.19.0 |
 | Дата последнего self-audit | 2026-08-08, Europe/Moscow |
 | Решение по входу в 0B | **PASSED** |
 | Основание письменного решения | Приложенное владельцем задание «AUTHORIZED AMIGO FUNCTIONAL PARITY AND SPECIALIZED SPECS» и повторное указание «так приступай к работе» |
@@ -21,7 +21,9 @@
 | Phase 1B.2 Completion Gate | **PASSED_PHASE_1B2_FULL_AMIGO_CATALOG** — QG-203–230 закрыты 2026-08-04 |
 | Phase 1C Entry Gate | **AUTHORIZED_PHASE_1C_IN_PROGRESS** — QG-231–240 закрыты 2026-08-08 |
 | Phase 1C Completion Gate | **PASSED_PHASE_1C_CONFIGURATOR_PRICING** — QG-241–270 закрыты 2026-08-08 |
-| Разрешённая реализация | Phase 1C завершена; Phase 1D+ и production запрещены без нового письменного решения |
+| Phase 1D Entry Gate | **AUTHORIZED_PHASE_1D_IN_PROGRESS** — QG-271–280 закрыты 2026-08-08 |
+| Phase 1D Completion Gate | **PASSED_PHASE_1D_STANDARD_PREVIEW** — QG-281–310 закрыты 2026-08-08 |
+| Разрешённая реализация | Phase 1D завершена; Phase 1E+ и production по-прежнему запрещены без отдельного письменного решения |
 
 Entry gate подтверждает, что исправления 0A.1 внесены и письменное решение начать документную фазу 0B получено. Он не означает готовность ценовой формулы, импорта, приложения или запуска. Открытые TBD блокируют утверждение зависимой спецификации или функции, но не отменяют разрешение создавать документацию 0B с безопасным поведением.
 
@@ -412,7 +414,59 @@ Entry result: **AUTHORIZED_PHASE_1C_IN_PROGRESS**. Completion evidence is not in
 
 Completion result: **PASSED_PHASE_1C_CONFIGURATOR_PRICING**. Every `QG-241`–`QG-270` item has repository/runtime evidence; the branch is pushed and Draft PR #2 remains unmerged.
 
-## 11. История изменений
+## 11. Phase 1D deterministic standard preview gates
+
+### 11.1. Entry gate
+
+- [x] **QG-271 — MUST:** `OWNER-DECISION-014` письменно разрешает только Phase 1D and keeps client photo/AI/cart/order/WhatsApp/payment/final redesign/production/Phase 1E+ forbidden.
+- [x] **QG-272 — MUST:** Phase 1C is merged into `main`; base `58eb25dcde460291ad98fde157956d7f264a666d`, clean pre-change tree and branch `phase/1d-standard-preview` are recorded without rewriting `main` history.
+- [x] **QG-273 — MUST:** mandatory repository/global/preview/configurator/catalog/media/storage/data/API/architecture/security/performance/test/roadmap/report, related owner decisions and accepted ADR were reviewed without a blocking contradiction.
+- [x] **QG-274 — MUST:** `/catalog`, `/configure`, readiness and server pricing pass before code changes; PostgreSQL, worker, web and local object storage are available and Docker volumes were not deleted.
+- [x] **QG-275 — MUST:** the active plan defines a verifiable outcome, one in-progress stage, dependencies, exact nine logical commits, verification/docs/PR work, stop conditions and explicit Phase 1E hold.
+- [x] **QG-276 — MUST:** runtime authority remains active PostgreSQL plus approved local `StoragePort` bytes; no public request may call AMIGO, hotlink or trust a remote asset URL.
+- [x] **QG-277 — MUST:** asset evidence priority is exact swatch → permitted product crop → disclosed normalized color → unavailable, with no random or silent substitution.
+- [x] **QG-278 — MUST:** two original local scenes and deterministic lightweight SVG/Canvas/CSS technology are authorized; Three.js/WebGL and generative services are outside scope.
+- [x] **QG-279 — MUST:** four supported family profiles and honest unsupported fallback are fixed; individual mapping gaps do not block unrelated valid configurations and must be documented.
+- [x] **QG-280 — MUST:** entry documentation passes formatting, links/IDs, phase scope and diff checks before production code begins.
+
+Entry result: **AUTHORIZED_PHASE_1D_IN_PROGRESS**. Completion evidence is not inferred from authorization.
+
+### 11.2. Completion gate
+
+- [x] **QG-281 — MUST:** `/configure` creates preview through an opaque server-side reference and `/preview` restores the validated selected family/system/model/material/options without placing price or a trusted configuration object in the URL.
+- [x] **QG-282 — MUST:** `StandardPreviewState` is versioned, separate from immutable quotes, persists scene/renderer/family/material/quality/controls/hardware/timestamps/correlation and enforces guest ownership on get/update/delete.
+- [x] **QG-283 — MUST:** scene, eligibility, asset, create/get/update/delete contracts use runtime schemas, safe IDs/errors, correlation, no-store state, same-origin/rate/idempotency boundaries and no stack/storage credential/internal URL disclosure.
+- [x] **QG-284 — MUST:** eligibility revalidates active compatibility and detects stale catalog, changed PriceVersion, hidden material and unsupported family without mutating the source calculation or quote.
+- [x] **QG-285 — MUST:** exact current approved material bytes are retrieved only through `StoragePort`; missing, damaged, wrong-MIME or unavailable storage never yields a substituted material.
+- [x] **QG-286 — MUST:** `EXACT_SWATCH`, `PRODUCT_IMAGE_CROP`, `NORMALIZED_COLOR_ONLY` and `PREVIEW_UNAVAILABLE` are selected deterministically in priority order and color-only/unavailable disclosures are visible.
+- [x] **QG-287 — MUST:** two approved locally stored photoreal scenes render with stable geometry and a data-driven registry that can add future rooms/light profiles without remote runtime backgrounds.
+- [x] **QG-288 — MUST:** Roller profile renders fabric/texture/opening/lower bar/cassette or guides only when confirmed/chain/hardware color without invented options.
+- [x] **QG-289 — MUST:** Zebra profile uses the exact mapped approved product layer when no exact swatch exists and deterministic dense/transparent period/alignment/opening/cassette/hardware behavior, never random stripes.
+- [x] **QG-290 — MUST:** horizontal aluminium profile uses confirmed slat width, height-relative count, angle/lift/headrail/cord and selected color deterministically.
+- [x] **QG-291 — MUST:** vertical profile uses confirmed lamella width/count/angle/spread/opening direction where evidenced and selected color/texture deterministically.
+- [x] **QG-292 — MUST:** every unsupported family/profile gets an honest unavailable summary rather than a generic supported-family renderer.
+- [x] **QG-293 — MUST:** scene/opening/Zebra alignment/slat angle/vertical spread/hardware/zoom/reset controls are family-relevant, bounded, keyboard/touch operable and do not change price.
+- [x] **QG-294 — MUST:** return to `/configure` preserves the user's selection and no registration is required.
+- [x] **QG-295 — MUST:** desktop and narrow mobile layouts have no horizontal overflow/covered window, have sufficient touch targets/focus/ARIA/loading/empty/error recovery and respect reduced motion/high contrast.
+- [x] **QG-296 — MUST:** identical canonical input and renderer version produce identical deterministic state/checksum and stable visual output at fixed viewport/test data.
+- [x] **QG-297 — MUST:** preview loads only the current configuration asset, uses versioned immutable asset caching, never publicly caches state and avoids unnecessary rerender/large decode/layout shift.
+- [x] **QG-298 — MUST:** unit tests pass for eligibility, renderer selection, evidence priority, opening/Zebra/horizontal/vertical layout, determinism and unsupported fallback.
+- [x] **QG-299 — MUST:** contract tests pass for preview APIs, `StoragePort` retrieval, persistence, ownership and safe errors.
+- [x] **QG-300 — MUST:** PostgreSQL integration tests pass for configuration→preview, exact asset/compatibility lookup, state lifecycle, return reference and no-AMIGO runtime.
+- [x] **QG-301 — MUST:** browser tests pass for four supported families, scene/control changes, mobile, unavailable/color-only and return to configurator.
+- [x] **QG-302 — MUST:** at least one fixed visual baseline per supported family passes at a documented threshold with fixed viewport/data and deterministic renderer version.
+- [x] **QG-303 — MUST:** recovery tests pass for missing/corrupt asset, storage outage, stale configuration, hidden material and changed PriceVersion with safe recoverable UX.
+- [x] **QG-304 — MUST:** mapping gaps list family/system/model/MaterialVariant/source ID/reason/missing compatibility/missing asset role/blocking/future correction without adding a second catalog or invented data.
+- [x] **QG-305 — MUST:** targeted admin diagnostics expose aggregate preview eligibility/evidence/gaps without private state or internal storage credentials.
+- [x] **QG-306 — MUST:** format/docs/scope/boundary/lint/type/test/coverage/database/build/browser/security and CI-equivalent gates pass; any skipped check is recorded. The final `pnpm ci:verify` run completed 9/9 stages with exit code 0 in 363.9 seconds.
+- [x] **QG-307 — MUST:** affected documentation and completion report match actual routes/families/scenes/counts/technology/tests/visual/mobile/gaps evidence without rewriting unrelated Phase 1C mappings.
+- [x] **QG-308 — MUST:** exact logical commit sequence is preserved, final worktree is clean, branch is pushed and unmerged Draft PR [#3](https://github.com/bataevabdullah2009-pixel/site-for-dad/pull/3) titled `Phase 1D: deterministic standard window preview` targets `main`.
+- [x] **QG-309 — MUST:** client photo/upload/segmentation/AI, cart/order/WhatsApp/installment/payment/final landing/starfield/redesign/production deployment and Phase 1E are absent.
+- [x] **QG-310 — MUST:** completion report records every requested handoff fact and confirms the Phase 1D acceptance gate result.
+
+Completion result: **PASSED_PHASE_1D_STANDARD_PREVIEW**. Every `QG-281`–`QG-310` item has repository/runtime evidence; the branch is pushed and Draft PR #3 remains unmerged. Phase 1E was not started.
+
+## 12. История изменений
 
 | Версия | Дата | Изменение |
 |---|---|---|
@@ -429,5 +483,7 @@ Completion result: **PASSED_PHASE_1C_CONFIGURATOR_PRICING**. Every `QG-241`–`Q
 | 1.10.0 | 2026-08-04 | QG-203–230 closed on accepted 21 019-item manifest, active v2 versions, 2 818 media objects, review/bulk/rollback/restart/no-op/public/scale and exact-toolchain 9/9 CI evidence; Phase 1C+ and production remain unauthorized. |
 | 1.11.0 | 2026-08-08 | `OWNER-DECISION-013` and QG-231–240 authorize only Phase 1C after merged-main/catalog/volume/public-calculator evidence; QG-241–270 remain open until configurator/pricing/quote/admin/parity/CI/PR acceptance. |
 | 1.12.0 | 2026-08-08 | QG-241–270 closed on active PostgreSQL configurator, four verified pricing scopes, 40 parity fixtures, immutable quotes, authorized admin, server/API/browser/migration/security evidence, exact 9/9 CI-equivalent gate, clean push and unmerged Draft PR #2; Phase 1D+ remains prohibited. |
+| 1.13.0 | 2026-08-08 | `OWNER-DECISION-014` and QG-271–280 authorize only Phase 1D from merged Phase 1C baseline; QG-281–310 define deterministic renderer/state/API/family/asset/UX/visual/recovery/CI/PR acceptance while Phase 1E+ remains prohibited. |
+| 1.14.0 | 2026-08-08 | QG-281–310 closed on the deterministic four-family renderer, two local photoreal scenes, owned preview state/API, authorized local layers, rectified Zebra geometry, mobile/visual/recovery evidence, 9/9 CI-equivalent gate, clean push and unmerged Draft PR #3; Phase 1E remains prohibited. |
 | 0.2.0 | 2026-08-02 | Entry gate обновлён для `GLOBAL_SPEC` 0.4.0 и partner-authorized scope; письменное поручение владельца зафиксировано как разрешение начать 0B; добавлен отдельный completion gate 0B. |
 | 0.1.0 | 2026-08-02 | Предыдущий self-audit 0A.1 для версии 0.3.1; проверки `QG-001`–`087` впоследствии зарезервированы. |

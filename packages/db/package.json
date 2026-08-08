@@ -36,6 +36,7 @@
     "@project-name/catalog": "workspace:*",
     "@project-name/observability": "workspace:*",
     "@project-name/pricing": "workspace:*",
+    "@project-name/preview": "workspace:*",
     "pg": "catalog:"
   },
   "devDependencies": {

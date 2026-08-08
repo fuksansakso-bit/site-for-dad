@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1C implemented and verified for four evidence-backed rule scopes; other active catalog combinations degrade safely |
-| Версия | 0.2.0 |
+| Статус | Phase 1C configurator and Phase 1D standard-preview handoff implemented; other active catalog combinations degrade safely |
+| Версия | 0.3.0 |
 | Дата | 2026-08-08 |
 | Catalog model | [CATALOG_INVENTORY_SPEC.md](CATALOG_INVENTORY_SPEC.md) |
 | Pricing | [PRICING_CALCULATOR_SPEC.md](PRICING_CALCULATOR_SPEC.md) |
@@ -16,7 +16,7 @@
 
 In scope: selection sequence, dynamic schema, dependencies, compatibility, dimensions, materials/filters, options, validation, drafts/revisions, quote/preview/cart handoffs.
 
-Out of scope: formulas/technical limits without evidence, DOM/pixel behavior, preview, cart/order confirmation, WhatsApp, payment, production deployment and arbitrary free-form rules.
+Out of scope: formulas/technical limits without evidence, copied supplier DOM/pixel behavior, AI/client-photo preview, cart/order confirmation, WhatsApp, payment, production deployment and arbitrary free-form rules.
 
 ## 2. Акторы, роли и permissions
 
@@ -167,7 +167,11 @@ Links: `FR-CONFIG-001`–`008`, `FTR-006/007`, `CAT-INV-*`, `CONFIG-SPEC-001`–
 
 Guest route `/configure` reads bounded family/category/system/model/material and option projections from the active PostgreSQL CatalogVersion. Each transition is revalidated server-side against publication, visibility, availability and compatibility; the browser never supplies an accepted price. The responsive 11-step flow preserves state, supports Back, shows a compact summary and saves a successful calculation as an immutable quote snapshot.
 
-Automatic configuration/pricing is enabled only for the four dated roller, Zebra, horizontal-aluminium and vertical rule scopes in the AMIGO verification record. Confirmed envelopes expose minimum/maximum millimetres; unknown or out-of-evidence dimensions return `MANUAL_REVIEW_REQUIRED` with «Размер требует проверки мастером». Other active combinations remain discoverable and return `PRICE_ON_REQUEST` without an amount. Preview, client photos, cart, order and Phase 1D handoffs were not added.
+Automatic configuration/pricing is enabled only for the four dated roller, Zebra, horizontal-aluminium and vertical rule scopes in the AMIGO verification record. Confirmed envelopes expose minimum/maximum millimetres; unknown or out-of-evidence dimensions return `MANUAL_REVIEW_REQUIRED` with «Размер требует проверки мастером». Other active combinations remain discoverable and return `PRICE_ON_REQUEST` without an amount. Client photos, AI, cart and order were not added.
+
+### 15.2. Phase 1D preview handoff record
+
+A successful server calculation exposes «Посмотреть на окне». `POST /api/v1/previews` accepts only the opaque calculation token plus same-origin/CSRF/idempotency evidence, creates separately owned `StandardPreviewState` and returns `/preview?state={safeId}`. Returning through `/configure?resume=preview` restores the existing client selection; preview controls do not alter price or immutable quote/calculation bytes.
 
 ## 16. История изменений
 
@@ -175,3 +179,4 @@ Automatic configuration/pricing is enabled only for the four dated roller, Zebra
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Созданы data-driven step schema, configuration aggregate, validation precedence, state machine, fallbacks and test coverage. |
 | 0.2.0 | 2026-08-08 | Recorded the PostgreSQL-only guest flow, dynamic server validation, four verified scopes, safe non-numeric fallbacks, responsive state preservation and immutable quote handoff delivered in Phase 1C. |
+| 0.3.0 | 2026-08-08 | Recorded the opaque calculation-to-preview handoff, preserved return state and strict separation of non-price preview controls delivered in Phase 1D. |

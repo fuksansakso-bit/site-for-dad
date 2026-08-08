@@ -1,0 +1,12 @@
+# Phase 1D preview and configurator mapping gaps
+
+Verified against the active PostgreSQL catalog on 2026-08-08. This register does not add catalog rows, compatibility, price rules or substitute fixtures. All four currently validated configurator scopes are previewable through an approved local product-visualization layer; none has a separately imported exact swatch role.
+
+| Family | System | Model | MaterialVariant | Source ID | Reason | Missing CompatibilityRule | Missing asset role | Blocks preview | Recommended future correction |
+|---|---|---|---|---:|---|---|---|---|---|
+| Roller | `ROLLA Кассета` | `MINI` | `237b40d6-3583-4b8a-976f-eefe8580d244` | `12069` / article `2259` | Confirmed product visualization exists, but no independently proven exact swatch is linked | none | `EXACT_SWATCH` | no; `PRODUCT_IMAGE_CROP` is disclosed | Import and approve the source swatch with checksum/provenance, then map it to the existing variant |
+| Zebra / Day-Night | `Классика LVT-зебра` | `ZEBRA_MINI` | `9cad64f7-80d6-4947-99ff-1a2bd5769ba2` | `364` / article `5992` | Confirmed visualization exists; right-sash source perspective requires recorded deterministic rectification; no separate exact swatch | none | `EXACT_SWATCH` | no; rectified `PRODUCT_IMAGE_CROP` is disclosed | Import the exact repeat swatch and verified band period; retain the source hash and rectification provenance |
+| Horizontal aluminium | `Жалюзи с лентой 16/25 мм` | `CLASSIC_25` | `5fb426ea-2b8f-463d-a85b-e9a375efa386` | `228` / article `8012` | Confirmed slat visualization/system layer exists, but no independent exact finish swatch role | none | `EXACT_SWATCH` | no; `PRODUCT_IMAGE_CROP` is disclosed | Link an approved finish swatch and confirmed slat-width metadata to the existing variant |
+| Vertical | `С тканевой текстурой` | `FABRIC` | `86c6b861-cadc-491d-8b29-1e1f9de02399` | `1563` / article `5612` | Confirmed louvre visualization/system layer exists, but no independent exact fabric swatch role | none | `EXACT_SWATCH` | no; `PRODUCT_IMAGE_CROP` is disclosed | Link an approved repeat swatch plus confirmed louvre-width/opening-direction metadata |
+
+Current counts: `previewable MaterialVariant = 4`; `EXACT_SWATCH = 0`; `PRODUCT_IMAGE_CROP = 4`; `NORMALIZED_COLOR_ONLY = 0`; `PREVIEW_UNAVAILABLE = 0`; missing `CompatibilityRule = 0`; missing `EXACT_SWATCH` role = 4. Other Phase 1C catalog/model gaps remain outside Phase 1D and are not silently expanded here.

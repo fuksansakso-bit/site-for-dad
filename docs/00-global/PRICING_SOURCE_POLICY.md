@@ -4,14 +4,14 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Нормативная политика; Phase 1B.2 full source card/base price version accepted without dimensional calculator |
-| Версия | 1.9.0 |
-| Дата | 2026-08-04, Europe/Moscow |
+| Статус | Нормативная политика; Phase 1C verified server pricing authorized and in progress |
+| Версия | 2.0.0 |
+| Дата | 2026-08-08, Europe/Moscow |
 | Главный источник правды | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) |
 | Внешние источники | [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md) |
 | Будущая детализация | `PRICING_CALCULATOR_SPEC.md` и `TEST_STRATEGY.md`, запланированные в [SPEC_ROADMAP.md](SPEC_ROADMAP.md) |
 
-Политика задаёт происхождение, версии, подтверждение и деградацию цены. Phase 1B.2 импортировала для полного доступного каталога опубликованные source/base/card prices, цену «от», price category, currency, context/date/source version и сохранила separate local price override; формула, размеры, minimum 1500 и calculator остаются запрещены до Phase 1C.
+Политика задаёт происхождение, версии, подтверждение и деградацию цены. Phase 1B.2 импортировала source/base/card prices; `OWNER-DECISION-013` разрешает Phase 1C применять только reviewed rules from dated AMIGO evidence, integer local minimum and immutable quote snapshots. Unproved combinations remain non-numeric.
 
 ## 1. Основные требования владельца
 
@@ -32,6 +32,8 @@
 - **PRICING-SOURCE-015 — MUST:** complete Phase 1B.2 capture создаёт ровно одну типизированную source-price revision для каждого discovered price-bearing `MaterialVariant` и `ProductModel`; target обязан быть ровно одним из этих типов. Отсутствующая сумма создаёт `PRICE_ON_REQUEST`, а не пропуск записи; ambiguous/duplicate target блокирует run.
 - **PRICING-SOURCE-016 — MUST:** `SourcePriceRecord` является append-only revision, уникальной в пределах `(catalogSourceId, sourceId, sourceVersion)`. Exact retry той же semantic source version переиспользует совпадающую запись; несовпадающие hash, target, provenance или price facts при том же ключе являются blocking resume conflict. `PriceVersionRecord` закрепляет точную revision.
 - **PRICING-SOURCE-017 — MUST:** если одна карточка источника содержит несколько денежных значений без доказанного однозначного контекста, importer сохраняет исходную метку и контекст, но нормализует цену как `PRICE_ON_REQUEST`. Склеивать цифры, выбирать минимум/максимум или публиковать одно значение по догадке запрещено.
+- **PRICING-SOURCE-018 — MUST:** verified Phase 1C rule stores source/version/verified-at/family/system/price-category/rounding/constraints/examples/confirmation state. A rule is automatic only inside its reviewed scope and only while its PriceVersion is active.
+- **PRICING-SOURCE-019 — MUST:** roller/Zebra exact lookup fixtures and horizontal/vertical integer area rules from source version `amigo-public-calculator-2026-08-08-9f9246330385` are the initial four MVP scopes; no interpolation, extrapolation or cross-material substitution is allowed.
 
 ## 2. Приоритет источников и способ получения
 
@@ -46,7 +48,7 @@
 - **PRICING-SYNC-002 — MUST:** любой полученный набор остаётся draft до валидации и административного подтверждения.
 - **PRICING-SYNC-003 — MUST:** Phase 1B.1 проверяет source card prices автоматически раз в сутки и вручную OWNER/ADMIN; проверка создаёт staged diff и никогда не активирует `PriceVersion` автоматически.
 - **PRICING-SYNC-006 — MUST:** данные старше 7 дней получают `STALE_WARNING`; возраст более 30 дней блокирует публикацию изменённой цены или нового товара до обязательной административной проверки.
-- **PRICING-SYNC-004 — MUST:** город/регион AMIGO, используемый для базового сравнения, определяется `TBD-PRICE-SOURCE-001`; московский контекст не считается автоматически применимым к Чеченской Республике.
+- **PRICING-SYNC-004 — MUST:** каждый parity snapshot pins its visible city/region. Initial Phase 1C fixtures use the captured Grozny context; another city/source version requires a separate reviewed capture.
 - **PRICING-SYNC-005 — MUST NOT:** нельзя утверждать существование публичного официального API AMIGO только из факта партнёрства; конкретный transport/export/API подтверждается отдельно по `TBD-SOURCE-AMIGO-002`.
 - **PRICING-SYNC-007 — MUST:** full price diff перед OWNER/ADMIN activation показывает changed count, old/new values, absolute/percentage delta when both values exist, added/removed/`PRICE_ON_REQUEST`, source and date. Daily/manual sync never activates `PriceVersion` and never overwrites `LocalPriceOverride`.
 - **PRICING-SYNC-008 — MUST:** price manifest и candidate выбирают source-price records только для semantic `sourceVersion` текущего `SyncRun`; совпадающий `sourceHash` из другой версии не может попасть в manifest, diff или `PriceVersionRecord`.
@@ -97,8 +99,8 @@
 - **PRICING-LOCAL-002 — MUST:** «Замер», «Доставка» и «Установка» являются отдельными строками расчёта со значением `0` рублей и клиентской подписью «Бесплатно» в пределах всей обслуживаемой Чеченской Республики.
 - **PRICING-LOCAL-003 — MUST:** цены AMIGO на замер, доставку и монтаж для Москвы или другого региона не переносятся в PROJECT_NAME.
 - **PRICING-LOCAL-004 — MUST:** минимальная стоимость равна 1500 рублей для каждой отдельно изготавливаемой единицы изделия и применяется до суммирования заказа: 1100 рублей по формуле → 1500 рублей; две такие единицы → 3000 рублей.
-- **PRICING-LOCAL-005 — MUST:** правило `PRICING-LOCAL-004` документируется, но не реализуется в Phase 1B.1 и не активируется до подтверждения остальных formula/source/version gates Phase 1C.
-- **PRICING-LOCAL-006 — MUST:** денежные значения хранятся в целых копейках и сопровождаются валютой; правила округления остаются `TBD-PRICE-002`.
+- **PRICING-LOCAL-005 — MUST:** Phase 1C applies `PRICING-LOCAL-004` after the verified unit base plus confirmed options/override and before quantity; it is never applied once to the aggregate.
+- **PRICING-LOCAL-006 — MUST:** money is stored and calculated as integer kopecks with currency `RUB`; verified area rules use integer half-up division and reject overflow instead of using float.
 - **PRICING-LOCAL-007 — MUST:** для первой версии `localSalePrice = sourceAmigoPrice` из активного проверенного snapshot, если отсутствует применимый утверждённый `LocalOverride`.
 - **PRICING-LOCAL-008 — MUST:** `LocalOverride` MAY задавать fixed price, процентную надбавку, процентную скидку, minimum, manual price или price-on-request с датами действия; конкретные значения и приоритеты не активируются без owner approval.
 
@@ -185,7 +187,7 @@ PricingProvider
 
 Accepted PriceVersion v2 `9fdc0a74-9fab-4d63-b4b6-015f534e117d` закрепляет ровно 1 664 current-run revisions: 1 655 MaterialVariant и 9 ProductModel; `AVAILABLE = 1 596`, `PRICE_ON_REQUEST = 68`, observed numeric range `127 600`–`5 301 700` minor RUB units. Exact price diff checksum `9fb6b6f927d07b535baac471cb172c4aa6441670b8e6cbba9ed4581724062e27` принят OWNER и активирован ADMIN; no-op repeat создал zero price versions/differences, а v1 сохранена как rollback target. Это закрывает `TBD-PRICE-001` только как вопрос активной проверенной AMIGO-origin catalog PriceVersion и не превращает card/base/price-from facts в dimensional calculation.
 
-Блокирующими для автоматического production-pricing остаются правила из `TBD-PRICE-002`–`006`, `TBD-MECHANISM-001` и `TBD-PRICE-SOURCE-001`. Official API/export/file/schema aspect `TBD-SOURCE-AMIGO-002` остаётся открытым, но не отменяет принятую source-versioned public-page v2. `TBD-PRICE-001`, `TBD-PRICE-007`, `TBD-MIN-PRICE-001`, `TBD-PRICE-SOURCE-002`, `TBD-PRICE-PARITY-001`, `TBD-SOURCE-AMIGO-001` и `TBD-PRICE-CATEGORY-001` решены и сохраняются для истории. Срок предложения остаётся `TBD-PRICE-008` и не получает выдуманного периода.
+`TBD-PRICE-002`–`005` and `TBD-SIZE-001` are resolved only for the exact rule scopes recorded in `AMIGO_PRICING_VERIFICATION_2026-08-08.md`; all other systems/materials/dimensions keep manual/request fallback. `TBD-PRICE-006`, `TBD-MECHANISM-001`, official export aspect `TBD-SOURCE-AMIGO-002` and quote expiry `TBD-PRICE-008` remain open and receive no invented value or claim.
 
 `OWNER-DECISION-008` закрывает authority слоёв, а `OWNER-DECISION-009` — public-serving PostgreSQL topology, diff/approval/no-delete/override/audit/version rules. Phase 1B.2 completion report отдельно доказывает active CatalogVersion/PriceVersion v2 и complete current-run card/base-price accounting; ни решения, ни report не доказывают dimensional formula, source region, compatibility или parity fixtures и поэтому не закрывают оставшиеся pricing TBD.
 
@@ -201,3 +203,4 @@ Accepted PriceVersion v2 `9fdc0a74-9fab-4d63-b4b6-015f534e117d` закрепля
 | 1.7.0 | 2026-08-03 | Phase 1B.2 implementation закрепил full material/model price accounting, exact typed target, append-only `(sourceId, sourceVersion)` revisions, current-run-only manifest/version selection, `PRICE_ON_REQUEST` и неизменность local overrides. |
 | 1.8.0 | 2026-08-03 | Real full-catalog evidence established fail-closed handling for cards with multiple context-dependent price labels: provenance is retained and the normalized value is `PRICE_ON_REQUEST`, never concatenated or guessed. |
 | 1.9.0 | 2026-08-04 | Зафиксированы accepted 1 664-record PriceVersion v2, exact diff/OWNER approval/ADMIN activation, no-op/rollback evidence и закрытие `TBD-PRICE-001` для catalog price version без утверждения dimensional calculator inputs. |
+| 2.0.0 | 2026-08-08 | `OWNER-DECISION-013` authorizes reviewed Phase 1C pricing only: four dated rule scopes, integer half-up/kopecks, per-unit minimum, active-version runtime, immutable quote and non-numeric fallback elsewhere. |

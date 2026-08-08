@@ -2,7 +2,7 @@
 
 ## 0. Статус
 
-Phase 1A Foundation завершена `PASSED_PHASE_1A_FOUNDATION` на commit `943d4a2efa5e05f0d05493633cf5eb549e072a22`. Phase 1B.1 catalog pilot/local publication layer завершена `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT`. Отдельно разрешённая `OWNER-DECISION-012` Phase 1B.2 full authorized catalog expansion завершена 2026-08-04 со статусом `PASSED_PHASE_1B2_FULL_AMIGO_CATALOG`: QG-195–230, real 21 019-item manifest, active v2 versions, 2 818 approved local media objects, restart/no-op/public/CI evidence passed. Phase 1C+, dimensional calculator и production deployment запрещены.
+Phase 1A, Phase 1B.1 and Phase 1B.2 завершены. `OWNER-DECISION-013` разрешает только Phase 1C на branch `phase/1c-configurator-pricing` от merged-main commit `3f1f70c986bd29518364a059393e9abd1b284a02`: configurator, verified server pricing, immutable quotes, minimal pricing admin and parity verification. Phase 1D+, preview/photo/AI/cart/order/WhatsApp/payment/final design and production deployment remain prohibited.
 
 ## 1. Порядок обязательного чтения
 
@@ -16,7 +16,7 @@ Phase 1A Foundation завершена `PASSED_PHASE_1A_FOUNDATION` на commit 
 8. [PRICING_SOURCE_POLICY.md](00-global/PRICING_SOURCE_POLICY.md) — snapshots, версии, overrides, fallback и parity.
 9. [ASSUMPTIONS.md](00-global/ASSUMPTIONS.md) и [OPEN_QUESTIONS.md](00-global/OPEN_QUESTIONS.md) — неподтверждённые решения и пробелы.
 10. Релевантная профильная спека из разделов ниже.
-11. Для implementation readiness — [MVP scope](06-plans/MVP_SCOPE.md), [critical audit](06-plans/SPEC_READINESS_AUDIT.md), [roadmap](06-plans/IMPLEMENTATION_ROADMAP.md), стабильные Phase 1A/1B.1/1B.2 plans и [Phase 1B.2 completion report](06-plans/completed/PHASE_1B2_FULL_AMIGO_CATALOG_REPORT.md).
+11. Для implementation readiness — [MVP scope](06-plans/MVP_SCOPE.md), [critical audit](06-plans/SPEC_READINESS_AUDIT.md), [roadmap](06-plans/IMPLEMENTATION_ROADMAP.md), стабильные Phase 1A/1B.1/1B.2 records, [Phase 1C plan](06-plans/active/PHASE_1C_CONFIGURATOR_PRICING_PLAN.md) и dated pricing evidence.
 12. [CHANGELOG.md](../CHANGELOG.md) — история содержательных изменений.
 
 При конфликте действует repository precedence: `GLOBAL_SPEC` (включая перенесённые owner/partner decisions) → accepted ADR → approved профильная спецификация → governed dynamic snapshot → assumptions/open questions. Противоречие останавливает зависимую работу.
@@ -34,7 +34,7 @@ Phase 1A Foundation завершена `PASSED_PHASE_1A_FOUNDATION` на commit 
 | [OPEN_QUESTIONS.md](00-global/OPEN_QUESTIONS.md) | Канонический реестр `TBD-*`, владельцев, влияния и критериев закрытия |
 | [SPEC_ROADMAP.md](00-global/SPEC_ROADMAP.md) | Фактический комплект 0B/0C, accepted Foundation ADR, gates и последовательность 1A–1H |
 | [TRACEABILITY_MATRIX.md](00-global/TRACEABILITY_MATRIX.md) | 18 critical chains и полная 40-story связь со спеками, AC и tests |
-| [SPEC_QUALITY_GATE.md](00-global/SPEC_QUALITY_GATE.md) | Passed gates 0B/0C/1A/1B.1/1B.2, including QG-195–230; Phase 1C+ hold |
+| [SPEC_QUALITY_GATE.md](00-global/SPEC_QUALITY_GATE.md) | Passed gates 0B/0C/1A/1B.1/1B.2; Phase 1C entry QG-231–240 and completion QG-241–270 |
 
 ## 3. Product specifications
 
@@ -110,6 +110,7 @@ Phase 1A Foundation завершена `PASSED_PHASE_1A_FOUNDATION` на commit 
 | [PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN.md](06-plans/active/PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN.md) | Authorized 32-ID pilot, scope, transport, execution stages, commits, stop and acceptance conditions |
 | [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN.md](06-plans/active/PHASE_1B2_FULL_AMIGO_CATALOG_PLAN.md) | Authorized full-catalog expansion scope, ownership/runtime boundaries, stages, exact commits, stop and acceptance conditions |
 | [PHASE_1B2_FULL_AMIGO_CATALOG_REPORT.md](06-plans/completed/PHASE_1B2_FULL_AMIGO_CATALOG_REPORT.md) | Real manifest/version/media/governance/restart/no-op/public/CI evidence and final Phase 1B.2 acceptance |
+| [PHASE_1C_CONFIGURATOR_PRICING_PLAN.md](06-plans/active/PHASE_1C_CONFIGURATOR_PRICING_PLAN.md) | Authorized Phase 1C scope, proven-rule boundary, stages, logical commits, acceptance and Phase 1D hold |
 
 ## 9. Architecture decisions
 
@@ -133,6 +134,7 @@ Phase 1A Foundation завершена `PASSED_PHASE_1A_FOUNDATION` на commit 
 | [AMIGO public parity snapshot](research/AMIGO_PUBLIC_PARITY_SNAPSHOT_2026-08-02.md) | Read-only наблюдения 14 public URLs и calculator customizer на 2026-08-02; taxonomy/flow/filters/source categories/gaps |
 | [AMIGO Phase 1B.1 transport discovery](research/AMIGO_PILOT_TRANSPORT_DISCOVERY_2026-08-02.md) | Priority discovery, selected public-page transport, stable IDs, 32-item manifest boundary, media/security controls and residual full-export gate |
 | [AMIGO Phase 1B.2 full transport discovery](research/AMIGO_FULL_CATALOG_TRANSPORT_DISCOVERY_2026-08-03.md) | Real 114-page dynamic discovery: 28 categories, 56 systems, 9 models, 1655 variants, semantic source version, 0 failures and explicit warnings; accepted import/activation is linked in the completion report |
+| [AMIGO Phase 1C pricing verification](research/AMIGO_PRICING_VERIFICATION_2026-08-08.md) | Public Grozny-context calculator source version, hashes, four verified MVP rule scopes, 40 fixtures and safe fallback boundary |
 
 Research snapshot не является вечным catalog/price fact. Нормативное поведение задают global/profile specs, а динамические значения требуют authorized source snapshot и verification.
 

@@ -92,10 +92,10 @@
       "id": "ZEBRA_MINI_5992",
       "role": "MATERIAL_VISUALIZATION",
       "file": "authorized-amigo/zebra-mini-material-300601-5992-aligned.png",
-      "objectKey": "preview/amigo/f8/f8fc68c627f94a93a5781c3f4624c089468b8b009367afd063439d551bc00139.png",
-      "sha256": "f8fc68c627f94a93a5781c3f4624c089468b8b009367afd063439d551bc00139",
+      "objectKey": "preview/amigo/f6/f6431b142682fad8fa54b90c497f60159f7fe51de473b25be92f9ca18c10cb28.png",
+      "sha256": "f6431b142682fad8fa54b90c497f60159f7fe51de473b25be92f9ca18c10cb28",
       "contentType": "image/png",
-      "byteSize": 233444,
+      "byteSize": 236121,
       "width": 1500,
       "height": 937,
       "sourceUrl": "https://94467d4a238359fbf34ad21ca461e711.customizer.amigo.ru/storage-new/visualizations/zebra/zebra_mini/300601-5992.png",
@@ -110,7 +110,7 @@
         ],
         "destinationQuad": [
           [774, 145],
-          [944, 160],
+          [944, 145],
           [944, 421],
           [774, 421]
         ]

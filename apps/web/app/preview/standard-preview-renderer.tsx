@@ -152,20 +152,20 @@ function SupplierAtlasLayer({
       {family === 'ZEBRA' ? (
         <g data-preview-correction="zebra-perspective-aligned-hardware">
           <path
-            d="M780 153 L939 167"
+            d="M780 153 L939 153"
             opacity="0.42"
             stroke="#545957"
             strokeLinecap="round"
             strokeWidth="15"
           />
           <path
-            d="M780 153 L939 167"
+            d="M780 153 L939 153"
             stroke={model.hardwareColor}
             strokeLinecap="round"
             strokeWidth="11"
           />
           <path
-            d="M783 150 L937 164"
+            d="M783 150 L937 150"
             opacity="0.76"
             stroke="#FFFFFF"
             strokeLinecap="round"

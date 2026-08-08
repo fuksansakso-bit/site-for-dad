@@ -8,6 +8,7 @@ import {
   type PreviewSourceReference,
   type StandardPreviewStateView,
 } from '@project-name/db';
+import { IdentityError } from '@project-name/identity';
 import type { PreviewControlPatch, StandardPreviewConfiguration } from '@project-name/preview';
 import { ZodError, type ZodType } from 'zod';
 
@@ -18,6 +19,11 @@ export function previewRouteErrorCode(error: unknown) {
     return 'VALIDATION_ERROR' as const;
   }
   if (error instanceof PricingRequestError) return error.code;
+  if (error instanceof IdentityError) {
+    return error.code === 'IDENTITY_AUTHENTICATION_REQUIRED'
+      ? ('AUTHENTICATION_REQUIRED' as const)
+      : ('PERMISSION_DENIED' as const);
+  }
   if (error instanceof PreviewStoreError) {
     switch (error.code) {
       case 'PREVIEW_AUTHORIZATION':

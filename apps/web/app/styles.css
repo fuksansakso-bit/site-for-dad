@@ -3659,3 +3659,416 @@ input[type='checkbox'] {
     transition: none;
   }
 }
+
+/* Phase 1D deterministic standard preview. */
+.preview-page-shell {
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: #e9e3d8;
+  color: var(--ink);
+}
+
+.preview-page-header {
+  display: flex;
+  min-height: 76px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  border-bottom: 1px solid var(--line);
+  padding: 14px clamp(18px, 4vw, 58px);
+  background: #f4f0e7;
+}
+
+.preview-page-header p {
+  margin: 0;
+  color: rgb(29 29 27 / 62%);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+}
+
+.preview-brand {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 12px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.preview-brand span {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  background: var(--ink);
+  color: var(--paper);
+  font: 700 0.74rem var(--serif);
+}
+
+.preview-brand strong {
+  letter-spacing: 0.08em;
+}
+
+.preview-workspace {
+  display: grid;
+  width: min(1540px, 100%);
+  min-height: calc(100vh - 76px);
+  margin: 0 auto;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 390px);
+}
+
+.preview-stage {
+  min-width: 0;
+  padding: clamp(24px, 4vw, 58px);
+}
+
+.preview-stage-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 22px;
+}
+
+.preview-kicker {
+  margin: 0 0 8px;
+  color: #755f36;
+  font-size: 0.67rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.preview-stage h1,
+.preview-empty-state h1 {
+  max-width: 18ch;
+  font: 600 clamp(2rem, 4vw, 4.2rem) / 0.98 var(--serif);
+}
+
+.preview-save-state {
+  flex: 0 0 auto;
+  color: #506350;
+  font-size: 0.78rem;
+}
+
+.preview-canvas-frame {
+  aspect-ratio: 1200 / 780;
+  overflow: hidden;
+  border: 1px solid rgb(29 29 27 / 24%);
+  background: #d8d0c5;
+  box-shadow: 0 28px 70px rgb(38 31 22 / 14%);
+}
+
+.standard-preview-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.preview-side-panel {
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  border-left: 1px solid var(--line);
+  padding: clamp(24px, 3vw, 44px) clamp(20px, 3vw, 34px);
+  background: #f4f0e7;
+}
+
+.preview-configuration-card,
+.preview-controls-card {
+  border: 1px solid var(--line);
+  padding: 22px;
+  background: #f9f6ef;
+}
+
+.preview-configuration-card h2 {
+  margin: 0 0 18px;
+  font: 600 1.7rem/1.08 var(--serif);
+}
+
+.preview-configuration-card dl {
+  display: grid;
+  margin: 0;
+  grid-template-columns: minmax(80px, 0.65fr) minmax(0, 1.35fr);
+  border-top: 1px solid var(--line);
+}
+
+.preview-configuration-card dt,
+.preview-configuration-card dd {
+  margin: 0;
+  border-bottom: 1px solid var(--line);
+  padding: 10px 0;
+  font-size: 0.84rem;
+}
+
+.preview-configuration-card dt {
+  color: rgb(29 29 27 / 58%);
+}
+
+.preview-configuration-card dd {
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+.preview-color-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 7px;
+  border: 1px solid rgb(29 29 27 / 42%);
+  border-radius: 50%;
+  vertical-align: -1px;
+}
+
+.preview-controls-card {
+  display: grid;
+  gap: 20px;
+}
+
+.preview-scenes,
+.preview-preset-actions {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.preview-scenes button,
+.preview-preset-actions button,
+.preview-reset {
+  min-height: 46px;
+  border: 1px solid var(--line);
+  padding: 9px 11px;
+  background: #f4f0e7;
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.preview-scenes button[aria-pressed='true'] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.preview-range-control {
+  display: grid;
+  gap: 11px;
+  color: rgb(29 29 27 / 72%);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.preview-range-control span {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.preview-range-control output {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.preview-range-control input {
+  width: 100%;
+  min-height: 32px;
+  accent-color: var(--brick);
+  cursor: pointer;
+}
+
+.preview-primary-action,
+.preview-launch-button {
+  display: inline-flex;
+  min-height: 50px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--ink);
+  padding: 12px 18px;
+  background: var(--ink);
+  color: var(--paper);
+  cursor: pointer;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.preview-launch-button {
+  width: 100%;
+  margin: 4px 0 12px;
+  background: var(--brick);
+  border-color: var(--brick);
+}
+
+.preview-launch-button:disabled {
+  cursor: wait;
+  opacity: 0.58;
+}
+
+.preview-quality-note,
+.preview-warning,
+.preview-inline-error {
+  margin: 14px 0 0;
+  border-left: 3px solid var(--brass);
+  padding: 10px 14px;
+  background: rgb(249 246 239 / 72%);
+  color: #5f523e;
+  font-size: 0.82rem;
+}
+
+.preview-inline-error {
+  border-color: var(--brick);
+  color: #742920;
+}
+
+.preview-unavailable,
+.preview-empty-state,
+.preview-route-loading {
+  display: grid;
+  min-height: min(620px, calc(100vh - 160px));
+  place-content: center;
+  gap: 14px;
+  border: 1px solid var(--line);
+  padding: clamp(28px, 7vw, 90px);
+  background: #f4f0e7;
+  text-align: center;
+}
+
+.preview-empty-state {
+  width: min(900px, calc(100% - 36px));
+  margin: 40px auto;
+}
+
+.preview-empty-state h1,
+.preview-empty-state p,
+.preview-unavailable p {
+  margin: 0 auto;
+}
+
+.preview-empty-state .preview-primary-action {
+  justify-self: center;
+}
+
+.preview-diagnostics-grid {
+  display: grid;
+  gap: 1px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  background: var(--line);
+}
+
+.preview-diagnostics-grid article {
+  min-height: 190px;
+  padding: 24px;
+  background: var(--paper);
+}
+
+.preview-diagnostics-grid span {
+  display: block;
+  overflow-wrap: anywhere;
+  color: #755f36;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.preview-diagnostics-grid strong {
+  display: block;
+  margin-top: 20px;
+  font: 600 3.4rem/1 var(--serif);
+}
+
+.preview-diagnostics-grid p {
+  margin: 14px 0 0;
+}
+
+.preview-brand:focus-visible,
+.preview-primary-action:focus-visible,
+.preview-launch-button:focus-visible,
+.preview-controls-card button:focus-visible,
+.preview-range-control input:focus-visible {
+  outline: 3px solid var(--brass);
+  outline-offset: 3px;
+}
+
+@media (max-width: 980px) {
+  .preview-workspace {
+    grid-template-columns: 1fr;
+  }
+  .preview-side-panel {
+    border-top: 1px solid var(--line);
+    border-left: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .preview-side-panel > .preview-primary-action {
+    grid-column: 1 / -1;
+  }
+  .preview-diagnostics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .preview-page-header {
+    min-height: 64px;
+    padding-block: 8px;
+  }
+  .preview-page-header p,
+  .preview-brand strong {
+    display: none;
+  }
+  .preview-workspace {
+    min-height: calc(100vh - 64px);
+  }
+  .preview-stage {
+    padding: 18px 14px 24px;
+  }
+  .preview-stage-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .preview-stage h1 {
+    font-size: clamp(1.8rem, 10vw, 2.8rem);
+  }
+  .preview-canvas-frame {
+    min-height: 48vh;
+    aspect-ratio: auto;
+  }
+  .standard-preview-svg {
+    object-fit: cover;
+  }
+  .preview-side-panel {
+    grid-template-columns: 1fr;
+    padding: 16px 14px 28px;
+  }
+  .preview-side-panel > .preview-primary-action {
+    grid-column: auto;
+    position: sticky;
+    bottom: 10px;
+    z-index: 3;
+    box-shadow: 0 8px 30px rgb(29 29 27 / 24%);
+  }
+  .preview-configuration-card,
+  .preview-controls-card {
+    padding: 18px;
+  }
+  .preview-scenes,
+  .preview-preset-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+  .preview-diagnostics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (forced-colors: active) {
+  .preview-canvas-frame,
+  .preview-configuration-card,
+  .preview-controls-card,
+  .preview-primary-action,
+  .preview-launch-button {
+    border: 2px solid CanvasText;
+  }
+  .preview-color-dot {
+    forced-color-adjust: none;
+  }
+}

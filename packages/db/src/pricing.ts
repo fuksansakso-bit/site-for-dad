@@ -779,7 +779,15 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
           [input.calculationToken],
         );
         const source = calculation.rows[0];
-        if (source === undefined || !['CALCULATED', 'SOURCE_DATA_STALE'].includes(source.status)) {
+        if (
+          source === undefined ||
+          ![
+            'CALCULATED',
+            'SOURCE_DATA_STALE',
+            'PRICE_ON_REQUEST',
+            'MANUAL_REVIEW_REQUIRED',
+          ].includes(source.status)
+        ) {
           throw new PricingStoreError('PRICING_NOT_FOUND');
         }
         const quoteToken = token();

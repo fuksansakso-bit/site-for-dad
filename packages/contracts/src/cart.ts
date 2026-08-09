@@ -24,7 +24,7 @@ export const cartProductSnapshotSchema = z
     control: z.string().min(1).max(255),
     family: z.string().min(1).max(255),
     hardware: z.string().min(1).max(255),
-    heightMm: z.number().int().positive().max(100_000),
+    heightMm: z.number().int().positive().max(100_000).nullable(),
     material: z.string().min(1).max(255),
     materialArticle: z.string().min(1).max(128),
     model: z.string().min(1).max(255),
@@ -32,7 +32,7 @@ export const cartProductSnapshotSchema = z
     mounting: z.string().min(1).max(255),
     quantity: z.number().int().positive().max(1_000),
     system: z.string().min(1).max(255),
-    widthMm: z.number().int().positive().max(100_000),
+    widthMm: z.number().int().positive().max(100_000).nullable(),
   })
   .strict();
 

@@ -1,4 +1,16 @@
 export {
+  createCartAdapter,
+  CartStoreError,
+  type CartAdapter,
+  type CartAddCommand,
+  type CartCommand,
+  type CartDuplicateCommand,
+  type CartItemView,
+  type CartReplaceCommand,
+  type CartStateView,
+  type CartStoreErrorCode,
+} from './cart.js';
+export {
   checkDatabaseReadiness,
   createPrismaClient,
   type FoundationPrismaClient,

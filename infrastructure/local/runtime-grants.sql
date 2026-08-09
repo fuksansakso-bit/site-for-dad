@@ -1,4 +1,4 @@
--- Phase 1B.2 local runtime grants. This file is applied explicitly after schema/queue migrations.
+-- Phase 1E local runtime grants. This file is applied explicitly after schema/queue migrations.
 REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 GRANT USAGE ON SCHEMA public TO foundation_runtime;
 GRANT SELECT, INSERT, UPDATE, DELETE ON
@@ -9,6 +9,12 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON
     idempotency_record,
     service_heartbeat,
     standard_preview_state
+TO foundation_runtime;
+GRANT SELECT, INSERT, UPDATE ON
+    guest_cart_session,
+    guest_cart,
+    cart_item,
+    order_inquiry
 TO foundation_runtime;
 GRANT SELECT, INSERT ON audit_event TO foundation_runtime;
 GRANT SELECT, INSERT, UPDATE ON
@@ -52,5 +58,9 @@ GRANT SELECT, INSERT ON
     pricing_parity_run,
     pricing_calculation,
     quote_snapshot,
-    pricing_version_decision
+    pricing_version_decision,
+    cart_item_revision,
+    request_item_snapshot,
+    request_communication_event,
+    request_internal_note
 TO foundation_runtime;

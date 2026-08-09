@@ -14,7 +14,7 @@ export interface CartProductSnapshot {
   readonly control: string;
   readonly family: string;
   readonly hardware: string;
-  readonly heightMm: number;
+  readonly heightMm: number | null;
   readonly material: string;
   readonly materialArticle: string;
   readonly model: string;
@@ -22,7 +22,7 @@ export interface CartProductSnapshot {
   readonly mounting: string;
   readonly quantity: number;
   readonly system: string;
-  readonly widthMm: number;
+  readonly widthMm: number | null;
 }
 
 export interface CartQuoteSnapshot {

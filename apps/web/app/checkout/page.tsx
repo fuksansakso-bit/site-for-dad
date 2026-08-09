@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { getWebBusinessAdministration } from '../../lib/catalog-runtime';
 import { CheckoutExperience } from './checkout-experience';
 
 export const dynamic = 'force-dynamic';
@@ -11,7 +12,8 @@ export const metadata: Metadata = {
   title: 'Оформить заявку · PROJECT_NAME',
 };
 
-export default function CheckoutPage(): React.JSX.Element {
+export default async function CheckoutPage(): Promise<React.JSX.Element> {
+  const settings = await getWebBusinessAdministration().getActiveSettings();
   return (
     <main className="checkout-page-shell">
       <header className="commerce-header">
@@ -21,7 +23,14 @@ export default function CheckoutPage(): React.JSX.Element {
         </Link>
         <p>Гостевая заявка · без онлайн-оплаты</p>
       </header>
-      <CheckoutExperience />
+      <CheckoutExperience
+        commercialTerms={{
+          manufacturingLeadTime: settings.manufacturingLeadTime,
+          services: settings.services,
+          territory: settings.territory,
+          warranty: settings.warranty,
+        }}
+      />
     </main>
   );
 }

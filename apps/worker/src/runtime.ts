@@ -7,11 +7,14 @@ import type { FoundationLogSeverity, FoundationLogger } from '@project-name/obse
 import type { FoundationMetrics } from '@project-name/observability/metrics';
 import {
   ensureDailyCatalogSourceDiscovery,
+  ensureDailyIdentityCleanup,
   startFoundationJobRuntime,
   type CatalogJobServices,
   type CatalogTaskLifecycleEvent,
   type FoundationQueueLogEvent,
   type FoundationTaskLifecycleEvent,
+  type Phase1fJobServices,
+  type Phase1fTaskLifecycleEvent,
 } from '@project-name/jobs';
 
 import { createWorkerHealthServer } from './health-server.js';
@@ -74,6 +77,7 @@ export async function startWorkerProcess(
   eventSink: WorkerEventSink = writeWorkerEvent,
   telemetry?: WorkerRuntimeTelemetry,
   catalogServices?: CatalogJobServices,
+  phase1fServices?: Phase1fJobServices,
 ): Promise<RunningWorkerProcess> {
   let stopping = false;
   let stopped = false;
@@ -112,7 +116,9 @@ export async function startWorkerProcess(
   const queueLog = (event: FoundationQueueLogEvent): void => {
     eventSink({ ...event, service: 'worker' });
   };
-  const lifecycleLog = (event: CatalogTaskLifecycleEvent | FoundationTaskLifecycleEvent): void => {
+  const lifecycleLog = (
+    event: CatalogTaskLifecycleEvent | FoundationTaskLifecycleEvent | Phase1fTaskLifecycleEvent,
+  ): void => {
     eventSink({ ...event, event: `worker.job.${event.event}`, level: 'info', service: 'worker' });
   };
 
@@ -124,8 +130,11 @@ export async function startWorkerProcess(
       queueLog,
       lifecycleLog,
       catalogServices,
+      phase1fServices,
+      lifecycleLog,
     );
     await ensureDailyCatalogSourceDiscovery(jobRuntime.pool);
+    if (phase1fServices !== undefined) await ensureDailyIdentityCleanup(jobRuntime.pool);
   } catch (error) {
     await jobRuntime?.forceStop().catch(() => undefined);
     await closeHealthServer();

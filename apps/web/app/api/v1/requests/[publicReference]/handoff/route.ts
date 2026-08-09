@@ -6,7 +6,11 @@ import {
 } from '@project-name/contracts/request';
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { getWebCatalogSigningKey, getWebRequests } from '../../../../../../lib/catalog-runtime';
+import {
+  getWebBusinessAdministration,
+  getWebCatalogSigningKey,
+  getWebRequests,
+} from '../../../../../../lib/catalog-runtime';
 import { cartOwnerTokenHash, readCartOwnerToken } from '../../../../../../lib/cart-security';
 import { parseCartJson } from '../../../../../../lib/cart-route';
 import { requestTelemetryContext } from '../../../../../../lib/health-handler';
@@ -39,28 +43,35 @@ export async function POST(
       ownerTokenHash: cartOwnerTokenHash(ownerToken, signingKey),
       publicReference,
     });
-    const handoff = createWhatsAppHandoff({
-      installmentInterest: source.installmentInterest,
-      items: source.snapshot.items.map((item) => ({
-        family: item.product.family,
-        heightMm: item.product.heightMm,
-        material: item.product.material,
-        materialArticle: item.product.materialArticle,
-        model: item.product.model,
-        quantity: item.product.quantity,
-        quantityTotalKopecks: item.quantityTotalKopecks,
-        system: item.product.system,
-        widthMm: item.product.widthMm,
-      })),
-      knownSubtotalKopecks: source.snapshot.summary.knownSubtotalKopecks,
-      locality: source.locality,
-      measurementRequested: source.measurementRequested,
-      pricingStatus: source.snapshot.summary.pricingStatus,
-      publicSummaryUrl: new URL(source.publicSummaryHref, requestPublicOrigin(request)).toString(),
-      requestNumber: source.requestNumber,
-      totalQuantity: source.snapshot.summary.totalQuantity,
-      unknownItemCount: source.snapshot.summary.unknownItemCount,
-    });
+    const settings = await getWebBusinessAdministration().getActiveSettings();
+    const handoff = createWhatsAppHandoff(
+      {
+        installmentInterest: source.installmentInterest,
+        items: source.snapshot.items.map((item) => ({
+          family: item.product.family,
+          heightMm: item.product.heightMm,
+          material: item.product.material,
+          materialArticle: item.product.materialArticle,
+          model: item.product.model,
+          quantity: item.product.quantity,
+          quantityTotalKopecks: item.quantityTotalKopecks,
+          system: item.product.system,
+          widthMm: item.product.widthMm,
+        })),
+        knownSubtotalKopecks: source.snapshot.summary.knownSubtotalKopecks,
+        locality: source.locality,
+        measurementRequested: source.measurementRequested,
+        pricingStatus: source.snapshot.summary.pricingStatus,
+        publicSummaryUrl: new URL(
+          source.publicSummaryHref,
+          requestPublicOrigin(request),
+        ).toString(),
+        requestNumber: source.requestNumber,
+        totalQuantity: source.snapshot.summary.totalQuantity,
+        unknownItemCount: source.snapshot.summary.unknownItemCount,
+      },
+      settings.whatsappRecipient,
+    );
     const body = whatsappHandoffResponseSchema.parse({
       ...handoff,
       correlationId: context.correlationId,

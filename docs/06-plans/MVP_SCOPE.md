@@ -32,7 +32,7 @@
 - **MVP-016 — MUST:** рассрочка представлена только нейтральным запросом с текстом «Доступна рассрочка. Уточните условия у менеджера»; автоматическое одобрение и конкретные условия запрещены.
 - **MVP-017 — MUST:** галерея реальных работ публикует только локальные assets с подтверждёнными правами, provenance, privacy review и `PUBLICATION_APPROVED`.
 - **MVP-018 — MUST:** админ-панель покрывает каталог, бинарное наличие, версии/активацию цен и заявки с RBAC, audit trail и безопасными необратимыми действиями.
-- **MVP-019 — MUST:** базовый личный кабинет позволяет добровольно зарегистрированному клиенту видеть сохранённые расчёты; гостевой путь остаётся полноценным и регистрация не обязательна.
+- **MVP-019 — SUPERSEDED:** `OWNER-DECISION-018` removes the customer cabinet from MVP; the guest flow and safe request publicReference are the only customer access model.
 - **MVP-020 — MUST:** первая контролируемая AI-примерка ограничена рулонными системами и «Зеброй», использует private upload, ручную коррекцию, геометрическую базу, optional AI refinement, before/after, fallback и cost/evaluation gates.
 
 ## 2. Общие ограничения MVP
@@ -65,6 +65,7 @@
 - **POST-MVP-013:** сложная аналитика;
 - **POST-MVP-014:** AI-примерка всех семейств;
 - **POST-MVP-015:** автоматическое распознавание каждой створки без коррекции.
+- **POST-MVP-016:** customer accounts, passwordless customer authentication, saved projects/favorites, authenticated order history, reorder and cross-device workspace.
 
 Post-MVP элементы MAY исследоваться документально, но MUST NOT расширять Phase 1A–1H или становиться скрытой зависимостью MVP без change control.
 
@@ -74,7 +75,7 @@ MVP scope считается реализованным только когда:
 
 1. для каждого `MVP-001`–`020` есть traceability к спецификации, acceptance criteria и тестам;
 2. активированы только проверенные catalog/price/media versions, а исторический расчёт воспроизводим;
-3. guest, account и admin permissions проверены отрицательными тестами;
+3. guest и staff/admin permissions проверены отрицательными тестами; customer authentication/account routes are absent;
 4. standard preview работает без AI, а AI pilot проходит собственный privacy/evaluation/cost gate;
 5. legal, retention, production provider и публичные PII gates закрыты;
 6. release, rollback, backup/restore, accessibility, performance и security gates Phase 1H пройдены.
@@ -88,3 +89,4 @@ Freeze закрывает `TBD-ACCOUNT-001` и подтверждает пере
 | Версия | Дата | Изменение |
 |---|---|---|
 | 1.0.0 | 2026-08-02 | Зафиксированы 20 обязательных возможностей первого запуска, общие безопасные границы и 15 post-MVP направлений. |
+| 1.1.0 | 2026-08-09 | `OWNER-DECISION-018` supersedes MVP-019 before implementation and moves all customer accounts/auth/workspace to POST-MVP-016. |

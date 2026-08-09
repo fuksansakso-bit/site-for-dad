@@ -67,7 +67,7 @@ Risk отражает последствия неверного предполо
 | `TBD-INSTALLMENT-009` | Кто сторона договора рассрочки? | Automated installment/legal | Critical | `DEFERRED_POST_MVP` | Автоматическая заявка исключена из MVP | Никакого договора/одобрения на сайте; manager handoff | До post-MVP автоматизации | Владелец / провайдер / юрист |
 | `TBD-INSTALLMENT-010` | Как обрабатываются данные в рассрочке? | Automated installment/privacy | Critical | `DEFERRED_POST_MVP` | MVP не собирает документы и не передаёт их провайдеру | WhatsApp payload ограничен расчётом и введённым именем | До post-MVP сбора/передачи данных | Privacy / юрист / провайдер |
 | `TBD-INSTALLMENT-012` | Доступна ли рассрочка во всех населённых пунктах? | Installment claims/eligibility | High | `DEFERRED_POST_MVP` | География не подтверждена; neutral claim не обещает eligibility | Условия и доступность уточняет менеджер индивидуально | До публикации географии/eligibility | Владелец / провайдер |
-| `TBD-ACCOUNT-001` | Входит ли кабинет в MVP? | Account scope, saved calculations | High | `RESOLVED` | Phase 0C: базовый кабинет с сохранёнными расчётами входит в MVP; регистрация не обязательна; [MVP_SCOPE](../06-plans/MVP_SCOPE.md) | Гостевой каталог/config/quote/lead остаётся полным | Закрыт 2026-08-02 | Владелец продукта |
+| `TBD-ACCOUNT-001` | Входит ли кабинет в MVP? | Account scope, saved calculations | High | `RESOLVED` | `OWNER-DECISION-018`: клиентский кабинет и вся клиентская аутентификация перенесены post-MVP | Гостевой каталог/config/quote/cart/request/publicReference остаётся полным | Закрыт 2026-08-09 | Владелец продукта |
 | `TBD-ACCOUNT-003` | Как связать существующий заказ с аккаунтом? | Historical order claim | Critical | `DEFERRED_POST_MVP` | Замороженный кабинет MVP хранит расчёты; claim существующих заказов не обязателен | Не показывать/не присоединять заказ без proof of ownership | До post-MVP order claim | Владелец / Security |
 | `TBD-DESIGN-001` | Каковы финальные brand/logo/palette/type? | Landing/design/content | High | `SAFE_DEFAULT_AVAILABLE` | Бренд не утверждён; `PROJECT_NAME` и существующий premium interior-tech direction остаются рабочими | Нейтральный wordmark `PROJECT_NAME`, без чужого брендинга | До production brand publication Phase 1H | Владелец / дизайнер |
 | `TBD-AI-001` | Как сравнивать AI/CV providers/self-hosted? | Phase 1G provider decision | Critical | `BLOCKER_BEFORE_FEATURE` | Criteria/evaluation не утверждены | Только deterministic/manual geometry; provider не выбирается | До provider ADR и external processing | Architecture / Product |
@@ -232,11 +232,11 @@ Risk отражает последствия неверного предполо
 
 | ID | P | Вопрос | Зачем нужен ответ / критерий закрытия | Владелец ответа | Статус |
 |---|---|---|---|---|---|
-| TBD-ACCOUNT-001 | P0 | Входит ли клиентский кабинет в MVP или расчёт сохраняется гостевой ссылкой? | Решено: базовый кабинет с сохранёнными расчётами входит в MVP, но каталог, конфигуратор, расчёт и заявка полностью доступны гостю. | Владелец продукта | Решён — 2026-08-02, [MVP_SCOPE](../06-plans/MVP_SCOPE.md) |
-| TBD-ACCOUNT-002 | P1 | Какие способы входа допустимы для клиента? | Нужны UX, security и стоимость каналов подтверждения. | Product / Security | Открыт |
+| TBD-ACCOUNT-001 | P0 | Входит ли клиентский кабинет в MVP или расчёт сохраняется гостевой ссылкой? | Решено: `OWNER-DECISION-018` переносит кабинет post-MVP; в MVP остаётся гостевой путь и safe publicReference. | Владелец продукта | Решён — 2026-08-09, `OWNER-DECISION-018` |
+| TBD-ACCOUNT-002 | P1 | Какие способы входа допустимы для клиента? | Отложено post-MVP; Phase 1F не создаёт customer authentication provider. ADR-0011 применяется только к staff. | Product / Security | Решён для MVP — 2026-08-09, `OWNER-DECISION-018` |
 | TBD-ACCOUNT-003 | P0 | Как безопасно связать существующие заказы с аккаунтом клиента? | Нужен проверяемый proof-of-ownership. | Владелец / Security | Открыт |
-| TBD-ACCOUNT-004 | P1 | Как гостевой расчёт переносится в новый или существующий аккаунт? | Нужны правила владения, дедупликации и срока токена. | Product / Security | Открыт |
-| TBD-ACCOUNT-005 | P1 | Какие поля профиля действительно нужны? | Нужен минимизированный набор и основания обработки. | Product / Privacy | Открыт |
+| TBD-ACCOUNT-004 | P1 | Как гостевой расчёт переносится в новый или существующий аккаунт? | Отложено post-MVP; guest migration отсутствует в Phase 1F. | Product / Security | Отложено — 2026-08-09, `OWNER-DECISION-018` |
+| TBD-ACCOUNT-005 | P1 | Какие поля профиля действительно нужны? | Отложено post-MVP; `CustomerContact` — отдельная business-сущность, а не профиль. | Product / Privacy | Отложено — 2026-08-09, `OWNER-DECISION-018` |
 | TBD-ACCOUNT-006 | P1 | Как обрабатываются удаление аккаунта и сохранение обязательных данных заказа? | Нужна юридически согласованная матрица retention. | Privacy / юрист | Открыт |
 
 ## Дизайн
@@ -310,7 +310,7 @@ Risk отражает последствия неверного предполо
 
 Семь P0, ранее имевшие `OWNER_DECISION_REQUIRED`, решены 2026-08-02: `TBD-BIZ-001`, `TBD-PRICE-007`, `TBD-MIN-PRICE-001`, `TBD-PRICE-SOURCE-002`, `TBD-PRICE-PARITY-001`, `TBD-INVENTORY-002` и `TBD-INFRA-002`. External AMIGO data и `BLOCKER_BEFORE_FEATURE` по-прежнему закрываются перед указанными Phase 1B–1G activations, а не в Foundation.
 
-Phase 1A–1E завершены; `OWNER-DECISION-015` фиксирует explicit partner permission for the locally mirrored photoreal Phase 1D layers. Завершённая `OWNER-DECISION-016` Phase 1E использует только synthetic local/CI contact data и безопасный fixed-recipient `wa.me`/copy fallback; это не закрывает production PII blockers и не подтверждает WhatsApp API/delivery. `TBD-SOURCE-AMIGO-002` остаётся открыт только для official API/export/file/schema aspect, если такой канал существует. Phase 1F и любая следующая фаза не разрешены автоматически.
+Phase 1A–1F завершены; `OWNER-DECISION-015` фиксирует explicit partner permission for the locally mirrored photoreal Phase 1D layers. Завершённая `OWNER-DECISION-016` Phase 1E и revised `OWNER-DECISION-017/018` Phase 1F используют только synthetic local/CI contact data и безопасный fixed-recipient `wa.me`/copy fallback; это не закрывает production PII blockers и не подтверждает WhatsApp API/delivery. `TBD-SOURCE-AMIGO-002` остаётся открыт только для official API/export/file/schema aspect, если такой канал существует. Customer accounts, Phase 1G и любая следующая фаза не разрешены автоматически.
 
 `OWNER-DECISION-011` закрывает только local/CI emulator choice: VersityGW в Docker/POSIX named volumes. `TBD-INFRA-010` явно сохраняет выбор production storage открытым; local choice не свидетельствует в пользу Supabase Storage, Cloudflare R2, AWS S3 или иного provider.
 

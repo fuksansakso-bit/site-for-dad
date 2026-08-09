@@ -7,6 +7,9 @@ export {
   enqueueCatalogVersionRollback,
   enqueueFoundationProbe,
   ensureDailyCatalogSourceDiscovery,
+  ensureDailyIdentityCleanup,
+  enqueueEmailDelivery,
+  enqueuePortfolioMediaProcessing,
   listPermanentFoundationFailures,
   migrateFoundationJobs,
   requestCatalogSyncCancellation,
@@ -14,11 +17,28 @@ export {
   startFoundationJobRuntime,
   verifyFoundationQueueSchema,
   type EnqueuedFoundationJob,
+  type EnqueuedPhase1fJob,
   type EnqueuedCatalogJob,
   type EnqueuedCatalogGovernanceJob,
   type FoundationJobRuntime,
   type PermanentFoundationFailure,
 } from './adapter.js';
+export {
+  cleanupIdentityPayloadSchema,
+  deliverEmailPayloadSchema,
+  phase1fJobIdentifiers,
+  phase1fJobQueueName,
+  processPortfolioMediaPayloadSchema,
+  type CleanupIdentityPayload,
+  type DeliverEmailPayload,
+  type ProcessPortfolioMediaPayload,
+} from './phase1f/contracts.js';
+export {
+  createPhase1fTaskList,
+  type Phase1fJobServices,
+  type Phase1fTaskLifecycleEvent,
+  type Phase1fTaskLifecycleSink,
+} from './phase1f/task.js';
 export {
   automaticCatalogDiscoveryPayload,
   catalogActivateVersionPayloadSchema,

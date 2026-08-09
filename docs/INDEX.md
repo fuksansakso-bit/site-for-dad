@@ -2,7 +2,7 @@
 
 ## 0. Статус
 
-Phase 1A–1E завершены. Phase 1E имеет статус `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`; QG-311–360 закрыты, а completion evidence находится в отчёте. Client photo/AI, payment/accounts/final design, production и Phase 1F+ остаются запрещены без нового письменного решения.
+Phase 1A–1F завершены. Revised staff/business Phase 1F имеет статус `PASSED_PHASE_1F_BUSINESS_ADMINISTRATION`; QG-361–420 закрыты, а customer accounts не входят в MVP. Client photo/AI, payment/final design, production and Phase 1G+ remain prohibited.
 
 ## 1. Порядок обязательного чтения
 
@@ -16,7 +16,7 @@ Phase 1A–1E завершены. Phase 1E имеет статус `PASSED_PHASE
 8. [PRICING_SOURCE_POLICY.md](00-global/PRICING_SOURCE_POLICY.md) — snapshots, версии, overrides, fallback и parity.
 9. [ASSUMPTIONS.md](00-global/ASSUMPTIONS.md) и [OPEN_QUESTIONS.md](00-global/OPEN_QUESTIONS.md) — неподтверждённые решения и пробелы.
 10. Релевантная профильная спека из разделов ниже.
-11. Для implementation readiness — [MVP scope](06-plans/MVP_SCOPE.md), [critical audit](06-plans/SPEC_READINESS_AUDIT.md), [roadmap](06-plans/IMPLEMENTATION_ROADMAP.md) и Phase 1A–1E records.
+11. Для implementation readiness — [MVP scope](06-plans/MVP_SCOPE.md), [critical audit](06-plans/SPEC_READINESS_AUDIT.md), [roadmap](06-plans/IMPLEMENTATION_ROADMAP.md) и Phase 1A–1F records.
 12. [CHANGELOG.md](../CHANGELOG.md) — история содержательных изменений.
 
 При конфликте действует repository precedence: `GLOBAL_SPEC` (включая перенесённые owner/partner decisions) → accepted ADR → approved профильная спецификация → governed dynamic snapshot → assumptions/open questions. Противоречие останавливает зависимую работу.
@@ -34,7 +34,7 @@ Phase 1A–1E завершены. Phase 1E имеет статус `PASSED_PHASE
 | [OPEN_QUESTIONS.md](00-global/OPEN_QUESTIONS.md) | Канонический реестр `TBD-*`, владельцев, влияния и критериев закрытия |
 | [SPEC_ROADMAP.md](00-global/SPEC_ROADMAP.md) | Фактический комплект 0B/0C, accepted Foundation ADR, gates и последовательность 1A–1H |
 | [TRACEABILITY_MATRIX.md](00-global/TRACEABILITY_MATRIX.md) | 18 critical chains и полная 40-story связь со спеками, AC и tests |
-| [SPEC_QUALITY_GATE.md](00-global/SPEC_QUALITY_GATE.md) | Passed gates through Phase 1E; QG-311–360 closed, Phase 1F not authorized |
+| [SPEC_QUALITY_GATE.md](00-global/SPEC_QUALITY_GATE.md) | Passed gates through revised staff/business Phase 1F; QG-361–420 closed, Phase 1G remains unauthorized |
 
 ## 3. Product specifications
 
@@ -115,7 +115,9 @@ Phase 1A–1E завершены. Phase 1E имеет статус `PASSED_PHASE
 | [PHASE_1D_STANDARD_PREVIEW_PLAN.md](06-plans/active/PHASE_1D_STANDARD_PREVIEW_PLAN.md) | Authorized deterministic preview scope, stages, asset/fallback safety, exact commits, acceptance and Phase 1E hold |
 | [PHASE_1D_STANDARD_PREVIEW_REPORT.md](06-plans/completed/PHASE_1D_STANDARD_PREVIEW_REPORT.md) | Routes, four photoreal family profiles, scenes/assets/counts, visual/mobile/recovery/CI/PR evidence and final acceptance |
 | [PHASE_1E_CART_WHATSAPP_ORDERS_PLAN.md](06-plans/active/PHASE_1E_CART_WHATSAPP_ORDERS_PLAN.md) | Authorized guest cart/request/WhatsApp scope, immutable snapshots, security boundary, exact commits and Phase 1F hold |
+| [PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_PLAN.md](06-plans/active/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_PLAN.md) | Completed staff auth/admin, requests/CRM contacts, portfolio/settings/audit execution record; customer accounts are post-MVP |
 | [PHASE_1E_CART_WHATSAPP_ORDERS_REPORT.md](06-plans/completed/PHASE_1E_CART_WHATSAPP_ORDERS_REPORT.md) | Phase 1E routes/models, fixed WhatsApp recipient, real DB/browser/security/recovery evidence and acceptance result |
+| [PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_REPORT.md](06-plans/completed/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_REPORT.md) | Staff auth/RBAC/admin/CRM-contact/portfolio/settings/audit/runtime/recovery/CI/PR evidence and passed acceptance without customer accounts |
 | [PREVIEW_AND_CONFIGURATOR_MAPPING_GAPS.md](06-plans/PREVIEW_AND_CONFIGURATOR_MAPPING_GAPS.md) | Exact active family/system/model/variant/source gaps without expanding Phase 1C catalog or pricing |
 
 ## 9. Architecture decisions
@@ -132,6 +134,7 @@ Phase 1A–1E завершены. Phase 1E имеет статус `PASSED_PHASE
 | [ADR-0008](adr/ADR-0008-postgresql-and-migration-safety.md) | **Accepted:** PostgreSQL/Prisma, reviewed migrations and expand/contract recovery |
 | [ADR-0009](adr/ADR-0009-object-storage-and-background-jobs.md) | **Accepted:** S3-compatible object port and separate Graphile Worker |
 | [ADR-0010](adr/ADR-0010-identity-secrets-and-observability-boundary.md) | **Accepted:** identity/secrets/OTLP boundary; production providers deferred |
+| [ADR-0011](adr/ADR-0011-passwordless-email-identity.md) | **Accepted for Phase 1F local/CI:** passwordless e-mail codes, rotating sessions, provider-neutral delivery and Mailpit |
 
 ## 10. Research evidence
 
@@ -166,7 +169,7 @@ Research snapshot не является вечным catalog/price fact. Нор�
 - Кто может выполнить действие — `ROLES_PERMISSIONS` и relevant domain spec.
 - Каких данных не хватает — `OPEN_QUESTIONS` по уникальному `TBD-*`.
 - Как требование проверяется — `TRACEABILITY_MATRIX`, AC и `TEST_STRATEGY`.
-- Можно ли начинать следующий код — нет: Phase 1E завершена, а Phase 1F+, photo/AI/payment/accounts и production требуют нового письменного решения.
+- Можно ли начинать следующий код — нет: revised Phase 1F завершена, а отдельного разрешения на Phase 1G нет; customer accounts, photo/AI/payment and production remain prohibited.
 
 ## 13. Правило навигации
 

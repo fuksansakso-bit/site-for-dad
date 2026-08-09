@@ -4,7 +4,10 @@ import {
 } from '@project-name/contracts/request';
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { getWebRequests } from '../../../../../../lib/catalog-runtime';
+import {
+  getWebBusinessAdministration,
+  getWebRequests,
+} from '../../../../../../lib/catalog-runtime';
 import { requestTelemetryContext } from '../../../../../../lib/health-handler';
 import { pricingNoStoreHeaders, pricingSafeFailure } from '../../../../../../lib/pricing-security';
 import {
@@ -25,12 +28,12 @@ export async function GET(
     const publicReference = requestPublicReferenceSchema.parse(
       (await routeContext.params).publicReference,
     );
+    const [source, settings] = await Promise.all([
+      getWebRequests().getPublicSummary(publicReference),
+      getWebBusinessAdministration().getActiveSettings(),
+    ]);
     const body = publicRequestSummaryResponseSchema.parse(
-      publicRequestSummaryResponse(
-        await getWebRequests().getPublicSummary(publicReference),
-        publicReference,
-        context.correlationId,
-      ),
+      publicRequestSummaryResponse(source, publicReference, context.correlationId, settings),
     );
     return NextResponse.json(body, { headers: pricingNoStoreHeaders(context.correlationId) });
   } catch (error) {

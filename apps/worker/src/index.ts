@@ -1,16 +1,25 @@
 import {
   parseDatabaseEnvironment,
+  parseEmailEnvironment,
+  parseIdentityEnvironment,
   parseObservabilityEnvironment,
   parseStorageEnvironment,
   parseWorkerEnvironment,
 } from '@project-name/config/server';
+import {
+  cleanupExpiredIdentityState,
+  processQueuedEmailDelivery,
+} from '@project-name/identity/passwordless';
+import { createPortfolioAdapter } from '@project-name/db';
 import { createCatalogJobServices } from '@project-name/jobs';
 import { createFoundationLogger } from '@project-name/observability/logger';
 import { foundationMetrics } from '@project-name/observability/metrics';
 import { initializeNodeTelemetry } from '@project-name/observability/telemetry';
 import { createS3ObjectStorage } from '@project-name/storage';
+import { createSmtpEmailDeliveryPort } from '@project-name/notifications';
 
 import { createWorkerEventSink, startWorkerProcess } from './runtime.js';
+import { processPortfolioMedia } from './portfolio-media.js';
 
 function writeBootstrapFailure(): void {
   process.stderr.write(
@@ -32,6 +41,8 @@ function writeBootstrapFailure(): void {
 try {
   const workerEnvironment = parseWorkerEnvironment(process.env);
   const databaseEnvironment = parseDatabaseEnvironment(process.env);
+  const emailEnvironment = parseEmailEnvironment(process.env);
+  const identityEnvironment = parseIdentityEnvironment(process.env);
   const observabilityEnvironment = parseObservabilityEnvironment(process.env);
   const storageEnvironment = parseStorageEnvironment(process.env);
   const telemetryRuntime = initializeNodeTelemetry(observabilityEnvironment, 'project-name-worker');
@@ -43,6 +54,14 @@ try {
   });
   const eventSink = createWorkerEventSink(logger);
   const objectStorage = createS3ObjectStorage(storageEnvironment);
+  const portfolio = createPortfolioAdapter(databaseEnvironment);
+  const emailDelivery = createSmtpEmailDeliveryPort({
+    fromAddress: emailEnvironment.EMAIL_FROM_ADDRESS,
+    fromName: emailEnvironment.EMAIL_FROM_NAME,
+    host: emailEnvironment.SMTP_HOST,
+    port: emailEnvironment.SMTP_PORT,
+    timeoutMs: emailEnvironment.SMTP_TIMEOUT_MS,
+  });
   const catalogServices = createCatalogJobServices(undefined, () => ({
     maximumBytes: storageEnvironment.S3_MAX_OBJECT_BYTES,
     objectStorage,
@@ -64,6 +83,18 @@ try {
         metrics: foundationMetrics,
       },
       catalogServices,
+      {
+        cleanupIdentity: () => cleanupExpiredIdentityState(databaseEnvironment),
+        deliverEmail: (deliveryId) =>
+          processQueuedEmailDelivery(
+            databaseEnvironment,
+            identityEnvironment,
+            emailDelivery,
+            deliveryId,
+          ),
+        processPortfolioMedia: (mediaId) =>
+          processPortfolioMedia(portfolio, objectStorage, mediaId),
+      },
     );
   } catch (error) {
     logger.log({

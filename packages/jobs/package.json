@@ -23,6 +23,7 @@
     "@project-name/config": "workspace:*",
     "@project-name/contracts": "workspace:*",
     "@project-name/db": "workspace:*",
+    "@project-name/notifications": "workspace:*",
     "@project-name/observability": "workspace:*",
     "graphile-worker": "catalog:",
     "pg": "catalog:",
@@ -38,7 +39,7 @@
   },
   "projectName": {
     "layer": "jobs",
-    "responsibility": "Versioned durable Graphile Worker contracts, resumable catalog checkpoints/manifests, idempotency, cancellation, retry, timeout, and permanent-failure inspection.",
+    "responsibility": "Versioned durable Graphile Worker contracts for catalog plus Phase 1F delivery/migration/cleanup/media work, with idempotency, cancellation, retry, timeout, and permanent-failure inspection.",
     "publicInterface": [
       "."
     ]

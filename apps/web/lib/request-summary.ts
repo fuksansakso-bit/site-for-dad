@@ -1,5 +1,6 @@
 import type { PublicRequestSummaryResponse } from '@project-name/contracts/request';
 import type { PublicRequestSummaryView } from '@project-name/db';
+import { activeSiteSettingsFallback, type SiteSettings } from '@project-name/db';
 
 const statusLabels: Record<PublicRequestSummaryView['status'], string> = {
   CANCELLED: 'Заявка отменена',
@@ -21,12 +22,14 @@ export function publicRequestSummaryResponse(
   source: PublicRequestSummaryView,
   publicReference: string,
   correlationId: string,
+  settings: SiteSettings = activeSiteSettingsFallback,
 ): PublicRequestSummaryResponse {
   const previewSequences = new Set(source.previewSequences);
   return {
     correlationId,
     createdAt: source.createdAt,
     installmentInterest: source.installmentInterest,
+    installmentText: settings.installmentText,
     items: source.snapshot.items.map((item, index) => {
       const sequence = index + 1;
       return {
@@ -46,16 +49,16 @@ export function publicRequestSummaryResponse(
         warnings: [...item.warnings],
       };
     }),
-    manufacturingLeadTime: '2–7 календарных дней',
+    manufacturingLeadTime: settings.manufacturingLeadTime,
     measurementRequested: source.measurementRequested,
     requestNumber: source.requestNumber,
     services: {
-      delivery: 'Бесплатно',
-      installation: 'Бесплатно',
-      measurement: 'Бесплатно',
+      delivery: settings.services.delivery,
+      installation: settings.services.installation,
+      measurement: settings.services.measurement,
     },
     statusLabel: statusLabels[source.status] as PublicRequestSummaryResponse['statusLabel'],
     summary: source.snapshot.summary,
-    warranty: '12 месяцев',
+    warranty: settings.warranty,
   };
 }

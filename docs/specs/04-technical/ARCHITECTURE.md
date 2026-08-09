@@ -4,7 +4,7 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A/1B.1/1B.2/1C/1D/1E verified; Phase 1F+/production gated |
+| Статус | Phase 1A/1B.1/1B.2/1C/1D/1E/1F verified; Phase 1G+/production gated |
 | Версия | 0.12.0 |
 | Дата | 2026-08-09 |
 | Global baseline | [GLOBAL_SPEC.md](../GLOBAL_SPEC.md) 0.21.0 |

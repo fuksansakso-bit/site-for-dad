@@ -7,10 +7,8 @@ allowBuilds:
   esbuild: true
   prisma: true
   protobufjs: true
+  sharp: true
   unrs-resolver: true
-
-ignoredOptionalDependencies:
-  - sharp
 
 catalog:
   '@aws-sdk/client-s3': 3.1101.0
@@ -40,6 +38,7 @@ catalog:
   prisma: 7.9.1
   react: 19.2.8
   react-dom: 19.2.8
+  sharp: 0.34.5
   tsx: 4.23.4
   turbo: 2.10.8
   typescript: 6.0.3

@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A–1E gates passed; Phase 1F+/production tests gated |
-| Версия | 1.2.0 |
+| Статус | Phase 1A–1F gates passed; Phase 1G+/production tests gated |
+| Версия | 1.3.0 |
 | Дата | 2026-08-09 |
 | Requirements | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) and profile specs |
 | Acceptance | [ACCEPTANCE_CRITERIA.md](../specs/01-product/ACCEPTANCE_CRITERIA.md) |
@@ -231,3 +231,4 @@ Dependencies: all specs/ADRs/evaluations, implementation stack/environments, app
 | 1.0.0 | 2026-08-08 | Added and recorded Phase 1C unit/property, contract, real-PostgreSQL, parity, exact 9/9 CI-equivalent and desktop/mobile configurator evidence, including immutable quotes, override/minimum/idempotency/rollback/audit boundaries and ≤1 RUB parity. |
 | 1.1.0 | 2026-08-08 | Added and recorded Phase 1D unit/contract/storage/web/PostgreSQL/browser/recovery evidence plus four fixed family visual baselines at a justified 0.5% threshold. |
 | 1.2.0 | 2026-08-09 | Added Phase 1E unit/contract/real-PostgreSQL/Chromium/security/mobile/log-scan and restart/outbox recovery evidence for immutable cart/request and fixed-recipient WhatsApp intake. |
+| 1.3.0 | 2026-08-09 | Recorded revised Phase 1F staff-auth/RBAC/admin/request-contact/portfolio/settings/audit tests, real PostgreSQL migration/recovery, Mailpit live flow, five-profile browser regression and exact CI-equivalent security evidence without customer accounts. |

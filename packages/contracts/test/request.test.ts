@@ -39,15 +39,22 @@ describe('guest checkout contract', () => {
     ).toThrow();
   });
 
-  it('does not accept a client-controlled WhatsApp recipient', () => {
+  it('keeps the WhatsApp recipient server-controlled and internally consistent', () => {
     expect(() => whatsappHandoffRequestSchema.parse({ recipient: '79999999999' })).toThrow();
+    const response = {
+      correlationId: 'correlation-123',
+      message: 'Тест',
+      publicSummaryHref: `/request/${'a'.repeat(43)}`,
+      recipient: '79999999999',
+      whatsappUrl: 'https://wa.me/79999999999?text=test',
+    };
+    expect(whatsappHandoffResponseSchema.parse(response)).toMatchObject({
+      recipient: '79999999999',
+    });
     expect(() =>
       whatsappHandoffResponseSchema.parse({
-        correlationId: 'correlation-123',
-        message: 'Тест',
-        publicSummaryHref: `/request/${'a'.repeat(43)}`,
-        recipient: '79999999999',
-        whatsappUrl: 'https://wa.me/79999999999?text=test',
+        ...response,
+        whatsappUrl: 'https://wa.me/78888888888?text=test',
       }),
     ).toThrow();
   });

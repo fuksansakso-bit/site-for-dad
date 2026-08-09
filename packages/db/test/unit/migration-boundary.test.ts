@@ -4,10 +4,10 @@ import { describe, expect, it } from 'vitest';
 
 const migrationsRoot = new URL('../../prisma/migrations/', import.meta.url);
 const forbiddenLaterPhaseEntity =
-  /\b(?:customer[_ ]?photos?|visualizations?|payment[_ ]?intents?|accounts?)\b/i;
+  /\b(?:customer[_ ]?photos?|visualizations?|payment[_ ]?intents?|customer[_ ]?accounts?|saved[_ ]?projects?|favorite[_ ]?materials?|magic[_ ]?links?)\b/i;
 
-describe('Phase 1E migration boundary', () => {
-  it('contains only reviewed Foundation through cart/request-intake tables', async () => {
+describe('Phase 1F migration boundary', () => {
+  it('contains only reviewed Foundation through business-administration tables', async () => {
     const migrationDirectories = (await readdir(migrationsRoot, { withFileTypes: true }))
       .filter((entry) => entry.isDirectory())
       .map((entry) => entry.name)
@@ -34,6 +34,10 @@ describe('Phase 1E migration boundary', () => {
       '20260809114500_phase_1e_cart_money_bigint',
       '20260809121000_phase_1e_communication_idempotency',
       '20260809124500_phase_1e_request_admin_controls',
+      '20260809170000_phase_1f_accounts_business_admin',
+      '20260809180000_phase_1f_customer_contact_backfill',
+      '20260809181000_phase_1f_staff_last_owner_scope',
+      '20260809182000_phase_1f_schema_alignment',
     ]);
 
     const tables = new Set<string>();
@@ -57,14 +61,28 @@ describe('Phase 1E migration boundary', () => {
       } else if (directory === '20260809124500_phase_1e_request_admin_controls') {
         expect(sql).toContain('Phase 1E migration risk: LOW');
         expect(sql).toContain('Forward compensation');
+      } else if (directory === '20260809170000_phase_1f_accounts_business_admin') {
+        expect(sql).toContain('Phase 1F additive named staff');
+        expect(sql).toContain("auth_challenge_purpose AS ENUM ('STAFF_LOGIN', 'STAFF_INVITATION')");
+      } else if (directory === '20260809180000_phase_1f_customer_contact_backfill') {
+        expect(sql).toContain('INSERT INTO customer_contact');
+        expect(sql).toContain('ON CONFLICT (inquiry_id) DO NOTHING');
+      } else if (directory === '20260809181000_phase_1f_staff_last_owner_scope') {
+        expect(sql).toContain("actor.provider = 'passwordless-email'");
+        expect(sql).toContain('LAST_OWNER_PROTECTED');
+      } else if (directory === '20260809182000_phase_1f_schema_alignment') {
+        expect(sql).toContain('ALTER COLUMN updated_at DROP DEFAULT');
+        expect(sql).toContain('ON DELETE RESTRICT ON UPDATE CASCADE');
       } else {
         expect(sql).toMatch(/PLAN-(?:1A|1B1|1B2) migration risk: (?:LOW|MEDIUM)/);
       }
-      expect(sql).toMatch(/\bBEGIN;/);
-      expect(sql).toMatch(/\bCOMMIT;/);
+      if (!directory.includes('phase_1f')) {
+        expect(sql).toMatch(/\bBEGIN;/);
+        expect(sql).toMatch(/\bCOMMIT;/);
+      }
       expect(sql).not.toMatch(/\b(?:DROP\s+TABLE|TRUNCATE)\b/i);
       expect(sql).not.toMatch(forbiddenLaterPhaseEntity);
-      for (const match of sql.matchAll(/CREATE TABLE "([a-z_]+)"/g)) {
+      for (const match of sql.matchAll(/CREATE TABLE\s+(?:IF NOT EXISTS\s+)?"?([a-z_]+)"?/gi)) {
         tables.add(match[1] ?? '');
       }
     }
@@ -72,6 +90,7 @@ describe('Phase 1E migration boundary', () => {
     expect([...tables].sort()).toEqual([
       'actor_identity',
       'audit_event',
+      'auth_rate_limit',
       'availability_record',
       'business_catalog_entry',
       'cart_item',
@@ -88,7 +107,11 @@ describe('Phase 1E migration boundary', () => {
       'catalog_version_entry',
       'color',
       'compatibility_rule',
+      'customer_contact',
+      'customer_contact_note',
+      'customer_contact_request',
       'dimension_constraint',
+      'email_delivery',
       'guest_cart',
       'guest_cart_session',
       'idempotency_record',
@@ -98,8 +121,11 @@ describe('Phase 1E migration boundary', () => {
       'material_property',
       'material_variant',
       'media_asset',
+      'one_time_code_challenge',
       'order_inquiry',
       'outbox_event',
+      'portfolio_item',
+      'portfolio_media',
       'price_version',
       'price_version_record',
       'pricing_calculation',
@@ -117,10 +143,14 @@ describe('Phase 1E migration boundary', () => {
       'request_item_snapshot',
       'role_grant',
       'service_heartbeat',
+      'site_settings_pointer',
+      'site_settings_revision',
       'source_entity',
       'source_media_asset',
       'source_price_record',
       'source_snapshot',
+      'staff_invitation',
+      'staff_session',
       'standard_preview_state',
       'supplier',
       'supplier_relationship',

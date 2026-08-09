@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A–1E schema implemented and verified; full order/account/private-media aggregates gated |
-| Версия | 0.14.0 |
+| Статус | Phase 1A–1F implemented; additive staff/admin/CRM-contact/content schema verified |
+| Версия | 0.17.0 |
 | Дата | 2026-08-09 |
 | Architecture | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | Glossary | [GLOSSARY.md](../../00-global/GLOSSARY.md) |
@@ -170,7 +170,7 @@ Schema changes use additive/read-old-write-new/dual-compatible evolution, backfi
 
 Tests: ID uniqueness, optimistic concurrency, effective interval overlap, hierarchy cycles, reference integrity, readiness matrix, exact money, historical replay, source rename/split/merge/removal, preservation of local data/overlays on removal, dynamic category, catalog-version source/timestamp/approval completeness, single active pointer, public/derived version pinning, override precedence without source mutation, ownership/IDOR, private graph deletion/late job, rights revoke, active pointer rollback, event/job deduplication, catalog-change audit coverage, audit schema redaction, backup restore revocation and migration compatibility.
 
-## 17. Physical schema record through Phase 1E
+## 17. Physical schema record through Phase 1F
 
 The seven Phase 1A identity/audit/delivery tables and fifteen Phase 1B.1/1B.2 catalog migrations remain compatible. Migration `20260808150000_phase_1c_configurator_pricing` adds five bounded aggregates without changing the active catalog composition:
 
@@ -197,9 +197,22 @@ Database triggers reject update/delete of request item snapshots and protected r
 
 ## 18. Dependencies, risks and open questions
 
-Dependencies: all domain specs, API/storage/security/deployment, ADRs and `OWNER-DECISION-008/009/010/012/013/014/015/016`. PostgreSQL/Prisma remains fixed; approved preview bytes stay behind `StoragePort`. Production PII/legal/retention, account/full order workflow, storage/index/search and Phase 1F+ remain gated. Risks: accidental ownership bypass, stale version references, mutable quote history, projection drift and private data in generic metadata.
+Dependencies: all domain specs, API/storage/security/deployment, ADRs and `OWNER-DECISION-008/009/010/012/013/014/015/016/017/018`. PostgreSQL/Prisma remains fixed; approved preview and portfolio bytes stay behind `StoragePort`. Production PII/legal/retention, customer accounts/full order workflow, production storage/index/search and Phase 1G+ remain gated. Risks: accidental ownership bypass, stale version references, mutable quote history, projection drift and private data in generic metadata.
 
-## 19. History
+## 19. Phase 1F physical additions
+
+- **P1F-DATA-001 — SUPERSEDED:** account/project/favorite/ownership tables are withdrawn before acceptance by `OWNER-DECISION-018`; staff identity/session/invitation, portfolio and SiteSettings remain additive.
+- **P1F-DATA-002 — MUST:** existing ActorIdentity/RoleGrant remains the staff RBAC subject; staff-invitation lifecycle references it rather than duplicating role authority. `CustomerContact` is deliberately not an ActorIdentity.
+- **P1F-DATA-003 — SUPERSEDED:** no account ownership links are added to QuoteSnapshot, StandardPreviewState or OrderInquiry in Phase 1F; immutable Phase 1E records remain unchanged.
+- **P1F-DATA-004 — MUST:** e-mail, contact and profile data is never placed in AuditEvent target/reason fields, Outbox payloads, object keys or public references.
+- **P1F-DATA-005 — MUST:** portfolio original/derivative records store checksum, MIME, dimensions, safe name, rights/publication state and StoragePort reference; no client-photo class is accepted by this aggregate.
+- **P1F-DATA-006 — MUST:** SiteSettings revisions preserve effective value, author, reason, timestamp and rollback lineage; one active pointer is selected transactionally.
+- **P1F-DATA-007 — MUST:** `CustomerContact` stores normalized supplied phone, optional normalized e-mail, bounded display name/locality and created/updated timestamps without password, OTP, session or ActorIdentity linkage.
+- **P1F-DATA-008 — MUST:** a link table associates immutable `OrderInquiry` records with `CustomerContact`; deterministic deduplication and merge/conflict handling never mutate captured request contact snapshots.
+- **P1F-DATA-009 — MUST:** internal notes reference request or contact, staff ActorIdentity, bounded text and timestamps and are never copied to a public/request snapshot.
+- **P1F-DATA-010 — MUST:** only staff sessions may be persisted by Phase 1F runtime; the CUSTOMER role may remain reserved but has no authentication/session creation path.
+
+## 20. History
 
 | Версия | Дата | Изменение |
 |---|---|---|
@@ -217,3 +230,6 @@ Dependencies: all domain specs, API/storage/security/deployment, ADRs and `OWNER
 | 0.12.0 | 2026-08-08 | Recorded the additive Phase 1C pricing-rule/parity/calculation/immutable-quote/version-decision schema, append-only triggers, lookup indexes and preserved Phase 1B.2 data/volumes without Phase 1D aggregates. |
 | 0.13.0 | 2026-08-08 | Recorded the separate ownership-scoped `StandardPreviewState`, opaque lookup/indexes, immutable calculation/quote references and no-customer-photo boundary delivered in Phase 1D. |
 | 0.14.0 | 2026-08-09 | Recorded Phase 1D preview plus the additive Phase 1E guest cart, item revision, immutable `OrderInquiry`/item snapshot, communication/note, BigInt money and database immutability controls. |
+| 0.15.0 | 2026-08-09 | Authorized additive Phase 1F identity/account/project/favorite/ownership, staff invite, portfolio and SiteSettings records while preserving immutable Phase 1C–1E snapshots. |
+| 0.16.0 | 2026-08-09 | `OWNER-DECISION-018` removes customer account/project/favorite/ownership records and adds request-derived CustomerContact/link/note records; staff identity/session/invite, portfolio and SiteSettings remain. |
+| 0.17.0 | 2026-08-09 | Recorded the verified 25-migration Phase 1F schema, forward Prisma alignment, staff OTP/session/invitation, credential-free CustomerContact links/notes, portfolio and SiteSettings with empty/repeat/upgrade/drift/recovery evidence. |

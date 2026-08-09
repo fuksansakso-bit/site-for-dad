@@ -36,6 +36,30 @@ services:
     security_opt:
       - no-new-privileges:true
 
+  mailpit:
+    image: axllent/mailpit:v1.30.0@sha256:0059ef81e492a7192af3816281eed6859eb078bd7bdc58b76757c13e10e53a7d
+    environment:
+      MP_DATABASE: /data/mailpit.db
+      MP_MAX_MESSAGES: '500'
+      MP_SMTP_AUTH_ACCEPT_ANY: '0'
+      MP_SMTP_AUTH_ALLOW_INSECURE: '0'
+    ports:
+      - '127.0.0.1:${MAILPIT_SMTP_PORT:-1025}:1025'
+      - '127.0.0.1:${MAILPIT_HTTP_PORT:-8025}:8025'
+    volumes:
+      - mailpit_data:/data
+    healthcheck:
+      test: ['CMD', '/mailpit', 'readyz']
+      interval: 2s
+      timeout: 2s
+      retries: 30
+      start_period: 3s
+    init: true
+    restart: always
+    stop_grace_period: 15s
+    security_opt:
+      - no-new-privileges:true
+
 volumes:
   catalog_s3_data:
     name: ${CATALOG_S3_VOLUME_PREFIX:-project_name}_catalog_s3_data
@@ -43,3 +67,5 @@ volumes:
     name: ${CATALOG_S3_VOLUME_PREFIX:-project_name}_catalog_s3_versioning
   catalog_s3_iam:
     name: ${CATALOG_S3_VOLUME_PREFIX:-project_name}_catalog_s3_iam
+  mailpit_data:
+    name: ${CATALOG_S3_VOLUME_PREFIX:-project_name}_mailpit_data

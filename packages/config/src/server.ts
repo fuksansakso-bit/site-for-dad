@@ -162,6 +162,17 @@ const identityEnvironmentSchema = phase1ABaseSchema
   .strict();
 export type IdentityEnvironment = z.infer<typeof identityEnvironmentSchema>;
 
+const emailEnvironmentSchema = phase1ABaseSchema
+  .extend({
+    EMAIL_FROM_ADDRESS: z.string().email().max(254),
+    EMAIL_FROM_NAME: z.string().min(1).max(80),
+    SMTP_HOST: z.enum(['127.0.0.1', '::1']),
+    SMTP_PORT: positiveIntegerString(1, 65_535),
+    SMTP_TIMEOUT_MS: positiveIntegerString(100, 30_000),
+  })
+  .strict();
+export type EmailEnvironment = z.infer<typeof emailEnvironmentSchema>;
+
 const observabilityEnvironmentSchema = phase1ABaseSchema
   .extend({
     BUILD_ID: z
@@ -246,6 +257,17 @@ export function parseIdentityEnvironment(source: EnvironmentSource): IdentityEnv
     ...baseKeys,
     'SESSION_SIGNING_KEY',
     'SYNTHETIC_IDENTITY_ENABLED',
+  ]);
+}
+
+export function parseEmailEnvironment(source: EnvironmentSource): EmailEnvironment {
+  return parseEnvironment('email delivery', emailEnvironmentSchema, source, [
+    ...baseKeys,
+    'EMAIL_FROM_ADDRESS',
+    'EMAIL_FROM_NAME',
+    'SMTP_HOST',
+    'SMTP_PORT',
+    'SMTP_TIMEOUT_MS',
   ]);
 }
 

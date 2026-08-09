@@ -114,8 +114,13 @@ function persistedSelection(catalogVersionId: string): PersistedConfiguratorSele
 }
 
 export function ProductConfigurator({
+  commercialTerms,
   editReference,
 }: {
+  readonly commercialTerms: {
+    readonly manufacturingLeadTime: string;
+    readonly warranty: string;
+  };
   readonly editReference: string | null;
 }): React.JSX.Element {
   const [bootstrap, setBootstrap] = useState<ConfiguratorBootstrapResponse | null>(null);
@@ -722,7 +727,10 @@ export function ProductConfigurator({
           <dt>Количество</dt>
           <dd>{quantity}</dd>
         </dl>
-        <small>Срок изготовления 2–7 календарных дней · гарантия 12 месяцев.</small>
+        <small>
+          Срок изготовления {commercialTerms.manufacturingLeadTime} · гарантия{' '}
+          {commercialTerms.warranty}.
+        </small>
       </aside>
     </div>
   );

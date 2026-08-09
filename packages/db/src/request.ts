@@ -353,6 +353,7 @@ async function requireStaffRole(client: PoolClient, actor: AdminRequestActor): P
         JOIN role_grant grant_row ON grant_row.actor_id = actor.id
         WHERE actor.id = $1::uuid AND actor.disabled_at IS NULL
           AND grant_row.role = $2::system_role
+          AND grant_row.revoked_at IS NULL
       ) AS allowed
     `,
     [actor.actorId, actor.role],
@@ -749,6 +750,28 @@ export function createRequestAdapter(environment: DatabaseEnvironment): RequestA
             );
             const request = inserted.rows[0];
             if (request === undefined) throw new RequestStoreError('REQUEST_DATABASE');
+
+            const contact = await client.query<{ id: string }>(
+              `
+                INSERT INTO customer_contact (
+                  display_name, phone_normalized, email_normalized, locality, created_at, updated_at
+                ) VALUES ($1,$2,NULL,$3,NOW(),NOW())
+                ON CONFLICT (phone_normalized) DO UPDATE
+                SET display_name = EXCLUDED.display_name,
+                    locality = EXCLUDED.locality,
+                    updated_at = NOW()
+                RETURNING id::text
+              `,
+              [input.contactName, input.contactPhone, input.locality],
+            );
+            const contactId = contact.rows[0]?.id;
+            if (contactId === undefined) throw new RequestStoreError('REQUEST_DATABASE');
+            await client.query(
+              `INSERT INTO customer_contact_request (customer_contact_id, inquiry_id)
+               VALUES ($1::uuid,$2::uuid)
+               ON CONFLICT (inquiry_id) DO NOTHING`,
+              [contactId, request.id],
+            );
 
             for (const [index, row] of rows.entries()) {
               const item = state.items[index];

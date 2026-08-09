@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A–1E health/catalog/pricing/preview/cart/request contracts implemented; Phase 1F+ routes gated |
-| Версия | 0.11.0 |
+| Статус | Phase 1A–1F contracts implemented; customer account APIs absent |
+| Версия | 0.14.0 |
 | Дата | 2026-08-09 |
 | Architecture/data | [ARCHITECTURE.md](ARCHITECTURE.md), [DATA_MODEL.md](DATA_MODEL.md) |
 | Security | [SECURITY_PRIVACY.md](SECURITY_PRIVACY.md) |
@@ -212,7 +212,7 @@ TLS, secure session/CSRF/CORS/CSP, object authorization, rate/abuse, schema vali
 
 Contract tests cover schemas/unknown fields as policy, auth/object matrix, idempotency, version conflicts, errors, exact money, pagination/cursors, upload spoof/completion, late callback/delete, public/private caching, redaction, event compatibility/dedup/order, provider outages and old/new client rolling compatibility. Domain AC/TS map to endpoints but API tests do not replace business tests.
 
-## 14. Phase 1A–1E implementation record
+## 14. Phase 1A–1F implementation record
 
 Phase 1A concrete routes remain `GET /api/v1/health/live` and `GET /api/v1/health/ready`. Phase 1B implements the server-authorized `/admin/catalog` slice through Next.js Server Actions rather than a generic CRUD route. The Phase 1B.2 staff read model covers the complete selected AMIGO source with bounded server filters/pages, hierarchy facets, safe sealed-manifest counts, run stages/checkpoints, differences and immutable review/bulk history; object keys, credentials, source hashes, raw snapshots and parser-internal payloads remain redacted. Every mutation re-evaluates the HttpOnly SameSite session and role server-side. OWNER/ADMIN commands keep preparation, exact two-step bulk apply, composition, selected/all difference review, approval, activation, rollback, cancellation and retry distinct and bind them to exact source/run/version/checksum/count state with generated correlation/idempotency evidence.
 
@@ -224,11 +224,21 @@ Phase 1D preview routes reuse the same origin/CSRF/rate/idempotency/correlation 
 
 Phase 1E cart/request routes use strict shared Zod schemas, 32 KiB mutation limits, signed same-origin CSRF, hashed HttpOnly guest ownership, per-boundary rate limits, correlation and private/no-store responses. Quote, product labels, statuses, versions and money are reloaded server-side. Checkout/audit/outbox is one PostgreSQL transaction; public reads are hash-verified, revocable, rate-limited and PII-free. The fixed WhatsApp recipient is a contract literal, not request input.
 
-## 15. Dependencies, risks and open questions
+## 15. Phase 1F contract profile
+
+- **P1F-API-001 — MUST:** staff-auth contracts expose request-code, verify-code, session/logout and invitation acceptance with strict schemas, neutral responses, no code/session hash and `no-store`; they never create customer credentials.
+- **P1F-API-002 — SUPERSEDED:** every customer account contract is deferred post-MVP by `OWNER-DECISION-018`; `/v1/account/*` is absent in Phase 1F.
+- **P1F-API-003 — MUST:** admin contracts expose bounded dashboard/customer/portfolio/settings/staff/audit data and preserve existing catalog/pricing/request commands instead of generic CRUD.
+- **P1F-API-004 — MUST:** portfolio upload accepts bounded multipart bytes, ignores client filename for storage identity and returns no object key, signed URL or processing internals.
+- **P1F-API-005 — MUST:** mutations enforce content/body limits, origin/CSRF, current session/capability, optimistic concurrency and idempotency where retry can duplicate effects.
+- **P1F-API-006 — MUST:** staff-only CustomerContact/list/detail/request-history/note contracts are bounded, capability-filtered and never return credentials, auth state or internal notes to a publicReference endpoint.
+- **P1F-API-007 — MUST NOT:** any customer-facing request, checkout, WhatsApp or publicReference contract requires login or issues a customer session.
+
+## 16. Dependencies, risks and open questions
 
 Dependencies: all domain/technical specs, auth/provider/hosting ADRs. Next.js same-origin BFF and Foundation error status mapping are accepted; open: public API exposure, browser upload flow, future webhook transport, concrete rate limits, API lifecycle/support window and WhatsApp mode. Risks: CRUD bypass of invariants, IDOR, non-idempotent retry, private URL leak, mixed version, error data exposure and contract overcoupling to vendor.
 
-## 16. History
+## 17. History
 
 | Версия | Дата | Изменение |
 |---|---|---|
@@ -242,3 +252,6 @@ Dependencies: all domain/technical specs, auth/provider/hosting ADRs. Next.js sa
 | 0.9.0 | 2026-08-08 | Recorded the concrete configurator/validation/calculation/quote and pricing-admin routes with strict schemas, active-version authority, CSRF/origin/rate/idempotency/correlation/no-store boundaries and safe statuses delivered in Phase 1C. |
 | 0.10.0 | 2026-08-08 | Recorded the scenes/eligibility/state/asset/layer/delete/admin-diagnostics contracts, guest ownership, safe caching/errors and local-only asset resolution delivered in Phase 1D. |
 | 0.11.0 | 2026-08-09 | Recorded concrete Phase 1E cart/request/public-summary/WhatsApp/admin routes with immutable server authority, guest/RBAC ownership, idempotency, safe errors and fixed recipient. |
+| 0.12.0 | 2026-08-09 | Authorized strict neutral auth, self-scoped account and bounded business-admin/portfolio/settings contracts for Phase 1F. |
+| 0.13.0 | 2026-08-09 | `OWNER-DECISION-018` removes customer account contracts and narrows auth to staff; adds bounded credential-free CustomerContact/history/note administration while preserving guest/publicReference APIs. |
+| 0.14.0 | 2026-08-09 | Recorded implemented staff auth/session/invitation, unified admin, CustomerContact/note, portfolio/settings/audit routes and safe errors/caching/rate/origin/idempotency evidence; `/account` and customer-auth contracts remain absent. |

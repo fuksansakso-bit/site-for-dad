@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A–1E local/CI controls verified; production PII, user media/AI and deployment gated |
-| Версия | 0.7.0 |
+| Статус | Phase 1A–1F verified; customer auth absent; production PII/provider gates retained |
+| Версия | 0.10.0 |
 | Дата | 2026-08-09 |
 | Data model | [DATA_MODEL.md](DATA_MODEL.md) |
 | Roles | [ROLES_PERMISSIONS.md](../01-product/ROLES_PERMISSIONS.md) |
@@ -150,11 +150,22 @@ Phase 1D introduces no customer photo, upload, AI provider, paid API or producti
 
 Phase 1E local/CI checkout uses synthetic contact data only. A 256-bit guest token is stored as an HttpOnly/SameSite cookie (Secure in production) while PostgreSQL stores its hash. Origin/CSRF/body/rate/idempotency checks protect mutations; object ownership and staff role/version are rechecked server-side. Contact data is absent from URLs, public summaries, WhatsApp payloads, analytics and structured logs; seven runtime logs passed a synthetic PII scan. Public references are random, hash-verified, revocable and neutral on enumeration. Recipient `79635851036` is a server literal, and public preview bytes are proxied without storage URLs. Production intake remains disabled by `TBD-BIZ-005` and `TBD-PRIV-002/004/005` rather than receiving invented retention/legal values.
 
-## 19. Dependencies, risks and open questions
+## 19. Phase 1F controls
+
+- **P1F-SEC-001 — MUST:** OTP/session/invitation secrets use CSPRNG, keyed hashing and constant-time comparison; plaintext is confined to the immediate response-to-delivery handoff and prohibited from logs, audit and persistence.
+- **P1F-SEC-002 — MUST:** login responses are enumeration-neutral; IP/coarse-client and keyed-identifier rate limits, attempt counters, resend delay and atomic consume resist brute force and replay.
+- **P1F-SEC-003 — SUPERSEDED:** Phase 1F has no customer cookie. The staff cookie is HttpOnly, SameSite=Strict, production-Secure, hash-only, rotated/revocable, and fixation/replay fails closed.
+- **P1F-SEC-004 — MUST:** portfolio ingestion validates declared and detected MIME, signature, decoded dimensions, byte limit, safe generated name and SHA-256, strips EXIF/unsafe metadata into a derivative, and quarantines or rejects malformed/polyglot input.
+- **P1F-SEC-005 — MUST:** production e-mail and PII collection remain disabled until provider/residency/legal/retention gates close; local/CI uses Mailpit and synthetic data only.
+- **P1F-SEC-006 — MUST:** audit captures actor/action/outcome/correlation and safe before/after state without e-mail, phone, OTP, token, filename, storage locator or free-form secret-bearing payload.
+- **P1F-SEC-007 — MUST:** every customer-facing route remains guest-only and cannot issue a staff or customer credential; `/login` is staff-labelled and inaccessible as a customer-account creation path.
+- **P1F-SEC-008 — MUST:** CRM-contact and internal-note authorization is staff-only, deny-by-default and excluded from public references, caching, logs and broad dashboard aggregates.
+
+## 20. Dependencies, risks and open questions
 
 Dependencies: all specs, legal review, provider/hosting/storage/auth/AI ADR/evaluation. Open: `TBD-PRIV-*`, `TBD-ACCOUNT-*`, `TBD-INFRA-*`, controller/legal docs, exact retention/RPO/RTO, providers/regions/subprocessors, incident owners/timings, vulnerability SLAs and support access. Risks: legal incompleteness, public storage, IDOR, provider training/retention, secret/log leakage, incomplete deletion and security controls deferred after launch.
 
-## 20. History
+## 21. History
 
 | Версия | Дата | Изменение |
 |---|---|---|
@@ -165,3 +176,6 @@ Dependencies: all specs, legal review, provider/hosting/storage/auth/AI ADR/eval
 | 0.5.0 | 2026-08-03 | Recorded verified Phase 1B.1 SSRF/media integrity, role separation, fail-closed public delivery, secret scans and no-PII/no-production boundary. |
 | 0.6.0 | 2026-08-08 | Recorded Phase 1D opaque guest ownership, origin/CSRF/rate/idempotency, manifest allowlist, storage integrity, safe caching/errors and explicit no-photo/no-AI boundary. |
 | 0.7.0 | 2026-08-09 | Recorded verified Phase 1E hashed guest ownership, CSRF/origin/rate/idempotency, immutable server money, fixed recipient, revocable PII-free public projection, staff denial and synthetic log scan while production PII stays gated. |
+| 0.8.0 | 2026-08-09 | Added Phase 1F OTP/session/invitation, account/admin authorization, local Mailpit, portfolio ingestion and redacted audit boundaries while production PII/provider remains gated. |
+| 0.9.0 | 2026-08-09 | Narrowed Phase 1F to staff-only OTP/session security and request-derived CRM contact privacy; customer authentication/account cookies are prohibited. |
+| 0.10.0 | 2026-08-09 | Recorded verified hash-only OTP/session/invitation, last-OWNER/RBAC, request-contact/note isolation, private portfolio ingestion, redacted audit, Mailpit/recovery/browser/secret-scan controls and absence of customer authentication. |

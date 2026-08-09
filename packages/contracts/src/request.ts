@@ -76,10 +76,25 @@ export const whatsappHandoffResponseSchema = z
     correlationId: z.string().min(8).max(128),
     message: z.string().min(1).max(32_768),
     publicSummaryHref: z.string().regex(/^\/request\/[A-Za-z0-9_-]{43}$/u),
-    recipient: z.literal('79635851036'),
-    whatsappUrl: z.string().startsWith('https://wa.me/79635851036?text=').max(65_536),
+    recipient: z.string().regex(/^[1-9][0-9]{7,14}$/u),
+    whatsappUrl: z.string().startsWith('https://wa.me/').max(65_536),
   })
-  .strict();
+  .strict()
+  .superRefine((value, context) => {
+    const url = new URL(value.whatsappUrl);
+    if (
+      url.hostname !== 'wa.me' ||
+      url.pathname !== `/${value.recipient}` ||
+      url.username !== '' ||
+      url.password !== ''
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'WHATSAPP_RECIPIENT_URL_MISMATCH',
+        path: ['whatsappUrl'],
+      });
+    }
+  });
 
 export const requestCommunicationEventRequestSchema = z
   .object({
@@ -121,15 +136,16 @@ export const publicRequestSummaryResponseSchema = z
     correlationId: z.string().min(8).max(128),
     createdAt: z.iso.datetime({ offset: true }),
     installmentInterest: z.boolean(),
+    installmentText: z.literal('Доступна рассрочка. Уточните условия у менеджера'),
     items: z.array(publicRequestItemSchema).min(1).max(50),
-    manufacturingLeadTime: z.literal('2–7 календарных дней'),
+    manufacturingLeadTime: z.string().min(2).max(120),
     measurementRequested: z.boolean(),
     requestNumber: requestNumberSchema,
     services: z
       .object({
-        delivery: z.literal('Бесплатно'),
-        installation: z.literal('Бесплатно'),
-        measurement: z.literal('Бесплатно'),
+        delivery: z.string().min(2).max(80),
+        installation: z.string().min(2).max(80),
+        measurement: z.string().min(2).max(80),
       })
       .strict(),
     statusLabel: z.enum([
@@ -140,7 +156,7 @@ export const publicRequestSummaryResponseSchema = z
       'Заявка отменена',
     ]),
     summary: cartMoneySummarySchema,
-    warranty: z.literal('12 месяцев'),
+    warranty: z.string().min(2).max(120),
   })
   .strict();
 

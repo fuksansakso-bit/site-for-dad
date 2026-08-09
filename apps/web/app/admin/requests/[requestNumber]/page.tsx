@@ -95,6 +95,12 @@ export default async function AdminRequestDetailPage({
         </div>
         <div className="actions">
           <CopyPhoneButton phone={request.contactPhone} />
+          <Link
+            className="secondary-button"
+            href={`/admin/customers?q=${encodeURIComponent(request.contactPhone)}`}
+          >
+            История клиента
+          </Link>
           {request.publicSummaryHref === null ? null : (
             <Link className="secondary-button" href={request.publicSummaryHref} target="_blank">
               Публичное резюме

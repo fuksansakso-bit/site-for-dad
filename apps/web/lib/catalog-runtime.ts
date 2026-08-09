@@ -7,11 +7,13 @@ import {
   createCatalogManagementAdapter,
   createCatalogReadAdapter,
   createCartAdapter,
+  createCustomerContactAdapter,
   createPricingAdapter,
   createRequestAdapter,
   createStandardPreviewAdapter,
   type CatalogManagementAdapter,
   type CartAdapter,
+  type CustomerContactAdapter,
   type PricingAdapter,
   type RequestAdapter,
   type StandardPreviewAdapter,
@@ -34,6 +36,7 @@ import { createS3ObjectStorage } from '@project-name/storage';
 let catalogManagement: CatalogManagementAdapter | undefined;
 let catalogRead: ReturnType<typeof createCatalogReadAdapter> | undefined;
 let cart: CartAdapter | undefined;
+let customerContacts: CustomerContactAdapter | undefined;
 let identity: SyntheticIdentityAdapter | undefined;
 let passwordlessIdentity: PasswordlessIdentityAdapter | undefined;
 let staffAdministration: StaffAdministrationAdapter | undefined;
@@ -60,6 +63,11 @@ export function getWebCatalogRead(): ReturnType<typeof createCatalogReadAdapter>
 export function getWebCart(): CartAdapter {
   cart ??= createCartAdapter(databaseEnvironment());
   return cart;
+}
+
+export function getWebCustomerContacts(): CustomerContactAdapter {
+  customerContacts ??= createCustomerContactAdapter(databaseEnvironment());
+  return customerContacts;
 }
 
 export function getWebIdentity(): SyntheticIdentityAdapter {

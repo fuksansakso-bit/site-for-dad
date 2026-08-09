@@ -1,4 +1,17 @@
 export {
+  createCustomerContactAdapter,
+  CustomerContactStoreError,
+  type CustomerContactActor,
+  type CustomerContactAdapter,
+  type CustomerContactDetail,
+  type CustomerContactListItem,
+  type CustomerContactListView,
+  type CustomerContactNoteView,
+  type CustomerContactRequestView,
+  type CustomerContactStaffRole,
+  type CustomerContactStoreErrorCode,
+} from './customer-contact.js';
+export {
   createRequestAdapter,
   RequestStoreError,
   type AdminRequestActor,

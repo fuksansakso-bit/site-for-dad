@@ -341,6 +341,11 @@ export function createPasswordlessIdentityAdapter(
           `,
           [actorId],
         );
+        await client.query(
+          `UPDATE role_grant SET revoked_at = NOW()
+           WHERE actor_id = $1::uuid AND role IN ('MANAGER', 'ADMIN') AND revoked_at IS NULL`,
+          [actorId],
+        );
         await appendAudit(client, actorId, context, 'LOCAL_OWNER_BOOTSTRAPPED');
         return { actorId };
       });

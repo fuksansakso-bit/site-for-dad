@@ -7,6 +7,7 @@ import {
   createCatalogManagementAdapter,
   createCatalogReadAdapter,
   createCartAdapter,
+  createBusinessAdministrationAdapter,
   createCustomerContactAdapter,
   createPortfolioAdapter,
   createPricingAdapter,
@@ -14,6 +15,7 @@ import {
   createStandardPreviewAdapter,
   type CatalogManagementAdapter,
   type CartAdapter,
+  type BusinessAdministrationAdapter,
   type CustomerContactAdapter,
   type PortfolioAdapter,
   type PricingAdapter,
@@ -38,6 +40,7 @@ import { createS3ObjectStorage } from '@project-name/storage';
 let catalogManagement: CatalogManagementAdapter | undefined;
 let catalogRead: ReturnType<typeof createCatalogReadAdapter> | undefined;
 let cart: CartAdapter | undefined;
+let businessAdministration: BusinessAdministrationAdapter | undefined;
 let customerContacts: CustomerContactAdapter | undefined;
 let portfolio: PortfolioAdapter | undefined;
 let identity: SyntheticIdentityAdapter | undefined;
@@ -66,6 +69,11 @@ export function getWebCatalogRead(): ReturnType<typeof createCatalogReadAdapter>
 export function getWebCart(): CartAdapter {
   cart ??= createCartAdapter(databaseEnvironment());
   return cart;
+}
+
+export function getWebBusinessAdministration(): BusinessAdministrationAdapter {
+  businessAdministration ??= createBusinessAdministrationAdapter(databaseEnvironment());
+  return businessAdministration;
 }
 
 export function getWebCustomerContacts(): CustomerContactAdapter {

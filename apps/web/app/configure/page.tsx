@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { getWebBusinessAdministration } from '../../lib/catalog-runtime';
 import { ProductConfigurator } from './product-configurator';
 
 export const metadata: Metadata = {
@@ -19,6 +20,7 @@ export default async function ConfigurePage({
   const candidate = typeof parameters['edit'] === 'string' ? parameters['edit'] : null;
   const editReference =
     candidate !== null && /^[A-Za-z0-9_-]{32}$/u.test(candidate) ? candidate : null;
+  const settings = await getWebBusinessAdministration().getActiveSettings();
   return (
     <main className="configurator-shell">
       <header className="configurator-header">
@@ -28,7 +30,13 @@ export default async function ConfigurePage({
         </Link>
         <p>Точный локальный расчёт · без регистрации</p>
       </header>
-      <ProductConfigurator editReference={editReference} />
+      <ProductConfigurator
+        commercialTerms={{
+          manufacturingLeadTime: settings.manufacturingLeadTime,
+          warranty: settings.warranty,
+        }}
+        editReference={editReference}
+      />
     </main>
   );
 }

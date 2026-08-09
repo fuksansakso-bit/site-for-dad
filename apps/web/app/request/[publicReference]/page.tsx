@@ -7,7 +7,7 @@ import { headers } from 'next/headers';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { getWebRequests } from '../../../lib/catalog-runtime';
+import { getWebBusinessAdministration, getWebRequests } from '../../../lib/catalog-runtime';
 import { enforcePublicRequestReadAddress } from '../../../lib/request-route';
 import { publicRequestSummaryResponse } from '../../../lib/request-summary';
 import { RequestPreviewImage } from './request-preview-image';
@@ -54,7 +54,8 @@ export default async function PublicRequestPage({
     if (error instanceof RequestStoreError && error.code === 'REQUEST_NOT_FOUND') notFound();
     throw error;
   }
-  const request = publicRequestSummaryResponse(source, parsed.data, randomUUID());
+  const settings = await getWebBusinessAdministration().getActiveSettings();
+  const request = publicRequestSummaryResponse(source, parsed.data, randomUUID(), settings);
   return (
     <main className="request-summary-shell">
       <header className="request-summary-header">
@@ -167,7 +168,7 @@ export default async function PublicRequestPage({
           <p>Гарантия: {request.warranty}</p>
           {request.measurementRequested ? <p>Бесплатный замер запрошен.</p> : null}
           {request.installmentInterest ? (
-            <p>Интерес к рассрочке отмечен. Условия сообщит менеджер.</p>
+            <p>{request.installmentText}</p>
           ) : null}
           <Link className="primary-link" href="/catalog">
             Вернуться в каталог

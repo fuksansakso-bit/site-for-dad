@@ -27,7 +27,7 @@ export interface WhatsAppHandoffInput {
 
 export interface WhatsAppHandoff {
   readonly message: string;
-  readonly recipient: typeof businessWhatsAppRecipient;
+  readonly recipient: string;
   readonly whatsappUrl: string;
 }
 
@@ -70,7 +70,10 @@ function summaryLine(input: WhatsAppHandoffInput): string {
     : `Предварительная сумма: ${known}.`;
 }
 
-export function createWhatsAppHandoff(input: WhatsAppHandoffInput): WhatsAppHandoff {
+export function createWhatsAppHandoff(
+  input: WhatsAppHandoffInput,
+  recipient: string = businessWhatsAppRecipient,
+): WhatsAppHandoff {
   if (
     !/^REQ-[0-9]{6}-[A-Z2-9]{8}$/u.test(input.requestNumber) ||
     input.items.length === 0 ||
@@ -78,7 +81,8 @@ export function createWhatsAppHandoff(input: WhatsAppHandoffInput): WhatsAppHand
     !Number.isSafeInteger(input.totalQuantity) ||
     input.totalQuantity <= 0 ||
     !Number.isSafeInteger(input.unknownItemCount) ||
-    input.unknownItemCount < 0
+    input.unknownItemCount < 0 ||
+    !/^[1-9][0-9]{7,14}$/u.test(recipient)
   ) {
     throw new TypeError('WHATSAPP_MESSAGE_INPUT_INVALID');
   }
@@ -113,7 +117,7 @@ export function createWhatsAppHandoff(input: WhatsAppHandoffInput): WhatsAppHand
     `Безопасное резюме заявки: ${publicUrl.toString()}`,
   ];
   const message = lines.join('\n');
-  const url = new URL(`https://wa.me/${businessWhatsAppRecipient}`);
+  const url = new URL(`https://wa.me/${recipient}`);
   url.searchParams.set('text', message);
-  return { message, recipient: businessWhatsAppRecipient, whatsappUrl: url.toString() };
+  return { message, recipient, whatsappUrl: url.toString() };
 }

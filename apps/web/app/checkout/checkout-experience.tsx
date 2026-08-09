@@ -28,7 +28,20 @@ async function jsonRequest<T>(url: string, init?: RequestInit): Promise<T> {
   return value as T;
 }
 
-export function CheckoutExperience(): React.JSX.Element {
+export function CheckoutExperience({
+  commercialTerms,
+}: {
+  readonly commercialTerms: {
+    readonly manufacturingLeadTime: string;
+    readonly services: {
+      readonly delivery: string;
+      readonly installation: string;
+      readonly measurement: string;
+    };
+    readonly territory: string;
+    readonly warranty: string;
+  };
+}): React.JSX.Element {
   const [cart, setCart] = useState<GuestCartResponse | null>(null);
   const [receipt, setReceipt] = useState<GuestCheckoutResponse | null>(null);
   const [handoff, setHandoff] = useState<WhatsAppHandoffResponse | null>(null);
@@ -241,10 +254,20 @@ export function CheckoutExperience(): React.JSX.Element {
           <h2>Что дальше</h2>
           <ol>
             <li>Передайте резюме менеджеру в WhatsApp или дождитесь звонка.</li>
-            <li>При необходимости согласуйте бесплатный замер по Чеченской Республике.</li>
-            <li>Менеджер подтвердит итоговую цену и срок изготовления 2–7 дней.</li>
+            <li>
+              При необходимости согласуйте замер ({commercialTerms.services.measurement}) —{' '}
+              территория: {commercialTerms.territory}.
+            </li>
+            <li>
+              Менеджер подтвердит итоговую цену и срок изготовления{' '}
+              {commercialTerms.manufacturingLeadTime}.
+            </li>
           </ol>
-          <p>Гарантия — 12 месяцев. Доставка и установка — бесплатно.</p>
+          <p>
+            Гарантия — {commercialTerms.warranty}. Доставка —{' '}
+            {commercialTerms.services.delivery.toLocaleLowerCase('ru-RU')}, установка —{' '}
+            {commercialTerms.services.installation.toLocaleLowerCase('ru-RU')}.
+          </p>
         </aside>
       </section>
     );
@@ -402,7 +425,10 @@ export function CheckoutExperience(): React.JSX.Element {
           <dt>Требуют уточнения</dt>
           <dd>{cart.summary.unknownItemCount}</dd>
           <dt>Замер · доставка · установка</dt>
-          <dd>Бесплатно</dd>
+          <dd>
+            {commercialTerms.services.measurement} · {commercialTerms.services.delivery} ·{' '}
+            {commercialTerms.services.installation}
+          </dd>
         </dl>
         <Link href="/cart">← Вернуться в корзину</Link>
       </aside>

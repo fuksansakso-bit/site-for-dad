@@ -15,6 +15,7 @@ import {
   type CartIdentityRow,
   type CartItemView,
 } from './cart.js';
+import type { PreviewAssetDescriptor } from './preview.js';
 
 export type RequestStoreErrorCode =
   | 'REQUEST_AUTHORIZATION'
@@ -96,12 +97,27 @@ export interface RequestHandoffSourceView {
   readonly snapshot: RequestSafeSnapshotView;
 }
 
+export interface PublicRequestSummaryView {
+  readonly createdAt: string;
+  readonly installmentInterest: boolean;
+  readonly measurementRequested: boolean;
+  readonly previewSequences: readonly number[];
+  readonly requestNumber: string;
+  readonly snapshot: RequestSafeSnapshotView;
+  readonly status: 'NEW' | 'IN_REVIEW' | 'CONTACTED' | 'CONFIRMED' | 'CANCELLED';
+}
+
 export interface RequestAdapter {
   readonly checkout: (input: GuestCheckoutCommand) => Promise<RequestReceiptView>;
   readonly close: () => Promise<void>;
   readonly generateHandoff: (
     input: GuestRequestCommandIdentity,
   ) => Promise<RequestHandoffSourceView>;
+  readonly getPublicPreviewAsset: (
+    publicReference: string,
+    sequence: number,
+  ) => Promise<PreviewAssetDescriptor>;
+  readonly getPublicSummary: (publicReference: string) => Promise<PublicRequestSummaryView>;
   readonly recordCommunication: (input: GuestRequestCommunicationCommand) => Promise<boolean>;
 }
 
@@ -131,6 +147,16 @@ interface HandoffRow {
   readonly locality: string;
   readonly measurement_requested: boolean;
   readonly request_number: string;
+}
+
+interface PublicRequestRow {
+  readonly cart_snapshot: RequestSafeSnapshotView;
+  readonly created_at: Date;
+  readonly installment_interest: boolean;
+  readonly measurement_requested: boolean;
+  readonly preview_sequences: number[];
+  readonly request_number: string;
+  readonly status: PublicRequestSummaryView['status'];
 }
 
 function mapError(error: unknown): RequestStoreError {
@@ -557,6 +583,90 @@ export function createRequestAdapter(environment: DatabaseEnvironment): RequestA
         },
         mapError,
       );
+    },
+
+    async getPublicPreviewAsset(publicReference, sequence) {
+      if (!Number.isSafeInteger(sequence) || sequence <= 0 || sequence > 50) {
+        throw new RequestStoreError('REQUEST_NOT_FOUND');
+      }
+      try {
+        const result = await pool.query<{
+          readonly byte_size: number;
+          readonly file_hash: string;
+          readonly height: number;
+          readonly id: string;
+          readonly mime_type: string;
+          readonly object_key: string;
+          readonly storage_zone: string;
+          readonly width: number;
+        }>(
+          `
+            SELECT asset.id::text, asset.file_hash, asset.storage_zone, asset.object_key,
+                   asset.mime_type, asset.byte_size, asset.width, asset.height
+            FROM order_inquiry inquiry
+            JOIN request_item_snapshot item ON item.inquiry_id = inquiry.id
+            JOIN standard_preview_state preview ON preview.id = item.preview_state_id
+            JOIN media_asset asset ON asset.id = preview.material_asset_id
+            WHERE inquiry.public_reference_hash = $1
+              AND inquiry.public_reference_revoked_at IS NULL
+              AND item.sequence = $2
+              AND asset.publication_status = 'PUBLICATION_APPROVED'
+              AND asset.rights_status IN ('PARTNER_LICENSE','OWNER_CREATED')
+              AND asset.mime_type IN ('image/jpeg','image/png','image/webp')
+              AND asset.storage_zone IN ('private','public','quarantine')
+          `,
+          [publicReferenceHash(publicReference), sequence],
+        );
+        const asset = result.rows[0];
+        if (asset === undefined) throw new RequestStoreError('REQUEST_NOT_FOUND');
+        return {
+          byteSize: asset.byte_size,
+          checksumSha256: asset.file_hash,
+          contentType: asset.mime_type as PreviewAssetDescriptor['contentType'],
+          height: asset.height,
+          id: asset.id,
+          objectKey: asset.object_key,
+          storageZone: asset.storage_zone as PreviewAssetDescriptor['storageZone'],
+          width: asset.width,
+        };
+      } catch (error) {
+        throw mapError(error);
+      }
+    },
+
+    async getPublicSummary(publicReference) {
+      try {
+        const result = await pool.query<PublicRequestRow>(
+          `
+            SELECT inquiry.request_number, inquiry.cart_snapshot, inquiry.created_at,
+                   inquiry.measurement_requested, inquiry.installment_interest,
+                   inquiry.status::text,
+                   ARRAY(
+                     SELECT item.sequence
+                     FROM request_item_snapshot item
+                     WHERE item.inquiry_id = inquiry.id AND item.preview_state_id IS NOT NULL
+                     ORDER BY item.sequence
+                   ) AS preview_sequences
+            FROM order_inquiry inquiry
+            WHERE inquiry.public_reference_hash = $1
+              AND inquiry.public_reference_revoked_at IS NULL
+          `,
+          [publicReferenceHash(publicReference)],
+        );
+        const row = result.rows[0];
+        if (row === undefined) throw new RequestStoreError('REQUEST_NOT_FOUND');
+        return {
+          createdAt: row.created_at.toISOString(),
+          installmentInterest: row.installment_interest,
+          measurementRequested: row.measurement_requested,
+          previewSequences: row.preview_sequences,
+          requestNumber: row.request_number,
+          snapshot: row.cart_snapshot,
+          status: row.status,
+        };
+      } catch (error) {
+        throw mapError(error);
+      }
     },
 
     async recordCommunication(input) {

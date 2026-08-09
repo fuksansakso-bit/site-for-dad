@@ -7,6 +7,7 @@ export {
   type GuestCheckoutCommand,
   type RequestAdapter,
   type RequestHandoffSourceView,
+  type PublicRequestSummaryView,
   type RequestReceiptView,
   type RequestSafeSnapshotView,
   type RequestStoreErrorCode,

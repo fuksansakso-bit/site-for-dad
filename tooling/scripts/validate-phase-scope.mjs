@@ -212,6 +212,7 @@ const allowedRouteFiles = new Set([
   'apps/web/app/api/v1/cart/items/[itemReference]/edit-source/route.ts',
   'apps/web/app/api/v1/requests/route.ts',
   'apps/web/app/api/v1/requests/public/[publicReference]/route.ts',
+  'apps/web/app/api/v1/requests/public/[publicReference]/items/[sequence]/preview/route.ts',
   'apps/web/app/api/v1/requests/[publicReference]/handoff/route.ts',
   'apps/web/app/api/v1/requests/[publicReference]/events/route.ts',
   'apps/web/app/api/v1/admin/requests/route.ts',

@@ -40,3 +40,27 @@ export function requestPublicOrigin(request: NextRequest): string {
   }
   return origin.origin;
 }
+
+const publicReadWindowMs = 60_000;
+const publicReadLimit = 60;
+const publicReadCounters = new Map<string, { count: number; resetAt: number }>();
+
+export function enforcePublicRequestReadAddress(address: string): void {
+  const key = createHash('sha256').update(`phase1e-public-read:${address}`).digest('hex');
+  const now = Date.now();
+  const current = publicReadCounters.get(key);
+  if (current === undefined || current.resetAt <= now) {
+    if (publicReadCounters.size > 2_000) publicReadCounters.clear();
+    publicReadCounters.set(key, { count: 1, resetAt: now + publicReadWindowMs });
+    return;
+  }
+  current.count += 1;
+  if (current.count > publicReadLimit) throw new PricingRequestError('RATE_LIMITED');
+}
+
+export function enforcePublicRequestRead(request: NextRequest): void {
+  enforcePublicRequestReadAddress(
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'direct',
+  );
+}
+import { createHash } from 'node:crypto';

@@ -1,6 +1,8 @@
 export {
   guestCheckoutRequestSchema,
   guestCheckoutResponseSchema,
+  publicRequestItemSchema,
+  publicRequestSummaryResponseSchema,
   requestCommunicationEventRequestSchema,
   requestCommunicationEventResponseSchema,
   requestNumberSchema,
@@ -11,6 +13,7 @@ export {
   whatsappHandoffResponseSchema,
   type GuestCheckoutRequest,
   type GuestCheckoutResponse,
+  type PublicRequestSummaryResponse,
   type RequestCommunicationEventRequest,
   type RequestSafeSnapshot,
   type RequestStatus,

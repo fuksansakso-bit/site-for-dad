@@ -1,6 +1,7 @@
 import { IdentityError, type FoundationRole, type IdentityPrincipal } from '@project-name/identity';
 import { cookies } from 'next/headers';
 
+import { readStaffPrincipal } from './account-session';
 import { getWebIdentity } from './catalog-runtime';
 
 const requestAdminCookieName = 'project_name_catalog_admin';
@@ -28,6 +29,8 @@ export function requestAdminRole(principal: RequestAdminPrincipal): 'MANAGER' | 
 }
 
 export async function readRequestAdminPrincipal(): Promise<RequestAdminPrincipal | null> {
+  const staff = await readStaffPrincipal();
+  if (staff !== null && isRequestAdminPrincipal(staff)) return staff;
   const token = (await cookies()).get(requestAdminCookieName)?.value;
   if (token === undefined) return null;
   try {

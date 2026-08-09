@@ -1,6 +1,7 @@
 import { IdentityError, type FoundationRole, type IdentityPrincipal } from '@project-name/identity';
 import { cookies } from 'next/headers';
 
+import { readStaffPrincipal } from './account-session';
 import { getWebIdentity } from './catalog-runtime';
 
 const catalogAdminCookieName = 'project_name_catalog_admin';
@@ -22,6 +23,8 @@ function isCatalogAdminPrincipal(principal: IdentityPrincipal): principal is Cat
 }
 
 export async function readCatalogAdminPrincipal(): Promise<CatalogAdminPrincipal | null> {
+  const staff = await readStaffPrincipal();
+  if (staff !== null && isCatalogAdminPrincipal(staff)) return staff;
   const store = await cookies();
   const token = store.get(catalogAdminCookieName)?.value;
   if (token === undefined) return null;

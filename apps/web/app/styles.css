@@ -5584,3 +5584,318 @@ input[type='checkbox'] {
     border: 2px solid CanvasText;
   }
 }
+
+/* Phase 1F business administration shell */
+.business-admin-frame {
+  min-height: 100vh;
+  background: #f3f0e9;
+  color: #171b1a;
+}
+
+.business-admin-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 30;
+  display: flex;
+  width: 260px;
+  flex-direction: column;
+  padding: 28px 20px 22px;
+  overflow-y: auto;
+  background: #17211e;
+  color: #f8f4e9;
+}
+
+.business-admin-brand {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  column-gap: 12px;
+  align-items: center;
+  color: inherit;
+  text-decoration: none;
+}
+
+.business-admin-brand > span {
+  grid-row: span 2;
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid #af9661;
+  border-radius: 50%;
+  color: #d9bd7e;
+  font:
+    600 18px/1 Georgia,
+    serif;
+}
+
+.business-admin-brand strong {
+  letter-spacing: 0.08em;
+}
+
+.business-admin-brand small,
+.business-admin-session small {
+  color: #a9b5ae;
+}
+
+.business-admin-navigation {
+  display: grid;
+  gap: 4px;
+  margin-top: 42px;
+}
+
+.business-admin-navigation a {
+  min-height: 44px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  color: #d9dfdb;
+  text-decoration: none;
+}
+
+.business-admin-navigation a:hover,
+.business-admin-navigation a:focus-visible {
+  background: #24312d;
+  color: #fff;
+  outline: none;
+}
+
+.business-admin-session {
+  display: grid;
+  gap: 6px;
+  margin-top: auto;
+  padding: 18px 14px 0;
+  border-top: 1px solid #34413d;
+}
+
+.business-admin-session > span {
+  color: #d9bd7e;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.business-admin-sign-out {
+  min-height: 40px;
+  margin-top: 8px;
+  border: 1px solid #61716a;
+  border-radius: 9px;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+}
+
+.business-admin-workspace {
+  min-width: 0;
+  margin-left: 260px;
+}
+
+.business-admin-mobile-header,
+.business-admin-mobile-nav {
+  display: none;
+}
+
+.business-dashboard {
+  width: min(1320px, 100%);
+  margin: 0 auto;
+  padding: 42px clamp(24px, 4vw, 64px) 72px;
+}
+
+.business-page-heading,
+.business-section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.business-page-heading p,
+.business-section-heading p {
+  margin: 0 0 6px;
+  color: #89744d;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.business-page-heading h1 {
+  margin: 0;
+  font:
+    500 clamp(2.2rem, 4vw, 4rem)/1 Georgia,
+    serif;
+}
+
+.business-page-heading > span {
+  color: #66706c;
+}
+
+.business-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 34px;
+}
+
+.business-metric-grid article {
+  display: grid;
+  min-height: 180px;
+  align-content: space-between;
+  padding: 22px;
+  border: 1px solid #ddd6c7;
+  border-radius: 18px;
+  background: #fbfaf6;
+}
+
+.business-metric-grid article:first-child {
+  background: #26352f;
+  color: #fff;
+}
+
+.business-metric-grid span,
+.business-metric-grid small {
+  color: #6f7773;
+}
+
+.business-metric-grid article:first-child span,
+.business-metric-grid article:first-child a {
+  color: #d7c69e;
+}
+
+.business-metric-grid strong {
+  overflow: hidden;
+  font:
+    500 clamp(1.7rem, 3vw, 3.2rem)/1 Georgia,
+    serif;
+  text-overflow: ellipsis;
+}
+
+.business-metric-grid a,
+.business-section-heading a {
+  color: inherit;
+  font-weight: 650;
+}
+
+.business-dashboard-section {
+  margin-top: 44px;
+  padding: 28px;
+  border: 1px solid #ddd6c7;
+  border-radius: 20px;
+  background: #fbfaf6;
+}
+
+.business-section-heading h2 {
+  margin: 0;
+  font:
+    500 2rem/1.1 Georgia,
+    serif;
+}
+
+.business-request-table {
+  display: grid;
+  margin-top: 24px;
+}
+
+.business-request-table > a {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr 1fr 0.8fr 1.2fr;
+  gap: 14px;
+  align-items: center;
+  min-height: 62px;
+  border-top: 1px solid #e5dfd3;
+  color: inherit;
+  text-decoration: none;
+}
+
+.business-request-table > a:hover {
+  background: #f5f2ea;
+}
+
+.business-request-table span,
+.business-request-table time {
+  overflow: hidden;
+  color: #626b67;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 1040px) {
+  .business-admin-sidebar {
+    display: none;
+  }
+
+  .business-admin-workspace {
+    margin-left: 0;
+  }
+
+  .business-admin-mobile-header {
+    display: flex;
+    min-height: 58px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    background: #17211e;
+    color: #fff;
+  }
+
+  .business-admin-mobile-header a {
+    color: inherit;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+  }
+
+  .business-admin-mobile-header span {
+    color: #d9bd7e;
+    font-size: 0.75rem;
+  }
+
+  .business-admin-mobile-nav {
+    display: flex;
+    gap: 8px;
+    padding: 10px 16px;
+    overflow-x: auto;
+    border-bottom: 1px solid #ddd6c7;
+    background: #fbfaf6;
+  }
+
+  .business-admin-mobile-nav a {
+    flex: 0 0 auto;
+    min-height: 38px;
+    padding: 9px 13px;
+    border: 1px solid #ddd6c7;
+    border-radius: 999px;
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .business-dashboard {
+    padding: 28px 16px 56px;
+  }
+
+  .business-page-heading {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .business-metric-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .business-request-table > a {
+    grid-template-columns: 1fr auto;
+    padding: 12px 0;
+  }
+
+  .business-request-table > a span:nth-of-type(1),
+  .business-request-table > a span:nth-of-type(2),
+  .business-request-table > a time {
+    display: none;
+  }
+}
+
+@media (max-width: 460px) {
+  .business-metric-grid {
+    grid-template-columns: 1fr;
+  }
+}

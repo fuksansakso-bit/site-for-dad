@@ -2,7 +2,7 @@
 
 ## 0. Статус
 
-Phase 1A–1D завершены. Phase 1D delivered deterministic photoreal `/preview` under `OWNER-DECISION-014/015`; QG-271–310 passed. Client photo/AI, cart/order/WhatsApp/payment/final design, production and Phase 1E+ remain prohibited.
+Phase 1A–1D завершены. `OWNER-DECISION-016` отдельно разрешила Phase 1E guest cart/request/WhatsApp/basic intake; QG-311–320 passed and completion QG-321–360 are in progress. Client photo/AI, payment/accounts/final design, production and Phase 1F+ remain prohibited.
 
 ## 1. Порядок обязательного чтения
 
@@ -34,7 +34,7 @@ Phase 1A–1D завершены. Phase 1D delivered deterministic photoreal `/p
 | [OPEN_QUESTIONS.md](00-global/OPEN_QUESTIONS.md) | Канонический реестр `TBD-*`, владельцев, влияния и критериев закрытия |
 | [SPEC_ROADMAP.md](00-global/SPEC_ROADMAP.md) | Фактический комплект 0B/0C, accepted Foundation ADR, gates и последовательность 1A–1H |
 | [TRACEABILITY_MATRIX.md](00-global/TRACEABILITY_MATRIX.md) | 18 critical chains и полная 40-story связь со спеками, AC и tests |
-| [SPEC_QUALITY_GATE.md](00-global/SPEC_QUALITY_GATE.md) | Passed gates through Phase 1D; QG-271–310 closed, Phase 1E remains unauthorized |
+| [SPEC_QUALITY_GATE.md](00-global/SPEC_QUALITY_GATE.md) | Passed gates through Phase 1D; Phase 1E entry QG-311–320 closed and completion QG-321–360 open |
 
 ## 3. Product specifications
 
@@ -114,6 +114,7 @@ Phase 1A–1D завершены. Phase 1D delivered deterministic photoreal `/p
 | [PHASE_1C_CONFIGURATOR_PRICING_REPORT.md](06-plans/completed/PHASE_1C_CONFIGURATOR_PRICING_REPORT.md) | PostgreSQL/configurator/pricing/parity/quote/admin/test/CI/PR evidence and final Phase 1C acceptance |
 | [PHASE_1D_STANDARD_PREVIEW_PLAN.md](06-plans/active/PHASE_1D_STANDARD_PREVIEW_PLAN.md) | Authorized deterministic preview scope, stages, asset/fallback safety, exact commits, acceptance and Phase 1E hold |
 | [PHASE_1D_STANDARD_PREVIEW_REPORT.md](06-plans/completed/PHASE_1D_STANDARD_PREVIEW_REPORT.md) | Routes, four photoreal family profiles, scenes/assets/counts, visual/mobile/recovery/CI/PR evidence and final acceptance |
+| [PHASE_1E_CART_WHATSAPP_ORDERS_PLAN.md](06-plans/active/PHASE_1E_CART_WHATSAPP_ORDERS_PLAN.md) | Authorized guest cart/request/WhatsApp scope, immutable snapshots, security boundary, exact commits and Phase 1F hold |
 | [PREVIEW_AND_CONFIGURATOR_MAPPING_GAPS.md](06-plans/PREVIEW_AND_CONFIGURATOR_MAPPING_GAPS.md) | Exact active family/system/model/variant/source gaps without expanding Phase 1C catalog or pricing |
 
 ## 9. Architecture decisions
@@ -164,7 +165,7 @@ Research snapshot не является вечным catalog/price fact. Нор�
 - Кто может выполнить действие — `ROLES_PERMISSIONS` и relevant domain spec.
 - Каких данных не хватает — `OPEN_QUESTIONS` по уникальному `TBD-*`.
 - Как требование проверяется — `TRACEABILITY_MATRIX`, AC и `TEST_STRATEGY`.
-- Можно ли начинать следующий код — нет: Phase 1D завершена, а Phase 1E+, photo/AI/cart/order/WhatsApp/payment и production не разрешены.
+- Можно ли начинать следующий код — только Phase 1E по `OWNER-DECISION-016`; Phase 1F+, photo/AI/payment/accounts и production не разрешены.
 
 ## 13. Правило навигации
 

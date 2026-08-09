@@ -16,7 +16,9 @@
 
 `OWNER-DECISION-013` разрешила только **Phase 1C — PRODUCT CONFIGURATOR AND VERIFIED PRICING ENGINE**. Фаза завершена 2026-08-08 со статусом `PASSED_PHASE_1C_CONFIGURATOR_PRICING`: гостевой `/configure` использует активный PostgreSQL-каталог, server-only integer pricing и immutable quote snapshots. Активная расчётная PriceVersion v5 содержит четыре проверенных rule scope и 40 parity fixtures с максимальным отклонением 1 ₽; остальные сочетания безопасно возвращают `PRICE_ON_REQUEST` или `MANUAL_REVIEW_REQUIRED`. Evidence: [pricing verification](docs/research/AMIGO_PRICING_VERIFICATION_2026-08-08.md) и [completion report](docs/06-plans/completed/PHASE_1C_CONFIGURATOR_PRICING_REPORT.md).
 
-**Phase 1D — DETERMINISTIC STANDARD WINDOW PREVIEW** завершена на ветке `phase/1d-standard-preview` от merged-main commit `58eb25dcde460291ad98fde157956d7f264a666d`. Гостевой `/preview` использует две локальные photoreal scenes, четыре deterministic family profiles, approved partner layers через `StoragePort`, server-side preview state и visual regression. [План](docs/06-plans/active/PHASE_1D_STANDARD_PREVIEW_PLAN.md), [отчёт](docs/06-plans/completed/PHASE_1D_STANDARD_PREVIEW_REPORT.md) и [mapping gaps](docs/06-plans/PREVIEW_AND_CONFIGURATOR_MAPPING_GAPS.md). Фото клиента/AI, cart/order/WhatsApp/payment, production и Phase 1E+ не начинались.
+**Phase 1D — DETERMINISTIC STANDARD WINDOW PREVIEW** завершена на ветке `phase/1d-standard-preview` от merged-main commit `58eb25dcde460291ad98fde157956d7f264a666d`. Гостевой `/preview` использует две локальные photoreal scenes, четыре deterministic family profiles, approved partner layers через `StoragePort`, server-side preview state и visual regression. [Отчёт](docs/06-plans/completed/PHASE_1D_STANDARD_PREVIEW_REPORT.md) и [mapping gaps](docs/06-plans/PREVIEW_AND_CONFIGURATOR_MAPPING_GAPS.md).
+
+`OWNER-DECISION-016` разрешила только **Phase 1E — CART, GUEST REQUESTS, WHATSAPP HANDOFF AND BASIC ORDER INTAKE** от merged-main commit `65780067537418a3230bb3d32ef3fb8e0af06917`. Активный [план Phase 1E](docs/06-plans/active/PHASE_1E_CART_WHATSAPP_ORDERS_PLAN.md) фиксирует guest cart поверх immutable QuoteSnapshot, mixed-price summary, synthetic local/CI guest checkout, fixed-recipient `wa.me`, PII-free public summary, minimal request admin и audit/outbox. Production PII/deployment, payment, accounts, client-photo/AI и Phase 1F+ не разрешены.
 
 ## С чего начать
 
@@ -86,4 +88,4 @@ pnpm.cmd --filter @project-name/db pricing:bootstrap
 
 ## Текущая граница работы
 
-Phase 1A–1D завершены. Photo/AI, cart/order/WhatsApp/payment, production deployment и Phase 1E+ не разрешены.
+Phase 1A–1D завершены; только Phase 1E выполняется по `OWNER-DECISION-016`. Payment, accounts, client-photo/AI, production deployment и Phase 1F+ не разрешены.

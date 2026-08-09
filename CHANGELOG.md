@@ -7,6 +7,7 @@
 
 ### Added
 
+- `OWNER-DECISION-016` authorizes only Phase 1E from merged-main commit `65780067537418a3230bb3d32ef3fb8e0af06917`; added the active cart/request/WhatsApp plan and QG-311–360 with immutable QuoteSnapshot authority, mixed-price rules, synthetic local/CI PII boundary, fixed-recipient `wa.me`, revocable PII-free summary, minimal request administration and transactional audit/outbox. Phase 1F+, payment/accounts/client-photo/AI/production remain prohibited.
 - Completed Phase 1D at `/preview`: opaque guest-owned PostgreSQL state, two approved local photoreal scenes, deterministic `standard-svg-v2` atlas composition for Roller/Zebra/horizontal aluminium/vertical, family-relevant responsive controls, configurator return, honest evidence fallbacks, admin diagnostics and four fixed Chromium visual baselines.
 - `OWNER-DECISION-015` records explicit partner permission and the Product Owner request for locally mirrored registered AMIGO scene/product layers. Eleven source assets plus one checksum-bound Zebra rectification are provisioned through `StoragePort`; public runtime performs zero AMIGO requests and no supplier frontend code or AI generation is used.
 - Added the Phase 1D completion report and mapping-gap register: four previewable variants, `0 EXACT_SWATCH`, `4 PRODUCT_IMAGE_CROP`, `0 NORMALIZED_COLOR_ONLY`, `0 PREVIEW_UNAVAILABLE`, four missing exact-swatch roles and no missing active compatibility rule.

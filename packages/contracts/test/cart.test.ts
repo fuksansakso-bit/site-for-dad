@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   cartItemAddRequestSchema,
+  cartItemEditSourceResponseSchema,
   cartItemResponseSchema,
   guestCartResponseSchema,
 } from '../src/cart.js';
@@ -87,5 +88,21 @@ describe('cart contracts', () => {
         recipient: '79999999999',
       }),
     ).toThrow();
+  });
+
+  it('supports honest family-only editing with an item revision', () => {
+    expect(
+      cartItemEditSourceResponseSchema.parse({
+        correlationId: 'correlation-1234',
+        itemReference: 'a'.repeat(32),
+        itemRevision: 3,
+        selection: {
+          catalogVersionId: '00000000-0000-4000-8000-000000000001',
+          productFamilyId: '00000000-0000-4000-8000-000000000002',
+          quantity: 2,
+          requestOnly: true,
+        },
+      }).itemRevision,
+    ).toBe(3);
   });
 });

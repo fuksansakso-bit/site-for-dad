@@ -36,6 +36,7 @@
     "test:catalog-pilot": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tooling/scripts/catalog-pilot-acceptance.ps1",
     "test:catalog-scale": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tooling/scripts/catalog-scale-acceptance.ps1",
     "test:coverage": "turbo run test:coverage",
+    "test:phase1e": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tooling/scripts/phase-1e-acceptance.ps1",
     "test:storage": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tooling/scripts/storage-integration.ps1",
     "typecheck": "tsc --noEmit -p tsconfig.root.json && turbo run typecheck"
   },

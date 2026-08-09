@@ -16,11 +16,13 @@ export default async function ConfigurePage({
 }: {
   readonly searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<React.JSX.Element> {
-  const parameters = await searchParams;
+  const [parameters, settings] = await Promise.all([
+    searchParams,
+    getWebBusinessAdministration().getActiveSettings(),
+  ]);
   const candidate = typeof parameters['edit'] === 'string' ? parameters['edit'] : null;
   const editReference =
     candidate !== null && /^[A-Za-z0-9_-]{32}$/u.test(candidate) ? candidate : null;
-  const settings = await getWebBusinessAdministration().getActiveSettings();
   return (
     <main className="configurator-shell">
       <header className="configurator-header">

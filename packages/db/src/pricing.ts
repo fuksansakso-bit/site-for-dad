@@ -1054,16 +1054,16 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
           pool.query<{
             action: string;
             actor_id: string | null;
-            created_at: Date;
+            occurred_at: Date;
             outcome: string;
             reason_code: string;
             target_id: string;
           }>(`
-            SELECT action, actor_identity_id::text AS actor_id, created_at, outcome::text,
+            SELECT action, actor_identity_id::text AS actor_id, occurred_at, outcome::text,
                    reason_code, target_id
             FROM audit_event
             WHERE action ILIKE '%PRIC%' OR action ILIKE '%PRICE%'
-            ORDER BY created_at DESC LIMIT 30
+            ORDER BY occurred_at DESC LIMIT 30
           `),
         ]);
         const active = versions.rows.find((row) => row.status === 'ACTIVE');
@@ -1072,7 +1072,7 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
           audit: auditRows.rows.map((row) => ({
             action: row.action,
             actorId: row.actor_id,
-            createdAt: row.created_at.toISOString(),
+            createdAt: row.occurred_at.toISOString(),
             outcome: row.outcome,
             reasonCode: row.reason_code,
             targetId: row.target_id,

@@ -167,9 +167,7 @@ export default async function PublicRequestPage({
           <p>Изготовление: {request.manufacturingLeadTime}</p>
           <p>Гарантия: {request.warranty}</p>
           {request.measurementRequested ? <p>Бесплатный замер запрошен.</p> : null}
-          {request.installmentInterest ? (
-            <p>{request.installmentText}</p>
-          ) : null}
+          {request.installmentInterest ? <p>{request.installmentText}</p> : null}
           <Link className="primary-link" href="/catalog">
             Вернуться в каталог
           </Link>

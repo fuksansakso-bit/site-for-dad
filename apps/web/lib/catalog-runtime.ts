@@ -8,12 +8,14 @@ import {
   createCatalogReadAdapter,
   createCartAdapter,
   createCustomerContactAdapter,
+  createPortfolioAdapter,
   createPricingAdapter,
   createRequestAdapter,
   createStandardPreviewAdapter,
   type CatalogManagementAdapter,
   type CartAdapter,
   type CustomerContactAdapter,
+  type PortfolioAdapter,
   type PricingAdapter,
   type RequestAdapter,
   type StandardPreviewAdapter,
@@ -37,6 +39,7 @@ let catalogManagement: CatalogManagementAdapter | undefined;
 let catalogRead: ReturnType<typeof createCatalogReadAdapter> | undefined;
 let cart: CartAdapter | undefined;
 let customerContacts: CustomerContactAdapter | undefined;
+let portfolio: PortfolioAdapter | undefined;
 let identity: SyntheticIdentityAdapter | undefined;
 let passwordlessIdentity: PasswordlessIdentityAdapter | undefined;
 let staffAdministration: StaffAdministrationAdapter | undefined;
@@ -68,6 +71,11 @@ export function getWebCart(): CartAdapter {
 export function getWebCustomerContacts(): CustomerContactAdapter {
   customerContacts ??= createCustomerContactAdapter(databaseEnvironment());
   return customerContacts;
+}
+
+export function getWebPortfolio(): PortfolioAdapter {
+  portfolio ??= createPortfolioAdapter(databaseEnvironment());
+  return portfolio;
 }
 
 export function getWebIdentity(): SyntheticIdentityAdapter {

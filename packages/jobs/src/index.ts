@@ -9,6 +9,7 @@ export {
   ensureDailyCatalogSourceDiscovery,
   ensureDailyIdentityCleanup,
   enqueueEmailDelivery,
+  enqueuePortfolioMediaProcessing,
   listPermanentFoundationFailures,
   migrateFoundationJobs,
   requestCatalogSyncCancellation,

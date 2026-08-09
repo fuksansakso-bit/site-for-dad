@@ -1,4 +1,19 @@
 export {
+  createPortfolioAdapter,
+  PortfolioStoreError,
+  type PortfolioActor,
+  type PortfolioAdapter,
+  type PortfolioItemStatus,
+  type PortfolioItemView,
+  type PortfolioMediaClaim,
+  type PortfolioMediaStatus,
+  type PortfolioMediaView,
+  type PortfolioProcessedAsset,
+  type PortfolioStaffRole,
+  type PortfolioStoreErrorCode,
+  type PublishedPortfolioItem,
+} from './portfolio.js';
+export {
   createCustomerContactAdapter,
   CustomerContactStoreError,
   type CustomerContactActor,

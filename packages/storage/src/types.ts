@@ -9,6 +9,7 @@ export const objectSources = [
   'AMIGO_CATALOG_PILOT',
   amigoAuthorizedCatalogObjectSource,
   amigoAuthorizedPreviewObjectSource,
+  'LOCAL_PORTFOLIO',
 ] as const;
 export type ObjectSource = (typeof objectSources)[number];
 

@@ -10,6 +10,7 @@ import {
   cleanupExpiredIdentityState,
   processQueuedEmailDelivery,
 } from '@project-name/identity/passwordless';
+import { createPortfolioAdapter } from '@project-name/db';
 import { createCatalogJobServices } from '@project-name/jobs';
 import { createFoundationLogger } from '@project-name/observability/logger';
 import { foundationMetrics } from '@project-name/observability/metrics';
@@ -18,6 +19,7 @@ import { createS3ObjectStorage } from '@project-name/storage';
 import { createSmtpEmailDeliveryPort } from '@project-name/notifications';
 
 import { createWorkerEventSink, startWorkerProcess } from './runtime.js';
+import { processPortfolioMedia } from './portfolio-media.js';
 
 function writeBootstrapFailure(): void {
   process.stderr.write(
@@ -52,6 +54,7 @@ try {
   });
   const eventSink = createWorkerEventSink(logger);
   const objectStorage = createS3ObjectStorage(storageEnvironment);
+  const portfolio = createPortfolioAdapter(databaseEnvironment);
   const emailDelivery = createSmtpEmailDeliveryPort({
     fromAddress: emailEnvironment.EMAIL_FROM_ADDRESS,
     fromName: emailEnvironment.EMAIL_FROM_NAME,
@@ -89,7 +92,8 @@ try {
             emailDelivery,
             deliveryId,
           ),
-        processPortfolioMedia: async () => undefined,
+        processPortfolioMedia: (mediaId) =>
+          processPortfolioMedia(portfolio, objectStorage, mediaId),
       },
     );
   } catch (error) {

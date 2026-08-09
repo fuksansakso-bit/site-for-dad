@@ -46,6 +46,8 @@ import {
   phase1fJobQueueName,
   type CleanupIdentityPayload,
   type DeliverEmailPayload,
+  processPortfolioMediaPayloadSchema,
+  type ProcessPortfolioMediaPayload,
 } from './phase1f/contracts.js';
 import {
   createPhase1fTaskList,
@@ -101,6 +103,19 @@ export async function enqueueEmailDelivery(
   return enqueuePhase1fJob(
     pool,
     phase1fJobIdentifiers.deliverEmail,
+    payload,
+    payload.idempotencyKey,
+  );
+}
+
+export async function enqueuePortfolioMediaProcessing(
+  pool: Pool,
+  candidatePayload: ProcessPortfolioMediaPayload,
+): Promise<EnqueuedPhase1fJob> {
+  const payload = processPortfolioMediaPayloadSchema.parse(candidatePayload);
+  return enqueuePhase1fJob(
+    pool,
+    phase1fJobIdentifiers.processPortfolioMedia,
     payload,
     payload.idempotencyKey,
   );

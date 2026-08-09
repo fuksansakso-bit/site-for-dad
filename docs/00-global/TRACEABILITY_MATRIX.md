@@ -4,11 +4,11 @@
 
 | Поле | Значение |
 |---|---|
-| Фаза | Phase 1A–1E passed; Phase 1F+ hold |
-| Версия | 1.15.0 |
+| Фаза | Phase 1A–1F passed; Phase 1G+ hold |
+| Версия | 1.16.0 |
 | Дата | 2026-08-09, Europe/Moscow |
 | Состояние покрытия | `COVERED_WITH_VISIBLE_TBD` |
-| Главный источник требований | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.21.0 |
+| Главный источник требований | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.24.0 |
 | Feature contract | [FEATURE_SPEC.md](../specs/01-product/FEATURE_SPEC.md) |
 | Stories | [USER_STORIES.md](../specs/01-product/USER_STORIES.md) |
 | Acceptance | [ACCEPTANCE_CRITERIA.md](../specs/01-product/ACCEPTANCE_CRITERIA.md) |
@@ -143,6 +143,7 @@
 | `OWNER-DECISION-013` | Active calculation aspect of `TBD-PRICE-001` resolved; `TBD-PRICE-002`–`005` and `TBD-SIZE-001` partially evidenced only for four scopes | `GLOBAL_SPEC`, configurator/pricing/data/API/architecture/test specs, QG-231–270, dated fixtures, stable plan and completion report | QG-231–270 passed; Phase 1D+ explicitly excluded |
 | `OWNER-DECISION-014/015` | Initial two-scene/four-family launch aspect of `TBD-PREVIEW-001` resolved with registered photoreal partner layers; individual exact-swatch gaps remain explicit | `GLOBAL_SPEC`, standard preview/configurator/media/storage/data/API/architecture/security/performance/test specs, QG-271–310, plan/report and mapping-gap register | `PASSED_PHASE_1D_STANDARD_PREVIEW`; Phase 1E+ excluded |
 | `OWNER-DECISION-016` | Phase 1E request statuses/fixed recipient/safe handoff are resolved for the local/CI scope; production PII/legal/retention and official WhatsApp API remain open | `GLOBAL_SPEC`, cart/configurator/preview/roles/data/API/architecture/security/test specs, QG-311–360, plan and completion report | `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`; Phase 1F+ excluded |
+| `OWNER-DECISION-017/018` | Staff OTP/session/invitation defaults and business settings fixed for local/CI; customer accounts moved post-MVP; production PII/provider/portfolio inventory TBD remain open | `GLOBAL_SPEC`, auth/admin/roles/content/data/API/architecture/security/test specs, ADR-0011, QG-361–420, plan and completion report | `PASSED_PHASE_1F_BUSINESS_ADMINISTRATION`; customer auth and Phase 1G excluded |
 
 ## 7. Phase 0C MVP and implementation traceability
 
@@ -155,12 +156,13 @@
 | `MVP-011/023` | `SCOPE-034/042`, `FR-STANDARD-PREVIEW-*`, `STD-PREV-*`, `OWNER-DECISION-014` | `US-GUEST-005` → `AC-STANDARD-PREVIEW-001` → `TS-STANDARD-PREVIEW-001` | 1D | QG-271–310; exact mapping gaps remain visible |
 | `MVP-012`–`016` | `FR-CART-008`–`012`, `FR-REQUEST-001`–`011`, cart/order/installment specs | Phase 1E unit/contract/integration/browser/security/recovery matrix and completion report | 1E | QG-311–360 passed; synthetic local/CI PII only |
 | `MVP-017` | content/portfolio and asset rights specs | `US-CONTENT-002` → `AC-PORTFOLIO-001` → `TS-PORTFOLIO-001` | 1F | Own-work rights/consent |
-| `MVP-018/019` | `SCOPE-010/012`, `FR-AUTH-007/008`, admin/auth specs | `US-ADMIN-002`, `US-CUSTOMER-001/002` and linked AC/tests | 1F | Identity/recovery/role gates; `TBD-ACCOUNT-001` resolved |
+| `MVP-018/019`, revised by `OWNER-DECISION-018` | Staff-only `P1F-AUTH-*`, `P1F-ADMIN-*`, roles/admin/auth specs; customer account portion post-MVP | Staff auth/RBAC/admin/contact acceptance in Phase 1F report; customer stories remain future-only | 1F staff portion | QG-361–420 passed; no customer credentials/routes |
 | `MVP-020/026` | `SCOPE-007/041/042`, AI visualizer/pipeline/evaluation | `US-GUEST-006`, `US-AI-001`–`003` and linked AC/tests | 1G | Provider/privacy/TTL/evaluation/cost gates |
 | `ROADMAP-1A-001`, `PLAN-1A-001` | Architecture + accepted ADR-0007–0010 | `PLAN-1A-AC-001`–`010` execution evidence in [Phase 1A report](../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md) | 1A | `PASSED_PHASE_1A_FOUNDATION`; Phase 1B forbidden |
 | `ROADMAP-1C-001`, `OWNER-DECISION-013` | `FR-CONFIG-*`, `FR-PRICE-*`, `FR-CALC-*`, active catalog/price/quote/admin contracts | Pricing unit/contract/integration/parity and browser evidence in [Phase 1C report](../06-plans/completed/PHASE_1C_CONFIGURATOR_PRICING_REPORT.md) | 1C | `PASSED_PHASE_1C_CONFIGURATOR_PRICING`; Phase 1D forbidden |
 | `ROADMAP-1D-001`, `OWNER-DECISION-014/015` | `FR-STANDARD-PREVIEW-*`, `STD-PREV-*`, ADR-0004/0006 and active local catalog/configuration | Preview domain/API/renderer/browser/visual/recovery evidence in [Phase 1D report](../06-plans/completed/PHASE_1D_STANDARD_PREVIEW_REPORT.md) | 1D | QG-271–310 passed; Phase 1E forbidden |
 | `ROADMAP-1E-001`, `OWNER-DECISION-016` | `FR-CART-008`–`012`, `FR-REQUEST-001`–`011`, `CART-SPEC-023`–`036` and ADR-0001/0003/0008/0010 | [Phase 1E plan](../06-plans/active/PHASE_1E_CART_WHATSAPP_ORDERS_PLAN.md), [report](../06-plans/completed/PHASE_1E_CART_WHATSAPP_ORDERS_REPORT.md), cart/contracts/DB/BFF/UI and acceptance tests | 1E | `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`; Phase 1F forbidden |
+| `ROADMAP-1F-001`, `OWNER-DECISION-017/018` | Staff `P1F-AUTH-*`, `P1F-ADMIN-*`, request-contact, portfolio, settings, audit and ADR-0011 contracts | [Phase 1F plan](../06-plans/active/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_PLAN.md), [report](../06-plans/completed/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_REPORT.md), identity/notifications/DB/jobs/BFF/UI and acceptance evidence | 1F | `PASSED_PHASE_1F_BUSINESS_ADMINISTRATION`; customer accounts and Phase 1G forbidden |
 | `ROADMAP-1H-001` | deployment/security/performance/a11y/test specs | NFR stories/AC/tests + recovery/admin chains | 1H | Full launch checklist and go/no-go |
 
 Post-MVP IDs `POST-MVP-001`–`015` have no Phase 1 delivery commitment and MUST NOT be inferred from existing general feature stories without a future scope/traceability update.
@@ -227,6 +229,15 @@ Detailed runtime versions, commit list, skipped production-only checks and accep
 | `QG-344`–`354`, contracts/security/mobile/recovery/quality | [Phase 1E DB test](../../packages/db/test/integration/phase1e-real.integration.test.ts), [Chromium flow](../../tests/browser/cart-request-flow.spec.ts), [acceptance runner](../../tooling/scripts/phase-1e-acceptance.ps1) | CSRF/origin/rate/idempotency/ownership/tamper/enumeration checks; 375×812 layout; safe DB/preview failure; outbox restart preservation; log scan and repository gates pass |
 | `QG-355`–`360`, docs/history/scope/delivery | Affected canonical docs, plan/report, ten logical commits and Draft PR | `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`; no payment/account/photo/AI/production/Phase 1F scope |
 
+### 8.6. Phase 1F business administration execution evidence
+
+| Gate / behavior | Implementation | Verification / result |
+|---|---|---|
+| `QG-371`–`384`, staff auth/session/invitation/RBAC | [`packages/identity`](../../packages/identity/), [`packages/notifications`](../../packages/notifications/), staff auth routes and Phase 1F migrations | Hash-only 10-minute OTP, sealed Mailpit delivery, 12-hour staff sessions, invitation acceptance, role/session revocation and final-OWNER protection pass local/security/database evidence |
+| `QG-385`–`397`, unified business administration | [`/admin`](../../apps/web/app/admin/), request/contact adapters, portfolio/settings/audit and worker tasks | Russian shell/dashboard, requests/notes, credential-free CustomerContact history, governed portfolio, active SiteSettings, staff sessions, audit and existing catalog/pricing/sync routes verified; no real portfolio content seeded |
+| `QG-398`–`409`, contracts/migrations/browser/security/recovery | Strict BFF schemas, 25 additive migrations, scope/artifact/secret scanners and five-profile Playwright gates | Empty/repeat/upgrade/drift/recovery passed; browser smoke 25/25 and active catalog 5/5; exact Node 24.18.1 CI-equivalent stages passed with isolated data-plane skips recorded |
+| `QG-410`–`420`, docs/history/scope/delivery | Canonical specs, plan/report, twelve commits and Draft PR [#5](https://github.com/bataevabdullah2009-pixel/site-for-dad/pull/5) | `PASSED_PHASE_1F_BUSINESS_ADMINISTRATION`; `/account` 404, customer auth absent, guest/publicReference flow preserved and Phase 1G not started |
+
 ## 9. Coverage metrics
 
 | Метрика | Значение |
@@ -249,12 +260,13 @@ Detailed runtime versions, commit list, skipped production-only checks and accep
 | Phase 1C acceptance | QG-231–270 passed; four verified scopes, 40 fixtures, active calculation v5, immutable quotes, admin and CI evidence completed |
 | Phase 1D acceptance | `PASSED_PHASE_1D_STANDARD_PREVIEW`; QG-271–310 passed |
 | Phase 1E acceptance | `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`; QG-311–360 passed |
+| Phase 1F acceptance | `PASSED_PHASE_1F_BUSINESS_ADMINISTRATION`; QG-361–420 passed |
 
 ## 10. Completion conditions
 
 Покрытие считается валидным, если автоматическая проверка подтверждает существование всех linked files и каждого ID, stories сохраняют полный шаблон, acceptance содержит позитивное и негативное проверяемое поведение, test strategy содержит level/preconditions/input/expected result/status, а открытые TBD не обозначены как выполненные tests.
 
-Матрица отражает завершённые Phase 1A–1E. Phase 1D evidence is in its [completion report](../06-plans/completed/PHASE_1D_STANDARD_PREVIEW_REPORT.md), а Phase 1E — в [plan](../06-plans/active/PHASE_1E_CART_WHATSAPP_ORDERS_PLAN.md) и [completion report](../06-plans/completed/PHASE_1E_CART_WHATSAPP_ORDERS_REPORT.md). Phase 1F+ и production deployment не разрешены.
+Матрица отражает завершённые Phase 1A–1F. Phase 1E evidence находится в [plan](../06-plans/active/PHASE_1E_CART_WHATSAPP_ORDERS_PLAN.md) и [report](../06-plans/completed/PHASE_1E_CART_WHATSAPP_ORDERS_REPORT.md), а revised Phase 1F — в [plan](../06-plans/active/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_PLAN.md) и [report](../06-plans/completed/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_REPORT.md). Customer accounts, Phase 1G+ и production deployment не разрешены.
 
 ## 11. История изменений
 
@@ -277,3 +289,4 @@ Detailed runtime versions, commit list, skipped production-only checks and accep
 | 1.13.0 | 2026-08-08 | Closed Phase 1D traceability with `OWNER-DECISION-015`, photoreal local layers, four renderer/visual profiles, state/API/storage/mobile/recovery evidence, gap register and QG-271–310; Phase 1E stays prohibited. |
 | 1.14.0 | 2026-08-09 | Linked `OWNER-DECISION-016`, immutable quote-backed cart/request snapshot, fixed-recipient handoff, safe public summary, minimal staff administration, active plan and QG-311–360; production PII and Phase 1F+ stay prohibited. |
 | 1.15.0 | 2026-08-09 | Closed Phase 1E traceability with cart/request/domain/DB/BFF/UI, fixed WhatsApp recipient, public/admin projections, real DB/Chromium/security/recovery evidence, completion report and QG-311–360; Phase 1F remains prohibited. |
+| 1.16.0 | 2026-08-09 | Linked and closed revised Phase 1F staff auth/RBAC/admin/request-contact/portfolio/settings/audit/jobs, preserved guest/publicReference flow, exact CI-equivalent evidence, report and QG-361–420; customer accounts and Phase 1G remain prohibited. |

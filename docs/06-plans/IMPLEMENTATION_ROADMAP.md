@@ -4,10 +4,10 @@
 
 | Поле | Значение |
 |---|---|
-| Фаза документа | Phase 1A–1E completed; Phase 1F authorized/in progress; Phase 1G+ hold |
-| Статус roadmap | **AUTHORIZED_PHASE_1F_IN_PROGRESS / PHASE 1G+ HOLD** |
+| Фаза документа | Phase 1A–1F completed; Phase 1G+ hold |
+| Статус roadmap | **PASSED_PHASE_1F_BUSINESS_ADMINISTRATION / PHASE 1G+ HOLD** |
 | Scope | [MVP_SCOPE](MVP_SCOPE.md) |
-| Планы / evidence | Phase 1A–1E reports; Phase 1F [active plan](active/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_PLAN.md), ADR-0011 and QG-361–420 |
+| Планы / evidence | Phase 1A–1F reports; Phase 1F [plan](active/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_PLAN.md), [report](completed/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_REPORT.md), ADR-0011 and QG-361–420 |
 
 - **ROADMAP-001 — MUST:** фазы выполняются по порядку 1A–1H; параллельный research MAY идти, но dependent implementation не обходит entry gate.
 - **ROADMAP-002 — MUST:** каждая возможность включается feature flag только после собственных acceptance/security/data gates; наличие кода не равно production activation.
@@ -102,7 +102,7 @@ Execution contract: [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN](active/PHASE_1B2_FULL_AM
 
 ## 6. PHASE 1E — CART, WHATSAPP AND ORDERS
 
-`OWNER-DECISION-016` authorized only this phase from merged-main base `65780067537418a3230bb3d32ef3fb8e0af06917`. Phase 1E completed 2026-08-09 as `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`; QG-311–360, the [plan](active/PHASE_1E_CART_WHATSAPP_ORDERS_PLAN.md) and [report](completed/PHASE_1E_CART_WHATSAPP_ORDERS_REPORT.md) are controlling evidence. Local/CI checkout uses synthetic contacts while production PII remains blocked by `TBD-BIZ-005` and `TBD-PRIV-002/004/005`; safe fixed-recipient wa.me/copy does not require an official API. Phase 1F and production remain on hold.
+`OWNER-DECISION-016` authorized only this phase from merged-main base `65780067537418a3230bb3d32ef3fb8e0af06917`. Phase 1E completed 2026-08-09 as `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`; QG-311–360, the [plan](active/PHASE_1E_CART_WHATSAPP_ORDERS_PLAN.md) and [report](completed/PHASE_1E_CART_WHATSAPP_ORDERS_REPORT.md) are controlling evidence. Local/CI checkout uses synthetic contacts while production PII remains blocked by `TBD-BIZ-005` and `TBD-PRIV-002/004/005`; safe fixed-recipient wa.me/copy does not require an official API.
 
 | Поле | Содержание |
 |---|---|
@@ -131,6 +131,8 @@ Execution contract: [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN](active/PHASE_1B2_FULL_AM
 | Definition of Done | Role matrix and negative tests pass; admin runbooks and access review exist; customer account routes are absent; guest flow remains registration-free. |
 | Запрещённые изменения | Customer authentication/accounts/workspace/migration, client data export without policy, shared admin account, client-side-only auth, silently deleting audit, production providers/PII, payment, client-photo/AI, full CRM/manufacturing and Phase 1G. |
 | Rollback | Revoke staff sessions/roles, disable staff/admin modules, preserve audit and immutable versions, restore prior catalog/price/content state. |
+
+`OWNER-DECISION-017/018` authorized and narrowed this phase from merged-main base `49695099b0eee3db4a4357eb3f3eb36f78fa3389`. Phase 1F completed 2026-08-09 as `PASSED_PHASE_1F_BUSINESS_ADMINISTRATION`; QG-361–420, the [plan](active/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_PLAN.md) and [report](completed/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_REPORT.md) are controlling evidence. Customer accounts remain post-MVP, and Phase 1G is not authorized.
 
 ## 8. PHASE 1G — AI WINDOW VISUALIZER PILOT
 
@@ -193,3 +195,4 @@ Execution contract: [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN](active/PHASE_1B2_FULL_AM
 | 2.1.0 | 2026-08-09 | Phase 1E marked passed with quote-backed mixed cart, immutable request snapshots, guest measurement/installment intake, fixed-recipient handoff, safe summary, basic staff administration and DB/browser/security/recovery evidence; Phase 1F remains unauthorized. |
 | 2.2.0 | 2026-08-09 | `OWNER-DECISION-017`, ADR-0011 and QG-361–370 authorize only Phase 1F: passwordless/local-Mailpit identity, guest migration, account workspace, invitation-only staff, unified admin, portfolio, SiteSettings, audit/jobs; Phase 1G+ and production remain gated. |
 | 2.3.0 | 2026-08-09 | `OWNER-DECISION-018` narrows Phase 1F to staff identity, unified admin, requests/credential-free CRM contacts, portfolio, SiteSettings and audit; all customer accounts/auth/workspace/migration move post-MVP. |
+| 2.4.0 | 2026-08-09 | Phase 1F marked passed with staff-only passwordless auth, OWNER/ADMIN/MANAGER lifecycle, unified Russian admin, requests/CustomerContact notes, portfolio, SiteSettings, audit/jobs, preserved guest flow and exact CI-equivalent evidence; Phase 1G remains unauthorized. |

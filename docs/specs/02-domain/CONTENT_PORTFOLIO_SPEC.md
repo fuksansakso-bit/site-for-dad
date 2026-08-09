@@ -4,7 +4,7 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1F local portfolio management authorized; actual Business Owner asset inventory remains pending |
+| Статус | Phase 1F local portfolio management implemented; actual Business Owner asset inventory remains pending |
 | Версия | 0.3.0 |
 | Дата | 2026-08-09 |
 | Rights source | [ASSET_RIGHTS_REGISTER.md](../../00-global/ASSET_RIGHTS_REGISTER.md) |

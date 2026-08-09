@@ -4,7 +4,7 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Revised Phase 1F named staff lifecycle authorized; CUSTOMER reserved post-MVP |
+| Статус | Revised Phase 1F named staff lifecycle verified; CUSTOMER reserved post-MVP |
 | Версия | 0.5.0 |
 | Дата | 2026-08-09 |
 | Scope | Public, client, staff, service identities and approvals |

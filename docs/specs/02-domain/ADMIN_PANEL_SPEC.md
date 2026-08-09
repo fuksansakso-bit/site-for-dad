@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1F unified business administration authorized and in progress |
-| Версия | 0.9.0 |
+| Статус | Phase 1F unified business administration implemented and verified |
+| Версия | 0.11.0 |
 | Дата | 2026-08-09 |
 | Permissions | [ROLES_PERMISSIONS.md](../01-product/ROLES_PERMISSIONS.md) |
 | Source flows | Catalog, pricing, media, sync and order specs |
@@ -203,3 +203,4 @@ Links: `FR-ADMIN-*`, `RBAC-*`, `NFR-AUDIT-*`, `ADMIN-SPEC-001`–`034`.
 | 0.8.0 | 2026-08-04 | Recorded accepted real manifest/progress/diff/review/bulk/activation/rollback histories and final authorization, recovery, browser and CI evidence for `/admin/catalog`; non-catalog and production admin remain gated. |
 | 0.9.0 | 2026-08-09 | Authorized the Phase 1F unified Russian admin shell, staff/customer operations, portfolio, versioned settings and redacted audit views without replacing existing domain commands. |
 | 0.10.0 | 2026-08-09 | Revised Phase 1F customer administration to request-derived `CustomerContact`/lead records and internal notes without customer accounts, credentials or sessions. |
+| 0.11.0 | 2026-08-09 | Recorded completed Russian admin shell, dashboard, requests/contacts/notes, portfolio, SiteSettings, staff/session, audit and existing catalog/pricing/sync operations with role, browser and recovery evidence. |

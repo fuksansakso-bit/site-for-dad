@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A–1E contracts implemented; revised Phase 1F staff-auth/admin/request-contact contracts authorized |
-| Версия | 0.12.0 |
+| Статус | Phase 1A–1F contracts implemented; customer account APIs absent |
+| Версия | 0.14.0 |
 | Дата | 2026-08-09 |
 | Architecture/data | [ARCHITECTURE.md](ARCHITECTURE.md), [DATA_MODEL.md](DATA_MODEL.md) |
 | Security | [SECURITY_PRIVACY.md](SECURITY_PRIVACY.md) |
@@ -212,7 +212,7 @@ TLS, secure session/CSRF/CORS/CSP, object authorization, rate/abuse, schema vali
 
 Contract tests cover schemas/unknown fields as policy, auth/object matrix, idempotency, version conflicts, errors, exact money, pagination/cursors, upload spoof/completion, late callback/delete, public/private caching, redaction, event compatibility/dedup/order, provider outages and old/new client rolling compatibility. Domain AC/TS map to endpoints but API tests do not replace business tests.
 
-## 14. Phase 1A–1E implementation record
+## 14. Phase 1A–1F implementation record
 
 Phase 1A concrete routes remain `GET /api/v1/health/live` and `GET /api/v1/health/ready`. Phase 1B implements the server-authorized `/admin/catalog` slice through Next.js Server Actions rather than a generic CRUD route. The Phase 1B.2 staff read model covers the complete selected AMIGO source with bounded server filters/pages, hierarchy facets, safe sealed-manifest counts, run stages/checkpoints, differences and immutable review/bulk history; object keys, credentials, source hashes, raw snapshots and parser-internal payloads remain redacted. Every mutation re-evaluates the HttpOnly SameSite session and role server-side. OWNER/ADMIN commands keep preparation, exact two-step bulk apply, composition, selected/all difference review, approval, activation, rollback, cancellation and retry distinct and bind them to exact source/run/version/checksum/count state with generated correlation/idempotency evidence.
 
@@ -254,3 +254,4 @@ Dependencies: all domain/technical specs, auth/provider/hosting ADRs. Next.js sa
 | 0.11.0 | 2026-08-09 | Recorded concrete Phase 1E cart/request/public-summary/WhatsApp/admin routes with immutable server authority, guest/RBAC ownership, idempotency, safe errors and fixed recipient. |
 | 0.12.0 | 2026-08-09 | Authorized strict neutral auth, self-scoped account and bounded business-admin/portfolio/settings contracts for Phase 1F. |
 | 0.13.0 | 2026-08-09 | `OWNER-DECISION-018` removes customer account contracts and narrows auth to staff; adds bounded credential-free CustomerContact/history/note administration while preserving guest/publicReference APIs. |
+| 0.14.0 | 2026-08-09 | Recorded implemented staff auth/session/invitation, unified admin, CustomerContact/note, portfolio/settings/audit routes and safe errors/caching/rate/origin/idempotency evidence; `/account` and customer-auth contracts remain absent. |

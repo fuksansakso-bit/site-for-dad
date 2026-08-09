@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A–1E verified; Phase 1F local/CI identity and business-admin controls authorized |
-| Версия | 0.8.0 |
+| Статус | Phase 1A–1F verified; customer auth absent; production PII/provider gates retained |
+| Версия | 0.10.0 |
 | Дата | 2026-08-09 |
 | Data model | [DATA_MODEL.md](DATA_MODEL.md) |
 | Roles | [ROLES_PERMISSIONS.md](../01-product/ROLES_PERMISSIONS.md) |
@@ -178,3 +178,4 @@ Dependencies: all specs, legal review, provider/hosting/storage/auth/AI ADR/eval
 | 0.7.0 | 2026-08-09 | Recorded verified Phase 1E hashed guest ownership, CSRF/origin/rate/idempotency, immutable server money, fixed recipient, revocable PII-free public projection, staff denial and synthetic log scan while production PII stays gated. |
 | 0.8.0 | 2026-08-09 | Added Phase 1F OTP/session/invitation, account/admin authorization, local Mailpit, portfolio ingestion and redacted audit boundaries while production PII/provider remains gated. |
 | 0.9.0 | 2026-08-09 | Narrowed Phase 1F to staff-only OTP/session security and request-derived CRM contact privacy; customer authentication/account cookies are prohibited. |
+| 0.10.0 | 2026-08-09 | Recorded verified hash-only OTP/session/invitation, last-OWNER/RBAC, request-contact/note isolation, private portfolio ingestion, redacted audit, Mailpit/recovery/browser/secret-scan controls and absence of customer authentication. |

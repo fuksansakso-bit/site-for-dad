@@ -7,6 +7,7 @@
 
 ### Added
 
+- Completed revised Phase 1F as `PASSED_PHASE_1F_BUSINESS_ADMINISTRATION`: staff-only passwordless Mailpit authentication, hash-only OTP and 12-hour sessions, OWNER/ADMIN/MANAGER invitation/RBAC/last-OWNER protection, unified Russian admin/dashboard, request-derived credential-free CustomerContact history and notes, governed portfolio, active SiteSettings, audit and worker tasks. Additive 25-migration recovery, preserved guest/publicReference flow, five-profile browser and exact CI-equivalent gates pass; Draft PR #5 is open, customer accounts are absent and Phase 1G was not started.
 - `OWNER-DECISION-018` narrows Phase 1F before customer authentication WIP is committed: customer login/OTP/sessions, `/account`, guest migration, saved projects/favorites/history move to post-MVP. Staff-only authentication, unified administration, request-derived CustomerContact/lead records and notes, portfolio, SiteSettings and audit remain; the Phase 1E guest/WhatsApp/publicReference flow stays registration-free.
 - `OWNER-DECISION-017` authorizes only Phase 1F from merged-main commit `49695099b0eee3db4a4357eb3f3eb36f78fa3389`; added ADR-0011, active plan and QG-361–420 for provider-neutral passwordless e-mail/local Mailpit, rotating account/staff sessions, same-browser guest migration, account workspace, invitation-only staff, unified Russian administration, portfolio, versioned SiteSettings, audit and durable jobs. Production providers/deployment, payment, client-photo/AI and Phase 1G+ remain prohibited.
 

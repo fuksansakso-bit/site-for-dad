@@ -18,7 +18,7 @@
 
 **Phase 1D — DETERMINISTIC STANDARD WINDOW PREVIEW** завершена на ветке `phase/1d-standard-preview` от merged-main commit `58eb25dcde460291ad98fde157956d7f264a666d`. Гостевой `/preview` использует две локальные photoreal scenes, четыре deterministic family profiles, approved partner layers через `StoragePort`, server-side preview state и visual regression. [Отчёт](docs/06-plans/completed/PHASE_1D_STANDARD_PREVIEW_REPORT.md) и [mapping gaps](docs/06-plans/PREVIEW_AND_CONFIGURATOR_MAPPING_GAPS.md).
 
-Phase 1E завершена со статусом `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`. `OWNER-DECISION-017`, суженное `OWNER-DECISION-018`, разрешает только **Phase 1F — BUSINESS ADMINISTRATION, REQUEST MANAGEMENT, PORTFOLIO AND SETTINGS** от merged-main commit `49695099b0eee3db4a4357eb3f3eb36f78fa3389`. Активный план охватывает staff-only passwordless authentication, OWNER/ADMIN/MANAGER lifecycle, unified Russian admin, request-derived CustomerContact/lead records and notes, portfolio, SiteSettings and audit. Customer accounts/authentication and every `/account` route are post-MVP; the Phase 1E guest/WhatsApp/publicReference path remains complete. Production providers/deployment, payment, client-photo/AI and Phase 1G+ remain prohibited.
+Phase 1E завершена со статусом `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`. Суженная `OWNER-DECISION-018` **Phase 1F — BUSINESS ADMINISTRATION, REQUEST MANAGEMENT, PORTFOLIO AND SETTINGS** завершена со статусом `PASSED_PHASE_1F_BUSINESS_ADMINISTRATION` от merged-main commit `49695099b0eee3db4a4357eb3f3eb36f78fa3389`: staff-only passwordless authentication, OWNER/ADMIN/MANAGER lifecycle, единая русская admin shell, request-derived CustomerContact/lead records and notes, portfolio, SiteSettings, audit и существующие catalog/pricing/sync operations работают. Customer accounts/authentication и все `/account` routes остаются post-MVP; Phase 1E guest/WhatsApp/publicReference path сохранён. Evidence: [completion report](docs/06-plans/completed/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_REPORT.md) и Draft PR [#5](https://github.com/bataevabdullah2009-pixel/site-for-dad/pull/5). Production providers/deployment, payment, client-photo/AI и Phase 1G+ запрещены.
 
 ## С чего начать
 
@@ -41,7 +41,7 @@ Phase 1E завершена со статусом `PASSED_PHASE_1E_CART_WHATSAPP
 - `docs/specs/` содержит глобальную и 33 нормативные профильные спецификации product/domain/UX/technical.
 - `docs/00-global/` содержит управляющие и справочные документы: реестры, политики, roadmap, quality gate, допущения и открытые вопросы.
 - `docs/quality/` и `docs/evaluations/` содержат test/evaluation artifacts, а `docs/adr/` — десять принятых решений об устойчивых архитектурных границах.
-- `docs/06-plans/` содержит frozen MVP, critical-spec audit, implementation roadmap, technology evaluation и records завершённых Phase 1A–1E.
+- `docs/06-plans/` содержит frozen MVP, critical-spec audit, implementation roadmap, technology evaluation и records завершённых Phase 1A–1F.
 
 ## Референсы
 
@@ -88,4 +88,4 @@ pnpm.cmd --filter @project-name/db pricing:bootstrap
 
 ## Текущая граница работы
 
-Phase 1A–1E завершены. Revised staff/business Phase 1F выполняется по `OWNER-DECISION-017/018`; customer accounts, payment, client-photo/AI, production deployment and Phase 1G+ remain on hold.
+Phase 1A–1F завершены. Customer accounts, payment, client-photo/AI, production deployment and Phase 1G+ remain on hold; Phase 1G не разрешена.

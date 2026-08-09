@@ -4,7 +4,7 @@
 
 | Field | Value |
 |---|---|
-| Status | `IN_PROGRESS — AUTHORIZED_PHASE_1F` |
+| Status | `COMPLETED — PASSED_PHASE_1F_BUSINESS_ADMINISTRATION` |
 | Authorized by | `OWNER-DECISION-017`, narrowed by `OWNER-DECISION-018`, 2026-08-09 |
 | Base | merged `main` commit `49695099b0eee3db4a4357eb3f3eb36f78fa3389` |
 | Branch | `phase/1f-accounts-business-admin` |
@@ -28,12 +28,12 @@ Out of scope and deferred post-MVP: customer registration/login/OTP/provider/ses
 
 | Stage | Result | Status |
 |---|---|---|
-| 1. Authorization and revised scope | Decision, ADR amendment, profile specs, gate and this plan | IN_PROGRESS |
-| 2. Staff identity | Staff-only OTP, sessions, Mailpit and invitation delivery | PENDING |
-| 3. Staff and admin shell | Role lifecycle, last-OWNER guard and unified Russian admin | PENDING |
-| 4. Business operations | Requests, CRM contacts/notes, portfolio, SiteSettings, audit and worker tasks | PENDING |
-| 5. Verification | Unit, contract, PostgreSQL, browser, security, guest regression, build and CI-equivalent | PENDING |
-| 6. Documentation and delivery | Completion report/gates, clean tree, push and unmerged Draft PR | PENDING |
+| 1. Authorization and revised scope | Decision, ADR amendment, profile specs, gate and this plan | COMPLETED |
+| 2. Staff identity | Staff-only OTP, sessions, Mailpit and invitation delivery | COMPLETED |
+| 3. Staff and admin shell | Role lifecycle, last-OWNER guard and unified Russian admin | COMPLETED |
+| 4. Business operations | Requests, CRM contacts/notes, portfolio, SiteSettings, audit and worker tasks | COMPLETED |
+| 5. Verification | Unit, contract, PostgreSQL, browser, security, guest regression, build and CI-equivalent | COMPLETED |
+| 6. Documentation and delivery | Completion report/gates, clean tree, push and unmerged Draft PR | COMPLETED |
 
 Only one stage is active. Concrete verification failures may add a small reviewable fix commit; history is not squashed.
 
@@ -76,4 +76,4 @@ Stop if Phase 1E is absent, any customer account/authentication route appears, t
 
 ## 8. Completion
 
-Completion requires the revised QG-371–420 evidence, twelve logical commits, completed report, clean worktree, pushed branch and an unmerged Draft PR titled `Phase 1F: business administration, portfolio and settings`. Phase 1G must remain untouched.
+The revised QG-371–420 evidence, twelve logical commits, completion report, clean worktree, pushed branch and unmerged Draft PR [#5](https://github.com/bataevabdullah2009-pixel/site-for-dad/pull/5) satisfy completion. Final result: `PASSED_PHASE_1F_BUSINESS_ADMINISTRATION`. Phase 1G remains untouched.

@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A–1E passed; revised staff-only/business Phase 1F in progress; Phase 1G+ hold |
-| Версия | 0.22.0 |
+| Статус | Phase 1A–1F passed; customer accounts post-MVP; Phase 1G+ hold |
+| Версия | 0.24.0 |
 | Дата | 2026-08-09, Europe/Moscow |
 | Владелец документа | Product Owner — владелец проекта; Business Owner — отец владельца проекта (`OWNER-DECISION-001`) |
 | Продукт | `PROJECT_NAME` до отдельного решения о бренде |
@@ -72,6 +72,7 @@
 | 0.21.0 | 2026-08-09 | Phase 1E completed as `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`: quote-backed guest cart, immutable `OrderInquiry` snapshots, honest mixed pricing, fixed-recipient WhatsApp handoff, revocable PII-free summary, minimal staff intake, audit/outbox and real PostgreSQL/Chromium/recovery evidence pass. Phase 1F and production remain unauthorized. |
 | 0.22.0 | 2026-08-09 | `OWNER-DECISION-017` authorizes only Phase 1F from merged-main commit `49695099b0eee3db4a4357eb3f3eb36f78fa3389`: optional passwordless customer accounts, guest ownership migration, saved workspace/favorites, invitation-only staff roles, unified Russian administration, customer/request operations, local portfolio media, SiteSettings, audit and durable delivery/cleanup/media jobs. Production providers/deployment, payment, client-photo/AI and Phase 1G+ remain prohibited. |
 | 0.23.0 | 2026-08-09 | `OWNER-DECISION-018` narrows Phase 1F before customer WIP is committed: customer registration/login/OTP/sessions, `/account`, guest migration, projects/favorites and account history move to post-MVP. Phase 1F is now staff-only authentication, OWNER/ADMIN/MANAGER administration, request-derived `CustomerContact`/lead CRM records and notes, portfolio, SiteSettings, audit and existing catalog/pricing/sync operations; the Phase 1E guest/publicReference path remains the only customer path. |
+| 0.24.0 | 2026-08-09 | Revised Phase 1F completed as `PASSED_PHASE_1F_BUSINESS_ADMINISTRATION`: staff-only passwordless auth/RBAC, unified Russian admin, request/CustomerContact operations, portfolio, SiteSettings, audit/jobs and existing AMIGO/catalog/pricing administration pass exact CI-equivalent acceptance while customer accounts and Phase 1G remain absent. |
 
 ## 1. Нормативный язык и приоритет источников
 
@@ -120,7 +121,7 @@
 
 ### 2.2. Решения владельца для implementation governance и будущих feature gates
 
-Источник `OWNER-DECISION-*` — письменные решения Product Owner от 2026-08-02, 2026-08-03, 2026-08-08 и 2026-08-09. Они задают бизнес- и архитектурные границы; implementation scope расширяется только явным transition decision. Phase 1A–1E завершены; `OWNER-DECISION-017` разрешает только Phase 1F, а Phase 1G+ остаются запрещены.
+Источник `OWNER-DECISION-*` — письменные решения Product Owner от 2026-08-02, 2026-08-03, 2026-08-08 и 2026-08-09. Они задают бизнес- и архитектурные границы; implementation scope расширяется только явным transition decision. Phase 1A–1F завершены; отдельного разрешения на Phase 1G нет.
 
 - **OWNER-DECISION-001 — MUST:** Product Owner — владелец проекта; Business Owner — отец владельца проекта. Product Owner утверждает продуктовые решения, UX, технические этапы, приоритеты и MVP. Business Owner утверждает цены, ассортимент, наличие, правила изготовления, гарантийные решения и коммерческие условия.
 - **OWNER-DECISION-002 — MUST:** новую `PriceVersion` может активировать только actor с ролью `OWNER` или `ADMIN`, после просмотра точного diff и явного подтверждения; каждая попытка и успешная активация MUST попадать в audit log.

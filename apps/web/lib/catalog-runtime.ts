@@ -6,10 +6,14 @@ import {
 import {
   createCatalogManagementAdapter,
   createCatalogReadAdapter,
+  createCartAdapter,
   createPricingAdapter,
+  createRequestAdapter,
   createStandardPreviewAdapter,
   type CatalogManagementAdapter,
+  type CartAdapter,
   type PricingAdapter,
+  type RequestAdapter,
   type StandardPreviewAdapter,
 } from '@project-name/db';
 import {
@@ -21,11 +25,13 @@ import { createS3ObjectStorage } from '@project-name/storage';
 
 let catalogManagement: CatalogManagementAdapter | undefined;
 let catalogRead: ReturnType<typeof createCatalogReadAdapter> | undefined;
+let cart: CartAdapter | undefined;
 let identity: SyntheticIdentityAdapter | undefined;
 let jobPool: ReturnType<typeof createFoundationJobPool> | undefined;
 let objectStorage: ReturnType<typeof createS3ObjectStorage> | undefined;
 let pricing: PricingAdapter | undefined;
 let preview: StandardPreviewAdapter | undefined;
+let requests: RequestAdapter | undefined;
 
 function databaseEnvironment() {
   return parseDatabaseEnvironment(process.env);
@@ -39,6 +45,11 @@ export function getWebCatalogManagement(): CatalogManagementAdapter {
 export function getWebCatalogRead(): ReturnType<typeof createCatalogReadAdapter> {
   catalogRead ??= createCatalogReadAdapter(databaseEnvironment());
   return catalogRead;
+}
+
+export function getWebCart(): CartAdapter {
+  cart ??= createCartAdapter(databaseEnvironment());
+  return cart;
 }
 
 export function getWebIdentity(): SyntheticIdentityAdapter {
@@ -71,4 +82,9 @@ export function getWebPricing(): PricingAdapter {
 export function getWebStandardPreview(): StandardPreviewAdapter {
   preview ??= createStandardPreviewAdapter(databaseEnvironment());
   return preview;
+}
+
+export function getWebRequests(): RequestAdapter {
+  requests ??= createRequestAdapter(databaseEnvironment());
+  return requests;
 }

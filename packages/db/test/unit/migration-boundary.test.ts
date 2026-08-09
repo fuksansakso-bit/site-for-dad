@@ -31,6 +31,7 @@ describe('Phase 1E migration boundary', () => {
       '20260808150000_phase_1c_configurator_pricing',
       '20260808190000_phase_1d_standard_preview',
       '20260809113000_phase_1e_cart_request_intake',
+      '20260809114500_phase_1e_cart_money_bigint',
     ]);
 
     const tables = new Set<string>();
@@ -44,6 +45,9 @@ describe('Phase 1E migration boundary', () => {
         expect(sql).toContain('Recovery uses forward compensation');
       } else if (directory === '20260809113000_phase_1e_cart_request_intake') {
         expect(sql).toContain('Phase 1E migration risk: MEDIUM');
+        expect(sql).toContain('Forward compensation');
+      } else if (directory === '20260809114500_phase_1e_cart_money_bigint') {
+        expect(sql).toContain('Phase 1E migration risk: LOW');
         expect(sql).toContain('Forward compensation');
       } else {
         expect(sql).toMatch(/PLAN-(?:1A|1B1|1B2) migration risk: (?:LOW|MEDIUM)/);

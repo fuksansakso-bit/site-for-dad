@@ -26,14 +26,14 @@ export class CartStoreError extends Error {
 type AllowedQuoteStatus =
   'CALCULATED' | 'SOURCE_DATA_STALE' | 'PRICE_ON_REQUEST' | 'MANUAL_REVIEW_REQUIRED';
 
-interface CartIdentityRow {
+export interface CartIdentityRow {
   readonly cart_id: string;
   readonly cart_revision: number;
   readonly expires_at: Date;
   readonly session_id: string;
 }
 
-interface CartItemRow {
+export interface CartItemRow {
   readonly breakdown_snapshot: unknown;
   readonly catalog_version_id: string;
   readonly catalog_version_number: number;
@@ -45,6 +45,8 @@ interface CartItemRow {
   readonly price_version_id: string | null;
   readonly price_version_number: number | null;
   readonly quote_created_at: Date;
+  readonly quote_snapshot_id: string;
+  readonly preview_state_id: string | null;
   readonly status: AllowedQuoteStatus;
 }
 
@@ -164,7 +166,7 @@ function integer(value: unknown): number | null {
   return Number.isSafeInteger(value) && Number(value) >= 0 ? Number(value) : null;
 }
 
-function productSnapshot(configuration: unknown, breakdown: unknown): CartProductSnapshot {
+export function productSnapshot(configuration: unknown, breakdown: unknown): CartProductSnapshot {
   const configurationRecord = record(configuration);
   const ids = record(configurationRecord?.['ids']);
   const names = record(configurationRecord?.['names']);
@@ -194,7 +196,7 @@ function productSnapshot(configuration: unknown, breakdown: unknown): CartProduc
   };
 }
 
-function breakdownSnapshot(value: unknown, status: AllowedQuoteStatus) {
+export function breakdownSnapshot(value: unknown, status: AllowedQuoteStatus) {
   const source = record(value);
   if (source === null) throw new CartStoreError('CART_QUOTE_UNAVAILABLE');
   const priced = status === 'CALCULATED' || status === 'SOURCE_DATA_STALE';
@@ -224,9 +226,10 @@ function publicReference(): string {
   return randomBytes(24).toString('base64url');
 }
 
-async function transaction<T>(
+export async function cartTransaction<T>(
   pool: Pool,
   operation: (client: PoolClient) => Promise<T>,
+  mapFailure: (error: unknown) => Error = mapError,
 ): Promise<T> {
   const client = await pool.connect();
   try {
@@ -236,7 +239,7 @@ async function transaction<T>(
     return value;
   } catch (error) {
     await client.query('ROLLBACK').catch(() => undefined);
-    throw mapError(error);
+    throw mapFailure(error);
   } finally {
     client.release();
   }
@@ -281,7 +284,7 @@ async function ensureCart(
   return row;
 }
 
-async function ownedCart(
+export async function ownedCart(
   client: PoolClient,
   ownerTokenHash: string,
   lock = false,
@@ -311,7 +314,10 @@ async function activePriceVersionId(client: PoolClient): Promise<string | null> 
   return result.rows[0]?.id ?? null;
 }
 
-async function loadCartState(client: PoolClient, cart: CartIdentityRow): Promise<CartStateView> {
+export async function loadCartState(
+  client: PoolClient,
+  cart: CartIdentityRow,
+): Promise<CartStateView> {
   const [itemsResult, currentPriceVersionId] = await Promise.all([
     client.query<CartItemRow>(
       `
@@ -319,7 +325,8 @@ async function loadCartState(client: PoolClient, cart: CartIdentityRow): Promise
                item.revision AS item_revision, quote.status::text, quote.catalog_version_id::text,
                quote.price_version_id::text, quote.configuration_snapshot, quote.breakdown_snapshot,
                quote.created_at AS quote_created_at, catalog.version_number AS catalog_version_number,
-               price.version_number AS price_version_number, preview.public_token AS preview_public_token
+               price.version_number AS price_version_number, preview.public_token AS preview_public_token,
+               quote.id::text AS quote_snapshot_id, item.preview_state_id::text
         FROM cart_item item
         JOIN quote_snapshot quote ON quote.id = item.quote_snapshot_id
         JOIN catalog_version catalog ON catalog.id = quote.catalog_version_id
@@ -530,7 +537,7 @@ export function createCartAdapter(environment: DatabaseEnvironment): CartAdapter
     },
 
     async get(ownerTokenHash, sessionExpiresAt) {
-      return transaction(pool, async (client) => {
+      return cartTransaction(pool, async (client) => {
         const cart = await ensureCart(client, ownerTokenHash, sessionExpiresAt);
         return loadCartState(client, cart);
       });
@@ -538,7 +545,7 @@ export function createCartAdapter(environment: DatabaseEnvironment): CartAdapter
 
     async addQuote(input) {
       assertOpaque(input.correlationId, 128);
-      return transaction(pool, async (client) => {
+      return cartTransaction(pool, async (client) => {
         const cart = await ensureCart(client, input.ownerTokenHash, input.sessionExpiresAt);
         const scope = `guest-cart:add:${cart.session_id}`;
         const claimed = await claimCommand(client, scope, input.idempotencyKey, {
@@ -592,7 +599,7 @@ export function createCartAdapter(environment: DatabaseEnvironment): CartAdapter
       if (!Number.isSafeInteger(input.expectedItemRevision) || input.expectedItemRevision <= 0) {
         throw new CartStoreError('CART_INVALID_INPUT');
       }
-      return transaction(pool, async (client) => {
+      return cartTransaction(pool, async (client) => {
         const cart = await ownedCart(client, input.ownerTokenHash, true);
         const scope = `guest-cart:replace:${cart.session_id}`;
         const claimed = await claimCommand(client, scope, input.idempotencyKey, {
@@ -649,7 +656,7 @@ export function createCartAdapter(environment: DatabaseEnvironment): CartAdapter
 
     async duplicate(input) {
       assertOpaque(input.correlationId, 128);
-      return transaction(pool, async (client) => {
+      return cartTransaction(pool, async (client) => {
         const cart = await ownedCart(client, input.ownerTokenHash, true);
         if (cart.cart_revision !== input.expectedCartRevision) {
           throw new CartStoreError('CART_CONFLICT');
@@ -702,7 +709,7 @@ export function createCartAdapter(environment: DatabaseEnvironment): CartAdapter
 
     async remove(input) {
       assertOpaque(input.correlationId, 128);
-      return transaction(pool, async (client) => {
+      return cartTransaction(pool, async (client) => {
         const cart = await ownedCart(client, input.ownerTokenHash, true);
         if (cart.cart_revision !== input.expectedCartRevision) {
           throw new CartStoreError('CART_CONFLICT');
@@ -747,7 +754,7 @@ export function createCartAdapter(environment: DatabaseEnvironment): CartAdapter
 
     async clear(input) {
       assertOpaque(input.correlationId, 128);
-      return transaction(pool, async (client) => {
+      return cartTransaction(pool, async (client) => {
         const cart = await ownedCart(client, input.ownerTokenHash, true);
         if (cart.cart_revision !== input.expectedCartRevision) {
           throw new CartStoreError('CART_CONFLICT');

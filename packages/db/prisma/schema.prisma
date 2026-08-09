@@ -1550,7 +1550,7 @@ model OrderInquiry {
   consentAt                DateTime                    @map("consent_at") @db.Timestamptz(6)
   status                   OrderInquiryStatus          @default(NEW)
   cartSnapshot             Json                        @map("cart_snapshot") @db.JsonB
-  knownSubtotalMinor       Int                         @map("known_subtotal_minor")
+  knownSubtotalMinor       BigInt                      @map("known_subtotal_minor") @db.BigInt
   pricingStatus            CartPricingStatus           @map("pricing_status")
   catalogVersionIds        Json                        @map("catalog_version_ids") @db.JsonB
   priceVersionIds          Json                        @map("price_version_ids") @db.JsonB
@@ -1579,7 +1579,7 @@ model RequestItemSnapshot {
   previewStateId  String?                  @map("preview_state_id") @db.Uuid
   snapshot        Json                     @db.JsonB
   pricingStatus   PricingCalculationStatus @map("pricing_status")
-  knownTotalMinor Int?                     @map("known_total_minor")
+  knownTotalMinor BigInt?                  @map("known_total_minor") @db.BigInt
   createdAt       DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
   inquiry         OrderInquiry             @relation(fields: [inquiryId], references: [id], onDelete: Restrict)
   quoteSnapshot   QuoteSnapshot            @relation(fields: [quoteSnapshotId], references: [id], onDelete: Restrict)

@@ -1,4 +1,15 @@
 export {
+  guestCheckoutRequestSchema,
+  guestCheckoutResponseSchema,
+  requestNumberSchema,
+  requestSafeSnapshotSchema,
+  requestStatusSchema,
+  type GuestCheckoutRequest,
+  type GuestCheckoutResponse,
+  type RequestSafeSnapshot,
+  type RequestStatus,
+} from './request.js';
+export {
   cartItemAddRequestSchema,
   cartItemCommandRequestSchema,
   cartItemEditSourceResponseSchema,

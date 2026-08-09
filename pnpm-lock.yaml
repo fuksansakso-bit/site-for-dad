@@ -152,6 +152,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@project-name/cart':
+        specifier: workspace:*
+        version: link:../../packages/cart
       '@project-name/catalog':
         specifier: workspace:*
         version: link:../../packages/catalog

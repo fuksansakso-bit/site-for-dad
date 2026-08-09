@@ -1,4 +1,13 @@
 export {
+  createRequestAdapter,
+  RequestStoreError,
+  type GuestCheckoutCommand,
+  type RequestAdapter,
+  type RequestReceiptView,
+  type RequestSafeSnapshotView,
+  type RequestStoreErrorCode,
+} from './request.js';
+export {
   createCartAdapter,
   CartStoreError,
   type CartAdapter,

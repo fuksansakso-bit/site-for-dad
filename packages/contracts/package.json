@@ -27,6 +27,10 @@
     "./preview": {
       "types": "./dist/preview.d.ts",
       "import": "./dist/preview.js"
+    },
+    "./request": {
+      "types": "./dist/request.d.ts",
+      "import": "./dist/request.js"
     }
   },
   "scripts": {
@@ -54,7 +58,8 @@
       "./cart",
       "./error",
       "./health",
-      "./preview"
+      "./preview",
+      "./request"
     ]
   }
 }

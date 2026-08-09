@@ -1,9 +1,10 @@
 'use client';
 
 import type {
+  GuestCartResponse,
   PreviewStateUpdate,
   StandardPreviewStateResponse,
-} from '@project-name/contracts/preview';
+} from '@project-name/contracts';
 import type { PreviewControlPatch, PreviewSceneId } from '@project-name/preview';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
@@ -108,8 +109,10 @@ function RangeControl({
 }
 
 export function PreviewExperience({
+  quoteToken,
   stateId,
 }: {
+  readonly quoteToken: string | null;
   readonly stateId: string | null;
 }): React.JSX.Element {
   const [state, setState] = useState<StandardPreviewStateResponse | null>(null);
@@ -117,6 +120,8 @@ export function PreviewExperience({
   const [error, setError] = useState<string | null>(null);
   const [assetFailed, setAssetFailed] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [cartPending, setCartPending] = useState(false);
+  const [cartAdded, setCartAdded] = useState(false);
   const pendingRef = useRef<PendingUpdate>({});
   const inFlightRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -205,6 +210,28 @@ export function PreviewExperience({
     });
     if (timerRef.current !== null) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => void senderRef.current(), immediate ? 0 : 140);
+  };
+
+  const addToCart = async () => {
+    if (quoteToken === null || stateId === null || state === null) return;
+    setCartPending(true);
+    setError(null);
+    try {
+      await jsonRequest<GuestCartResponse>('/api/v1/cart/items', {
+        body: JSON.stringify({ previewStateId: stateId, quoteToken }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotency-Key': requestId('preview-cart-add'),
+          'X-CSRF-Token': state.csrfToken,
+        },
+        method: 'POST',
+      });
+      setCartAdded(true);
+    } catch {
+      setError('Не удалось добавить изделие в корзину. Повторите попытку из конфигуратора.');
+    } finally {
+      setCartPending(false);
+    }
   };
 
   if (stateId === null) {
@@ -404,7 +431,31 @@ export function PreviewExperience({
             </button>
           </section>
         ) : null}
-        <Link className="preview-primary-action" href="/configure?resume=preview">
+        {quoteToken === null ? null : (
+          <section className="preview-cart-card">
+            <button
+              className="cart-primary-action"
+              disabled={cartPending || cartAdded}
+              onClick={() => void addToCart()}
+              type="button"
+            >
+              {cartPending
+                ? 'Добавляем…'
+                : cartAdded
+                  ? 'Добавлено в корзину'
+                  : 'Добавить в корзину'}
+            </button>
+            {cartAdded ? (
+              <p role="status">
+                Изделие добавлено с текущей примеркой. <Link href="/cart">Открыть корзину →</Link>
+              </p>
+            ) : null}
+          </section>
+        )}
+        <Link
+          className="preview-primary-action preview-secondary-action"
+          href="/configure?resume=preview"
+        >
           ← Вернуться в конфигуратор
         </Link>
       </aside>

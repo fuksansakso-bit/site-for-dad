@@ -127,7 +127,17 @@ export interface CartAdapter {
   readonly getEditSelection: (
     ownerTokenHash: string,
     itemReference: string,
-  ) => Promise<PricingSelection>;
+  ) => Promise<{
+    readonly itemRevision: number;
+    readonly selection:
+      | PricingSelection
+      | {
+          readonly catalogVersionId: string;
+          readonly productFamilyId: string;
+          readonly quantity: number;
+          readonly requestOnly: true;
+        };
+  }>;
   readonly remove: (input: CartDuplicateCommand) => Promise<CartStateView>;
   readonly replaceQuote: (input: CartReplaceCommand) => Promise<CartStateView>;
 }
@@ -812,9 +822,12 @@ export function createCartAdapter(environment: DatabaseEnvironment): CartAdapter
     async getEditSelection(ownerTokenHash, itemReference) {
       assertOwnerHash(ownerTokenHash);
       try {
-        const result = await pool.query<{ configuration_snapshot: unknown }>(
+        const result = await pool.query<{
+          configuration_snapshot: unknown;
+          item_revision: number;
+        }>(
           `
-            SELECT quote.configuration_snapshot
+            SELECT quote.configuration_snapshot, item.revision AS item_revision
             FROM cart_item item
             JOIN guest_cart cart ON cart.id = item.cart_id
             JOIN guest_cart_session session ON session.id = cart.session_id
@@ -825,9 +838,29 @@ export function createCartAdapter(environment: DatabaseEnvironment): CartAdapter
           `,
           [itemReference, ownerTokenHash],
         );
-        const configuration = record(result.rows[0]?.configuration_snapshot);
+        const row = result.rows[0];
+        const configuration = record(row?.configuration_snapshot);
         const ids = record(configuration?.['ids']);
-        if (ids === null) throw new CartStoreError('CART_NOT_FOUND');
+        if (ids === null || row === undefined) throw new CartStoreError('CART_NOT_FOUND');
+        if (ids['requestOnly'] === true) {
+          if (
+            typeof ids['catalogVersionId'] !== 'string' ||
+            typeof ids['productFamilyId'] !== 'string' ||
+            !Number.isSafeInteger(ids['quantity']) ||
+            Number(ids['quantity']) <= 0
+          ) {
+            throw new CartStoreError('CART_NOT_FOUND');
+          }
+          return {
+            itemRevision: row.item_revision,
+            selection: {
+              catalogVersionId: ids['catalogVersionId'],
+              productFamilyId: ids['productFamilyId'],
+              quantity: Number(ids['quantity']),
+              requestOnly: true,
+            },
+          };
+        }
         const selection = ids as Partial<PricingSelection>;
         const stringFields = [
           'catalogVersionId',
@@ -848,7 +881,7 @@ export function createCartAdapter(environment: DatabaseEnvironment): CartAdapter
         ) {
           throw new CartStoreError('CART_NOT_FOUND');
         }
-        return selection as PricingSelection;
+        return { itemRevision: row.item_revision, selection: selection as PricingSelection };
       } catch (error) {
         throw mapError(error);
       }

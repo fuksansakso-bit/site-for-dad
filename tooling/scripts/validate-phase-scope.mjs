@@ -195,6 +195,7 @@ const allowedRouteFiles = new Set([
   'apps/web/app/api/v1/configurator/route.ts',
   'apps/web/app/api/v1/configurator/validate/route.ts',
   'apps/web/app/api/v1/pricing/calculate/route.ts',
+  'apps/web/app/api/v1/pricing/request-price/route.ts',
   'apps/web/app/api/v1/quotes/[token]/route.ts',
   'apps/web/app/api/v1/quotes/route.ts',
   'apps/web/app/api/v1/quotes/request/route.ts',

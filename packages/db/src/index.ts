@@ -56,6 +56,7 @@ export {
   type PricingAdminCommand,
   type PricingCalculateCommand,
   type PricingOverrideRemoveCommand,
+  type PricingRequestPriceCommand,
   type PricingOverrideSetCommand,
   type PricingQuoteSaveCommand,
   type PricingStoreErrorCode,

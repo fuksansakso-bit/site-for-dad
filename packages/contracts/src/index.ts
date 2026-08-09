@@ -88,6 +88,7 @@ export {
   pricingAdminOverviewResponseSchema,
   pricingCalculationResponseSchema,
   pricingCalculationStatusSchema,
+  priceRequestCalculationSchema,
   pricingOverrideRemoveSchema,
   pricingOverrideSetSchema,
   pricingResultSchema,
@@ -98,6 +99,7 @@ export {
   quoteSnapshotResponseSchema,
   type ConfiguratorBootstrapResponse,
   type PricingCalculationResponse,
+  type PriceRequestCalculation,
   type PricingSelectionContract,
   type QuoteSnapshotResponse,
 } from './pricing.js';

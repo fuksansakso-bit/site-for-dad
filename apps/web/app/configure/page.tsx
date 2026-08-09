@@ -10,7 +10,15 @@ export const metadata: Metadata = {
   title: 'Конфигуратор жалюзи · PROJECT_NAME',
 };
 
-export default function ConfigurePage(): React.JSX.Element {
+export default async function ConfigurePage({
+  searchParams,
+}: {
+  readonly searchParams: Promise<Record<string, string | string[] | undefined>>;
+}): Promise<React.JSX.Element> {
+  const parameters = await searchParams;
+  const candidate = typeof parameters['edit'] === 'string' ? parameters['edit'] : null;
+  const editReference =
+    candidate !== null && /^[A-Za-z0-9_-]{32}$/u.test(candidate) ? candidate : null;
   return (
     <main className="configurator-shell">
       <header className="configurator-header">
@@ -20,7 +28,7 @@ export default function ConfigurePage(): React.JSX.Element {
         </Link>
         <p>Точный локальный расчёт · без регистрации</p>
       </header>
-      <ProductConfigurator />
+      <ProductConfigurator editReference={editReference} />
     </main>
   );
 }

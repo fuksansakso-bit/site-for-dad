@@ -212,6 +212,15 @@ export const pricingCalculationResponseSchema = z
   .strict();
 export type PricingCalculationResponse = z.infer<typeof pricingCalculationResponseSchema>;
 
+export const priceRequestCalculationSchema = z
+  .object({
+    catalogVersionId: z.uuid(),
+    productFamilyId: z.uuid(),
+    quantity: z.number().int().positive().max(1_000),
+  })
+  .strict();
+export type PriceRequestCalculation = z.infer<typeof priceRequestCalculationSchema>;
+
 export const quoteSaveRequestSchema = z
   .object({ calculationToken: z.string().min(32).max(64) })
   .strict();

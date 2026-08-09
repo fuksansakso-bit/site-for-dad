@@ -1,7 +1,9 @@
 'use client';
 
 import type {
+  CartItemEditSourceResponse,
   ConfiguratorBootstrapResponse,
+  GuestCartResponse,
   PricingCalculationResponse,
   PricingSelectionContract,
   QuoteSnapshotResponse,
@@ -111,7 +113,11 @@ function persistedSelection(catalogVersionId: string): PersistedConfiguratorSele
   }
 }
 
-export function ProductConfigurator(): React.JSX.Element {
+export function ProductConfigurator({
+  editReference,
+}: {
+  readonly editReference: string | null;
+}): React.JSX.Element {
   const [bootstrap, setBootstrap] = useState<ConfiguratorBootstrapResponse | null>(null);
   const [step, setStep] = useState(0);
   const [familyId, setFamilyId] = useState('');
@@ -129,15 +135,54 @@ export function ProductConfigurator(): React.JSX.Element {
   const [result, setResult] = useState<Result | null>(null);
   const [calculationToken, setCalculationToken] = useState<string | null>(null);
   const [quote, setQuote] = useState<QuoteSnapshotResponse | null>(null);
+  const [editItemRevision, setEditItemRevision] = useState<number | null>(null);
+  const [cartAdded, setCartAdded] = useState(false);
   const [pending, setPending] = useState(false);
   const [previewPending, setPreviewPending] = useState(false);
   const [selectionRestored, setSelectionRestored] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    void jsonRequest<ConfiguratorBootstrapResponse>('/api/v1/configurator')
-      .then((loaded) => {
+    let active = true;
+    void (async () => {
+      try {
+        const loaded = await jsonRequest<ConfiguratorBootstrapResponse>('/api/v1/configurator');
+        if (!active) return;
         setBootstrap(loaded);
+        if (editReference !== null) {
+          const source = await jsonRequest<CartItemEditSourceResponse>(
+            `/api/v1/cart/items/${editReference}/edit-source`,
+          );
+          if (!active) return;
+          const selection = source.selection;
+          setEditItemRevision(source.itemRevision);
+          setFamilyId(selection.productFamilyId);
+          setQuantity(selection.quantity);
+          if ('requestOnly' in selection) {
+            setStep(9);
+          } else {
+            const selectedProfile = loaded.profiles.find(
+              (profile) =>
+                profile.configuratorModelId === selection.configuratorModelId &&
+                profile.materialVariantId === selection.materialVariantId &&
+                profile.productSystemId === selection.productSystemId,
+            );
+            if (selectedProfile === undefined) throw new Error('EDIT_SOURCE_STALE');
+            setAdditionalOptionIds([...selection.additionalOptionIds]);
+            setCategoryId(selectedProfile.optionData.categoryId);
+            setControlTypeId(selection.controlTypeId);
+            setHardwareOptionId(selection.hardwareOptionId);
+            setHeightMm(selection.heightMm);
+            setMaterialVariantId(selection.materialVariantId);
+            setModelId(selection.configuratorModelId);
+            setMountingTypeId(selection.mountingTypeId);
+            setSystemId(selection.productSystemId);
+            setWidthMm(selection.widthMm);
+            setStep(9);
+          }
+          setSelectionRestored(true);
+          return;
+        }
         const saved = persistedSelection(loaded.catalogVersionId);
         if (saved !== null) {
           setAdditionalOptionIds([...saved.additionalOptionIds]);
@@ -155,9 +200,19 @@ export function ProductConfigurator(): React.JSX.Element {
           setWidthMm(saved.widthMm);
         }
         setSelectionRestored(true);
-      })
-      .catch(() => setError('Конфигуратор временно недоступен. Попробуйте обновить страницу.'));
-  }, []);
+      } catch {
+        if (!active) return;
+        setError(
+          editReference === null
+            ? 'Конфигуратор временно недоступен. Попробуйте обновить страницу.'
+            : 'Не удалось загрузить позицию корзины. Откройте корзину и повторите попытку.',
+        );
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [editReference]);
 
   useEffect(() => {
     if (bootstrap === null || !selectionRestored) return;
@@ -229,37 +284,14 @@ export function ProductConfigurator(): React.JSX.Element {
     setResult(null);
     setCalculationToken(null);
     setQuote(null);
+    setCartAdded(false);
     setError(null);
   };
 
   const advance = () => {
     setError(null);
     if (step === 0 && family?.automaticPricing === false) {
-      setResult({
-        appliedOverrides: [],
-        appliedRules: [],
-        calculatedAt: new Date().toISOString(),
-        currency: 'RUB',
-        deliveryKopecks: 0,
-        grandTotalKopecks: null,
-        installationKopecks: 0,
-        measurementKopecks: 0,
-        minimumPriceApplied: false,
-        minimumPriceKopecks: 150000,
-        optionsTotalKopecks: null,
-        priceVersionId: bootstrap?.priceVersionId ?? null,
-        productsSubtotalKopecks: null,
-        quantity,
-        safeExplanation: 'Для этого семейства цена рассчитывается по запросу.',
-        sourceVersion: null,
-        status: 'PRICE_ON_REQUEST',
-        unitBasePriceKopecks: null,
-        unitFinalPriceKopecks: null,
-        unitPriceBeforeMinimumKopecks: null,
-        validationDetails: [],
-        warnings: [],
-      });
-      setStep(10);
+      setStep(9);
       return;
     }
     setStep((current) => Math.min(10, current + 1));
@@ -285,20 +317,34 @@ export function ProductConfigurator(): React.JSX.Element {
 
   const calculate = async () => {
     const input = selection();
-    if (bootstrap === null || input === null) return;
+    if (bootstrap === null) return;
     setPending(true);
     setError(null);
     setQuote(null);
+    setCartAdded(false);
     try {
-      const response = await jsonRequest<PricingCalculationResponse>('/api/v1/pricing/calculate', {
-        body: JSON.stringify(input),
-        headers: {
-          'Content-Type': 'application/json',
-          'Idempotency-Key': requestId('calc'),
-          'X-CSRF-Token': bootstrap.csrfToken,
+      const requestOnly = family?.automaticPricing === false;
+      if (!requestOnly && input === null) return;
+      const response = await jsonRequest<PricingCalculationResponse>(
+        requestOnly ? '/api/v1/pricing/request-price' : '/api/v1/pricing/calculate',
+        {
+          body: JSON.stringify(
+            requestOnly
+              ? {
+                  catalogVersionId: bootstrap.catalogVersionId,
+                  productFamilyId: familyId,
+                  quantity,
+                }
+              : input,
+          ),
+          headers: {
+            'Content-Type': 'application/json',
+            'Idempotency-Key': requestId(requestOnly ? 'request-price' : 'calc'),
+            'X-CSRF-Token': bootstrap.csrfToken,
+          },
+          method: 'POST',
         },
-        method: 'POST',
-      });
+      );
       setResult(response.result);
       setCalculationToken(response.calculationToken);
       setStep(10);
@@ -309,24 +355,58 @@ export function ProductConfigurator(): React.JSX.Element {
     }
   };
 
+  const ensureQuote = async (): Promise<QuoteSnapshotResponse> => {
+    if (quote !== null) return quote;
+    if (bootstrap === null || calculationToken === null) throw new Error('QUOTE_SOURCE_REQUIRED');
+    const saved = await jsonRequest<QuoteSnapshotResponse>('/api/v1/quotes', {
+      body: JSON.stringify({ calculationToken }),
+      headers: {
+        'Content-Type': 'application/json',
+        'Idempotency-Key': requestId('quote'),
+        'X-CSRF-Token': bootstrap.csrfToken,
+      },
+      method: 'POST',
+    });
+    setQuote(saved);
+    return saved;
+  };
+
   const saveQuote = async () => {
-    if (bootstrap === null || calculationToken === null) return;
     setPending(true);
     setError(null);
     try {
-      setQuote(
-        await jsonRequest<QuoteSnapshotResponse>('/api/v1/quotes', {
-          body: JSON.stringify({ calculationToken }),
-          headers: {
-            'Content-Type': 'application/json',
-            'Idempotency-Key': requestId('quote'),
-            'X-CSRF-Token': bootstrap.csrfToken,
-          },
-          method: 'POST',
-        }),
-      );
+      await ensureQuote();
     } catch {
       setError('Не удалось сохранить расчёт. Повторите попытку.');
+    } finally {
+      setPending(false);
+    }
+  };
+
+  const addToCart = async () => {
+    if (bootstrap === null) return;
+    setPending(true);
+    setError(null);
+    try {
+      const saved = await ensureQuote();
+      await jsonRequest<GuestCartResponse>(
+        editReference === null ? '/api/v1/cart/items' : `/api/v1/cart/items/${editReference}`,
+        {
+          body: JSON.stringify({
+            ...(editReference === null ? {} : { expectedItemRevision: editItemRevision }),
+            quoteToken: saved.quoteToken,
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+            'Idempotency-Key': requestId(editReference === null ? 'cart-add' : 'cart-replace'),
+            'X-CSRF-Token': bootstrap.csrfToken,
+          },
+          method: editReference === null ? 'POST' : 'PATCH',
+        },
+      );
+      setCartAdded(true);
+    } catch {
+      setError('Не удалось добавить изделие в корзину. Обновите страницу и повторите попытку.');
     } finally {
       setPending(false);
     }
@@ -337,8 +417,9 @@ export function ProductConfigurator(): React.JSX.Element {
     setPreviewPending(true);
     setError(null);
     try {
+      const saved = await ensureQuote();
       const response = await jsonRequest<{ readonly href: string }>('/api/v1/previews', {
-        body: JSON.stringify({ calculationToken }),
+        body: JSON.stringify({ quoteToken: saved.quoteToken }),
         headers: {
           'Content-Type': 'application/json',
           'Idempotency-Key': requestId('preview'),
@@ -349,7 +430,7 @@ export function ProductConfigurator(): React.JSX.Element {
       if (!/^\/preview\?state=[A-Za-z0-9_-]{32}$/u.test(response.href)) {
         throw new Error('PREVIEW_HREF_INVALID');
       }
-      globalThis.location.assign(response.href);
+      globalThis.location.assign(`${response.href}&quote=${saved.quoteToken}`);
     } catch {
       setError('Не удалось открыть стандартную примерку. Повторите попытку.');
       setPreviewPending(false);
@@ -572,9 +653,11 @@ export function ProductConfigurator(): React.JSX.Element {
         ) : null}
         {step === 10 && result !== null ? (
           <ResultPanel
+            addToCart={addToCart}
+            cartAdded={cartAdded}
             openPreview={openPreview}
             pending={pending}
-            previewAvailable={calculationToken !== null}
+            previewAvailable={calculationToken !== null && family?.automaticPricing !== false}
             previewPending={previewPending}
             quote={quote}
             result={result}
@@ -590,6 +673,7 @@ export function ProductConfigurator(): React.JSX.Element {
               setStep((current) => Math.max(0, current - 1));
               setResult(null);
               setQuote(null);
+              setCartAdded(false);
             }}
             type="button"
           >
@@ -672,6 +756,8 @@ function ChoiceGrid({
 }
 
 function ResultPanel({
+  addToCart,
+  cartAdded,
   openPreview,
   pending,
   previewAvailable,
@@ -680,6 +766,8 @@ function ResultPanel({
   result,
   saveQuote,
 }: {
+  readonly addToCart: () => Promise<void>;
+  readonly cartAdded: boolean;
   readonly openPreview: () => Promise<void>;
   readonly pending: boolean;
   readonly previewAvailable: boolean;
@@ -689,10 +777,23 @@ function ResultPanel({
   readonly saveQuote: () => Promise<void>;
 }): React.JSX.Element {
   const calculated = result.status === 'CALCULATED' || result.status === 'SOURCE_DATA_STALE';
+  const addable = [
+    'CALCULATED',
+    'SOURCE_DATA_STALE',
+    'PRICE_ON_REQUEST',
+    'MANUAL_REVIEW_REQUIRED',
+  ].includes(result.status);
+  const statusLabel = calculated
+    ? 'Стоимость рассчитана'
+    : result.status === 'PRICE_ON_REQUEST'
+      ? 'Стоимость уточнит менеджер'
+      : result.status === 'MANUAL_REVIEW_REQUIRED'
+        ? 'Размер требует проверки'
+        : 'Конфигурацию нужно проверить';
   return (
     <div className="pricing-result" aria-live="polite">
       <p className={`pricing-status pricing-status-${result.status.toLowerCase()}`}>
-        {result.status}
+        {statusLabel}
       </p>
       <h2>Предварительная стоимость</h2>
       {calculated ? (
@@ -756,6 +857,26 @@ function ResultPanel({
             <p>Размер требует проверки мастером.</p>
           ) : null}
         </div>
+      )}
+      {addable ? (
+        <div className="cart-add-panel">
+          <button
+            className="cart-primary-action"
+            disabled={pending || cartAdded}
+            onClick={() => void addToCart()}
+            type="button"
+          >
+            {pending ? 'Добавляем…' : cartAdded ? 'Добавлено в корзину' : 'Добавить в корзину'}
+          </button>
+          {cartAdded ? (
+            <p className="cart-add-confirmation" role="status">
+              Изделие сохранено по этому расчёту. <Link href="/cart">Открыть корзину →</Link>{' '}
+              <Link href="/catalog">Продолжить выбор</Link>
+            </p>
+          ) : null}
+        </div>
+      ) : (
+        <p className="configurator-error">Эту конфигурацию нельзя добавить в корзину.</p>
       )}
     </div>
   );

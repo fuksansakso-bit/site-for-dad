@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { pricingCalculationStatusSchema } from './pricing.js';
+import { pricingCalculationStatusSchema, pricingSelectionSchema } from './pricing.js';
 
 export const cartItemReferenceSchema = z.string().regex(/^[A-Za-z0-9_-]{32}$/u);
 export const cartPricingStatusSchema = z.enum([
@@ -129,22 +129,18 @@ export const cartItemEditSourceResponseSchema = z
   .object({
     correlationId: z.string().min(8).max(128),
     itemReference: cartItemReferenceSchema,
-    selection: z
-      .object({
-        additionalOptionIds: z.array(z.string().min(1).max(96)).max(24),
-        catalogVersionId: z.uuid(),
-        configuratorModelId: z.uuid(),
-        controlTypeId: z.string().min(1).max(96),
-        hardwareOptionId: z.string().min(1).max(96),
-        heightMm: z.number().int().positive().max(100_000),
-        materialVariantId: z.uuid(),
-        mountingTypeId: z.string().min(1).max(96),
-        productFamilyId: z.uuid(),
-        productSystemId: z.uuid(),
-        quantity: z.number().int().positive().max(1_000),
-        widthMm: z.number().int().positive().max(100_000),
-      })
-      .strict(),
+    itemRevision: z.number().int().positive(),
+    selection: z.union([
+      pricingSelectionSchema,
+      z
+        .object({
+          catalogVersionId: z.uuid(),
+          productFamilyId: z.uuid(),
+          quantity: z.number().int().positive().max(1_000),
+          requestOnly: z.literal(true),
+        })
+        .strict(),
+    ]),
   })
   .strict();
 

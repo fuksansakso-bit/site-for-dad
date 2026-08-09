@@ -24,13 +24,14 @@ export async function GET(
     const ownerToken = readCartOwnerToken(request);
     if (ownerToken === null) throw new TypeError('CART_OWNER_REQUIRED');
     const itemReference = cartItemReferenceSchema.parse((await routeContext.params).itemReference);
+    const source = await getWebCart().getEditSelection(
+      cartOwnerTokenHash(ownerToken, getWebCatalogSigningKey()),
+      itemReference,
+    );
     const body = cartItemEditSourceResponseSchema.parse({
       correlationId: context.correlationId,
       itemReference,
-      selection: await getWebCart().getEditSelection(
-        cartOwnerTokenHash(ownerToken, getWebCatalogSigningKey()),
-        itemReference,
-      ),
+      ...source,
     });
     return NextResponse.json(body, { headers: pricingNoStoreHeaders(context.correlationId) });
   } catch (error) {

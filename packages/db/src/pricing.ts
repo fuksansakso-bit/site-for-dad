@@ -110,6 +110,7 @@ export interface PricingAdapter {
   readonly getQuote: (token: string) => Promise<QuoteSnapshotView>;
   readonly rejectVersion: (input: PricingAdminCommand) => Promise<void>;
   readonly removeLocalOverride: (input: PricingOverrideRemoveCommand) => Promise<void>;
+  readonly requestPrice: (input: PricingRequestPriceCommand) => Promise<StoredPricingCalculation>;
   readonly saveQuote: (input: PricingQuoteSaveCommand) => Promise<QuoteSnapshotView>;
   readonly setLocalOverride: (input: PricingOverrideSetCommand) => Promise<string>;
   readonly validate: (selection: PricingSelection) => Promise<PricingValidationResult>;
@@ -120,6 +121,14 @@ export interface PricingCalculateCommand {
   readonly correlationId: string;
   readonly idempotencyKey: string;
   readonly selection: PricingSelection;
+}
+
+export interface PricingRequestPriceCommand {
+  readonly catalogVersionId: string;
+  readonly correlationId: string;
+  readonly idempotencyKey: string;
+  readonly productFamilyId: string;
+  readonly quantity: number;
 }
 
 export interface PricingQuoteSaveCommand {
@@ -759,6 +768,155 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
           calculationId: row.id,
           calculationToken: row.public_token,
           result: row.result_snapshot,
+        };
+      } catch (error) {
+        throw mapError(error);
+      }
+    },
+
+    async requestPrice(input) {
+      assertOpaque(input.idempotencyKey, 180);
+      assertOpaque(input.correlationId, 128);
+      const requestDigest = digest({
+        catalogVersionId: input.catalogVersionId,
+        productFamilyId: input.productFamilyId,
+        quantity: input.quantity,
+      });
+      try {
+        const previous = await pool.query<CalculationRow>(
+          `
+          SELECT id::text, public_token, request_digest, catalog_version_id::text,
+                 price_version_id::text, status::text, input_snapshot,
+                 result_snapshot, created_at
+          FROM pricing_calculation WHERE idempotency_key = $1
+        `,
+          [input.idempotencyKey],
+        );
+        const existing = previous.rows[0];
+        if (existing !== undefined) {
+          if (existing.request_digest !== requestDigest)
+            throw new PricingStoreError('PRICING_CONFLICT');
+          return {
+            calculationId: existing.id,
+            calculationToken: existing.public_token,
+            result: existing.result_snapshot,
+          };
+        }
+        const state = await activeState(pool);
+        if (input.catalogVersionId !== state.catalog_version_id) {
+          throw new PricingStoreError('PRICING_INVALID_INPUT');
+        }
+        const familyResult = await pool.query<{ readonly name: string }>(
+          `
+          SELECT family.name
+          FROM product_family family
+          WHERE family.id = $1::uuid
+            AND EXISTS (
+              SELECT 1
+              FROM material
+              JOIN material_variant variant ON variant.material_id = material.id
+              JOIN business_catalog_entry business ON business.material_variant_id = variant.id
+              JOIN catalog_version_entry member
+                ON member.business_catalog_entry_id = business.id
+               AND member.catalog_version_id = $2::uuid
+              JOIN publication_record publication ON publication.id = member.publication_record_id
+              WHERE material.family_id = family.id
+                AND business.visibility = 'VISIBLE'
+                AND publication.status = 'PUBLISHED'
+            )
+          LIMIT 1
+        `,
+          [input.productFamilyId, state.catalog_version_id],
+        );
+        const family = familyResult.rows[0];
+        if (family === undefined) throw new PricingStoreError('PRICING_INVALID_INPUT');
+        const result: PricingResult = {
+          appliedOverrides: [],
+          appliedRules: [],
+          calculatedAt: new Date().toISOString(),
+          currency: 'RUB',
+          deliveryKopecks: 0,
+          grandTotalKopecks: null,
+          installationKopecks: 0,
+          measurementKopecks: 0,
+          minimumPriceApplied: false,
+          minimumPriceKopecks: 150_000,
+          optionsTotalKopecks: null,
+          priceVersionId: state.price_version_id,
+          productsSubtotalKopecks: null,
+          quantity: input.quantity,
+          safeExplanation: 'Стоимость этого семейства уточнит менеджер после проверки параметров.',
+          sourceVersion: null,
+          status: 'PRICE_ON_REQUEST',
+          unitBasePriceKopecks: null,
+          unitFinalPriceKopecks: null,
+          unitPriceBeforeMinimumKopecks: null,
+          validationDetails: [],
+          warnings: ['Стоимость уточнит менеджер.'],
+        };
+        const configuration = {
+          ids: {
+            catalogVersionId: state.catalog_version_id,
+            productFamilyId: input.productFamilyId,
+            quantity: input.quantity,
+            requestOnly: true,
+          },
+          names: {
+            additionalOptions: [],
+            control: 'Уточнит менеджер',
+            family: family.name,
+            hardware: 'Уточнит менеджер',
+            material: 'Уточнит менеджер',
+            materialArticle: 'Уточнит менеджер',
+            materialColor: 'Уточнит менеджер',
+            model: 'Уточнит менеджер',
+            modelCode: 'Уточнит менеджер',
+            mounting: 'Уточнит менеджер',
+            system: 'Уточнит менеджер',
+          },
+        };
+        const calculationToken = token();
+        const inserted = await pool.query<CalculationRow>(
+          `
+          INSERT INTO pricing_calculation (
+            public_token, idempotency_key, request_digest, catalog_version_id,
+            price_version_id, status, input_snapshot, result_snapshot, correlation_id
+          ) VALUES ($1,$2,$3,$4::uuid,$5::uuid,'PRICE_ON_REQUEST',$6::jsonb,$7::jsonb,$8)
+          ON CONFLICT (idempotency_key) DO NOTHING
+          RETURNING id::text, public_token, request_digest, catalog_version_id::text,
+                    price_version_id::text, status::text, input_snapshot, result_snapshot, created_at
+        `,
+          [
+            calculationToken,
+            input.idempotencyKey,
+            requestDigest,
+            state.catalog_version_id,
+            state.price_version_id,
+            JSON.stringify(configuration),
+            JSON.stringify(result),
+            input.correlationId,
+          ],
+        );
+        const saved =
+          inserted.rows[0] ??
+          (
+            await pool.query<CalculationRow>(
+              `
+              SELECT id::text, public_token, request_digest, catalog_version_id::text,
+                     price_version_id::text, status::text, input_snapshot,
+                     result_snapshot, created_at
+              FROM pricing_calculation WHERE idempotency_key = $1
+            `,
+              [input.idempotencyKey],
+            )
+          ).rows[0];
+        if (saved === undefined || saved.request_digest !== requestDigest) {
+          throw new PricingStoreError('PRICING_CONFLICT');
+        }
+        return {
+          calculationId: saved.id,
+          calculationToken: saved.public_token,
+          result: saved.result_snapshot,
         };
       } catch (error) {
         throw mapError(error);

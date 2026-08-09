@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A–1E schema implemented and verified; full order/account/private-media aggregates gated |
-| Версия | 0.14.0 |
+| Статус | Phase 1A–1E implemented; additive Phase 1F identity/account/admin/content schema authorized |
+| Версия | 0.15.0 |
 | Дата | 2026-08-09 |
 | Architecture | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | Glossary | [GLOSSARY.md](../../00-global/GLOSSARY.md) |
@@ -199,7 +199,16 @@ Database triggers reject update/delete of request item snapshots and protected r
 
 Dependencies: all domain specs, API/storage/security/deployment, ADRs and `OWNER-DECISION-008/009/010/012/013/014/015/016`. PostgreSQL/Prisma remains fixed; approved preview bytes stay behind `StoragePort`. Production PII/legal/retention, account/full order workflow, storage/index/search and Phase 1F+ remain gated. Risks: accidental ownership bypass, stale version references, mutable quote history, projection drift and private data in generic metadata.
 
-## 19. History
+## 19. Phase 1F physical additions
+
+- **P1F-DATA-001 — MUST:** additive tables represent account, normalized e-mail identity, one-time challenge, hashed session, staff invitation, project, favorite, ownership claim, portfolio item/media and versioned SiteSettings without a second datastore.
+- **P1F-DATA-002 — MUST:** existing ActorIdentity/RoleGrant remains the RBAC subject; account/profile and staff-invitation lifecycle reference it rather than duplicating role authority.
+- **P1F-DATA-003 — MUST:** QuoteSnapshot, StandardPreviewState and OrderInquiry gain nullable account ownership links; migration adds links only and never changes immutable snapshot bytes or captured money/version facts.
+- **P1F-DATA-004 — MUST:** e-mail, contact and profile data is never placed in AuditEvent target/reason fields, Outbox payloads, object keys or public references.
+- **P1F-DATA-005 — MUST:** portfolio original/derivative records store checksum, MIME, dimensions, safe name, rights/publication state and StoragePort reference; no client-photo class is accepted by this aggregate.
+- **P1F-DATA-006 — MUST:** SiteSettings revisions preserve effective value, author, reason, timestamp and rollback lineage; one active pointer is selected transactionally.
+
+## 20. History
 
 | Версия | Дата | Изменение |
 |---|---|---|
@@ -217,3 +226,4 @@ Dependencies: all domain specs, API/storage/security/deployment, ADRs and `OWNER
 | 0.12.0 | 2026-08-08 | Recorded the additive Phase 1C pricing-rule/parity/calculation/immutable-quote/version-decision schema, append-only triggers, lookup indexes and preserved Phase 1B.2 data/volumes without Phase 1D aggregates. |
 | 0.13.0 | 2026-08-08 | Recorded the separate ownership-scoped `StandardPreviewState`, opaque lookup/indexes, immutable calculation/quote references and no-customer-photo boundary delivered in Phase 1D. |
 | 0.14.0 | 2026-08-09 | Recorded Phase 1D preview plus the additive Phase 1E guest cart, item revision, immutable `OrderInquiry`/item snapshot, communication/note, BigInt money and database immutability controls. |
+| 0.15.0 | 2026-08-09 | Authorized additive Phase 1F identity/account/project/favorite/ownership, staff invite, portfolio and SiteSettings records while preserving immutable Phase 1C–1E snapshots. |

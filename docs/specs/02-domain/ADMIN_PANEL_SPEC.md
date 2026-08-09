@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1B.2 full-catalog `/admin/catalog` control room implemented and accepted; later admin modules gated |
-| Версия | 0.8.0 |
-| Дата | 2026-08-04 |
+| Статус | Phase 1F unified business administration authorized and in progress |
+| Версия | 0.9.0 |
+| Дата | 2026-08-09 |
 | Permissions | [ROLES_PERMISSIONS.md](../01-product/ROLES_PERMISSIONS.md) |
 | Source flows | Catalog, pricing, media, sync and order specs |
 
@@ -170,11 +170,22 @@ The local-only Phase 1B.1 `/admin/catalog` established the 32-ID bounded Postgre
 
 The Phase 1B.2 command layer exposes the two-step preview/apply contract for material-variant local overlays in the control room. Category means the selected normalized category plus its descendants; filters are limited to exact category/system/current visibility/review/availability/publication/source-price status, and manual selection accepts at most 500 explicit business-entry IDs. Category/filter resolution has a defensive 10,000-target transaction cap; these are implementation safety bounds, not assortment or business-policy limits. Only rows whose requested state differs are affected. Replays return the original immutable result, while a new command against a stale preview fails closed. Catalog/price review, preparation, composition, approval, activation, rollback, cancellation and retry remain separate server-authorized actions. The responsive layout preserves visible focus, keyboard operation, 44px control targets and narrow-screen containment without introducing a generic database editor, production auth provider or Phase 1C module.
 
-## 14. Dependencies, risks and open questions
+## 14. Phase 1F unified administration
+
+- **P1F-ADMIN-001 — MUST:** `/admin` is one Russian, responsive, keyboard-operable shell with routes dashboard, catalog, pricing, requests, customers, portfolio, settings, staff, audit and sync; existing catalog/pricing/request commands remain authoritative.
+- **P1F-ADMIN-002 — MUST:** every page and mutation rechecks the current staff session and server capability; navigation visibility is not authorization.
+- **P1F-ADMIN-003 — MUST:** dashboard uses aggregate operational counts only and does not expose contact data to unauthorized roles.
+- **P1F-ADMIN-004 — MUST:** customer administration supports bounded search/detail and linking of account-owned requests/projects without rewriting guest/request history.
+- **P1F-ADMIN-005 — MUST:** OWNER/ADMIN may invite staff; only OWNER may grant/revoke OWNER, and the last active OWNER cannot be disabled or demoted.
+- **P1F-ADMIN-006 — MUST:** SiteSettings changes are validated, versioned and audited with before/after safe snapshots; customer-facing services read the active settings instead of duplicated literals.
+- **P1F-ADMIN-007 — MUST:** portfolio management separates draft, rights review, publication approval, published, hidden and archived states and cannot publish client uploads or assets without evidence.
+- **P1F-ADMIN-008 — MUST:** audit UI is bounded/filterable and excludes secret hashes, OTP, sessions, storage keys, raw PII and arbitrary metadata dumps.
+
+## 15. Dependencies, risks and open questions
 
 Dependencies: all domain modules, RBAC/auth, sync/media/storage/data/API/security/observability/deployment. Activation roles are resolved by `OWNER-DECISION-002`; open: separation thresholds, support/private access, audit/export retention, bulk limits, alert owners, staff/team assignment and emergency access. Risks: broad admin, direct state edit, stale overwrite, approval of changed revision, secret/PII exposure, inaccessible grids and dangerous production confusion.
 
-## 15. Связанные требования and history
+## 16. Связанные требования and history
 
 Links: `FR-ADMIN-*`, `RBAC-*`, `NFR-AUDIT-*`, `ADMIN-SPEC-001`–`034`.
 
@@ -187,3 +198,4 @@ Links: `FR-ADMIN-*`, `RBAC-*`, `NFR-AUDIT-*`, `ADMIN-SPEC-001`–`034`.
 | 0.6.0 | 2026-08-03 | Implemented the Phase 1B.2 exact category-subtree/filter/selected bulk preview and atomic OWNER apply contract with stale-preview rejection, immutable before/after evidence and idempotent replay; expanded admin UI remains the next stage. |
 | 0.7.0 | 2026-08-03 | Expanded `/admin/catalog` to the full normalized inventory with server filters/pages, hierarchy facets, safe manifest and durable-run progress, paginated diff review, immutable histories and the exact review/bulk/composition/activation/rollback workflow in a responsive keyboard-operable control room. |
 | 0.8.0 | 2026-08-04 | Recorded accepted real manifest/progress/diff/review/bulk/activation/rollback histories and final authorization, recovery, browser and CI evidence for `/admin/catalog`; non-catalog and production admin remain gated. |
+| 0.9.0 | 2026-08-09 | Authorized the Phase 1F unified Russian admin shell, staff/customer operations, portfolio, versioned settings and redacted audit views without replacing existing domain commands. |

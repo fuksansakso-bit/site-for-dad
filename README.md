@@ -18,7 +18,7 @@
 
 **Phase 1D — DETERMINISTIC STANDARD WINDOW PREVIEW** завершена на ветке `phase/1d-standard-preview` от merged-main commit `58eb25dcde460291ad98fde157956d7f264a666d`. Гостевой `/preview` использует две локальные photoreal scenes, четыре deterministic family profiles, approved partner layers через `StoragePort`, server-side preview state и visual regression. [Отчёт](docs/06-plans/completed/PHASE_1D_STANDARD_PREVIEW_REPORT.md) и [mapping gaps](docs/06-plans/PREVIEW_AND_CONFIGURATOR_MAPPING_GAPS.md).
 
-`OWNER-DECISION-016` разрешила только **Phase 1E — CART, GUEST REQUESTS, WHATSAPP HANDOFF AND BASIC ORDER INTAKE** от merged-main commit `65780067537418a3230bb3d32ef3fb8e0af06917`. Фаза завершена 2026-08-09 со статусом `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`: доступны `/cart`, `/checkout`, PII-free `/request/[publicReference]`, `/admin/requests`, immutable request snapshots, fixed-recipient `wa.me` и audit/outbox. Evidence зафиксирован в [completion report](docs/06-plans/completed/PHASE_1E_CART_WHATSAPP_ORDERS_REPORT.md). Production PII/deployment, payment, accounts, client-photo/AI и Phase 1F+ не разрешены.
+Phase 1E завершена со статусом `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`. Новое письменное `OWNER-DECISION-017` разрешило только **Phase 1F — CUSTOMER ACCOUNTS AND BUSINESS ADMINISTRATION** от merged-main commit `49695099b0eee3db4a4357eb3f3eb36f78fa3389`. Активный план охватывает optional passwordless accounts, guest migration, saved workspace, invitation-only staff, unified Russian admin, portfolio, SiteSettings and audit on the existing PostgreSQL/worker/storage boundary. Production providers/deployment, payment, client-photo/AI and Phase 1G+ remain prohibited.
 
 ## С чего начать
 
@@ -88,4 +88,4 @@ pnpm.cmd --filter @project-name/db pricing:bootstrap
 
 ## Текущая граница работы
 
-Phase 1A–1E завершены. Следующая фаза не разрешена: payment, accounts, client-photo/AI, production deployment и Phase 1F+ остаются на hold до отдельного письменного решения.
+Phase 1A–1E завершены. Phase 1F выполняется по `OWNER-DECISION-017`; payment, client-photo/AI, production deployment and Phase 1G+ remain on hold.

@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD`; basic saved-calculation account scope resolved, public identity method/recovery awaits Phase 1F gate |
-| Версия | 0.1.0 |
-| Дата | 2026-08-02 |
+| Статус | Phase 1F authorized — passwordless accounts and staff identity in progress; production delivery/deletion gated |
+| Версия | 0.2.0 |
+| Дата | 2026-08-09 |
 | Permissions | [ROLES_PERMISSIONS.md](../01-product/ROLES_PERMISSIONS.md) |
 | Security | [SECURITY_PRIVACY.md](../04-technical/SECURITY_PRIVACY.md) |
 
@@ -139,14 +139,28 @@ Primary: `AC-AUTH-001`, `AC-PROJECT-SAVE-001`, `AC-SEC-001`, `AC-PRIV-001`.
 
 Tests: guest full funnel; optional account; valid/invalid/expired/replayed identity flows once selected; enumeration/timing/rate; session fixation/rotation/revocation/CSRF; object ownership; claim concurrency/idempotency; staff role revoke/step-up; workload scope; provider outage; account deletion with media/job/lead/order; export/redaction and accessibility.
 
-## 12. Dependencies, risks and open questions
+## 12. Phase 1F approved profile
+
+- **P1F-AUTH-001 — MUST:** `/login` uses a single-use e-mail code through `EmailDeliveryPort`; successful customer verification MAY create an account, while staff creation requires an invitation or local-only owner bootstrap.
+- **P1F-AUTH-002 — MUST:** only keyed hashes of codes and session tokens are stored; codes expire after 10 minutes, allow five attempts, have a 60-second resend interval and are consumed atomically.
+- **P1F-AUTH-003 — MUST:** request/verify responses do not reveal whether an e-mail, account or invitation exists and are rate-limited by keyed normalized identifier and coarse client bucket.
+- **P1F-AUTH-004 — MUST:** customer sessions expire after 30 days and rotate; staff sessions expire absolutely after 12 hours. Login, privilege change and security actions rotate or revoke applicable sessions.
+- **P1F-AUTH-005 — MUST:** customer, staff and synthetic-local credentials remain distinct contexts; a customer session cannot access `/admin`, and customer code verification cannot grant staff roles.
+- **P1F-AUTH-006 — MUST:** same-browser guest ownership migration is atomic, idempotent and proof-bound to existing HttpOnly ownership cookies; immutable calculation, quote and request snapshots are not rewritten.
+- **P1F-AUTH-007 — MUST:** the account workspace exposes only the principal's projects, calculations, requests and favorites; profile fields are limited to name, phone, locality and optional address.
+- **P1F-AUTH-008 — MUST:** account deletion remains unavailable while `TBD-ACCOUNT-006` is open; security UI may revoke sessions and disable future login without deleting retained business records.
+- **P1F-AUTH-009 — MUST:** local/CI delivery uses Mailpit and synthetic addresses; the production sender, provider, region and credentials remain unselected.
+- **P1F-AUTH-010 — MUST:** code delivery, invitation delivery, session/code cleanup and guest migration are versioned idempotent Graphile Worker tasks with reference-only payloads.
+
+## 13. Dependencies, risks and open questions
 
 Dependencies: RBAC, cart/orders, AI, admin, security/privacy, API/data, observability/deployment. Open: `TBD-ACCOUNT-002`–`006`, staff identity/MFA, recovery/support, session/guest TTL, account deletion/legal retention, auth provider/region and notification channel. `TBD-ACCOUNT-001` is resolved by the MVP freeze. Risks: account forcing hurts conversion, token leakage, enumeration, broken object authorization, weak recovery, shared staff accounts and deletion race.
 
-## 13. Связанные требования and history
+## 14. Связанные требования and history
 
 Links: `FR-AUTH-*`, `NFR-SEC-*`, `NFR-PRIV-*`, `RBAC-*`, `ACCOUNT-SPEC-001`–`021`.
 
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Определены guest-first ownership, account/session/workload models, claim/recovery/delete boundaries and safe provider outage behavior. |
+| 0.2.0 | 2026-08-09 | `OWNER-DECISION-017` selected hash-only passwordless e-mail codes, provider-neutral delivery/local Mailpit, rotating customer/staff sessions, same-browser migration and account workspace while production delivery and deletion remain gated. |

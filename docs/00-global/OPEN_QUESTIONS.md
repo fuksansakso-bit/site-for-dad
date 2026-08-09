@@ -233,10 +233,10 @@ Risk отражает последствия неверного предполо
 | ID | P | Вопрос | Зачем нужен ответ / критерий закрытия | Владелец ответа | Статус |
 |---|---|---|---|---|---|
 | TBD-ACCOUNT-001 | P0 | Входит ли клиентский кабинет в MVP или расчёт сохраняется гостевой ссылкой? | Решено: базовый кабинет с сохранёнными расчётами входит в MVP, но каталог, конфигуратор, расчёт и заявка полностью доступны гостю. | Владелец продукта | Решён — 2026-08-02, [MVP_SCOPE](../06-plans/MVP_SCOPE.md) |
-| TBD-ACCOUNT-002 | P1 | Какие способы входа допустимы для клиента? | Нужны UX, security и стоимость каналов подтверждения. | Product / Security | Открыт |
+| TBD-ACCOUNT-002 | P1 | Какие способы входа допустимы для клиента? | Решено: single-use e-mail code through provider-neutral `EmailDeliveryPort`; local/CI Mailpit, no password/SMS/social login. Production delivery provider remains separately gated. | Product / Security | Решён — 2026-08-09, `OWNER-DECISION-017`, ADR-0011 |
 | TBD-ACCOUNT-003 | P0 | Как безопасно связать существующие заказы с аккаунтом клиента? | Нужен проверяемый proof-of-ownership. | Владелец / Security | Открыт |
-| TBD-ACCOUNT-004 | P1 | Как гостевой расчёт переносится в новый или существующий аккаунт? | Нужны правила владения, дедупликации и срока токена. | Product / Security | Открыт |
-| TBD-ACCOUNT-005 | P1 | Какие поля профиля действительно нужны? | Нужен минимизированный набор и основания обработки. | Product / Privacy | Открыт |
+| TBD-ACCOUNT-004 | P1 | Как гостевой расчёт переносится в новый или существующий аккаунт? | Решено для Phase 1F: only same-browser HttpOnly ownership proof; atomic/idempotent links; immutable snapshots unchanged; no arbitrary historical claim. | Product / Security | Решён — 2026-08-09, `OWNER-DECISION-017` |
+| TBD-ACCOUNT-005 | P1 | Какие поля профиля действительно нужны? | Решено для Phase 1F: name, phone, locality and optional address only; fields remain optional until explicitly supplied. | Product / Privacy | Решён — 2026-08-09, `OWNER-DECISION-017` |
 | TBD-ACCOUNT-006 | P1 | Как обрабатываются удаление аккаунта и сохранение обязательных данных заказа? | Нужна юридически согласованная матрица retention. | Privacy / юрист | Открыт |
 
 ## Дизайн

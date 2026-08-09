@@ -4,10 +4,10 @@
 
 | Поле | Значение |
 |---|---|
-| Фаза документа | Phase 1A–1E completed; Phase 1F+ hold |
-| Статус roadmap | **PASSED_PHASE_1E_CART_WHATSAPP_ORDERS / PHASE 1F+ HOLD** |
+| Фаза документа | Phase 1A–1E completed; Phase 1F authorized/in progress; Phase 1G+ hold |
+| Статус roadmap | **AUTHORIZED_PHASE_1F_IN_PROGRESS / PHASE 1G+ HOLD** |
 | Scope | [MVP_SCOPE](MVP_SCOPE.md) |
-| Планы / evidence | Phase 1A–1D reports; Phase 1E [plan](active/PHASE_1E_CART_WHATSAPP_ORDERS_PLAN.md), [report](completed/PHASE_1E_CART_WHATSAPP_ORDERS_REPORT.md) and QG-311–360 |
+| Планы / evidence | Phase 1A–1E reports; Phase 1F [active plan](active/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_PLAN.md), ADR-0011 and QG-361–420 |
 
 - **ROADMAP-001 — MUST:** фазы выполняются по порядку 1A–1H; параллельный research MAY идти, но dependent implementation не обходит entry gate.
 - **ROADMAP-002 — MUST:** каждая возможность включается feature flag только после собственных acceptance/security/data gates; наличие кода не равно production activation.
@@ -121,15 +121,15 @@ Execution contract: [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN](active/PHASE_1B2_FULL_AM
 
 | Поле | Содержание |
 |---|---|
-| ID / цель | **ROADMAP-1F-001:** обеспечить RBAC operations для каталога/наличия/цен/заявок/портфолио/клиентов и базовый account saved calculations. |
-| Зависимости | 1B/1C/1E; ADR-0010 accepted for public identity; auth/admin/account/content specs; legal/recovery/notification readiness. |
-| Входные условия | Named roles/capabilities; bootstrap and recovery process; session policy; audit/retention; customer signup method; admin operational owners. |
-| Deliverables | Admin navigation/actions for catalog, availability, prices, leads, portfolio, clients; approval separation where required; basic account and ownership-scoped saved calculations; session/recovery controls. |
+| ID / цель | **ROADMAP-1F-001:** optional passwordless account workspace and unified named-staff business administration on existing PostgreSQL/worker/storage boundaries. |
+| Зависимости | Completed 1B/1C/1D/1E; ADR-0006/0008/0009/0010 and accepted ADR-0011; auth/admin/account/content/security specs. |
+| Входные условия | Satisfied by `OWNER-DECISION-017`, QG-361–370, local Mailpit plan, exact session/OTP defaults, named RBAC and safe production/retention holds. |
+| Deliverables | Passwordless login, guest migration, account projects/calculations/requests/favorites/profile/security; staff invitations/roles; unified Russian admin; customers/portfolio/settings/audit/jobs. |
 | Acceptance criteria | Server-side capability checks on every action; account sees own data only; audit includes actor/time/reason/before-after; dangerous action confirms/requires permission; guest still complete. |
 | Тесты | RBAC matrix/negative/IDOR; session expiry/revocation; account ownership; admin concurrency; audit immutability/redaction; portfolio rights; recovery/rate limiting; E2E/a11y. |
 | Риски | Privilege escalation, bootstrap credential leak, cross-customer data, harmful admin action, weak recovery. |
 | Definition of Done | Role matrix and negative tests pass; admin runbooks and access review exist; basic saved-calculation account works; no forced registration or extended CRM. |
-| Запрещённые изменения | Client data export without policy, shared admin account, client-side-only auth, silently deleting audit, forcing guest registration, post-MVP account scope. |
+| Запрещённые изменения | Client data export without policy, shared admin account, client-side-only auth, silently deleting audit, forcing guest registration, production providers/PII, payment, client-photo/AI, full CRM/manufacturing and Phase 1G. |
 | Rollback | Revoke sessions/roles, disable account/admin modules separately, preserve audit and immutable versions, restore prior catalog/price/content state. |
 
 ## 8. PHASE 1G — AI WINDOW VISUALIZER PILOT
@@ -191,3 +191,4 @@ Execution contract: [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN](active/PHASE_1B2_FULL_AM
 | 1.9.0 | 2026-08-08 | Phase 1D отмечена passed со ссылкой на photoreal local scenes/layers, four deterministic profiles, guest state/API, visual/mobile/recovery/CI evidence and mapping gaps; Phase 1E+ and production remain on hold. |
 | 2.0.0 | 2026-08-09 | `OWNER-DECISION-016` authorizes only Phase 1E from merged Phase 1D main: immutable-quote guest cart, request snapshot/intake, fixed-recipient WhatsApp handoff, public safe summary, minimal staff administration and audit/outbox; production PII/deployment and Phase 1F+ remain gated. |
 | 2.1.0 | 2026-08-09 | Phase 1E marked passed with quote-backed mixed cart, immutable request snapshots, guest measurement/installment intake, fixed-recipient handoff, safe summary, basic staff administration and DB/browser/security/recovery evidence; Phase 1F remains unauthorized. |
+| 2.2.0 | 2026-08-09 | `OWNER-DECISION-017`, ADR-0011 and QG-361–370 authorize only Phase 1F: passwordless/local-Mailpit identity, guest migration, account workspace, invitation-only staff, unified admin, portfolio, SiteSettings, audit/jobs; Phase 1G+ and production remain gated. |

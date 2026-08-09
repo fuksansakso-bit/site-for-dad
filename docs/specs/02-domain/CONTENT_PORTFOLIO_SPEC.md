@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Draft 0B — content lifecycle and provenance rules defined; actual content inventory pending |
-| Версия | 0.2.0 |
-| Дата | 2026-08-02 |
+| Статус | Phase 1F local portfolio management authorized; actual Business Owner asset inventory remains pending |
+| Версия | 0.3.0 |
+| Дата | 2026-08-09 |
 | Rights source | [ASSET_RIGHTS_REGISTER.md](../../00-global/ASSET_RIGHTS_REGISTER.md) |
 | UX source | [INFORMATION_ARCHITECTURE.md](../03-ux/INFORMATION_ARCHITECTURE.md) |
 
@@ -145,11 +145,19 @@ Primary: `AC-PORTFOLIO-001`, `AC-ASSET-MAP-001`, `AC-ASSET-REVOKE-001`, `AC-BADG
 
 Tests: local vs partner labels; missing/expired/revoked rights; wrong variant mapping; badge fallback; PII/EXIF/filename; claim evidence; installment prohibited wording across HTML/metadata/schema/messages; approval invalidation; schedule/timezone/rollback; locale/slug/redirect; responsive/accessibility; cache/search/feed invalidation.
 
-## 13. Dependencies, risks and open questions
+## 13. Phase 1F portfolio profile
+
+- **P1F-PORTFOLIO-001 — MUST:** staff may create local-project drafts with bounded Russian title, description, locality, work date and category; no seeded item may claim a real completed work without supplied evidence.
+- **P1F-PORTFOLIO-002 — MUST:** upload begins private and stores owner-created/permission evidence separately from publication approval. `PUBLICATION_APPROVED` plus an approved derivative is required for public delivery.
+- **P1F-PORTFOLIO-003 — MUST:** client photos and supplier examples cannot be relabelled or copied into local portfolio; source class is immutable after upload.
+- **P1F-PORTFOLIO-004 — MUST:** media processing produces sanitized display and thumbnail derivatives, removes EXIF/unsafe metadata, preserves original checksum evidence and exposes only controlled public delivery IDs.
+- **P1F-PORTFOLIO-005 — MUST:** hide/archive/revoke invalidates public delivery immediately while retaining the minimum audit/right record pending retention policy.
+
+## 14. Dependencies, risks and open questions
 
 Dependencies: catalog/media/storage/admin/UX/SEO/security. Open: final brand/name, exact partner attribution/brand guidelines `TBD-ASSET-AMIGO-003`, content inventory/voice, legal pages/requisites `TBD-BIZ-005`, local project evidence/consent templates and editorial review cadence. Risks: false authorship, wrong SKU image, stale business claim, public PII, metadata leakage, content/asset approval mismatch and SEO duplication.
 
-## 14. Связанные requirements and history
+## 15. Связанные requirements and history
 
 Links: `PARTNER-*`, `ASSET-*`, `FR-CATALOG-*`, `BUSINESS-*`, `CONTENT-SPEC-001`–`020`.
 
@@ -157,3 +165,4 @@ Links: `PARTNER-*`, `ASSET-*`, `FR-CATALOG-*`, `BUSINESS-*`, `CONTENT-SPEC-001`�
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Определены content types, claims/provenance, local-vs-partner portfolio boundary, lifecycle, publication/revocation and tests. |
 | 0.2.0 | 2026-08-02 | По `OWNER-DECISION-008` Business Owner закреплён как portfolio/commercial decision authority, а AMIGO image identity сохранена отдельно от PostgreSQL/object-storage copies и local-work claims. |
+| 0.3.0 | 2026-08-09 | Authorized the Phase 1F local portfolio draft/rights/publication/media lifecycle while keeping the actual Business Owner asset inventory open and excluding client photos. |

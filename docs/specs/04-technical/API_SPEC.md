@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A–1E health/catalog/pricing/preview/cart/request contracts implemented; Phase 1F+ routes gated |
-| Версия | 0.11.0 |
+| Статус | Phase 1A–1E contracts implemented; Phase 1F auth/account/admin contracts authorized |
+| Версия | 0.12.0 |
 | Дата | 2026-08-09 |
 | Architecture/data | [ARCHITECTURE.md](ARCHITECTURE.md), [DATA_MODEL.md](DATA_MODEL.md) |
 | Security | [SECURITY_PRIVACY.md](SECURITY_PRIVACY.md) |
@@ -224,11 +224,19 @@ Phase 1D preview routes reuse the same origin/CSRF/rate/idempotency/correlation 
 
 Phase 1E cart/request routes use strict shared Zod schemas, 32 KiB mutation limits, signed same-origin CSRF, hashed HttpOnly guest ownership, per-boundary rate limits, correlation and private/no-store responses. Quote, product labels, statuses, versions and money are reloaded server-side. Checkout/audit/outbox is one PostgreSQL transaction; public reads are hash-verified, revocable, rate-limited and PII-free. The fixed WhatsApp recipient is a contract literal, not request input.
 
-## 15. Dependencies, risks and open questions
+## 15. Phase 1F contract profile
+
+- **P1F-API-001 — MUST:** auth contracts expose request-code, verify-code, session/logout and staff-invitation acceptance with strict schemas, neutral responses, no code/session hash and `no-store`.
+- **P1F-API-002 — MUST:** account contracts are self-scoped and cover overview, projects, calculations, requests, favorites, profile and session revocation; IDs alone never authorize access.
+- **P1F-API-003 — MUST:** admin contracts expose bounded dashboard/customer/portfolio/settings/staff/audit data and preserve existing catalog/pricing/request commands instead of generic CRUD.
+- **P1F-API-004 — MUST:** portfolio upload accepts bounded multipart bytes, ignores client filename for storage identity and returns no object key, signed URL or processing internals.
+- **P1F-API-005 — MUST:** mutations enforce content/body limits, origin/CSRF, current session/capability, optimistic concurrency and idempotency where retry can duplicate effects.
+
+## 16. Dependencies, risks and open questions
 
 Dependencies: all domain/technical specs, auth/provider/hosting ADRs. Next.js same-origin BFF and Foundation error status mapping are accepted; open: public API exposure, browser upload flow, future webhook transport, concrete rate limits, API lifecycle/support window and WhatsApp mode. Risks: CRUD bypass of invariants, IDOR, non-idempotent retry, private URL leak, mixed version, error data exposure and contract overcoupling to vendor.
 
-## 16. History
+## 17. History
 
 | Версия | Дата | Изменение |
 |---|---|---|
@@ -242,3 +250,4 @@ Dependencies: all domain/technical specs, auth/provider/hosting ADRs. Next.js sa
 | 0.9.0 | 2026-08-08 | Recorded the concrete configurator/validation/calculation/quote and pricing-admin routes with strict schemas, active-version authority, CSRF/origin/rate/idempotency/correlation/no-store boundaries and safe statuses delivered in Phase 1C. |
 | 0.10.0 | 2026-08-08 | Recorded the scenes/eligibility/state/asset/layer/delete/admin-diagnostics contracts, guest ownership, safe caching/errors and local-only asset resolution delivered in Phase 1D. |
 | 0.11.0 | 2026-08-09 | Recorded concrete Phase 1E cart/request/public-summary/WhatsApp/admin routes with immutable server authority, guest/RBAC ownership, idempotency, safe errors and fixed recipient. |
+| 0.12.0 | 2026-08-09 | Authorized strict neutral auth, self-scoped account and bounded business-admin/portfolio/settings contracts for Phase 1F. |

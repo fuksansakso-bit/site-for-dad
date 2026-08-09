@@ -4,10 +4,10 @@
 
 | Поле | Значение |
 |---|---|
-| Фаза документа | Phase 1A–1D completed; Phase 1E+ hold |
-| Статус roadmap | **PHASE 1A–1D PASSED / PHASE 1E+ HOLD** |
+| Фаза документа | Phase 1A–1E completed; Phase 1F+ hold |
+| Статус roadmap | **PASSED_PHASE_1E_CART_WHATSAPP_ORDERS / PHASE 1F+ HOLD** |
 | Scope | [MVP_SCOPE](MVP_SCOPE.md) |
-| Планы / evidence | Phase 1A–1C plans/reports; [PHASE_1D_STANDARD_PREVIEW_PLAN](active/PHASE_1D_STANDARD_PREVIEW_PLAN.md), [PHASE_1D_STANDARD_PREVIEW_REPORT](completed/PHASE_1D_STANDARD_PREVIEW_REPORT.md) and [mapping gaps](PREVIEW_AND_CONFIGURATOR_MAPPING_GAPS.md) |
+| Планы / evidence | Phase 1A–1D reports; Phase 1E [plan](active/PHASE_1E_CART_WHATSAPP_ORDERS_PLAN.md), [report](completed/PHASE_1E_CART_WHATSAPP_ORDERS_REPORT.md) and QG-311–360 |
 
 - **ROADMAP-001 — MUST:** фазы выполняются по порядку 1A–1H; параллельный research MAY идти, но dependent implementation не обходит entry gate.
 - **ROADMAP-002 — MUST:** каждая возможность включается feature flag только после собственных acceptance/security/data gates; наличие кода не равно production activation.
@@ -98,15 +98,17 @@ Execution contract: [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN](active/PHASE_1B2_FULL_AM
 | Запрещённые изменения | Treating standard preview as AI or client-photo preview, generative substitution, unlicensed asset, promise of measurement accuracy, silent generic shape. |
 | Rollback | Disable affected renderer profile, serve static/product-image fallback, restore previous profile/assets/cache version. |
 
-`OWNER-DECISION-014/015` authorized only this phase from merged-main base `58eb25dcde460291ad98fde157956d7f264a666d`. Phase 1D completed 2026-08-08 as `PASSED_PHASE_1D_STANDARD_PREVIEW`; QG-271–310, the [plan](active/PHASE_1D_STANDARD_PREVIEW_PLAN.md), [report](completed/PHASE_1D_STANDARD_PREVIEW_REPORT.md) and [mapping gaps](PREVIEW_AND_CONFIGURATOR_MAPPING_GAPS.md) are controlling evidence. Phase 1E and production remain on hold.
+`OWNER-DECISION-014/015` authorized only this phase from merged-main base `58eb25dcde460291ad98fde157956d7f264a666d`. Phase 1D completed 2026-08-08 as `PASSED_PHASE_1D_STANDARD_PREVIEW`; QG-271–310, the [plan](active/PHASE_1D_STANDARD_PREVIEW_PLAN.md), [report](completed/PHASE_1D_STANDARD_PREVIEW_REPORT.md) and [mapping gaps](PREVIEW_AND_CONFIGURATOR_MAPPING_GAPS.md) are controlling evidence. It did not itself authorize Phase 1E or production.
 
 ## 6. PHASE 1E — CART, WHATSAPP AND ORDERS
+
+`OWNER-DECISION-016` authorized only this phase from merged-main base `65780067537418a3230bb3d32ef3fb8e0af06917`. Phase 1E completed 2026-08-09 as `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`; QG-311–360, the [plan](active/PHASE_1E_CART_WHATSAPP_ORDERS_PLAN.md) and [report](completed/PHASE_1E_CART_WHATSAPP_ORDERS_REPORT.md) are controlling evidence. Local/CI checkout uses synthetic contacts while production PII remains blocked by `TBD-BIZ-005` and `TBD-PRIV-002/004/005`; safe fixed-recipient wa.me/copy does not require an official API. Phase 1F and production remain on hold.
 
 | Поле | Содержание |
 |---|---|
 | ID / цель | **ROADMAP-1E-001:** собрать несколько конфигураций в корзину и безопасно передать guest lead/measurement request/WhatsApp without claiming confirmed order. |
 | Зависимости | 1C; optional 1D display; cart/order/API/security specs; confirmed business/legal/privacy fields. |
-| Входные условия | Lead fields/consents/legal notice approved; retention/DSR/incident owner for PII; WhatsApp template and funnel status boundary approved; rate limit/anti-abuse enabled. |
+| Входные условия | Guest/request fields, five Phase 1E statuses and message boundary approved; local/CI uses synthetic PII; origin/CSRF/rate/ownership controls enabled; production PII/legal/retention remains gated. |
 | Deliverables | Multi-item cart; price revalidation; guest lead; free measurement request; WhatsApp message preview/deep link; saved calculation; basic lead status; neutral installment flag. |
 | Acceptance criteria | Registration never required; duplicated submission idempotent; price changes explicit; phone/message sanitized; consent version captured; manager handoff does not imply order/payment/installment approval. |
 | Тесты | Cart math/snapshot; stale price; multi-item; guest happy/negative; duplicate/rate limit; consent/retention; WhatsApp encoding; unavailable client fallback; authorization/IDOR; notification outage. |
@@ -187,3 +189,5 @@ Execution contract: [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN](active/PHASE_1B2_FULL_AM
 | 1.7.0 | 2026-08-04 | Phase 1B.2 отмечена passed со ссылкой на accepted full manifest, active v2 catalog/price, 2 818 media objects, restart/no-op/public/CI report; Phase 1C+ и production остаются на hold. |
 | 1.8.0 | 2026-08-08 | Phase 1C отмечена passed со ссылкой на active calculation v5, four scopes/40 fixtures/≤1 RUB parity, configurator/quote/admin/tests/CI report; Phase 1D+ и production остаются на hold. |
 | 1.9.0 | 2026-08-08 | Phase 1D отмечена passed со ссылкой на photoreal local scenes/layers, four deterministic profiles, guest state/API, visual/mobile/recovery/CI evidence and mapping gaps; Phase 1E+ and production remain on hold. |
+| 2.0.0 | 2026-08-09 | `OWNER-DECISION-016` authorizes only Phase 1E from merged Phase 1D main: immutable-quote guest cart, request snapshot/intake, fixed-recipient WhatsApp handoff, public safe summary, minimal staff administration and audit/outbox; production PII/deployment and Phase 1F+ remain gated. |
+| 2.1.0 | 2026-08-09 | Phase 1E marked passed with quote-backed mixed cart, immutable request snapshots, guest measurement/installment intake, fixed-recipient handoff, safe summary, basic staff administration and DB/browser/security/recovery evidence; Phase 1F remains unauthorized. |

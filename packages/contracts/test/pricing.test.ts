@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  priceRequestCalculationSchema,
   pricingCalculationResponseSchema,
   pricingSelectionSchema,
   quoteSaveRequestSchema,
@@ -22,6 +23,24 @@ const selection = {
 };
 
 describe('QG-250..QG-257 pricing HTTP contracts', () => {
+  it('accepts a server price request without client money fields', () => {
+    expect(
+      priceRequestCalculationSchema.parse({
+        catalogVersionId: '00000000-0000-4000-8000-000000000001',
+        productFamilyId: '00000000-0000-4000-8000-000000000002',
+        quantity: 2,
+      }),
+    ).toMatchObject({ quantity: 2 });
+    expect(() =>
+      priceRequestCalculationSchema.parse({
+        catalogVersionId: '00000000-0000-4000-8000-000000000001',
+        grandTotalKopecks: 0,
+        productFamilyId: '00000000-0000-4000-8000-000000000002',
+        quantity: 2,
+      }),
+    ).toThrow();
+  });
+
   it('accepts integer millimetres and rejects browser supplied price fields', () => {
     expect(pricingSelectionSchema.parse(selection)).toEqual(selection);
     expect(() => pricingSelectionSchema.parse({ ...selection, grandTotalKopecks: 1 })).toThrow();

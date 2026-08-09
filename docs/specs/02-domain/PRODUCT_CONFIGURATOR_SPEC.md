@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1C configurator and Phase 1D standard-preview handoff implemented; other active catalog combinations degrade safely |
-| Версия | 0.3.0 |
-| Дата | 2026-08-08 |
+| Статус | Phase 1C configurator, Phase 1D preview and Phase 1E cart handoffs implemented; other active catalog combinations degrade safely |
+| Версия | 0.4.0 |
+| Дата | 2026-08-09 |
 | Catalog model | [CATALOG_INVENTORY_SPEC.md](CATALOG_INVENTORY_SPEC.md) |
 | Pricing | [PRICING_CALCULATOR_SPEC.md](PRICING_CALCULATOR_SPEC.md) |
 
@@ -173,6 +173,10 @@ Automatic configuration/pricing is enabled only for the four dated roller, Zebra
 
 A successful server calculation exposes «Посмотреть на окне». `POST /api/v1/previews` accepts only the opaque calculation token plus same-origin/CSRF/idempotency evidence, creates separately owned `StandardPreviewState` and returns `/preview?state={safeId}`. Returning through `/configure?resume=preview` restores the existing client selection; preview controls do not alter price or immutable quote/calculation bytes.
 
+### 15.3. Phase 1E cart handoff record
+
+The result step saves the authoritative server result as an immutable `QuoteSnapshot` before exposing «Добавить в корзину». Calculated, request-price and manual-review quotes may be added with honest labels; invalid configurations cannot. `/configure?edit={cartItemReference}` loads a server-owned edit source, and the next authoritative calculation creates a new quote before atomically replacing only that cart item. Browser code never recalculates or submits price/status/version as authority.
+
 ## 16. История изменений
 
 | Версия | Дата | Изменение |
@@ -180,3 +184,4 @@ A successful server calculation exposes «Посмотреть на окне». 
 | 0.1.0 | 2026-08-02 | Созданы data-driven step schema, configuration aggregate, validation precedence, state machine, fallbacks and test coverage. |
 | 0.2.0 | 2026-08-08 | Recorded the PostgreSQL-only guest flow, dynamic server validation, four verified scopes, safe non-numeric fallbacks, responsive state preservation and immutable quote handoff delivered in Phase 1C. |
 | 0.3.0 | 2026-08-08 | Recorded the opaque calculation-to-preview handoff, preserved return state and strict separation of non-price preview controls delivered in Phase 1D. |
+| 0.4.0 | 2026-08-09 | Recorded the Phase 1E quote-first add-to-cart CTA, honest request/manual states and edit-by-new-QuoteSnapshot replacement without browser price authority. |

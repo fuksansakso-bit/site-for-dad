@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A–1D passed; Phase 1E+ hold |
-| Версия | 0.18.0 |
-| Дата | 2026-08-08, Europe/Moscow |
+| Статус | Phase 1A–1E passed; Phase 1F+ hold |
+| Версия | 0.21.0 |
+| Дата | 2026-08-09, Europe/Moscow |
 | Владелец документа | Product Owner — владелец проекта; Business Owner — отец владельца проекта (`OWNER-DECISION-001`) |
 | Продукт | `PROJECT_NAME` до отдельного решения о бренде |
 | Язык | Русский; английские идентификаторы и технические термины допустимы |
@@ -68,6 +68,8 @@
 | 0.17.0 | 2026-08-08 | Phase 1C завершена: `/configure`, active-only integer pricing v5, four verified scopes/40 fixtures/≤1 RUB parity, local overrides, immutable quote snapshots, minimal pricing admin and acceptance tests реализованы; Phase 1D+ и production не начаты. |
 | 0.18.0 | 2026-08-08 | `OWNER-DECISION-014` отдельно разрешил только Phase 1D: deterministic `/preview`, две оригинальные локальные сцены, exact/local material mapping, четыре family renderer profile, versioned guest preview state/API, responsive controls and visual regression. Client photo/AI, cart/order/WhatsApp/payment, production and Phase 1E+ remain prohibited. |
 | 0.19.0 | 2026-08-08 | `OWNER-DECISION-015` confirmed partner permission and required photoreal locally mirrored AMIGO scene/product layers instead of a cartoon-like preview; Phase 1D completed with deterministic SVG atlas composition, four profiles, two scenes, local `StoragePort`, honest evidence classes and no runtime AMIGO. Phase 1E remains prohibited. |
+| 0.20.0 | 2026-08-09 | `OWNER-DECISION-016` separately authorizes only Phase 1E: guest multi-item cart over immutable QuoteSnapshot records, immutable request intake snapshots, free-measurement and neutral installment flags, fixed-recipient `wa.me` handoff, revocable PII-free public summary, minimal request administration, audit/outbox and security/browser/recovery evidence. Production deployment, payment, official WhatsApp API, accounts, AI and Phase 1F+ remain prohibited. |
+| 0.21.0 | 2026-08-09 | Phase 1E completed as `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`: quote-backed guest cart, immutable `OrderInquiry` snapshots, honest mixed pricing, fixed-recipient WhatsApp handoff, revocable PII-free summary, minimal staff intake, audit/outbox and real PostgreSQL/Chromium/recovery evidence pass. Phase 1F and production remain unauthorized. |
 
 ## 1. Нормативный язык и приоритет источников
 
@@ -116,7 +118,7 @@
 
 ### 2.2. Решения владельца для implementation governance и будущих feature gates
 
-Источник `OWNER-DECISION-*` — письменные решения Product Owner от 2026-08-02, 2026-08-03 и 2026-08-08. Они задают бизнес- и архитектурные границы; implementation scope расширяется только явным transition decision. Phase 1A–1D завершены; Phase 1E+ остаются запрещены.
+Источник `OWNER-DECISION-*` — письменные решения Product Owner от 2026-08-02, 2026-08-03, 2026-08-08 и 2026-08-09. Они задают бизнес- и архитектурные границы; implementation scope расширяется только явным transition decision. Phase 1A–1E завершены; следующая фаза не разрешена, а Phase 1F+ остаются запрещены.
 
 - **OWNER-DECISION-001 — MUST:** Product Owner — владелец проекта; Business Owner — отец владельца проекта. Product Owner утверждает продуктовые решения, UX, технические этапы, приоритеты и MVP. Business Owner утверждает цены, ассортимент, наличие, правила изготовления, гарантийные решения и коммерческие условия.
 - **OWNER-DECISION-002 — MUST:** новую `PriceVersion` может активировать только actor с ролью `OWNER` или `ADMIN`, после просмотра точного diff и явного подтверждения; каждая попытка и успешная активация MUST попадать в audit log.
@@ -133,6 +135,7 @@
 - **OWNER-DECISION-013 — MUST:** Product Owner разрешает начать и завершить только Phase 1C **PRODUCT CONFIGURATOR AND VERIFIED PRICING ENGINE** на branch `phase/1c-configurator-pricing` от merged-main commit `3f1f70c986bd29518364a059393e9abd1b284a02`. Разрешены guest `/configure`, динамическая PostgreSQL-only совместимость, server-side миллиметровая валидация, отдельный deterministic integer-kopeck pricing package, verified AMIGO rules/fixtures, active-only PriceVersion, local price override precedence, per-unit 150,000-kopeck minimum before quantity, zero-cost measurement/delivery/installation lines, immutable quote snapshot, safe `PRICE_ON_REQUEST`/`MANUAL_REVIEW_REQUIRED` fallbacks, minimal OWNER/ADMIN price administration, audit/idempotency/rate/origin/correlation boundaries and unit/contract/integration/browser/parity/property tests. Автоматический расчёт MUST ограничиваться доказанными rule scopes; неподтверждённая формула или размер MUST NOT интерполироваться или выдаваться за точный. Phase 1D+, standard preview, client-photo/AI, cart/order/WhatsApp/installment/payment, final landing/starfield, production secrets/provider/deployment MUST NOT начинаться. Завершение Phase 1C не разрешает следующую фазу.
 - **OWNER-DECISION-014 — MUST:** Product Owner разрешает начать и завершить только Phase 1D **DETERMINISTIC STANDARD WINDOW PREVIEW** на branch `phase/1d-standard-preview` от merged-main commit `58eb25dcde460291ad98fde157956d7f264a666d`. Разрешены guest `/preview`, server-side opaque preview state tied to a validated configuration/calculation or quote, two or more original local demonstration scenes, a provider-neutral deterministic SVG/Canvas/CSS renderer, Roller/Zebra/horizontal aluminium/vertical family profiles, current confirmed configuration options, approved local `StoragePort` material assets, explicit `EXACT_SWATCH`/`PRODUCT_IMAGE_CROP`/`NORMALIZED_COLOR_ONLY`/`PREVIEW_UNAVAILABLE` classification, responsive accessible controls, targeted diagnostics, recovery and visual regression tests. Public runtime MUST NOT call AMIGO, accept client photos, trust a price/full configuration in the URL, substitute a random material or mutate an immutable quote. Missing individual mappings MUST degrade honestly and be recorded without expanding Phase 1C assortment/pricing. Client-photo upload/segmentation/AI, cart/order/WhatsApp/installment/payment, final landing/starfield/redesign, production secrets/provider/deployment and Phase 1E+ MUST NOT begin. Completion of Phase 1D does not authorize another phase.
 - **OWNER-DECISION-015 — MUST:** During Phase 1D the Product Owner explicitly confirmed partner permission and required the standard preview to use locally mirrored, registered AMIGO photoreal interior/product layers and crisp supplier geometry rather than a cartoon-like composition. This supplements only the scene/visual-layer choice in `OWNER-DECISION-014`: source URL, checksum, rights/publication status and any deterministic rectification MUST remain recorded; runtime hotlinking, arbitrary remote URLs, AMIGO client-request calls, copying supplier frontend code and AI generation remain forbidden. The Zebra 5992 right-sash layer MAY use a checksum-bound deterministic perspective rectification while preserving the source asset and provenance. No Phase 1E authority is granted.
+- **OWNER-DECISION-016 — MUST:** Product Owner authorizes only Phase 1E **CART, GUEST REQUESTS, WHATSAPP HANDOFF AND BASIC ORDER INTAKE** on branch `phase/1e-cart-whatsapp-orders` from merged-main commit `65780067537418a3230bb3d32ef3fb8e0af06917`. Allowed scope is an HttpOnly/SameSite guest cart containing one or more `CartItem` references to immutable `QuoteSnapshot` records; edit-by-new-snapshot, duplicate/remove/clear; server-only mixed-price summary; guest `/checkout`; free-measurement and neutral installment-interest flags; immutable `Request`/`OrderInquiry` composition; statuses `NEW`, `IN_REVIEW`, `CONTACTED`, `CONFIRMED`, `CANCELLED`; communication events limited to `REQUEST_CREATED`, `WHATSAPP_LINK_GENERATED`, `WHATSAPP_LINK_OPENED`, `MESSAGE_COPIED`, `STATUS_CHANGED`; server-generated `https://wa.me/79635851036` handoff; a cryptographically unpredictable revocable public reference whose summary excludes PII; minimal OWNER/ADMIN/MANAGER request administration; append-only audit and transactional outbox events `request.created`, `cart.checked_out`, optional `measurement.requested` and `installment.interest_recorded`; mobile/accessibility/security/recovery tests. Unknown price MUST remain non-numeric, existing quote bytes MUST remain immutable, and a changed active PriceVersion MUST produce a visible voluntary-recalculation warning rather than hidden repricing. `CONFIRMED` confirms only manager handling of the request and MUST NOT create or claim a confirmed order. Phase 1E local/CI verification uses synthetic contact data; unresolved `TBD-BIZ-005` and `TBD-PRIV-002/004/005` continue to block shared/production PII collection and do not receive invented legal/retention values. Online payment, acquiring, automated credit/installment, SMS/e-mail auth, full account/CRM/manufacturing planning, client-photo/AI, final landing/starfield/redesign, production provider/secrets/deployment and Phase 1F+ MUST NOT begin. Completion of Phase 1E does not authorize another phase.
 
 Гарантийная политика MUST NOT уменьшать обязательные права потребителя, предусмотренные применимым законодательством. Порядок обращения, доказательства, сроки проверки и способы удовлетворения требования остаются в `TBD-WARRANTY-001` и не придумываются.
 
@@ -543,7 +546,7 @@ Phase 1C acceptance 2026-08-08 сохранил CatalogVersion v2 и актив�
 - **FR-LEAD-002 — MUST:** основное направление заявки — подтверждённый WhatsApp из `BUSINESS-CONTACT-001`; конкретный integration mode зависит от `TBD-INFRA-006`.
 - **FR-LEAD-003 — MUST:** перед отправкой пользователь видит передаваемые контактные и конфигурационные данные.
 - **FR-LEAD-004 — MUST:** WhatsApp payload содержит краткое резюме и безопасную ссылку, а не публичный URL фотографии.
-- **FR-LEAD-005 — MUST:** минимальные статусы заявки: `CREATED`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED` с русскими подписями.
+- **FR-LEAD-005 — Superseded 2026-08-09:** прежний общий набор `CREATED`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED` зарезервирован как историческая концепция и заменён для Phase 1E требованиями `FR-REQUEST-001`–`011`.
 - **FR-LEAD-006 — MUST:** каждое изменение статуса заявки сохраняет автора, время и основание.
 - **FR-LEAD-007 — MUST:** срок изготовления отображается как 2–7 календарных дней, включая выходные.
 - **FR-LEAD-008 — MUST:** гарантия отображается как 12 месяцев со дня установки и передачи изделия; покрытие и исключения соответствуют `BUSINESS-WARRANTY-002/003`, а неподтверждённый порядок обращения не придумывается.
@@ -570,6 +573,25 @@ Phase 1C acceptance 2026-08-08 сохранил CatalogVersion v2 и актив�
 - **FR-CART-005 — MUST:** перед отправкой показываются номер расчёта, состав заказа, системы, материалы/артикулы, размеры, количество, preliminary price, бесплатные услуги, срок 2–7 календарных дней, гарантия 12 месяцев и neutral installment CTA.
 - **FR-CART-006 — MUST:** WhatsApp payload использует `BUSINESS-CONTACT-001`, безопасную ссылку на конфигурацию и при явном действии ссылку на приватную визуализацию; публичный URL пользовательского фото запрещён.
 - **FR-CART-007 — MUST:** отправка заявки не создаёт заказ автоматически; расчёт, cart, lead, measurement request и order остаются разными сущностями.
+- **FR-CART-008 — MUST:** `CartItem` ссылается на immutable `QuoteSnapshot`; сервер заново читает snapshot и рассчитывает quantity/summary, а клиентская сумма, currency или pricing status не являются источником истины.
+- **FR-CART-009 — MUST:** серверный cart summary классифицируется как `FULLY_PRICED`, `PARTIALLY_PRICED` или `PRICE_ON_REQUEST`; неизвестная цена остаётся отсутствующей, а не `0 ₽`.
+- **FR-CART-010 — MUST:** изменение позиции возвращает исходную конфигурацию в `/configure`, создаёт новый `QuoteSnapshot` после следующего расчёта и атомарно переключает только соответствующий `CartItem`; прежний snapshot не изменяется.
+- **FR-CART-011 — MUST:** если active `PriceVersion` отличается от версии snapshot, cart сохраняет историческую сумму, показывает «Расчёт создан по предыдущей версии цены. Менеджер подтвердит сумму» и предлагает только добровольный явный пересчёт.
+- **FR-CART-012 — MUST:** guest cart ownership обеспечивается случайным server-side session secret в HttpOnly cookie с SameSite, production Secure flag, expiry/rotation/revocation и постоянной проверкой принадлежности объекта.
+
+### 10.7.2. Гостевая заявка, публичное резюме и WhatsApp
+
+- **FR-REQUEST-001 — MUST:** Phase 1E `Request`/`OrderInquiry` использует статусы `NEW`, `IN_REVIEW`, `CONTACTED`, `CONFIRMED`, `CANCELLED`; `CONFIRMED` означает только подтверждение обработки заявки менеджером и не создаёт `Order`.
+- **FR-REQUEST-002 — MUST:** заявку можно создать гостем только после server-side validation имени, нормализованного телефона, населённого пункта, optional address/comment, бесплатного замера, интереса к рассрочке и обязательного versioned consent; персональные данные не попадают в URL, analytics или обычные application logs.
+- **FR-REQUEST-003 — MUST:** повторный checkout с тем же guest session, cart revision и idempotency key возвращает тот же результат; принятая заявка фиксирует immutable `CartSnapshot`/`CartItemSnapshot` и не меняется от последующего каталога, цены или корзины.
+- **FR-REQUEST-004 — MUST:** публичное резюме доступно только по криптографически непредсказуемой не последовательной отзываемой ссылке и не показывает телефон, точный адрес, внутренние IDs, audit/internal notes, storage credentials или долговременный signed object URL.
+- **FR-REQUEST-005 — MUST:** сервер формирует WhatsApp URL только для фиксированного получателя `79635851036`; клиент не может подменить номер, redirect target или message authority.
+- **FR-REQUEST-006 — MUST:** WhatsApp message содержит приветствие, безопасный номер заявки, количество и краткий состав изделий, материал/артикул, размеры/quantity, известную предварительную сумму и manual-price flags, бесплатный замер/neutral installment request, locality и безопасную public-summary ссылку; internal UUID, PriceVersion IDs, storage keys, audit data и лишняя PII исключены.
+- **FR-REQUEST-007 — MUST:** система различает создание/генерацию/открытие/копирование; допустимы только `REQUEST_CREATED`, `WHATSAPP_LINK_GENERATED`, `WHATSAPP_LINK_OPENED`, `MESSAGE_COPIED`, `STATUS_CHANGED`. Открытие `wa.me` не означает sent/delivered/read.
+- **FR-REQUEST-008 — MUST:** после commit заявки transactional outbox содержит `request.created`, `cart.checked_out` и при выборе соответствующих флагов `measurement.requested`/`installment.interest_recorded`; никакое внешнее сообщение автоматически не отправляется.
+- **FR-REQUEST-009 — MUST:** OWNER/ADMIN просматривают и меняют допустимый статус, создают internal notes и отменяют заявку; MANAGER может просматривать, добавлять notes и выполнять только разрешённые переходы, но никто из этих действий не меняет pinned QuoteSnapshot, PriceVersion или исходную сумму заявки.
+- **FR-REQUEST-010 — MUST:** публичное резюме показывает только состав, preview при доступности, pricing status/known subtotal, бесплатные услуги, срок 2–7 календарных дней и гарантию 12 месяцев; отсутствие preview или WhatsApp приложения не удаляет заявку и не создаёт ложного communication status.
+- **FR-REQUEST-011 — MUST:** Phase 1E не утверждает production privacy/retention completeness: реальный shared/production PII intake остаётся выключен до закрытия `TBD-BIZ-005`, `TBD-PRIV-002`, `TBD-PRIV-004` и `TBD-PRIV-005`; local/CI tests используют только synthetic contact data.
 
 ### 10.8. Рассрочка
 
@@ -742,7 +764,7 @@ Phase 1C acceptance 2026-08-08 сохранил CatalogVersion v2 и актив�
 |---|---|---|
 | Расчёт | `DRAFT`, `PRICED`, `REQUIRES_MANUAL_REVIEW`, `SUBMITTED`, `EXPIRED`, `ARCHIVED` | `PRICED` означает только предварительный результат. |
 | Визуализация | `UPLOADED`, `DETECTING`, `NEEDS_CORRECTION`, `READY_TO_RENDER`, `RENDERING`, `REFINING`, `COMPLETED`, `FAILED`, `CANCELLED`, `DELETED` | Геометрический `COMPLETED` допустим без refinement. |
-| Заявка | `CREATED`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED` | Минимальная подтверждённая концепция; переходы уточняются позднее. |
+| Заявка | `NEW`, `IN_REVIEW`, `CONTACTED`, `CONFIRMED`, `CANCELLED` | Phase 1E request lifecycle; `CONFIRMED` не создаёт заказ и не обещает изготовление. |
 | Замер | `REQUESTED`, `SCHEDULED`, `COMPLETED`, `CANCELLED` | Предлагаемая концепция, требует утверждения в профильной спеке. |
 | Заказ | `INQUIRY`, `MEASURE_REQUESTED`, `MEASURE_SCHEDULED`, `QUOTE_PENDING`, `QUOTE_CONFIRMED`, `ORDER_CONFIRMED`, `IN_FULFILMENT`, `INSTALL_SCHEDULED`, `COMPLETED`, `CANCELLED` | Proposed mapping в `CART_CHECKOUT_ORDERS_SPEC`; фактические переходы `BLOCKED_BY_TBD-BIZ-004`. |
 | Наличие | `IN_STOCK`, `OUT_OF_STOCK` | Клиентские подписи заданы в `FR-INVENTORY-002/003`. |
@@ -971,8 +993,8 @@ Phase 1C acceptance 2026-08-08 сохранил CatalogVersion v2 и актив�
 7. **1B.2 — Full authorized AMIGO catalog expansion:** завершённое расширение существующего importer до полного доступного разрешённого каталога, controlled local media/base prices, resumable manifest, review/manual activation, bulk overlays и scalable public/admin catalog без dimensional calculation.
 8. **1C — Configurator and pricing:** compatibility, millimetres/quantity, versioned preliminary price, override/manual fallback и parity tests; не разрешена автоматически после 1B.2.
 9. **1D — Standard preview:** deterministic prepared-scene rendering for supported MVP profiles.
-10. **1E — Cart, WhatsApp and orders:** multi-item cart, guest/measurement lead, neutral installment request and saved calculation.
-11. **1F — Admin and accounts:** operational admin surfaces, RBAC and basic saved-calculation account.
+10. **1E — Cart, WhatsApp and orders:** завершены multi-item cart, guest/measurement request, neutral installment interest, safe WhatsApp handoff and immutable saved request.
+11. **1F — Admin and accounts:** не разрешена; operational admin expansion, RBAC and basic saved-calculation account требуют отдельного решения.
 12. **1G — AI visualizer pilot:** private geometry-first roller/Zebra pilot, manual correction, optional refinement and evaluation/cost gates.
 13. **1H — Hardening and release:** security/accessibility/performance/browser/mobile/recovery/monitoring/deployment and launch gate.
 14. **Post-MVP:** только перечисленные в [MVP_SCOPE §3](../06-plans/MVP_SCOPE.md#3-post-mvp-scope) функции по отдельным решениям.

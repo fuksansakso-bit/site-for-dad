@@ -383,21 +383,75 @@ enum PreviewAssetQuality {
   @@map("preview_asset_quality")
 }
 
+enum GuestCartStatus {
+  ACTIVE
+  CHECKED_OUT
+  EXPIRED
+
+  @@map("guest_cart_status")
+}
+
+enum CartItemRevisionAction {
+  ADDED
+  REPLACED
+  DUPLICATED
+  REMOVED
+  CLEARED
+
+  @@map("cart_item_revision_action")
+}
+
+enum CartPricingStatus {
+  FULLY_PRICED
+  PARTIALLY_PRICED
+  PRICE_ON_REQUEST
+
+  @@map("cart_pricing_status")
+}
+
+enum OrderInquiryStatus {
+  NEW
+  IN_REVIEW
+  CONTACTED
+  CONFIRMED
+  CANCELLED
+
+  @@map("order_inquiry_status")
+}
+
+enum RequestCommunicationEventType {
+  REQUEST_CREATED
+  WHATSAPP_LINK_GENERATED
+  WHATSAPP_LINK_OPENED
+  MESSAGE_COPIED
+  STATUS_CHANGED
+
+  @@map("request_communication_event_type")
+}
+
+enum RequestSourceChannel {
+  WEB_GUEST
+
+  @@map("request_source_channel")
+}
+
 model ActorIdentity {
-  id                       String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  provider                 String                         @db.VarChar(64)
-  subject                  String                         @db.VarChar(255)
-  disabledAt               DateTime?                      @map("disabled_at") @db.Timestamptz(6)
-  createdAt                DateTime                       @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt                DateTime                       @updatedAt @map("updated_at") @db.Timestamptz(6)
-  roleGrants               RoleGrant[]                    @relation("role_target")
-  grantsAuthored           RoleGrant[]                    @relation("role_granter")
-  sessions                 SyntheticSession[]
-  auditEvents              AuditEvent[]
-  catalogDifferenceReviews CatalogDifferenceReviewBatch[]
-  catalogBulkCommands      CatalogBulkCommand[]
-  pricingParityRuns        PricingParityRun[]
-  pricingVersionDecisions  PricingVersionDecision[]
+  id                         String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  provider                   String                         @db.VarChar(64)
+  subject                    String                         @db.VarChar(255)
+  disabledAt                 DateTime?                      @map("disabled_at") @db.Timestamptz(6)
+  createdAt                  DateTime                       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                  DateTime                       @updatedAt @map("updated_at") @db.Timestamptz(6)
+  roleGrants                 RoleGrant[]                    @relation("role_target")
+  grantsAuthored             RoleGrant[]                    @relation("role_granter")
+  sessions                   SyntheticSession[]
+  requestCommunicationEvents RequestCommunicationEvent[]
+  requestInternalNotes       RequestInternalNote[]
+  auditEvents                AuditEvent[]
+  catalogDifferenceReviews   CatalogDifferenceReviewBatch[]
+  catalogBulkCommands        CatalogBulkCommand[]
+  pricingParityRuns          PricingParityRun[]
+  pricingVersionDecisions    PricingVersionDecision[]
 
   @@unique([provider, subject], map: "actor_identity_provider_subject_key")
   @@map("actor_identity")
@@ -1342,54 +1396,232 @@ model QuoteSnapshot {
   catalogVersion        CatalogVersion           @relation(fields: [catalogVersionId], references: [id], onDelete: Restrict)
   priceVersion          PriceVersion?            @relation(fields: [priceVersionId], references: [id], onDelete: Restrict)
   previewStates         StandardPreviewState[]
+  cartItems             CartItem[]
+  previousCartRevisions CartItemRevision[]       @relation("cart_item_revision_previous_quote")
+  nextCartRevisions     CartItemRevision[]       @relation("cart_item_revision_next_quote")
+  requestItemSnapshots  RequestItemSnapshot[]
 
   @@index([createdAt], map: "quote_snapshot_created_idx")
   @@map("quote_snapshot")
 }
 
 model StandardPreviewState {
-  id                    String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  publicToken           String              @unique(map: "standard_preview_state_public_token_key") @map("public_token") @db.VarChar(64)
-  ownerTokenHash        String              @map("owner_token_hash") @db.Char(64)
-  idempotencyKey        String              @unique(map: "standard_preview_state_idempotency_key") @map("idempotency_key") @db.VarChar(255)
-  requestDigest         String              @map("request_digest") @db.Char(64)
-  stateVersion          Int                 @default(1) @map("state_version") @db.SmallInt
-  sourceCalculationId   String              @map("source_calculation_id") @db.Uuid
-  quoteSnapshotId       String?             @map("quote_snapshot_id") @db.Uuid
-  catalogVersionId      String              @map("catalog_version_id") @db.Uuid
-  priceVersionId        String?             @map("price_version_id") @db.Uuid
-  productFamilyId       String              @map("product_family_id") @db.Uuid
-  productSystemId       String              @map("product_system_id") @db.Uuid
-  materialVariantId     String              @map("material_variant_id") @db.Uuid
-  materialAssetId       String?             @map("material_asset_id") @db.Uuid
-  sceneId               String              @map("scene_id") @db.VarChar(64)
-  rendererVersion       String              @map("renderer_version") @db.VarChar(64)
-  familyCode            String              @map("family_code") @db.VarChar(64)
-  configurationSnapshot Json                @map("configuration_snapshot") @db.JsonB
-  assetQuality          PreviewAssetQuality @map("asset_quality")
-  normalizedColor       String?             @map("normalized_color") @db.Char(7)
-  openingPosition       Int                 @map("opening_position") @db.SmallInt
-  controls              Json                @db.JsonB
-  familyParameters      Json                @map("family_parameters") @db.JsonB
-  hardwareColor         String              @map("hardware_color") @db.Char(7)
-  stateChecksum         String              @map("state_checksum") @db.Char(64)
-  correlationId         String              @map("correlation_id") @db.VarChar(128)
-  expiresAt             DateTime            @default(dbgenerated("(now() + '24:00:00'::interval)")) @map("expires_at") @db.Timestamptz(6)
-  createdAt             DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt             DateTime            @updatedAt @map("updated_at") @db.Timestamptz(6)
-  sourceCalculation     PricingCalculation  @relation(fields: [sourceCalculationId], references: [id], onDelete: Restrict)
-  quoteSnapshot         QuoteSnapshot?      @relation(fields: [quoteSnapshotId], references: [id], onDelete: Restrict)
-  catalogVersion        CatalogVersion      @relation(fields: [catalogVersionId], references: [id], onDelete: Restrict)
-  priceVersion          PriceVersion?       @relation(fields: [priceVersionId], references: [id], onDelete: Restrict)
-  productFamily         ProductFamily       @relation(fields: [productFamilyId], references: [id], onDelete: Restrict)
-  productSystem         ProductSystem       @relation(fields: [productSystemId], references: [id], onDelete: Restrict)
-  materialVariant       MaterialVariant     @relation(fields: [materialVariantId], references: [id], onDelete: Restrict)
-  materialAsset         MediaAsset?         @relation(fields: [materialAssetId], references: [id], onDelete: Restrict)
+  id                    String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  publicToken           String                @unique(map: "standard_preview_state_public_token_key") @map("public_token") @db.VarChar(64)
+  ownerTokenHash        String                @map("owner_token_hash") @db.Char(64)
+  idempotencyKey        String                @unique(map: "standard_preview_state_idempotency_key") @map("idempotency_key") @db.VarChar(255)
+  requestDigest         String                @map("request_digest") @db.Char(64)
+  stateVersion          Int                   @default(1) @map("state_version") @db.SmallInt
+  sourceCalculationId   String                @map("source_calculation_id") @db.Uuid
+  quoteSnapshotId       String?               @map("quote_snapshot_id") @db.Uuid
+  catalogVersionId      String                @map("catalog_version_id") @db.Uuid
+  priceVersionId        String?               @map("price_version_id") @db.Uuid
+  productFamilyId       String                @map("product_family_id") @db.Uuid
+  productSystemId       String                @map("product_system_id") @db.Uuid
+  materialVariantId     String                @map("material_variant_id") @db.Uuid
+  materialAssetId       String?               @map("material_asset_id") @db.Uuid
+  sceneId               String                @map("scene_id") @db.VarChar(64)
+  rendererVersion       String                @map("renderer_version") @db.VarChar(64)
+  familyCode            String                @map("family_code") @db.VarChar(64)
+  configurationSnapshot Json                  @map("configuration_snapshot") @db.JsonB
+  assetQuality          PreviewAssetQuality   @map("asset_quality")
+  normalizedColor       String?               @map("normalized_color") @db.Char(7)
+  openingPosition       Int                   @map("opening_position") @db.SmallInt
+  controls              Json                  @db.JsonB
+  familyParameters      Json                  @map("family_parameters") @db.JsonB
+  hardwareColor         String                @map("hardware_color") @db.Char(7)
+  stateChecksum         String                @map("state_checksum") @db.Char(64)
+  correlationId         String                @map("correlation_id") @db.VarChar(128)
+  expiresAt             DateTime              @default(dbgenerated("(now() + '24:00:00'::interval)")) @map("expires_at") @db.Timestamptz(6)
+  createdAt             DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime              @updatedAt @map("updated_at") @db.Timestamptz(6)
+  sourceCalculation     PricingCalculation    @relation(fields: [sourceCalculationId], references: [id], onDelete: Restrict)
+  quoteSnapshot         QuoteSnapshot?        @relation(fields: [quoteSnapshotId], references: [id], onDelete: Restrict)
+  catalogVersion        CatalogVersion        @relation(fields: [catalogVersionId], references: [id], onDelete: Restrict)
+  priceVersion          PriceVersion?         @relation(fields: [priceVersionId], references: [id], onDelete: Restrict)
+  productFamily         ProductFamily         @relation(fields: [productFamilyId], references: [id], onDelete: Restrict)
+  productSystem         ProductSystem         @relation(fields: [productSystemId], references: [id], onDelete: Restrict)
+  materialVariant       MaterialVariant       @relation(fields: [materialVariantId], references: [id], onDelete: Restrict)
+  materialAsset         MediaAsset?           @relation(fields: [materialAssetId], references: [id], onDelete: Restrict)
+  cartItems             CartItem[]
+  previousCartRevisions CartItemRevision[]    @relation("cart_item_revision_previous_preview")
+  nextCartRevisions     CartItemRevision[]    @relation("cart_item_revision_next_preview")
+  requestItemSnapshots  RequestItemSnapshot[]
 
   @@index([ownerTokenHash, updatedAt], map: "standard_preview_state_owner_updated_idx")
   @@index([expiresAt], map: "standard_preview_state_expiry_idx")
   @@index([materialVariantId, assetQuality], map: "standard_preview_state_material_quality_idx")
   @@map("standard_preview_state")
+}
+
+model GuestCartSession {
+  id         String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tokenHash  String         @unique(map: "guest_cart_session_token_hash_key") @map("token_hash") @db.Char(64)
+  expiresAt  DateTime       @map("expires_at") @db.Timestamptz(6)
+  revokedAt  DateTime?      @map("revoked_at") @db.Timestamptz(6)
+  lastSeenAt DateTime?      @map("last_seen_at") @db.Timestamptz(6)
+  createdAt  DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+  carts      GuestCart[]
+  inquiries  OrderInquiry[]
+
+  @@index([expiresAt], map: "guest_cart_session_expiry_idx")
+  @@map("guest_cart_session")
+}
+
+model GuestCart {
+  id           String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId    String           @map("session_id") @db.Uuid
+  status       GuestCartStatus  @default(ACTIVE)
+  revision     Int              @default(0)
+  expiresAt    DateTime         @map("expires_at") @db.Timestamptz(6)
+  checkedOutAt DateTime?        @map("checked_out_at") @db.Timestamptz(6)
+  createdAt    DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+  session      GuestCartSession @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+  items        CartItem[]
+  inquiry      OrderInquiry?
+
+  @@index([sessionId, status, updatedAt], map: "guest_cart_session_status_idx")
+  @@index([expiresAt], map: "guest_cart_expiry_idx")
+  @@map("guest_cart")
+}
+
+model CartItem {
+  id              String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  publicReference String                @unique(map: "cart_item_public_reference_key") @map("public_reference") @db.VarChar(32)
+  cartId          String                @map("cart_id") @db.Uuid
+  quoteSnapshotId String                @map("quote_snapshot_id") @db.Uuid
+  previewStateId  String?               @map("preview_state_id") @db.Uuid
+  revision        Int                   @default(1)
+  position        Int
+  removedAt       DateTime?             @map("removed_at") @db.Timestamptz(6)
+  createdAt       DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime              @updatedAt @map("updated_at") @db.Timestamptz(6)
+  cart            GuestCart             @relation(fields: [cartId], references: [id], onDelete: Restrict)
+  quoteSnapshot   QuoteSnapshot         @relation(fields: [quoteSnapshotId], references: [id], onDelete: Restrict)
+  previewState    StandardPreviewState? @relation(fields: [previewStateId], references: [id], onDelete: Restrict)
+  revisions       CartItemRevision[]
+
+  @@index([cartId, removedAt, position], map: "cart_item_active_position_idx")
+  @@index([quoteSnapshotId], map: "cart_item_quote_idx")
+  @@map("cart_item")
+}
+
+model CartItemRevision {
+  id                      String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cartItemId              String                 @map("cart_item_id") @db.Uuid
+  action                  CartItemRevisionAction
+  previousQuoteSnapshotId String?                @map("previous_quote_snapshot_id") @db.Uuid
+  nextQuoteSnapshotId     String?                @map("next_quote_snapshot_id") @db.Uuid
+  previousPreviewStateId  String?                @map("previous_preview_state_id") @db.Uuid
+  nextPreviewStateId      String?                @map("next_preview_state_id") @db.Uuid
+  itemRevision            Int                    @map("item_revision")
+  cartRevision            Int                    @map("cart_revision")
+  idempotencyKey          String                 @unique(map: "cart_item_revision_idempotency_key") @map("idempotency_key") @db.VarChar(255)
+  correlationId           String                 @map("correlation_id") @db.VarChar(128)
+  createdAt               DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  cartItem                CartItem               @relation(fields: [cartItemId], references: [id], onDelete: Restrict)
+  previousQuoteSnapshot   QuoteSnapshot?         @relation("cart_item_revision_previous_quote", fields: [previousQuoteSnapshotId], references: [id], onDelete: Restrict)
+  nextQuoteSnapshot       QuoteSnapshot?         @relation("cart_item_revision_next_quote", fields: [nextQuoteSnapshotId], references: [id], onDelete: Restrict)
+  previousPreviewState    StandardPreviewState?  @relation("cart_item_revision_previous_preview", fields: [previousPreviewStateId], references: [id], onDelete: Restrict)
+  nextPreviewState        StandardPreviewState?  @relation("cart_item_revision_next_preview", fields: [nextPreviewStateId], references: [id], onDelete: Restrict)
+
+  @@index([cartItemId, itemRevision], map: "cart_item_revision_item_idx")
+  @@map("cart_item_revision")
+}
+
+model OrderInquiry {
+  id                       String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  requestNumber            String                      @unique(map: "order_inquiry_request_number_key") @map("request_number") @db.VarChar(32)
+  guestSessionId           String                      @map("guest_session_id") @db.Uuid
+  cartId                   String                      @unique(map: "order_inquiry_cart_key") @map("cart_id") @db.Uuid
+  checkoutIdempotencyKey   String                      @unique(map: "order_inquiry_checkout_idempotency_key") @map("checkout_idempotency_key") @db.VarChar(255)
+  publicReferenceHash      String                      @unique(map: "order_inquiry_public_reference_hash_key") @map("public_reference_hash") @db.Char(64)
+  publicReferenceSealed    String?                     @map("public_reference_sealed") @db.VarChar(512)
+  publicReferenceRevokedAt DateTime?                   @map("public_reference_revoked_at") @db.Timestamptz(6)
+  contactName              String                      @map("contact_name") @db.VarChar(120)
+  contactPhone             String                      @map("contact_phone") @db.VarChar(32)
+  locality                 String                      @db.VarChar(160)
+  address                  String?                     @db.VarChar(500)
+  comment                  String?                     @db.VarChar(1000)
+  measurementRequested     Boolean                     @default(false) @map("measurement_requested")
+  installmentInterest      Boolean                     @default(false) @map("installment_interest")
+  consentVersion           String                      @map("consent_version") @db.VarChar(64)
+  consentAt                DateTime                    @map("consent_at") @db.Timestamptz(6)
+  status                   OrderInquiryStatus          @default(NEW)
+  cartSnapshot             Json                        @map("cart_snapshot") @db.JsonB
+  knownSubtotalMinor       BigInt                      @map("known_subtotal_minor") @db.BigInt
+  pricingStatus            CartPricingStatus           @map("pricing_status")
+  catalogVersionIds        Json                        @map("catalog_version_ids") @db.JsonB
+  priceVersionIds          Json                        @map("price_version_ids") @db.JsonB
+  sourceChannel            RequestSourceChannel        @default(WEB_GUEST) @map("source_channel")
+  correlationId            String                      @map("correlation_id") @db.VarChar(128)
+  auditContext             Json                        @map("audit_context") @db.JsonB
+  version                  Int                         @default(1)
+  createdAt                DateTime                    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                DateTime                    @updatedAt @map("updated_at") @db.Timestamptz(6)
+  guestSession             GuestCartSession            @relation(fields: [guestSessionId], references: [id], onDelete: Restrict)
+  cart                     GuestCart                   @relation(fields: [cartId], references: [id], onDelete: Restrict)
+  items                    RequestItemSnapshot[]
+  communicationEvents      RequestCommunicationEvent[]
+  internalNotes            RequestInternalNote[]
+
+  @@index([status, createdAt], map: "order_inquiry_status_created_idx")
+  @@index([guestSessionId, createdAt], map: "order_inquiry_guest_created_idx")
+  @@map("order_inquiry")
+}
+
+model RequestItemSnapshot {
+  id              String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  inquiryId       String                   @map("inquiry_id") @db.Uuid
+  sequence        Int
+  quoteSnapshotId String                   @map("quote_snapshot_id") @db.Uuid
+  previewStateId  String?                  @map("preview_state_id") @db.Uuid
+  snapshot        Json                     @db.JsonB
+  pricingStatus   PricingCalculationStatus @map("pricing_status")
+  knownTotalMinor BigInt?                  @map("known_total_minor") @db.BigInt
+  createdAt       DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+  inquiry         OrderInquiry             @relation(fields: [inquiryId], references: [id], onDelete: Restrict)
+  quoteSnapshot   QuoteSnapshot            @relation(fields: [quoteSnapshotId], references: [id], onDelete: Restrict)
+  previewState    StandardPreviewState?    @relation(fields: [previewStateId], references: [id], onDelete: Restrict)
+
+  @@unique([inquiryId, sequence], map: "request_item_snapshot_sequence_key")
+  @@index([quoteSnapshotId], map: "request_item_snapshot_quote_idx")
+  @@map("request_item_snapshot")
+}
+
+model RequestCommunicationEvent {
+  id              String                        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  inquiryId       String                        @map("inquiry_id") @db.Uuid
+  type            RequestCommunicationEventType
+  actorType       AuditActorType                @map("actor_type")
+  actorIdentityId String?                       @map("actor_identity_id") @db.Uuid
+  idempotencyKey  String?                       @map("idempotency_key") @db.VarChar(255)
+  safeMetadata    Json                          @map("safe_metadata") @db.JsonB
+  correlationId   String                        @map("correlation_id") @db.VarChar(128)
+  createdAt       DateTime                      @default(now()) @map("created_at") @db.Timestamptz(6)
+  inquiry         OrderInquiry                  @relation(fields: [inquiryId], references: [id], onDelete: Restrict)
+  actorIdentity   ActorIdentity?                @relation(fields: [actorIdentityId], references: [id], onDelete: Restrict)
+
+  @@unique([inquiryId, idempotencyKey], map: "request_communication_event_idempotency_key")
+  @@index([inquiryId, createdAt], map: "request_communication_event_inquiry_idx")
+  @@map("request_communication_event")
+}
+
+model RequestInternalNote {
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  inquiryId      String        @map("inquiry_id") @db.Uuid
+  authorActorId  String        @map("author_actor_id") @db.Uuid
+  idempotencyKey String        @map("idempotency_key") @db.VarChar(255)
+  body           String        @db.VarChar(1000)
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  inquiry        OrderInquiry  @relation(fields: [inquiryId], references: [id], onDelete: Restrict)
+  authorActor    ActorIdentity @relation(fields: [authorActorId], references: [id], onDelete: Restrict)
+
+  @@unique([inquiryId, idempotencyKey], map: "request_internal_note_idempotency_key")
+  @@index([inquiryId, createdAt], map: "request_internal_note_inquiry_idx")
+  @@map("request_internal_note")
 }
 
 model PricingVersionDecision {

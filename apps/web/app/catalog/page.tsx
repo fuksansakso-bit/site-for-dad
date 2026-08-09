@@ -452,9 +452,9 @@ export default async function CatalogPage({
       {page?.nextCursor === null || page?.nextCursor === undefined ? null : (
         <nav className="catalog-pagination" aria-label="Пагинация каталога">
           <span>В этой выборке есть ещё материалы</span>
-          <Link href={catalogHref(query, { cursor: page.nextCursor })}>
+          <a href={catalogHref(query, { cursor: page.nextCursor })}>
             Следующая страница <span aria-hidden="true">→</span>
-          </Link>
+          </a>
         </nav>
       )}
 

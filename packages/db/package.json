@@ -32,6 +32,7 @@
   "dependencies": {
     "@prisma/adapter-pg": "catalog:",
     "@prisma/client": "catalog:",
+    "@project-name/cart": "workspace:*",
     "@project-name/config": "workspace:*",
     "@project-name/catalog": "workspace:*",
     "@project-name/observability": "workspace:*",

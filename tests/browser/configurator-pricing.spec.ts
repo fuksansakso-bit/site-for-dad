@@ -36,7 +36,7 @@ test.describe('QG-267 Phase 1C configurator browser acceptance', () => {
   }, testInfo) => {
     await chooseRoller(page);
     await page.getByRole('button', { name: 'Рассчитать на сервере' }).click();
-    await expect(page.getByText('CALCULATED', { exact: true })).toBeVisible();
+    await expect(page.getByText('Стоимость рассчитана', { exact: true })).toBeVisible();
     await expect(page.getByText('3 048,00 ₽', { exact: true }).first()).toBeVisible();
     await expect(page.getByText('Изделия × 2')).toBeVisible();
     for (const service of ['Замер', 'Доставка', 'Установка']) {
@@ -59,7 +59,10 @@ test.describe('QG-267 Phase 1C configurator browser acceptance', () => {
     await page.goto('/configure');
     await page.getByRole('button', { name: /ZIP системы для террас Цена по запросу/ }).click();
     await page.getByRole('button', { name: 'Продолжить →' }).click();
-    await expect(page.getByText('PRICE_ON_REQUEST', { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Рассчитать на сервере' }).click();
+    await expect(
+      page.getByText('Стоимость уточнит менеджер', { exact: true }).first(),
+    ).toBeVisible();
     await expect(page.getByText('Сумма не подставляется')).toBeVisible();
     await expect(page.getByText('0,00 ₽')).toHaveCount(0);
   });
@@ -67,7 +70,7 @@ test.describe('QG-267 Phase 1C configurator browser acceptance', () => {
   test('shows server manual-review state for an unverified exact dimension', async ({ page }) => {
     await chooseRoller(page, '401', '501', '1');
     await page.getByRole('button', { name: 'Рассчитать на сервере' }).click();
-    await expect(page.getByText('MANUAL_REVIEW_REQUIRED', { exact: true })).toBeVisible();
+    await expect(page.getByText('Размер требует проверки', { exact: true })).toBeVisible();
     await expect(page.getByText('Размер требует проверки мастером.')).toBeVisible();
   });
 

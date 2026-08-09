@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A–1D schema implemented and verified; later business/private-media aggregates gated |
-| Версия | 0.13.0 |
-| Дата | 2026-08-08 |
+| Статус | Phase 1A–1E schema implemented and verified; full order/account/private-media aggregates gated |
+| Версия | 0.14.0 |
+| Дата | 2026-08-09 |
 | Architecture | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | Glossary | [GLOSSARY.md](../../00-global/GLOSSARY.md) |
 
@@ -115,7 +115,9 @@ Coordinates normalized with original dimensions/orientation transform. Base and 
 
 ## 9. Project, cart, lead and order model
 
-Project has guest/account ownership history. Cart owns items referencing immutable configuration/quote/preview revisions and quantity. HandoffSnapshot is immutable/share-safe and has opaque ref/expiry/revocation. Lead references snapshot and minimal contact/purpose/consent. Measurement, Order and WarrantyClaim use transition records, not arbitrary status mutation.
+`GuestCartSession` stores a random-token hash, expiry and revocation; `GuestCart` stores status/revision and owns ordered `CartItem` rows. Every item points to an immutable `QuoteSnapshot`, optional owned preview and append-only `CartItemRevision`; edit changes the pointer only after a new quote exists.
+
+`OrderInquiry` is the Phase 1E request aggregate. It stores a safe request number, guest/cart, normalized contact and consent, measurement/installment flags, status/version, immutable cart JSON, known subtotal/pricing status, catalog/price version sets, source/correlation/audit context and a revocable hashed public reference. `RequestItemSnapshot` pins item/quote/preview bytes; `RequestCommunicationEvent` and `RequestInternalNote` are separate append-only evidence. Measurement scheduling, confirmed `Order` and `WarrantyClaim` remain future transition aggregates.
 
 Customer-safe order state is a mapping/projection from internal state/version; internal notes stored separately with staff permissions. External WhatsApp open is not a server-confirmed message/delivery state.
 
@@ -168,7 +170,7 @@ Schema changes use additive/read-old-write-new/dual-compatible evolution, backfi
 
 Tests: ID uniqueness, optimistic concurrency, effective interval overlap, hierarchy cycles, reference integrity, readiness matrix, exact money, historical replay, source rename/split/merge/removal, preservation of local data/overlays on removal, dynamic category, catalog-version source/timestamp/approval completeness, single active pointer, public/derived version pinning, override precedence without source mutation, ownership/IDOR, private graph deletion/late job, rights revoke, active pointer rollback, event/job deduplication, catalog-change audit coverage, audit schema redaction, backup restore revocation and migration compatibility.
 
-## 17. Physical schema record through Phase 1C
+## 17. Physical schema record through Phase 1E
 
 The seven Phase 1A identity/audit/delivery tables and fifteen Phase 1B.1/1B.2 catalog migrations remain compatible. Migration `20260808150000_phase_1c_configurator_pricing` adds five bounded aggregates without changing the active catalog composition:
 
@@ -180,11 +182,22 @@ The seven Phase 1A identity/audit/delivery tables and fifteen Phase 1B.1/1B.2 ca
 | `QuoteSnapshot` | Opaque public token plus immutable selected labels/articles, dimensions/options/breakdown/version/override/minimum/status snapshot |
 | `PricingVersionDecision` | Append-only activation/rejection actor, reason, parity and correlation evidence |
 
-Append-only database triggers prevent update/delete of rules, parity runs, calculations, quote snapshots and decisions. Existing `LocalPriceOverride` remains a separate Business Owner layer and is referenced in calculation/quote snapshots without mutating AMIGO source facts. Transactional activation maintains one active reviewed pricing version; indexes cover active/version/configuration lookup and public quote-token lookup. No client-photo, cart, order, installment, account or production-provider aggregate was introduced.
+Append-only database triggers prevent update/delete of rules, parity runs, calculations, quote snapshots and decisions. Existing `LocalPriceOverride` remains a separate Business Owner layer and is referenced in calculation/quote snapshots without mutating AMIGO source facts. Transactional activation maintains one active reviewed pricing version; indexes cover active/version/configuration lookup and public quote-token lookup.
+
+Migration `20260808190000_phase_1d_standard_preview` adds guest-owned preview state. Phase 1E migrations `20260809113000_phase_1e_cart_request_intake`, `20260809114500_phase_1e_cart_money_bigint`, `20260809121000_phase_1e_communication_idempotency` and `20260809124500_phase_1e_request_admin_controls` add the following bounded records without creating an `Order`:
+
+| Aggregate | Stored evidence and integrity |
+|---|---|
+| `GuestCartSession` / `GuestCart` | hashed owner token, expiry/revocation, active/checked-out state and optimistic revision |
+| `CartItem` / `CartItemRevision` | immutable quote/optional preview pointers plus append-only add/replace/duplicate/remove evidence |
+| `OrderInquiry` / `RequestItemSnapshot` | immutable checkout composition, BigInt known money, statuses/version sets, consent/source/correlation and hashed/revocable public reference |
+| `RequestCommunicationEvent` / `RequestInternalNote` | allowlisted truthful events with idempotency and staff-attributed internal notes |
+
+Database triggers reject update/delete of request item snapshots and protected request composition/money/version/reference fields. Audit/outbox writes share the checkout/status transaction. There is no payment, credit, account, confirmed-order, client-photo/AI or production-provider schema.
 
 ## 18. Dependencies, risks and open questions
 
-Dependencies: all domain specs, API/storage/security/deployment, ADRs and `OWNER-DECISION-008/009/010/012/013/014/015`. PostgreSQL/Prisma remains fixed; Phase 1D adds only standard-preview state and indexes while approved layer bytes remain behind `StoragePort`. Production storage/index/search, PII/legal/commercial workflows and Phase 1E+ remain gated. Risks: accidental ownership bypass, stale version references, mutable quote history, projection drift and private data in generic metadata.
+Dependencies: all domain specs, API/storage/security/deployment, ADRs and `OWNER-DECISION-008/009/010/012/013/014/015/016`. PostgreSQL/Prisma remains fixed; approved preview bytes stay behind `StoragePort`. Production PII/legal/retention, account/full order workflow, storage/index/search and Phase 1F+ remain gated. Risks: accidental ownership bypass, stale version references, mutable quote history, projection drift and private data in generic metadata.
 
 ## 19. History
 
@@ -203,3 +216,4 @@ Dependencies: all domain specs, API/storage/security/deployment, ADRs and `OWNER
 | 0.11.0 | 2026-08-04 | Recorded accepted fifteen-migration Phase 1B.2 schema, pilot compatibility fixes, non-unique article identity, active v2 composition/price/media evidence and final migration/recovery verification without later-phase aggregates. |
 | 0.12.0 | 2026-08-08 | Recorded the additive Phase 1C pricing-rule/parity/calculation/immutable-quote/version-decision schema, append-only triggers, lookup indexes and preserved Phase 1B.2 data/volumes without Phase 1D aggregates. |
 | 0.13.0 | 2026-08-08 | Recorded the separate ownership-scoped `StandardPreviewState`, opaque lookup/indexes, immutable calculation/quote references and no-customer-photo boundary delivered in Phase 1D. |
+| 0.14.0 | 2026-08-09 | Recorded Phase 1D preview plus the additive Phase 1E guest cart, item revision, immutable `OrderInquiry`/item snapshot, communication/note, BigInt money and database immutability controls. |

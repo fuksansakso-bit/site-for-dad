@@ -4,10 +4,10 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A/1B.1/1B.2/1C/1D verified; Phase 1E+/production gated |
-| Версия | 0.11.0 |
-| Дата | 2026-08-08 |
-| Global baseline | [GLOBAL_SPEC.md](../GLOBAL_SPEC.md) 0.19.0 |
+| Статус | Phase 1A/1B.1/1B.2/1C/1D/1E verified; Phase 1F+/production gated |
+| Версия | 0.12.0 |
+| Дата | 2026-08-09 |
+| Global baseline | [GLOBAL_SPEC.md](../GLOBAL_SPEC.md) 0.21.0 |
 | Decisions | [docs/adr](../../adr/) |
 
 ## 1. Назначение and boundaries
@@ -218,7 +218,9 @@ Completed Phase 1C adds one independent `packages/pricing` domain boundary and s
 
 Phase 1D keeps the accepted modular/BFF topology: `/configure` creates an opaque `StandardPreviewState` through a server use case; `/preview` lazy-loads `standard-svg-v2`; the renderer consumes canonical state plus same-origin scene/product layers. Layer descriptors are an allowlisted server mapping from active family/model/article to a checksum-bound manifest. Bytes are provisioned and read through provider-neutral `StoragePort`; the browser never receives object keys or calls AMIGO. Approved supplier raster layers are composed by project-owned SVG/controls, not supplier frontend code. Preview state and immutable pricing snapshots remain separate.
 
-Dependencies: all specs, ADR/evaluations, data/API/sync/media/AI/storage/security/performance/observability/deployment and `OWNER-DECISION-008/009/013/014/015`. Foundation runtime/framework/database/queue boundaries are fixed by ADR-0007–0010; open: production object/auth/telemetry/hosting providers, search, AI, region/network and RPO/RTO. Risks: premature microservices, provider lock-in, hidden live-source dependency, derived-projection drift, asset/profile mismatch, privacy boundary collapse and untestable recovery.
+Phase 1E adds framework-independent `packages/cart` totals/status/message/transition policy plus PostgreSQL cart/request adapters behind the same BFF. The browser carries only opaque quote/item/public references; the adapter reloads immutable quotes and writes checkout, audit and outbox atomically. Public request projection is distinct from contact/admin projection. WhatsApp is a fixed-recipient deep-link adapter with copy fallback and no outbound worker/API. Existing worker consumes only durable outbox infrastructure; a restart preserves pending/history rows.
+
+Dependencies: all specs, ADR/evaluations, data/API/sync/media/AI/storage/security/performance/observability/deployment and `OWNER-DECISION-008/009/013/014/015/016`. Foundation runtime/framework/database/queue boundaries are fixed by ADR-0007–0010; open: production object/auth/telemetry/hosting providers, PII/legal/retention, search, AI, region/network and RPO/RTO. Risks: premature microservices, provider lock-in, hidden live-source dependency, derived-projection drift, asset/profile mismatch, privacy boundary collapse and untestable recovery.
 
 ## 19. История изменений
 
@@ -235,3 +237,4 @@ Dependencies: all specs, ADR/evaluations, data/API/sync/media/AI/storage/securit
 | 0.9.0 | 2026-08-04 | Recorded completed Phase 1B.2 resumable import, active v2 governance, local media, public/admin, rollback/restart/no-op evidence inside the existing adapter/PostgreSQL/StoragePort boundaries; later phases remain gated. |
 | 0.10.0 | 2026-08-08 | Recorded the independent pricing package, active PostgreSQL adapter, same-origin BFF, immutable quote/admin transaction boundaries, version-keyed reference cache and completed Phase 1C without Phase 1D topology. |
 | 0.11.0 | 2026-08-08 | Recorded the Phase 1D guest-state/BFF, lazy deterministic SVG renderer, allowlisted local supplier-layer manifest, `StoragePort` delivery and zero-runtime-AMIGO boundary. |
+| 0.12.0 | 2026-08-09 | Recorded Phase 1E cart domain/PostgreSQL adapters, immutable transactional request/audit/outbox, split public/admin projections and fixed-recipient no-send WhatsApp boundary. |

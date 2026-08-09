@@ -94,7 +94,7 @@ async function chooseRollerInConfigurator(page: Page) {
   await page.getByRole('button', { name: 'Продолжить →' }).click();
   await page.getByRole('spinbutton').fill('1');
   await page.getByRole('button', { name: 'Рассчитать на сервере' }).click();
-  await expect(page.getByText('CALCULATED', { exact: true })).toBeVisible();
+  await expect(page.getByText('Стоимость рассчитана', { exact: true })).toBeVisible();
 }
 
 test.describe('QG-296..QG-304 Phase 1D browser acceptance', () => {
@@ -105,7 +105,7 @@ test.describe('QG-296..QG-304 Phase 1D browser acceptance', () => {
   }) => {
     await chooseRollerInConfigurator(page);
     await page.getByRole('button', { name: 'Посмотреть на окне' }).click();
-    await expect(page).toHaveURL(/\/preview\?state=[A-Za-z0-9_-]{32}$/u);
+    await expect(page).toHaveURL(/\/preview\?state=[A-Za-z0-9_-]{32}&quote=[A-Za-z0-9_-]{32}$/u);
     await expect(page.locator('[data-family-renderer="ROLLER"]')).toBeVisible();
     const checksum = await page
       .locator('.standard-preview-svg')

@@ -3,10 +3,11 @@ import { readFile, readdir } from 'node:fs/promises';
 import { describe, expect, it } from 'vitest';
 
 const migrationsRoot = new URL('../../prisma/migrations/', import.meta.url);
-const forbiddenLaterPhaseEntity = /\b(?:customer[_ ]?photos?|orders?|visualizations?|carts?)\b/i;
+const forbiddenLaterPhaseEntity =
+  /\b(?:customer[_ ]?photos?|visualizations?|payment[_ ]?intents?|accounts?)\b/i;
 
-describe('Phase 1D migration boundary', () => {
-  it('contains only reviewed Foundation, catalog, pricing and standard-preview tables', async () => {
+describe('Phase 1E migration boundary', () => {
+  it('contains only reviewed Foundation through cart/request-intake tables', async () => {
     const migrationDirectories = (await readdir(migrationsRoot, { withFileTypes: true }))
       .filter((entry) => entry.isDirectory())
       .map((entry) => entry.name)
@@ -29,6 +30,10 @@ describe('Phase 1D migration boundary', () => {
       '20260803227000_phase_1b2_media_join_index',
       '20260808150000_phase_1c_configurator_pricing',
       '20260808190000_phase_1d_standard_preview',
+      '20260809113000_phase_1e_cart_request_intake',
+      '20260809114500_phase_1e_cart_money_bigint',
+      '20260809121000_phase_1e_communication_idempotency',
+      '20260809124500_phase_1e_request_admin_controls',
     ]);
 
     const tables = new Set<string>();
@@ -40,6 +45,18 @@ describe('Phase 1D migration boundary', () => {
       } else if (directory === '20260808190000_phase_1d_standard_preview') {
         expect(sql).toContain('PLAN-1D migration risk: MEDIUM');
         expect(sql).toContain('Recovery uses forward compensation');
+      } else if (directory === '20260809113000_phase_1e_cart_request_intake') {
+        expect(sql).toContain('Phase 1E migration risk: MEDIUM');
+        expect(sql).toContain('Forward compensation');
+      } else if (directory === '20260809114500_phase_1e_cart_money_bigint') {
+        expect(sql).toContain('Phase 1E migration risk: LOW');
+        expect(sql).toContain('Forward compensation');
+      } else if (directory === '20260809121000_phase_1e_communication_idempotency') {
+        expect(sql).toContain('Phase 1E migration risk: LOW');
+        expect(sql).toContain('Forward compensation');
+      } else if (directory === '20260809124500_phase_1e_request_admin_controls') {
+        expect(sql).toContain('Phase 1E migration risk: LOW');
+        expect(sql).toContain('Forward compensation');
       } else {
         expect(sql).toMatch(/PLAN-(?:1A|1B1|1B2) migration risk: (?:LOW|MEDIUM)/);
       }
@@ -57,6 +74,8 @@ describe('Phase 1D migration boundary', () => {
       'audit_event',
       'availability_record',
       'business_catalog_entry',
+      'cart_item',
+      'cart_item_revision',
       'catalog_bulk_command',
       'catalog_difference_review_batch',
       'catalog_import_manifest',
@@ -70,6 +89,8 @@ describe('Phase 1D migration boundary', () => {
       'color',
       'compatibility_rule',
       'dimension_constraint',
+      'guest_cart',
+      'guest_cart_session',
       'idempotency_record',
       'local_price_override',
       'material',
@@ -77,6 +98,7 @@ describe('Phase 1D migration boundary', () => {
       'material_property',
       'material_variant',
       'media_asset',
+      'order_inquiry',
       'outbox_event',
       'price_version',
       'price_version_record',
@@ -90,6 +112,9 @@ describe('Phase 1D migration boundary', () => {
       'product_system',
       'publication_record',
       'quote_snapshot',
+      'request_communication_event',
+      'request_internal_note',
+      'request_item_snapshot',
       'role_grant',
       'service_heartbeat',
       'source_entity',
@@ -115,6 +140,10 @@ describe('Phase 1D migration boundary', () => {
     expect(schema).toContain('model PricingCalculation');
     expect(schema).toContain('model QuoteSnapshot');
     expect(schema).toContain('model StandardPreviewState');
+    expect(schema).toContain('model GuestCartSession');
+    expect(schema).toContain('model CartItem');
+    expect(schema).toContain('model OrderInquiry');
+    expect(schema).toContain('model RequestItemSnapshot');
     expect(schema).toContain('@@unique([catalogSourceId, sourceType, sourceId]');
     expect(schema).toContain(
       '@@index([materialId, article], map: "material_variant_material_article_idx")',
@@ -219,5 +248,18 @@ describe('Phase 1D migration boundary', () => {
     expect(previewSql).toContain('standard_preview_state_owner_hash_check');
     expect(previewSql).toContain('standard_preview_state_scene_check');
     expect(previewSql).toContain('ON DELETE RESTRICT');
+
+    const requestSql = await readFile(
+      new URL(
+        '../../prisma/migrations/20260809113000_phase_1e_cart_request_intake/migration.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    );
+    expect(requestSql).toContain('guest_cart_one_active_per_session_key');
+    expect(requestSql).toContain('request_item_snapshot_immutable');
+    expect(requestSql).toContain('order_inquiry_snapshot_immutable');
+    expect(requestSql).toContain('order_inquiry_public_reference_hash_check');
+    expect(requestSql).not.toMatch(/\b(?:DROP\s+TABLE|TRUNCATE)\b/i);
   });
 });

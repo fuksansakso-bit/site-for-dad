@@ -19,6 +19,9 @@ export default async function PreviewPage({
   const parameters = await searchParams;
   const candidate = typeof parameters['state'] === 'string' ? parameters['state'] : null;
   const stateId = candidate !== null && /^[A-Za-z0-9_-]{32}$/u.test(candidate) ? candidate : null;
+  const quoteCandidate = typeof parameters['quote'] === 'string' ? parameters['quote'] : null;
+  const quoteToken =
+    quoteCandidate !== null && /^[A-Za-z0-9_-]{32}$/u.test(quoteCandidate) ? quoteCandidate : null;
   return (
     <main className="preview-page-shell">
       <header className="preview-page-header">
@@ -28,7 +31,7 @@ export default async function PreviewPage({
         </Link>
         <p>Стандартная примерка · без загрузки фото и генеративного AI</p>
       </header>
-      <PreviewExperience stateId={stateId} />
+      <PreviewExperience quoteToken={quoteToken} stateId={stateId} />
     </main>
   );
 }

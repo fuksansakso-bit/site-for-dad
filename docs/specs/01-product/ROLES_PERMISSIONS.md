@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Draft 0B — logical RBAC/ownership contract |
-| Версия | 0.3.0 |
-| Дата | 2026-08-02 |
+| Статус | Phase 1E guest ownership and basic request staff policy implemented; account/full staff model gated |
+| Версия | 0.4.0 |
+| Дата | 2026-08-09 |
 | Scope | Public, client, staff, service identities and approvals |
 | Security detail | [SECURITY_PRIVACY.md](../04-technical/SECURITY_PRIVACY.md) |
 
@@ -64,6 +64,9 @@ Actors:
 | `visualization.own_delete` | Revoke/delete own private revisions | High privacy |
 | `lead.own_create` | Submit own/guest lead | Medium |
 | `lead.assigned_read/update` | Handle assigned leads | High PII |
+| `request.staff_read` | Read Phase 1E request projection within staff role | High PII |
+| `request.staff_transition` | Apply allowlisted request status transition | High business |
+| `request.staff_note` | Add immutable-attribution internal request note | High PII |
 | `order.assigned_transition` | Apply allowed operational transition | High business |
 | `quote.create` | Create preliminary/manager draft quote | High money |
 | `quote.confirm` | Confirm allowed quote revision | High money |
@@ -93,6 +96,9 @@ Legend: `A` allowed within scope, `R` request/review only, `—` denied, `P` pol
 | Private photo delete | A own token | A own | R request | — default | — default | — | — | P delete job only |
 | Lead create | A | A | A manual | A support | A | — | — | — |
 | Lead read/update | own receipt | own safe view | A assigned | A scoped | A scoped | — | — | — |
+| Phase 1E request read/note | public PII-free receipt | — | A scoped | A | A | — | — | — |
+| Phase 1E request transition | — | — | A allowlist | A allowlist | A allowlist | — | — | — |
+| Captured request quote/amount mutation | — | — | — | — | — | — | — | — |
 | Order transition | — | — | A allowed | A allowed | A override policy | — | — | — |
 | Quote draft | request | request | A | A | A | — | — | — |
 | Quote confirm | — | accept evidence | A capability | A capability | A | — | — | — |
@@ -178,14 +184,19 @@ Authorization decisions must not include secrets in client errors. Private acces
 
 Core AC: `AC-AUTH-001`, `AC-ADMIN-001`, `AC-SEC-001`, `AC-PARTNER-001`, `AC-ASSET-MAP-001`, `AC-PRICE-ACTIVATE-001`. Required tests: anonymous/object ownership matrix, horizontal/vertical privilege escalation, stale role, CSRF, session expiry, service identity scope, approval separation, audit failure and export redaction.
 
-## 12. Dependencies, risks and open questions
+## 12. Phase 1E implementation record
+
+The guest cart token authorizes only its own cart and checkout; the public request reference authorizes only a PII-free immutable projection. Neither token grants staff or contact access. Existing synthetic dev sessions map OWNER/ADMIN/MANAGER to request capabilities server-side. OWNER/ADMIN may list/read/note/cancel and use the five request statuses; MANAGER may list/read/note and use only the normal transition allowlist. All roles are denied mutation of `QuoteSnapshot`, captured PriceVersion/version sets and original request amounts.
+
+## 13. Dependencies, risks and open questions
 
 Dependencies: `AUTH_ACCOUNTS_SPEC`, `ADMIN_PANEL_SPEC`, `SECURITY_PRIVACY`, domain state machines and ADR-0010. `TBD-BIZ-001` is resolved by `OWNER-DECISION-001`; open items remain `TBD-ACCOUNT-*`, applicable `TBD-INFRA-*`, staff/team model, emergency access and separation thresholds. Main risks are role explosion, broad admin bypass, broken object-level authorization, leaked guest tokens and unaudited service identities.
 
-## 13. История изменений
+## 14. История изменений
 
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Определены восемь actors, 22 capabilities, object ownership, separation of duties, state authorization и failure behavior. |
 | 0.2.0 | 2026-08-02 | Разделены governance owners и RBAC `OWNER`, добавлен Phase 1A `SYSTEM_WORKER`, а PriceVersion activation ограничена `OWNER`/`ADMIN` с diff, confirmation и audit. |
 | 0.3.0 | 2026-08-02 | Уточнено, что RBAC-права лишь исполняют решения authority из `OWNER-DECISION-008` и не позволяют менять AMIGO source fields или подменять Business Owner. |
+| 0.4.0 | 2026-08-09 | Recorded Phase 1E guest cart ownership, PII-free public projection, OWNER/ADMIN/MANAGER request read/note/transition allowlists and deny-all captured-price mutation. |

@@ -4538,6 +4538,222 @@ input[type='checkbox'] {
   }
 }
 
+.staff-admin-page {
+  min-height: 100vh;
+  padding: 48px clamp(18px, 5vw, 76px) 88px;
+  color: var(--ink);
+  background: linear-gradient(90deg, transparent 0 74%, rgb(159 63 43 / 5%) 74%), var(--paper);
+}
+
+.staff-admin-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  max-width: 1180px;
+  margin: 0 auto 34px;
+  padding-bottom: 26px;
+  border-bottom: 1px solid var(--line);
+}
+
+.staff-admin-heading h1 {
+  margin: 5px 0 10px;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(42px, 7vw, 86px);
+  font-weight: 500;
+  line-height: 0.95;
+  letter-spacing: -0.045em;
+}
+
+.staff-admin-heading p:last-child {
+  max-width: 700px;
+  margin: 0;
+  color: var(--ink-muted);
+  line-height: 1.6;
+}
+
+.staff-admin-role {
+  padding: 9px 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--brick);
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.1em;
+}
+
+.staff-admin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.staff-admin-panel {
+  display: grid;
+  align-content: start;
+  gap: 22px;
+  min-width: 0;
+  padding: clamp(22px, 3vw, 34px);
+  border: 1px solid var(--line);
+  background: rgb(255 253 247 / 80%);
+  box-shadow: 0 18px 60px rgb(45 36 30 / 6%);
+}
+
+.staff-admin-panel h2 {
+  margin: 5px 0 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(28px, 3.6vw, 44px);
+  font-weight: 520;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.staff-admin-panel p {
+  color: var(--ink-muted);
+  line-height: 1.5;
+}
+
+.staff-invite-panel form {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(160px, 0.7fr);
+  gap: 14px;
+}
+
+.staff-invite-panel label {
+  display: grid;
+  gap: 8px;
+  color: var(--ink-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.staff-invite-panel input,
+.staff-invite-panel select,
+.staff-admin-actions select {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: 3px;
+  color: var(--ink);
+  background: var(--paper-bright);
+  font: inherit;
+}
+
+.staff-invite-panel .cart-primary-action {
+  grid-column: 1 / -1;
+}
+
+.staff-directory-panel {
+  grid-row: span 2;
+}
+
+.staff-admin-list {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--line);
+}
+
+.staff-admin-list article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  min-width: 0;
+  padding: 17px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.staff-admin-list article > div:first-child {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.staff-admin-list strong {
+  overflow: hidden;
+  font-size: 14px;
+  text-overflow: ellipsis;
+}
+
+.staff-admin-list span {
+  color: var(--ink-muted);
+  font-size: 12px;
+}
+
+.staff-admin-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.staff-admin-actions select {
+  width: 170px;
+  min-height: 38px;
+  font-size: 12px;
+}
+
+.staff-admin-list button {
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 3px;
+  color: var(--ink);
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.staff-admin-list button:hover:not(:disabled) {
+  border-color: var(--brick);
+  color: var(--brick);
+}
+
+.staff-admin-list button:disabled,
+.staff-admin-actions select:disabled {
+  cursor: not-allowed;
+  opacity: 0.46;
+}
+
+@media (max-width: 820px) {
+  .staff-admin-page {
+    padding: 30px 16px 72px;
+  }
+
+  .staff-admin-heading {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .staff-admin-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .staff-directory-panel {
+    grid-row: auto;
+  }
+}
+
+@media (max-width: 560px) {
+  .staff-invite-panel form {
+    grid-template-columns: 1fr;
+  }
+
+  .staff-admin-list article,
+  .staff-admin-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .staff-admin-actions select {
+    width: 100%;
+  }
+}
+
 /* Phase 1F identity entry keeps the editorial material palette and adds a focused two-step rhythm. */
 .login-shell {
   min-height: 100vh;

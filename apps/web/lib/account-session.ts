@@ -17,12 +17,19 @@ export function authClientBucket(request: NextRequest): string {
   return createHash('sha256').update(`${forwarded}\0${agent}`).digest('hex');
 }
 
-export function assertSameOriginAuthRequest(request: NextRequest): void {
-  const origin = request.headers.get('origin');
+export function trustedRequestOrigin(request: NextRequest): string {
   const host = request.headers.get('x-forwarded-host') ?? request.headers.get('host');
   const protocol =
     request.headers.get('x-forwarded-proto') ?? new URL(request.url).protocol.slice(0, -1);
-  const expectedOrigin = host === null ? null : `${protocol}://${host}`;
+  if (host === null || !/^(?:https?|http)$/.test(protocol)) {
+    throw new IdentityError('IDENTITY_PERMISSION_DENIED');
+  }
+  return `${protocol}://${host}`;
+}
+
+export function assertSameOriginAuthRequest(request: NextRequest): void {
+  const origin = request.headers.get('origin');
+  const expectedOrigin = trustedRequestOrigin(request);
   const contentType = request.headers.get('content-type')?.split(';', 1)[0]?.trim().toLowerCase();
   const lengthHeader = request.headers.get('content-length');
   const length = lengthHeader === null ? null : Number(lengthHeader);

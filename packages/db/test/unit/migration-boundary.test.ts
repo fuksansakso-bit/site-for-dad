@@ -37,6 +37,7 @@ describe('Phase 1F migration boundary', () => {
       '20260809170000_phase_1f_accounts_business_admin',
       '20260809180000_phase_1f_customer_contact_backfill',
       '20260809181000_phase_1f_staff_last_owner_scope',
+      '20260809182000_phase_1f_schema_alignment',
     ]);
 
     const tables = new Set<string>();
@@ -69,6 +70,9 @@ describe('Phase 1F migration boundary', () => {
       } else if (directory === '20260809181000_phase_1f_staff_last_owner_scope') {
         expect(sql).toContain("actor.provider = 'passwordless-email'");
         expect(sql).toContain('LAST_OWNER_PROTECTED');
+      } else if (directory === '20260809182000_phase_1f_schema_alignment') {
+        expect(sql).toContain('ALTER COLUMN updated_at DROP DEFAULT');
+        expect(sql).toContain('ON DELETE RESTRICT ON UPDATE CASCADE');
       } else {
         expect(sql).toMatch(/PLAN-(?:1A|1B1|1B2) migration risk: (?:LOW|MEDIUM)/);
       }

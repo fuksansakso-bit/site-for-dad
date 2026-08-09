@@ -70,6 +70,18 @@ const allowedPrismaModels = new Set([
   'RequestItemSnapshot',
   'RequestCommunicationEvent',
   'RequestInternalNote',
+  'CustomerContact',
+  'CustomerContactRequest',
+  'CustomerContactNote',
+  'PortfolioItem',
+  'PortfolioMedia',
+  'SiteSettingsRevision',
+  'SiteSettingsPointer',
+  'OneTimeCodeChallenge',
+  'StaffSession',
+  'EmailDelivery',
+  'AuthRateLimit',
+  'StaffInvitation',
 ]);
 const allowedPhaseTables = new Set([
   '_prisma_migrations',
@@ -128,6 +140,18 @@ const allowedPhaseTables = new Set([
   'request_item_snapshot',
   'request_communication_event',
   'request_internal_note',
+  'customer_contact',
+  'customer_contact_request',
+  'customer_contact_note',
+  'portfolio_item',
+  'portfolio_media',
+  'site_settings_revision',
+  'site_settings_pointer',
+  'one_time_code_challenge',
+  'staff_session',
+  'email_delivery',
+  'auth_rate_limit',
+  'staff_invitation',
 ]);
 
 async function collectFiles(directory) {
@@ -220,6 +244,21 @@ const allowedRouteFiles = new Set([
   'apps/web/app/api/v1/admin/requests/[requestNumber]/route.ts',
   'apps/web/app/api/v1/admin/requests/[requestNumber]/status/route.ts',
   'apps/web/app/api/v1/admin/requests/[requestNumber]/notes/route.ts',
+  'apps/web/app/api/v1/admin/customers/route.ts',
+  'apps/web/app/api/v1/admin/customers/[contactId]/route.ts',
+  'apps/web/app/api/v1/admin/customers/[contactId]/notes/route.ts',
+  'apps/web/app/api/v1/admin/portfolio/[itemId]/media/route.ts',
+  'apps/web/app/api/v1/admin/staff/route.ts',
+  'apps/web/app/api/v1/admin/staff/[actorId]/route.ts',
+  'apps/web/app/api/v1/admin/staff/invitations/[invitationId]/revoke/route.ts',
+  'apps/web/app/api/v1/admin/staff/sessions/[sessionId]/revoke/route.ts',
+  'apps/web/app/api/v1/auth/code/route.ts',
+  'apps/web/app/api/v1/auth/logout/route.ts',
+  'apps/web/app/api/v1/auth/session/route.ts',
+  'apps/web/app/api/v1/auth/verify/route.ts',
+  'apps/web/app/api/v1/portfolio/media/[mediaId]/route.ts',
+  'apps/web/app/api/v1/site-settings/route.ts',
+  'apps/web/app/api/v1/staff/invitations/accept/route.ts',
 ]);
 const allowedPageFiles = new Set([
   'apps/web/app/admin/catalog/page.tsx',
@@ -236,25 +275,36 @@ const allowedPageFiles = new Set([
   'apps/web/app/request/[publicReference]/page.tsx',
   'apps/web/app/admin/requests/page.tsx',
   'apps/web/app/admin/requests/[requestNumber]/page.tsx',
+  'apps/web/app/admin/page.tsx',
+  'apps/web/app/admin/customers/page.tsx',
+  'apps/web/app/admin/customers/[contactId]/page.tsx',
+  'apps/web/app/admin/portfolio/page.tsx',
+  'apps/web/app/admin/settings/page.tsx',
+  'apps/web/app/admin/staff/page.tsx',
+  'apps/web/app/admin/audit/page.tsx',
+  'apps/web/app/admin/sync/page.tsx',
+  'apps/web/app/login/page.tsx',
+  'apps/web/app/portfolio/page.tsx',
+  'apps/web/app/staff/invitations/accept/page.tsx',
 ]);
 for (const file of await collectFiles(join(repositoryRoot, 'apps', 'web', 'app'))) {
   const repositoryPath = relative(repositoryRoot, file).replaceAll('\\', '/');
   if (file.endsWith('route.ts') && !allowedRouteFiles.has(repositoryPath)) {
-    errors.push(`${repositoryPath}: route is outside the current Phase 1E allowlist`);
+    errors.push(`${repositoryPath}: route is outside the current Phase 1F allowlist`);
   }
   if (file.endsWith('page.tsx') && !allowedPageFiles.has(repositoryPath)) {
-    errors.push(`${repositoryPath}: page is outside the current Phase 1E allowlist`);
+    errors.push(`${repositoryPath}: page is outside the current Phase 1F allowlist`);
   }
 }
 
 if (errors.length > 0) {
   process.stderr.write(
-    ['Phase 1E scope validation failed:', ...errors.map((error) => `- ${error}`)].join('\n'),
+    ['Phase 1F scope validation failed:', ...errors.map((error) => `- ${error}`)].join('\n'),
   );
   process.stderr.write('\n');
   process.exitCode = 1;
 } else {
   process.stdout.write(
-    'Phase 1E scope validation passed: only Foundation, catalog, configurator/pricing, deterministic preview and cart/request/WhatsApp basic-intake surfaces exist.\n',
+    'Phase 1F scope validation passed: staff authentication, business administration and the registration-free guest flow exist without customer account routes.\n',
   );
 }

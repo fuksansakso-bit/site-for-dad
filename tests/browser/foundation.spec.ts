@@ -108,13 +108,15 @@ test.describe('PLAN-1A-AC-002 Foundation browser smoke', () => {
 
     const admin = await page.goto('/admin/catalog');
     expect(admin?.status()).toBe(200);
+    await expect(page).toHaveURL(/\/login$/);
     await expect(page.getByRole('heading', { level: 1 })).toContainText(
-      'Редакция полного каталога',
+      'Управление без общего пароля',
     );
-    await expect(page.locator('input[name="token"]')).toHaveAttribute('type', 'password');
+    await expect(page.locator('input[name="email"]')).toHaveAttribute('type', 'email');
+    await expect(page.locator('input[name="token"]')).toHaveCount(0);
     await expect(page.locator('body')).not.toContainText('798d5513');
-    await page.keyboard.press('Tab');
-    await expect(page.locator('input[name="token"]')).toBeFocused();
+    await page.locator('input[name="email"]').focus();
+    await expect(page.locator('input[name="email"]')).toBeFocused();
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
     ).toBe(true);

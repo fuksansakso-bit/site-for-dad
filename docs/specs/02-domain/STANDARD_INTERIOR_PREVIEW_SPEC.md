@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1D `PASSED_PHASE_1D_STANDARD_PREVIEW`; Phase 1E not authorized |
-| Версия | 0.3.0 |
-| Дата | 2026-08-08 |
+| Статус | Phase 1D preview passed; Phase 1E quote-backed cart handoff implemented |
+| Версия | 0.4.0 |
+| Дата | 2026-08-09 |
 | Configuration | [PRODUCT_CONFIGURATOR_SPEC.md](PRODUCT_CONFIGURATOR_SPEC.md) |
 | Separate private flow | [AI_WINDOW_VISUALIZER_SPEC.md](AI_WINDOW_VISUALIZER_SPEC.md) |
 
@@ -155,6 +155,8 @@ Tests: exact variant mapping; deterministic snapshots; family profiles; control 
 
 Dependencies: catalog/configurator/media/storage/data/API/UX/performance/testing. Phase 1D implementation and visual evidence close the initial scene/profile/family aspect of `TBD-PREVIEW-001`; unimplemented export and broader content profiles remain outside this phase. The registered partner-license basis, source URL, checksum, publication state and derived-layer provenance apply to every current preview asset. Risks remaining for later work: exact swatch gaps, misleading physical color/scale, stale revoked assets and broader family/profile coverage.
 
+Phase 1E adds «Добавить в корзину» only when `/preview` was created from an existing immutable quote. The action sends that opaque quote token and optional owned preview state to the server; it neither repeats pricing in the browser nor converts preview controls into price inputs. Safe request summaries proxy an available preview through the application and retain a text/item fallback when the asset is unavailable.
+
 ## 15. Связанные требования и история
 
 Links: `FR-STANDARD-PREVIEW-001`–`008`, `FTR-012/013`, `ASSET-*`, `STD-PREV-001`–`016`.
@@ -164,3 +166,4 @@ Links: `FR-STANDARD-PREVIEW-001`–`008`, `FTR-012/013`, `ASSET-*`, `STD-PREV-00
 | 0.1.0 | 2026-08-02 | Определены deterministic renderer profiles, layers, family behaviors, state/errors, accessibility, export and tests. |
 | 0.2.0 | 2026-08-08 | `OWNER-DECISION-014` authorizes Phase 1D; fixed two-scene SVG scope, four family profiles, asset-quality priority, ownership-scoped state/API and honest fallback boundaries. |
 | 0.3.0 | 2026-08-08 | Phase 1D passed with two local photoreal scene profiles, `standard-svg-v2`, four exact variant-to-product-layer mappings, deterministic Zebra rectification, responsive controls, visual baselines and zero runtime AMIGO requests under `OWNER-DECISION-015`. |
+| 0.4.0 | 2026-08-09 | Recorded the Phase 1E current-QuoteSnapshot add-to-cart action and safe request-preview proxy without browser recalculation, client photos or AI. |

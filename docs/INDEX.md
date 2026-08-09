@@ -2,7 +2,7 @@
 
 ## 0. Статус
 
-Phase 1A–1D завершены. `OWNER-DECISION-016` отдельно разрешила Phase 1E guest cart/request/WhatsApp/basic intake; QG-311–320 passed and completion QG-321–360 are in progress. Client photo/AI, payment/accounts/final design, production and Phase 1F+ remain prohibited.
+Phase 1A–1E завершены. Phase 1E имеет статус `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`; QG-311–360 закрыты, а completion evidence находится в отчёте. Client photo/AI, payment/accounts/final design, production и Phase 1F+ остаются запрещены без нового письменного решения.
 
 ## 1. Порядок обязательного чтения
 
@@ -16,7 +16,7 @@ Phase 1A–1D завершены. `OWNER-DECISION-016` отдельно разр
 8. [PRICING_SOURCE_POLICY.md](00-global/PRICING_SOURCE_POLICY.md) — snapshots, версии, overrides, fallback и parity.
 9. [ASSUMPTIONS.md](00-global/ASSUMPTIONS.md) и [OPEN_QUESTIONS.md](00-global/OPEN_QUESTIONS.md) — неподтверждённые решения и пробелы.
 10. Релевантная профильная спека из разделов ниже.
-11. Для implementation readiness — [MVP scope](06-plans/MVP_SCOPE.md), [critical audit](06-plans/SPEC_READINESS_AUDIT.md), [roadmap](06-plans/IMPLEMENTATION_ROADMAP.md) и Phase 1A–1D records.
+11. Для implementation readiness — [MVP scope](06-plans/MVP_SCOPE.md), [critical audit](06-plans/SPEC_READINESS_AUDIT.md), [roadmap](06-plans/IMPLEMENTATION_ROADMAP.md) и Phase 1A–1E records.
 12. [CHANGELOG.md](../CHANGELOG.md) — история содержательных изменений.
 
 При конфликте действует repository precedence: `GLOBAL_SPEC` (включая перенесённые owner/partner decisions) → accepted ADR → approved профильная спецификация → governed dynamic snapshot → assumptions/open questions. Противоречие останавливает зависимую работу.
@@ -34,7 +34,7 @@ Phase 1A–1D завершены. `OWNER-DECISION-016` отдельно разр
 | [OPEN_QUESTIONS.md](00-global/OPEN_QUESTIONS.md) | Канонический реестр `TBD-*`, владельцев, влияния и критериев закрытия |
 | [SPEC_ROADMAP.md](00-global/SPEC_ROADMAP.md) | Фактический комплект 0B/0C, accepted Foundation ADR, gates и последовательность 1A–1H |
 | [TRACEABILITY_MATRIX.md](00-global/TRACEABILITY_MATRIX.md) | 18 critical chains и полная 40-story связь со спеками, AC и tests |
-| [SPEC_QUALITY_GATE.md](00-global/SPEC_QUALITY_GATE.md) | Passed gates through Phase 1D; Phase 1E entry QG-311–320 closed and completion QG-321–360 open |
+| [SPEC_QUALITY_GATE.md](00-global/SPEC_QUALITY_GATE.md) | Passed gates through Phase 1E; QG-311–360 closed, Phase 1F not authorized |
 
 ## 3. Product specifications
 
@@ -115,6 +115,7 @@ Phase 1A–1D завершены. `OWNER-DECISION-016` отдельно разр
 | [PHASE_1D_STANDARD_PREVIEW_PLAN.md](06-plans/active/PHASE_1D_STANDARD_PREVIEW_PLAN.md) | Authorized deterministic preview scope, stages, asset/fallback safety, exact commits, acceptance and Phase 1E hold |
 | [PHASE_1D_STANDARD_PREVIEW_REPORT.md](06-plans/completed/PHASE_1D_STANDARD_PREVIEW_REPORT.md) | Routes, four photoreal family profiles, scenes/assets/counts, visual/mobile/recovery/CI/PR evidence and final acceptance |
 | [PHASE_1E_CART_WHATSAPP_ORDERS_PLAN.md](06-plans/active/PHASE_1E_CART_WHATSAPP_ORDERS_PLAN.md) | Authorized guest cart/request/WhatsApp scope, immutable snapshots, security boundary, exact commits and Phase 1F hold |
+| [PHASE_1E_CART_WHATSAPP_ORDERS_REPORT.md](06-plans/completed/PHASE_1E_CART_WHATSAPP_ORDERS_REPORT.md) | Phase 1E routes/models, fixed WhatsApp recipient, real DB/browser/security/recovery evidence and acceptance result |
 | [PREVIEW_AND_CONFIGURATOR_MAPPING_GAPS.md](06-plans/PREVIEW_AND_CONFIGURATOR_MAPPING_GAPS.md) | Exact active family/system/model/variant/source gaps without expanding Phase 1C catalog or pricing |
 
 ## 9. Architecture decisions
@@ -165,7 +166,7 @@ Research snapshot не является вечным catalog/price fact. Нор�
 - Кто может выполнить действие — `ROLES_PERMISSIONS` и relevant domain spec.
 - Каких данных не хватает — `OPEN_QUESTIONS` по уникальному `TBD-*`.
 - Как требование проверяется — `TRACEABILITY_MATRIX`, AC и `TEST_STRATEGY`.
-- Можно ли начинать следующий код — только Phase 1E по `OWNER-DECISION-016`; Phase 1F+, photo/AI/payment/accounts и production не разрешены.
+- Можно ли начинать следующий код — нет: Phase 1E завершена, а Phase 1F+, photo/AI/payment/accounts и production требуют нового письменного решения.
 
 ## 13. Правило навигации
 

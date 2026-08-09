@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A–1D gates passed; Phase 1E+/production tests gated |
-| Версия | 1.1.0 |
-| Дата | 2026-08-08 |
+| Статус | Phase 1A–1E gates passed; Phase 1F+/production tests gated |
+| Версия | 1.2.0 |
+| Дата | 2026-08-09 |
 | Requirements | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) and profile specs |
 | Acceptance | [ACCEPTANCE_CRITERIA.md](../specs/01-product/ACCEPTANCE_CRITERIA.md) |
 | Traceability | [TRACEABILITY_MATRIX.md](../00-global/TRACEABILITY_MATRIX.md) |
@@ -203,6 +203,14 @@ The preview package passes 18 deterministic unit cases covering evidence priorit
 
 Targeted Chromium acceptance passes 9/9 scenarios: full configurator handoff/return, Roller, Zebra, horizontal aluminium and vertical rendering, scene/family controls, 375×812 one-hand mobile layout, unavailable/color-only disclosure and damaged-asset recovery. Four fixed 1280×900 family baselines use `standard-svg-v2`, fixed active data and `maxDiffPixelRatio = 0.005`. The 0.5% allowance is limited to platform raster/font antialiasing; product geometry, material or scene changes affect a materially larger region and fail. Zebra 5992 includes a manifest-recorded deterministic source rectification so the right sash has parallel bands and rectangular edges.
 
+### 13.8. Phase 1E cart/request acceptance
+
+Cart/request unit and contract suites cover exact BigInt money, quantities/free rows, all three cart pricing states, null unknown amounts, phone normalization, public-reference hashing, transition policy, WhatsApp formatting/fixed recipient and strict rejection of money fields. The real PostgreSQL scenario covers calculated plus request-price quotes, multi-item totals, edit-by-new-quote with byte-identical history, simulated active PriceVersion drift, idempotent immutable checkout, flags, audit/outbox, public redaction and OWNER/ADMIN/MANAGER restrictions.
+
+One real Chromium scenario covers calculated and request-price add-to-cart, duplicate/edit/remove, 375×812 overflow/touch checks, guest consent/measurement/installment checkout, fixed WhatsApp open/copy, PII-free public summary, admin list/detail/status/note and price/recipient/CSRF/cross-guest/enumeration attacks without console/page errors. Recovery unit cases cover database/preview safe failures; a graceful environment restart preserved all 40 Phase 1E outbox rows and restored DB/storage/web/worker health. Seven runtime logs contained zero synthetic contact matches.
+
+The final pinned-Node-24 `pnpm ci:verify` passed 9/9 stages in 349.4 seconds. It includes 25/25 baseline browser cases and 5/5 active-catalog profiles after a hydration-safe server-link fix, build/artifact and secret scans. One high advisory remains below the configured critical-only failure threshold; this is not a production dependency-clearance claim. Post-CI Phase 1E real PostgreSQL + Chromium acceptance passed again.
+
 ## 14. Dependencies, risks and open questions
 
 Dependencies: all specs/ADRs/evaluations, implementation stack/environments, approved fixtures/business data/support matrix. Open: numeric budgets/thresholds, dimensional pricing/parity fixtures, browser/AT matrix, provider sandboxes, test tooling/owners, UAT roles, security test scope and retention of artifacts. Risks: fake fixtures mistaken production truth, flaky E2E, unlicensed media, provider dependence, automated a11y/AI false confidence and unsafe production testing.
@@ -222,3 +230,4 @@ Dependencies: all specs/ADRs/evaluations, implementation stack/environments, app
 | 0.9.0 | 2026-08-04 | Added and recorded real full-catalog manifest/version/public/object/restart/recovery/semantic no-op acceptance and the final Phase 1B.2 exact-toolchain CI gate without claiming later-feature or production readiness. |
 | 1.0.0 | 2026-08-08 | Added and recorded Phase 1C unit/property, contract, real-PostgreSQL, parity, exact 9/9 CI-equivalent and desktop/mobile configurator evidence, including immutable quotes, override/minimum/idempotency/rollback/audit boundaries and ≤1 RUB parity. |
 | 1.1.0 | 2026-08-08 | Added and recorded Phase 1D unit/contract/storage/web/PostgreSQL/browser/recovery evidence plus four fixed family visual baselines at a justified 0.5% threshold. |
+| 1.2.0 | 2026-08-09 | Added Phase 1E unit/contract/real-PostgreSQL/Chromium/security/mobile/log-scan and restart/outbox recovery evidence for immutable cart/request and fixed-recipient WhatsApp intake. |

@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A–1D passed; Phase 1E authorized/in progress; Phase 1F+ hold |
-| Версия | 0.20.0 |
+| Статус | Phase 1A–1E passed; Phase 1F+ hold |
+| Версия | 0.21.0 |
 | Дата | 2026-08-09, Europe/Moscow |
 | Владелец документа | Product Owner — владелец проекта; Business Owner — отец владельца проекта (`OWNER-DECISION-001`) |
 | Продукт | `PROJECT_NAME` до отдельного решения о бренде |
@@ -69,6 +69,7 @@
 | 0.18.0 | 2026-08-08 | `OWNER-DECISION-014` отдельно разрешил только Phase 1D: deterministic `/preview`, две оригинальные локальные сцены, exact/local material mapping, четыре family renderer profile, versioned guest preview state/API, responsive controls and visual regression. Client photo/AI, cart/order/WhatsApp/payment, production and Phase 1E+ remain prohibited. |
 | 0.19.0 | 2026-08-08 | `OWNER-DECISION-015` confirmed partner permission and required photoreal locally mirrored AMIGO scene/product layers instead of a cartoon-like preview; Phase 1D completed with deterministic SVG atlas composition, four profiles, two scenes, local `StoragePort`, honest evidence classes and no runtime AMIGO. Phase 1E remains prohibited. |
 | 0.20.0 | 2026-08-09 | `OWNER-DECISION-016` separately authorizes only Phase 1E: guest multi-item cart over immutable QuoteSnapshot records, immutable request intake snapshots, free-measurement and neutral installment flags, fixed-recipient `wa.me` handoff, revocable PII-free public summary, minimal request administration, audit/outbox and security/browser/recovery evidence. Production deployment, payment, official WhatsApp API, accounts, AI and Phase 1F+ remain prohibited. |
+| 0.21.0 | 2026-08-09 | Phase 1E completed as `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`: quote-backed guest cart, immutable `OrderInquiry` snapshots, honest mixed pricing, fixed-recipient WhatsApp handoff, revocable PII-free summary, minimal staff intake, audit/outbox and real PostgreSQL/Chromium/recovery evidence pass. Phase 1F and production remain unauthorized. |
 
 ## 1. Нормативный язык и приоритет источников
 
@@ -117,7 +118,7 @@
 
 ### 2.2. Решения владельца для implementation governance и будущих feature gates
 
-Источник `OWNER-DECISION-*` — письменные решения Product Owner от 2026-08-02, 2026-08-03, 2026-08-08 и 2026-08-09. Они задают бизнес- и архитектурные границы; implementation scope расширяется только явным transition decision. Phase 1A–1D завершены; отдельно разрешена только Phase 1E, а Phase 1F+ остаются запрещены.
+Источник `OWNER-DECISION-*` — письменные решения Product Owner от 2026-08-02, 2026-08-03, 2026-08-08 и 2026-08-09. Они задают бизнес- и архитектурные границы; implementation scope расширяется только явным transition decision. Phase 1A–1E завершены; следующая фаза не разрешена, а Phase 1F+ остаются запрещены.
 
 - **OWNER-DECISION-001 — MUST:** Product Owner — владелец проекта; Business Owner — отец владельца проекта. Product Owner утверждает продуктовые решения, UX, технические этапы, приоритеты и MVP. Business Owner утверждает цены, ассортимент, наличие, правила изготовления, гарантийные решения и коммерческие условия.
 - **OWNER-DECISION-002 — MUST:** новую `PriceVersion` может активировать только actor с ролью `OWNER` или `ADMIN`, после просмотра точного diff и явного подтверждения; каждая попытка и успешная активация MUST попадать в audit log.
@@ -992,8 +993,8 @@ Phase 1C acceptance 2026-08-08 сохранил CatalogVersion v2 и актив�
 7. **1B.2 — Full authorized AMIGO catalog expansion:** завершённое расширение существующего importer до полного доступного разрешённого каталога, controlled local media/base prices, resumable manifest, review/manual activation, bulk overlays и scalable public/admin catalog без dimensional calculation.
 8. **1C — Configurator and pricing:** compatibility, millimetres/quantity, versioned preliminary price, override/manual fallback и parity tests; не разрешена автоматически после 1B.2.
 9. **1D — Standard preview:** deterministic prepared-scene rendering for supported MVP profiles.
-10. **1E — Cart, WhatsApp and orders:** multi-item cart, guest/measurement lead, neutral installment request and saved calculation.
-11. **1F — Admin and accounts:** operational admin surfaces, RBAC and basic saved-calculation account.
+10. **1E — Cart, WhatsApp and orders:** завершены multi-item cart, guest/measurement request, neutral installment interest, safe WhatsApp handoff and immutable saved request.
+11. **1F — Admin and accounts:** не разрешена; operational admin expansion, RBAC and basic saved-calculation account требуют отдельного решения.
 12. **1G — AI visualizer pilot:** private geometry-first roller/Zebra pilot, manual correction, optional refinement and evaluation/cost gates.
 13. **1H — Hardening and release:** security/accessibility/performance/browser/mobile/recovery/monitoring/deployment and launch gate.
 14. **Post-MVP:** только перечисленные в [MVP_SCOPE §3](../06-plans/MVP_SCOPE.md#3-post-mvp-scope) функции по отдельным решениям.

@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1E authorized — cart/request/WhatsApp/basic intake fixed; full order workflow still `BLOCKED_BY_TBD-BIZ-004` |
-| Версия | 0.2.0 |
+| Статус | Phase 1E `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`; full order workflow still `BLOCKED_BY_TBD-BIZ-004` |
+| Версия | 0.3.0 |
 | Дата | 2026-08-09 |
 | Pricing | [PRICING_CALCULATOR_SPEC.md](PRICING_CALCULATOR_SPEC.md) |
 | Installment | [INSTALLMENT_SPEC.md](INSTALLMENT_SPEC.md) |
@@ -185,15 +185,22 @@ Primary: `AC-CART-001`, `AC-WHATSAPP-001`, `AC-MANAGER-CONTEXT-001`, `AC-ORDER-0
 
 Tests: multi-item mixed status/total; edit/duplicate/remove; stale/retired/history; guest claim/cross-owner; WhatsApp content allow/deny; idempotent submit/callback; transition table and concurrent updates; notification outage; safe customer mapping; cancel/warranty alternatives; contact validation/rate limit/CSRF; keyboard/screen reader/responsive; AMIGO/price/AI/WhatsApp outage.
 
-## 14. Dependencies, risks and open questions
+## 14. Phase 1E implementation record
+
+`/cart` is backed by `GuestCartSession`, `GuestCart`, quote-referencing `CartItem` and append-only `CartItemRevision`. Browser mutations carry no authoritative money. The server reconstructs product/options/version labels and exact integer totals from immutable `QuoteSnapshot`, preserves null unknown amounts, and returns `FULLY_PRICED`, `PARTIALLY_PRICED` or `PRICE_ON_REQUEST` with separate free-service rows. Edit creates a new quote and records the replacement; it never rewrites the old quote.
+
+`/checkout` atomically creates one idempotent `OrderInquiry`, immutable cart/item snapshots, `REQUEST_CREATED`, audit rows and required outbox events. The same transaction stores consent, normalized contact, locality, free-measurement and neutral installment flags. Public summary uses only a revocable random reference hash and a same-origin preview proxy. WhatsApp always targets `79635851036` and records generation/open/copy facts without a delivery claim. `/admin/requests` reuses current OWNER/ADMIN/MANAGER dev sessions and cannot alter captured quote/price/amount fields.
+
+## 15. Dependencies, risks and open questions
 
 Dependencies: configurator/pricing/preview/AI/installment/auth/admin/data/API/security/observability. Open: `TBD-BIZ-003/004/005`, `TBD-INSTALL-*`, `TBD-DELIVERY-*`, `TBD-WARRANTY-001`, `TBD-ACCOUNT-*`, `TBD-PRIV-*`, `TBD-INSTALLMENT-*`, contact confirmation/SLA and cart/share TTL. Risks: handoff treated as order, private URL leak, stale price promise, duplicate lead, broad staff access, invented slot/status and legal content drift.
 
-## 15. Связанные требования и история
+## 16. Связанные требования и история
 
-Links: `FR-CART-*`, `FR-ORDER-*`, `FR-MEASURE-*`, `BUSINESS-*`, `NFR-PRIV-*`, `NFR-SEC-*`, `CART-SPEC-001`–`022`.
+Links: `FR-CART-*`, `FR-REQUEST-*`, `FR-ORDER-*`, `FR-MEASURE-*`, `BUSINESS-*`, `NFR-PRIV-*`, `NFR-SEC-*`, `CART-SPEC-001`–`036`.
 
 | Версия | Дата | Изменение |
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Определены cart/project, safe handoff, lead/measurement/order/warranty target states, transitions, failures and tests. |
 | 0.2.0 | 2026-08-09 | `OWNER-DECISION-016` authorizes the Phase 1E guest-cart/request scope, immutable checkout snapshots, exact mixed-price semantics, fixed-recipient `wa.me`, PII-free revocable summary, five request statuses/communication events, minimal staff administration and transactional outbox while full order workflow and production PII remain gated. |
+| 0.3.0 | 2026-08-09 | Recorded the completed quote-backed guest cart, edit-by-new-snapshot, immutable idempotent request intake, fixed-recipient handoff, PII-free summary, minimal role-scoped administration and passed DB/browser/security/recovery evidence. |

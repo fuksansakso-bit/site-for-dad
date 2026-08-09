@@ -4,7 +4,7 @@
 
 | Поле | Значение |
 |---|---|
-| Версия gate | 1.15.0 |
+| Версия gate | 1.16.0 |
 | Проверяемая входная база | Phase 0B baseline `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`; Phase 0C baseline `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; Phase 1A completion `943d4a2efa5e05f0d05493633cf5eb549e072a22`; Phase 1B.1 completion baseline `af8411d2b854e572b6b61b214d3e99a88b96cafc`; Phase 1D merged-main / Phase 1E baseline `65780067537418a3230bb3d32ef3fb8e0af06917`; `GLOBAL_SPEC.md` 0.20.0 |
 | Дата последнего self-audit | 2026-08-09, Europe/Moscow |
 | Решение по входу в 0B | **PASSED** |
@@ -24,8 +24,8 @@
 | Phase 1D Entry Gate | **AUTHORIZED_PHASE_1D_IN_PROGRESS** — QG-271–280 закрыты 2026-08-08 |
 | Phase 1D Completion Gate | **PASSED_PHASE_1D_STANDARD_PREVIEW** — QG-281–310 закрыты 2026-08-08 |
 | Phase 1E Entry Gate | **AUTHORIZED_PHASE_1E_IN_PROGRESS** — QG-311–320 закрыты 2026-08-09 |
-| Phase 1E Completion Gate | **IN_PROGRESS** — QG-321–360 требуют фактического evidence |
-| Разрешённая реализация | Разрешена только Phase 1E по `OWNER-DECISION-016`; Phase 1F+ и production запрещены |
+| Phase 1E Completion Gate | **PASSED_PHASE_1E_CART_WHATSAPP_ORDERS** — QG-321–360 закрыты 2026-08-09 |
+| Разрешённая реализация | Новая фаза не разрешена; Phase 1F+ и production запрещены |
 
 Entry gate подтверждает, что исправления 0A.1 внесены и письменное решение начать документную фазу 0B получено. Он не означает готовность ценовой формулы, импорта, приложения или запуска. Открытые TBD блокируют утверждение зависимой спецификации или функции, но не отменяют разрешение создавать документацию 0B с безопасным поведением.
 
@@ -487,46 +487,48 @@ Entry result: **AUTHORIZED_PHASE_1E_IN_PROGRESS**. Completion evidence is not in
 
 ### 12.2. Completion gate
 
-- [ ] **QG-321 — MUST:** guest cart session uses random HttpOnly/SameSite cookie, production Secure and server-side ownership checks; cross-guest access is rejected.
-- [ ] **QG-322 — MUST:** `/cart` supports multiple quote-backed items, duplicate, remove, clear, preview/open-configure actions and a usable narrow-mobile single-column layout.
-- [ ] **QG-323 — MUST:** cart item family/system/model/material/article/color/dimensions/quantity/options/preview/status/unit and quantity amount/warnings/catalog and price version are reconstructed from server snapshots.
-- [ ] **QG-324 — MUST:** cart totals and service rows are computed server-side; client price tampering is rejected and unknown amounts are never treated as zero/free.
-- [ ] **QG-325 — MUST:** `FULLY_PRICED`, `PARTIALLY_PRICED` and `PRICE_ON_REQUEST` mixed-cart rules pass unit/integration/browser evidence with customer-safe labels.
-- [ ] **QG-326 — MUST:** active PriceVersion drift preserves historical quote bytes, shows the exact warning and offers only voluntary explicit recalculation.
-- [ ] **QG-327 — MUST:** editing opens original configuration, creates a new QuoteSnapshot and atomically changes only CartItem reference; old snapshot remains byte-identical.
-- [ ] **QG-328 — MUST:** `/configure` and `/preview` add allowed calculated/request/manual results to cart without browser recalculation; invalid configuration cannot be added.
-- [ ] **QG-329 — MUST:** `/checkout` validates name, normalized phone, locality, bounded optional address/comment, measurement/installment flags and explicit consent with no registration.
-- [ ] **QG-330 — MUST:** checkout body has no authoritative amount, uses CSRF/origin/body/rate/ownership controls and repeated idempotency key returns exactly one request.
-- [ ] **QG-331 — MUST:** request transaction persists immutable CartSnapshot/CartItemSnapshots, known subtotal/status/version sets, safe request number, guest/source/correlation/audit context and consent timestamp.
-- [ ] **QG-332 — MUST:** request composition stays unchanged after catalog/price/cart changes and transaction/database failure cannot leave partial checkout state.
-- [ ] **QG-333 — MUST:** optional free-measurement and neutral installment interest are stored and surfaced without invented eligibility, 0%, overpayment, approval or duration promises.
-- [ ] **QG-334 — MUST:** checkout atomically writes audit/communication evidence and outbox `request.created`, `cart.checked_out`, optional measurement/installment events without external send.
-- [ ] **QG-335 — MUST:** WhatsApp handoff always targets server-fixed `79635851036`; client recipient/redirect/message-price tampering cannot change it.
-- [ ] **QG-336 — MUST:** encoded WhatsApp message contains safe request/item/price/manual flags/measurement/installment/locality/public-link summary and excludes internal IDs/version IDs/keys/audit/excess PII.
-- [ ] **QG-337 — MUST:** only five allowed communication events exist; `WHATSAPP_LINK_OPENED` never claims sent/delivered/read and copy/open failure remains recoverable.
-- [ ] **QG-338 — MUST:** local development displays copyable message text and clearly states that localhost public links may not open on another phone and wa.me cannot attach preview automatically.
-- [ ] **QG-339 — MUST:** public reference is cryptographically unpredictable, non-sequential/non-PII, hash-verified, revocable and enumeration-resistant with neutral errors.
-- [ ] **QG-340 — MUST:** `/request/[publicReference]` shows safe immutable composition/preview/status/known subtotal/free services/lead time/warranty and excludes phone/address/internal IDs/audit/notes/storage secrets.
-- [ ] **QG-341 — MUST:** `/admin/requests` and detail support OWNER/ADMIN list/read/status/note/cancel/copy-phone/WhatsApp/public-summary actions through existing dev session.
-- [ ] **QG-342 — MUST:** MANAGER can read, note and execute allowlisted transitions but cannot reopen cancellation or mutate QuoteSnapshot/PriceVersion/original request amount.
-- [ ] **QG-343 — MUST:** request transitions `NEW`, `IN_REVIEW`, `CONTACTED`, `CONFIRMED`, `CANCELLED` pass optimistic concurrency, authorization, audit and invalid-transition tests.
-- [ ] **QG-344 — MUST:** all Phase 1E mutation APIs use runtime validation, safe errors/correlation, origin/CSRF, rate limits, idempotency where required and deny-by-default authorization.
-- [ ] **QG-345 — MUST:** API contract tests cover cart, checkout, public summary, WhatsApp handoff, communication event and admin list/detail/status/note error models.
-- [ ] **QG-346 — MUST:** unit tests pass totals/mixed status/unknown/quantity/free rows/message/phone/reference/transitions and exact integer money behavior.
-- [ ] **QG-347 — MUST:** PostgreSQL integration tests pass quote→cart, edit replacement, immutable request, idempotency, audit/outbox, public redaction and staff permissions.
-- [ ] **QG-348 — MUST:** real browser tests pass calculated/manual/request cart items, multiple/edit/remove, checkout, measurement/installment, WhatsApp open/copy, public summary and admin status.
-- [ ] **QG-349 — MUST:** 375×812 browser evidence has no horizontal overflow, hidden totals or undersized critical controls and phone keyboard-compatible fields remain usable.
-- [ ] **QG-350 — MUST:** security/privacy tests reject price/recipient/CSRF/ownership/enumeration/manager-price/replay attacks and scans find no contact name/phone/address/comment in logs or analytics.
-- [ ] **QG-351 — MUST:** recovery tests cover unavailable database, worker restart, unavailable preview asset, unopenable WhatsApp URL, changed PriceVersion and stale cart item with safe retained state.
-- [ ] **QG-352 — MUST:** required additive Prisma migration validates on empty/upgrade databases, preserves current volumes/data and has a forward-compensation rollback path.
-- [ ] **QG-353 — MUST:** request/public/cart data is no-store where required; HTML escaping, bounded inputs, no open redirects and safe object/media delivery pass review/tests.
-- [ ] **QG-354 — MUST:** format/docs/scope/boundary/lint/type/test/coverage/database/build/browser/security and exact CI-equivalent gates pass with skips recorded.
-- [ ] **QG-355 — MUST:** only affected README/changelog/index/global/cart/configurator/preview/roles/data/API/architecture/security/test/open-question/traceability/gate/roadmap sections and completion report are synchronized.
-- [ ] **QG-356 — MUST:** logical commit sequence is preserved and final tracked/untracked worktree is clean.
-- [ ] **QG-357 — MUST:** branch is pushed and an unmerged Draft PR titled `Phase 1E: cart, guest requests and WhatsApp handoff` targets `main`.
-- [ ] **QG-358 — MUST:** online payment/acquiring/credit automation/SMS/email auth/accounts/full CRM/manufacturing/client-photo/AI/landing/starfield/redesign/production deployment and Phase 1F are absent.
-- [ ] **QG-359 — MUST:** completion report records all requested base/branch/commits/routes/models/status/message/fixed-recipient/mixed-checkout/measurement/installment/security/browser/gate/PR/status facts.
-- [ ] **QG-360 — MUST:** Phase 1E is marked complete only after all QG-321–359 repository/runtime evidence exists; completion does not authorize Phase 1F.
+- [x] **QG-321 — MUST:** guest cart session uses random HttpOnly/SameSite cookie, production Secure and server-side ownership checks; cross-guest access is rejected.
+- [x] **QG-322 — MUST:** `/cart` supports multiple quote-backed items, duplicate, remove, clear, preview/open-configure actions and a usable narrow-mobile single-column layout.
+- [x] **QG-323 — MUST:** cart item family/system/model/material/article/color/dimensions/quantity/options/preview/status/unit and quantity amount/warnings/catalog and price version are reconstructed from server snapshots.
+- [x] **QG-324 — MUST:** cart totals and service rows are computed server-side; client price tampering is rejected and unknown amounts are never treated as zero/free.
+- [x] **QG-325 — MUST:** `FULLY_PRICED`, `PARTIALLY_PRICED` and `PRICE_ON_REQUEST` mixed-cart rules pass unit/integration/browser evidence with customer-safe labels.
+- [x] **QG-326 — MUST:** active PriceVersion drift preserves historical quote bytes, shows the exact warning and offers only voluntary explicit recalculation.
+- [x] **QG-327 — MUST:** editing opens original configuration, creates a new QuoteSnapshot and atomically changes only CartItem reference; old snapshot remains byte-identical.
+- [x] **QG-328 — MUST:** `/configure` and `/preview` add allowed calculated/request/manual results to cart without browser recalculation; invalid configuration cannot be added.
+- [x] **QG-329 — MUST:** `/checkout` validates name, normalized phone, locality, bounded optional address/comment, measurement/installment flags and explicit consent with no registration.
+- [x] **QG-330 — MUST:** checkout body has no authoritative amount, uses CSRF/origin/body/rate/ownership controls and repeated idempotency key returns exactly one request.
+- [x] **QG-331 — MUST:** request transaction persists immutable CartSnapshot/CartItemSnapshots, known subtotal/status/version sets, safe request number, guest/source/correlation/audit context and consent timestamp.
+- [x] **QG-332 — MUST:** request composition stays unchanged after catalog/price/cart changes and transaction/database failure cannot leave partial checkout state.
+- [x] **QG-333 — MUST:** optional free-measurement and neutral installment interest are stored and surfaced without invented eligibility, 0%, overpayment, approval or duration promises.
+- [x] **QG-334 — MUST:** checkout atomically writes audit/communication evidence and outbox `request.created`, `cart.checked_out`, optional measurement/installment events without external send.
+- [x] **QG-335 — MUST:** WhatsApp handoff always targets server-fixed `79635851036`; client recipient/redirect/message-price tampering cannot change it.
+- [x] **QG-336 — MUST:** encoded WhatsApp message contains safe request/item/price/manual flags/measurement/installment/locality/public-link summary and excludes internal IDs/version IDs/keys/audit/excess PII.
+- [x] **QG-337 — MUST:** only five allowed communication events exist; `WHATSAPP_LINK_OPENED` never claims sent/delivered/read and copy/open failure remains recoverable.
+- [x] **QG-338 — MUST:** local development displays copyable message text and clearly states that localhost public links may not open on another phone and wa.me cannot attach preview automatically.
+- [x] **QG-339 — MUST:** public reference is cryptographically unpredictable, non-sequential/non-PII, hash-verified, revocable and enumeration-resistant with neutral errors.
+- [x] **QG-340 — MUST:** `/request/[publicReference]` shows safe immutable composition/preview/status/known subtotal/free services/lead time/warranty and excludes phone/address/internal IDs/audit/notes/storage secrets.
+- [x] **QG-341 — MUST:** `/admin/requests` and detail support OWNER/ADMIN list/read/status/note/cancel/copy-phone/WhatsApp/public-summary actions through existing dev session.
+- [x] **QG-342 — MUST:** MANAGER can read, note and execute allowlisted transitions but cannot reopen cancellation or mutate QuoteSnapshot/PriceVersion/original request amount.
+- [x] **QG-343 — MUST:** request transitions `NEW`, `IN_REVIEW`, `CONTACTED`, `CONFIRMED`, `CANCELLED` pass optimistic concurrency, authorization, audit and invalid-transition tests.
+- [x] **QG-344 — MUST:** all Phase 1E mutation APIs use runtime validation, safe errors/correlation, origin/CSRF, rate limits, idempotency where required and deny-by-default authorization.
+- [x] **QG-345 — MUST:** API contract tests cover cart, checkout, public summary, WhatsApp handoff, communication event and admin list/detail/status/note error models.
+- [x] **QG-346 — MUST:** unit tests pass totals/mixed status/unknown/quantity/free rows/message/phone/reference/transitions and exact integer money behavior.
+- [x] **QG-347 — MUST:** PostgreSQL integration tests pass quote→cart, edit replacement, immutable request, idempotency, audit/outbox, public redaction and staff permissions.
+- [x] **QG-348 — MUST:** real browser tests pass calculated/manual/request cart items, multiple/edit/remove, checkout, measurement/installment, WhatsApp open/copy, public summary and admin status.
+- [x] **QG-349 — MUST:** 375×812 browser evidence has no horizontal overflow, hidden totals or undersized critical controls and phone keyboard-compatible fields remain usable.
+- [x] **QG-350 — MUST:** security/privacy tests reject price/recipient/CSRF/ownership/enumeration/manager-price/replay attacks and scans find no contact name/phone/address/comment in logs or analytics.
+- [x] **QG-351 — MUST:** recovery tests cover unavailable database, worker restart, unavailable preview asset, unopenable WhatsApp URL, changed PriceVersion and stale cart item with safe retained state.
+- [x] **QG-352 — MUST:** required additive Prisma migration validates on empty/upgrade databases, preserves current volumes/data and has a forward-compensation rollback path.
+- [x] **QG-353 — MUST:** request/public/cart data is no-store where required; HTML escaping, bounded inputs, no open redirects and safe object/media delivery pass review/tests.
+- [x] **QG-354 — MUST:** format/docs/scope/boundary/lint/type/test/coverage/database/build/browser/security and exact CI-equivalent gates pass with skips recorded.
+- [x] **QG-355 — MUST:** only affected README/changelog/index/global/cart/configurator/preview/roles/data/API/architecture/security/test/open-question/traceability/gate/roadmap sections and completion report are synchronized.
+- [x] **QG-356 — MUST:** logical commit sequence is preserved and final tracked/untracked worktree is clean.
+- [x] **QG-357 — MUST:** branch is pushed and an unmerged Draft PR titled `Phase 1E: cart, guest requests and WhatsApp handoff` targets `main`.
+- [x] **QG-358 — MUST:** online payment/acquiring/credit automation/SMS/email auth/accounts/full CRM/manufacturing/client-photo/AI/landing/starfield/redesign/production deployment and Phase 1F are absent.
+- [x] **QG-359 — MUST:** completion report records all requested base/branch/commits/routes/models/status/message/fixed-recipient/mixed-checkout/measurement/installment/security/browser/gate/PR/status facts.
+- [x] **QG-360 — MUST:** Phase 1E is marked complete only after all QG-321–359 repository/runtime evidence exists; completion does not authorize Phase 1F.
+
+Completion result: **PASSED_PHASE_1E_CART_WHATSAPP_ORDERS**. `pnpm ci:verify` passed all 9 stages in 349.4 seconds and the post-CI real PostgreSQL/Chromium Phase 1E acceptance passed; the branch is delivered only as an unmerged Draft PR. Phase 1F was not started.
 
 ## 13. История изменений
 
@@ -548,5 +550,6 @@ Entry result: **AUTHORIZED_PHASE_1E_IN_PROGRESS**. Completion evidence is not in
 | 1.13.0 | 2026-08-08 | `OWNER-DECISION-014` and QG-271–280 authorize only Phase 1D from merged Phase 1C baseline; QG-281–310 define deterministic renderer/state/API/family/asset/UX/visual/recovery/CI/PR acceptance while Phase 1E+ remains prohibited. |
 | 1.14.0 | 2026-08-08 | QG-281–310 closed on the deterministic four-family renderer, two local photoreal scenes, owned preview state/API, authorized local layers, rectified Zebra geometry, mobile/visual/recovery evidence, 9/9 CI-equivalent gate, clean push and unmerged Draft PR #3; Phase 1E remains prohibited. |
 | 1.15.0 | 2026-08-09 | `OWNER-DECISION-016` and QG-311–320 authorize only Phase 1E from merged Phase 1D baseline; QG-321–360 define cart/request/WhatsApp/public-summary/admin/security/recovery/CI/PR acceptance while production and Phase 1F+ remain prohibited. |
+| 1.16.0 | 2026-08-09 | QG-321–360 closed on quote-backed cart, immutable request snapshots, fixed-recipient handoff, PII-free summary, basic staff intake, real DB/Chromium/security/recovery evidence and exact 9/9 CI; Phase 1F remains prohibited. |
 | 0.2.0 | 2026-08-02 | Entry gate обновлён для `GLOBAL_SPEC` 0.4.0 и partner-authorized scope; письменное поручение владельца зафиксировано как разрешение начать 0B; добавлен отдельный completion gate 0B. |
 | 0.1.0 | 2026-08-02 | Предыдущий self-audit 0A.1 для версии 0.3.1; проверки `QG-001`–`087` впоследствии зарезервированы. |

@@ -4,7 +4,7 @@
 
 | Field | Value |
 |---|---|
-| Status | `IN_PROGRESS` |
+| Status | `COMPLETED — PASSED_PHASE_1E_CART_WHATSAPP_ORDERS` |
 | Authorized by | `OWNER-DECISION-016`, 2026-08-09 |
 | Base | merged `main` commit `65780067537418a3230bb3d32ef3fb8e0af06917` |
 | Branch | `phase/1e-cart-whatsapp-orders` |
@@ -31,14 +31,14 @@ Out of scope: payment/acquiring, automated credit/installment, official WhatsApp
 | Stage | Result | Status |
 |---|---|---|
 | 1. Authorization and plan | Canonical decision, cart spec, entry QG and active plan | COMPLETED |
-| 2. Guest cart domain | Contracts, exact totals/statuses, guest ownership and persistence | **IN_PROGRESS** |
-| 3. Immutable checkout/request | Cart/item snapshots, idempotent intake, audit/outbox | PENDING |
-| 4. WhatsApp and public summary | Fixed recipient, safe message/events, revocable PII-free route | PENDING |
-| 5. Basic administration and integrations | Request list/detail/status/notes plus configure/preview cart CTA | PENDING |
-| 6. Verification | Unit/contract/integration/browser/security/recovery/build/CI-equivalent | PENDING |
-| 7. Documentation and delivery | Completion docs/QG, clean tree, push and unmerged Draft PR | PENDING |
+| 2. Guest cart domain | Contracts, exact totals/statuses, guest ownership and persistence | COMPLETED |
+| 3. Immutable checkout/request | Cart/item snapshots, idempotent intake, audit/outbox | COMPLETED |
+| 4. WhatsApp and public summary | Fixed recipient, safe message/events, revocable PII-free route | COMPLETED |
+| 5. Basic administration and integrations | Request list/detail/status/notes plus configure/preview cart CTA | COMPLETED |
+| 6. Verification | Unit/contract/integration/browser/security/recovery/build/CI-equivalent | COMPLETED |
+| 7. Documentation and delivery | Completion docs/QG, clean tree, push and unmerged Draft PR | COMPLETED |
 
-Only one stage is in progress. A stage advances only after its relevant tests and documentation are current.
+All stages are complete. The completion report records the exact runtime and delivery evidence; Phase 1F remains on hold.
 
 ## 4. Implementation boundaries
 

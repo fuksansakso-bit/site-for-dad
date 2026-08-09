@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A health/error, Phase 1B catalog, Phase 1C pricing and Phase 1D standard-preview contracts implemented; later routes gated |
-| Версия | 0.10.0 |
-| Дата | 2026-08-08 |
+| Статус | Phase 1A–1E health/catalog/pricing/preview/cart/request contracts implemented; Phase 1F+ routes gated |
+| Версия | 0.11.0 |
+| Дата | 2026-08-09 |
 | Architecture/data | [ARCHITECTURE.md](ARCHITECTURE.md), [DATA_MODEL.md](DATA_MODEL.md) |
 | Security | [SECURITY_PRIVACY.md](SECURITY_PRIVACY.md) |
 
@@ -143,6 +143,20 @@ Upload grants never authorize read/list, and object names cannot select another 
 
 External WhatsApp deep link is generated from safe snapshot/client side/server response; API does not claim delivery/read.
 
+Phase 1E concrete same-origin BFF contracts are:
+
+| Route | Behavior |
+|---|---|
+| `GET/DELETE /api/v1/cart` | Create/read owned guest cart or idempotently clear it; server summary only |
+| `POST /api/v1/cart/items` | Add an owned immutable quote and optional preview; no client amount/status |
+| `PATCH/DELETE /api/v1/cart/items/{itemReference}` | Replace through a new quote or remove with revision/idempotency checks |
+| `POST .../{itemReference}/duplicate`, `GET .../edit-source` | Duplicate snapshot reference or return server-owned configuration source |
+| `POST /api/v1/requests` | Idempotent consented checkout into immutable `OrderInquiry` snapshots |
+| `GET /api/v1/requests/public/{publicReference}` | Rate-limited PII-free immutable summary with neutral enumeration behavior |
+| `POST /api/v1/requests/{publicReference}/handoff` | Fixed-recipient WhatsApp URL/message; recipient cannot be supplied |
+| `POST /api/v1/requests/{publicReference}/events` | Idempotent `WHATSAPP_LINK_OPENED` or `MESSAGE_COPIED` evidence only |
+| `GET /api/v1/requests/public/{publicReference}/items/{sequence}/preview` | Safe same-origin preview proxy/fallback |
+
 ## 8. Admin contracts
 
 Admin endpoints use same resources/commands under privileged versioned namespace/permissions, not arbitrary CRUD:
@@ -160,6 +174,8 @@ Admin endpoints use same resources/commands under privileged versioned namespace
 Each mutation requires capability, exact object/revision/environment, reason, and approval evidence as policy. Generic `PATCH any field` is prohibited for state/approval/security changes.
 
 Phase 1C implements `GET /api/v1/admin/pricing`, `POST /api/v1/admin/pricing/activate`, `POST /api/v1/admin/pricing/reject`, `POST /api/v1/admin/pricing/parity` and `POST`/`DELETE /api/v1/admin/pricing/overrides`. Mutations require a current OWNER/ADMIN session, exact version/rule state, signed same-origin request, idempotency key, reason and correlation; MANAGER and anonymous actors fail closed. Responses expose safe diff/parity/audit summaries, never raw source payloads or internals.
+
+Phase 1E implements `GET /api/v1/admin/requests`, `GET/DELETE /api/v1/admin/requests/{requestNumber}`, `POST .../status` and `POST .../notes`. Existing session/RBAC is re-evaluated per request. Status/note/cancel commands require same-origin CSRF, idempotency and expected version; no endpoint accepts quote, PriceVersion or captured amount mutation.
 
 ## 9. Event and webhook contract
 
@@ -196,7 +212,7 @@ TLS, secure session/CSRF/CORS/CSP, object authorization, rate/abuse, schema vali
 
 Contract tests cover schemas/unknown fields as policy, auth/object matrix, idempotency, version conflicts, errors, exact money, pagination/cursors, upload spoof/completion, late callback/delete, public/private caching, redaction, event compatibility/dedup/order, provider outages and old/new client rolling compatibility. Domain AC/TS map to endpoints but API tests do not replace business tests.
 
-## 14. Phase 1A–1D implementation record
+## 14. Phase 1A–1E implementation record
 
 Phase 1A concrete routes remain `GET /api/v1/health/live` and `GET /api/v1/health/ready`. Phase 1B implements the server-authorized `/admin/catalog` slice through Next.js Server Actions rather than a generic CRUD route. The Phase 1B.2 staff read model covers the complete selected AMIGO source with bounded server filters/pages, hierarchy facets, safe sealed-manifest counts, run stages/checkpoints, differences and immutable review/bulk history; object keys, credentials, source hashes, raw snapshots and parser-internal payloads remain redacted. Every mutation re-evaluates the HttpOnly SameSite session and role server-side. OWNER/ADMIN commands keep preparation, exact two-step bulk apply, composition, selected/all difference review, approval, activation, rollback, cancellation and retry distinct and bind them to exact source/run/version/checksum/count state with generated correlation/idempotency evidence.
 
@@ -205,6 +221,8 @@ The Phase 1B.2 public catalog implements `GET /api/v1/catalog/materials` and `GE
 Phase 1C routes use strict shared runtime schemas, 32 KiB mutation bodies, same-origin signed double-submit CSRF, an explicit 60-request/minute in-process boundary, correlation IDs, idempotent calculation/save/admin mutations and `Cache-Control: no-store` for pricing and snapshots. The adapter resolves all labels, compatibility, rules, active versions and totals from PostgreSQL in one server trust boundary. Safe statuses include `CALCULATED`, `PRICE_ON_REQUEST`, `MANUAL_REVIEW_REQUIRED`, `CONFIGURATION_INVALID`, `SOURCE_DATA_STALE`, `PRICE_VERSION_INACTIVE` and `DEPENDENCY_UNAVAILABLE`; SQL, stack traces, secret values and internal dependency details are excluded.
 
 Phase 1D preview routes reuse the same origin/CSRF/rate/idempotency/correlation boundary and accept only Zod-validated safe IDs, scene IDs, layer roles and bounded controls. Every private read/update/delete resolves the owner-key hash from the HttpOnly guest cookie; state responses are `no-store`. Product assets resolve server-side from the validated family/model/article mapping and checksum-bound manifest, then `StoragePort` revalidates source marker, MIME, length and SHA-256. No route accepts a remote URL, trusted price or full configuration object, and safe errors expose neither stack traces nor object-storage credentials.
+
+Phase 1E cart/request routes use strict shared Zod schemas, 32 KiB mutation limits, signed same-origin CSRF, hashed HttpOnly guest ownership, per-boundary rate limits, correlation and private/no-store responses. Quote, product labels, statuses, versions and money are reloaded server-side. Checkout/audit/outbox is one PostgreSQL transaction; public reads are hash-verified, revocable, rate-limited and PII-free. The fixed WhatsApp recipient is a contract literal, not request input.
 
 ## 15. Dependencies, risks and open questions
 
@@ -223,3 +241,4 @@ Dependencies: all domain/technical specs, auth/provider/hosting ADRs. Next.js sa
 | 0.8.0 | 2026-08-03 | Recorded the full active-only public hierarchy/list/detail contracts, allowlisted sort and descendant filters, query/version-bound HMAC cursor, safe DTO/ETag behavior and PostgreSQL-only runtime with version-pinned local media. |
 | 0.9.0 | 2026-08-08 | Recorded the concrete configurator/validation/calculation/quote and pricing-admin routes with strict schemas, active-version authority, CSRF/origin/rate/idempotency/correlation/no-store boundaries and safe statuses delivered in Phase 1C. |
 | 0.10.0 | 2026-08-08 | Recorded the scenes/eligibility/state/asset/layer/delete/admin-diagnostics contracts, guest ownership, safe caching/errors and local-only asset resolution delivered in Phase 1D. |
+| 0.11.0 | 2026-08-09 | Recorded concrete Phase 1E cart/request/public-summary/WhatsApp/admin routes with immutable server authority, guest/RBAC ownership, idempotency, safe errors and fixed recipient. |

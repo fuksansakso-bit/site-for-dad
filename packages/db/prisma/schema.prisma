@@ -435,6 +435,68 @@ enum RequestSourceChannel {
   @@map("request_source_channel")
 }
 
+enum AuthChallengePurpose {
+  STAFF_LOGIN
+  STAFF_INVITATION
+
+  @@map("auth_challenge_purpose")
+}
+
+enum EmailDeliveryKind {
+  LOGIN_CODE
+  STAFF_INVITATION
+  SECURITY_NOTICE
+
+  @@map("email_delivery_kind")
+}
+
+enum EmailDeliveryStatus {
+  PENDING
+  PROCESSING
+  SENT
+  FAILED
+
+  @@map("email_delivery_status")
+}
+
+enum StaffInvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  REVOKED
+
+  @@map("staff_invitation_status")
+}
+
+enum PortfolioItemStatus {
+  DRAFT
+  RIGHTS_REVIEW
+  READY_FOR_REVIEW
+  PUBLISHED
+  HIDDEN
+  ARCHIVED
+
+  @@map("portfolio_item_status")
+}
+
+enum PortfolioMediaStatus {
+  UPLOADED_PRIVATE
+  PROCESSING
+  READY_FOR_REVIEW
+  PUBLICATION_APPROVED
+  PUBLICATION_BLOCKED
+
+  @@map("portfolio_media_status")
+}
+
+enum SiteSettingsRevisionStatus {
+  DRAFT
+  ACTIVE
+  SUPERSEDED
+
+  @@map("site_settings_revision_status")
+}
+
 model ActorIdentity {
   id                         String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   provider                   String                         @db.VarChar(64)
@@ -452,6 +514,13 @@ model ActorIdentity {
   catalogBulkCommands        CatalogBulkCommand[]
   pricingParityRuns          PricingParityRun[]
   pricingVersionDecisions    PricingVersionDecision[]
+  staffSessions              StaffSession[]
+  staffInvitationsAuthored   StaffInvitation[]              @relation("staff_invitation_inviter")
+  staffInvitationsAccepted   StaffInvitation[]              @relation("staff_invitation_acceptor")
+  portfolioItemsCreated      PortfolioItem[]                @relation("portfolio_item_creator")
+  portfolioItemsUpdated      PortfolioItem[]                @relation("portfolio_item_updater")
+  siteSettingsRevisions      SiteSettingsRevision[]
+  customerContactNotes       CustomerContactNote[]
 
   @@unique([provider, subject], map: "actor_identity_provider_subject_key")
   @@map("actor_identity")
@@ -484,6 +553,96 @@ model SyntheticSession {
 
   @@index([actorId, expiresAt], map: "synthetic_session_actor_expiry_idx")
   @@map("synthetic_session")
+}
+
+model OneTimeCodeChallenge {
+  id                String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  emailNormalized   String               @map("email_normalized") @db.VarChar(254)
+  purpose           AuthChallengePurpose
+  codeHash          String               @map("code_hash") @db.Char(64)
+  attemptCount      Int                  @default(0) @map("attempt_count") @db.SmallInt
+  maximumAttempts   Int                  @default(5) @map("maximum_attempts") @db.SmallInt
+  requestBucketHash String               @map("request_bucket_hash") @db.Char(64)
+  resendAvailableAt DateTime             @map("resend_available_at") @db.Timestamptz(6)
+  expiresAt         DateTime             @map("expires_at") @db.Timestamptz(6)
+  consumedAt        DateTime?            @map("consumed_at") @db.Timestamptz(6)
+  invalidatedAt     DateTime?            @map("invalidated_at") @db.Timestamptz(6)
+  createdAt         DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  delivery          EmailDelivery?
+
+  @@index([emailNormalized, purpose, createdAt], map: "one_time_code_email_purpose_idx")
+  @@index([expiresAt], map: "one_time_code_expiry_idx")
+  @@map("one_time_code_challenge")
+}
+
+model StaffSession {
+  id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  actorId       String        @map("actor_id") @db.Uuid
+  tokenHash     String        @unique(map: "staff_session_token_hash_key") @map("token_hash") @db.Char(64)
+  expiresAt     DateTime      @map("expires_at") @db.Timestamptz(6)
+  rotationDueAt DateTime      @map("rotation_due_at") @db.Timestamptz(6)
+  revokedAt     DateTime?     @map("revoked_at") @db.Timestamptz(6)
+  lastSeenAt    DateTime?     @map("last_seen_at") @db.Timestamptz(6)
+  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  actor         ActorIdentity @relation(fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@index([actorId, expiresAt], map: "staff_session_actor_expiry_idx")
+  @@index([expiresAt], map: "staff_session_expiry_idx")
+  @@map("staff_session")
+}
+
+model EmailDelivery {
+  id             String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  challengeId    String?               @unique(map: "email_delivery_challenge_key") @map("challenge_id") @db.Uuid
+  kind           EmailDeliveryKind
+  sealedMessage  String                @map("sealed_message") @db.Text
+  status         EmailDeliveryStatus   @default(PENDING)
+  attempts       Int                   @default(0) @db.SmallInt
+  availableAt    DateTime              @default(now()) @map("available_at") @db.Timestamptz(6)
+  sentAt         DateTime?             @map("sent_at") @db.Timestamptz(6)
+  lastErrorCode  String?               @map("last_error_code") @db.VarChar(128)
+  correlationId  String                @map("correlation_id") @db.VarChar(128)
+  idempotencyKey String                @unique(map: "email_delivery_idempotency_key") @map("idempotency_key") @db.VarChar(255)
+  createdAt      DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime              @updatedAt @map("updated_at") @db.Timestamptz(6)
+  challenge      OneTimeCodeChallenge? @relation(fields: [challengeId], references: [id], onDelete: Restrict)
+
+  @@index([status, availableAt], map: "email_delivery_pending_idx")
+  @@map("email_delivery")
+}
+
+model AuthRateLimit {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  bucket      String   @db.VarChar(96)
+  subjectHash String   @map("subject_hash") @db.Char(64)
+  windowStart DateTime @map("window_start") @db.Timestamptz(6)
+  count       Int      @default(0)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([bucket, subjectHash], map: "auth_rate_limit_bucket_subject_key")
+  @@index([windowStart], map: "auth_rate_limit_window_idx")
+  @@map("auth_rate_limit")
+}
+
+model StaffInvitation {
+  id              String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  emailNormalized String                @map("email_normalized") @db.VarChar(254)
+  role            SystemRole
+  tokenHash       String                @unique(map: "staff_invitation_token_hash_key") @map("token_hash") @db.Char(64)
+  status          StaffInvitationStatus @default(PENDING)
+  invitedById     String                @map("invited_by_id") @db.Uuid
+  acceptedById    String?               @map("accepted_by_id") @db.Uuid
+  expiresAt       DateTime              @map("expires_at") @db.Timestamptz(6)
+  acceptedAt      DateTime?             @map("accepted_at") @db.Timestamptz(6)
+  revokedAt       DateTime?             @map("revoked_at") @db.Timestamptz(6)
+  createdAt       DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime              @updatedAt @map("updated_at") @db.Timestamptz(6)
+  invitedBy       ActorIdentity         @relation("staff_invitation_inviter", fields: [invitedById], references: [id], onDelete: Restrict)
+  acceptedBy      ActorIdentity?        @relation("staff_invitation_acceptor", fields: [acceptedById], references: [id], onDelete: Restrict)
+
+  @@index([emailNormalized, status, expiresAt], map: "staff_invitation_email_status_idx")
+  @@index([invitedById, createdAt], map: "staff_invitation_inviter_idx")
+  @@map("staff_invitation")
 }
 
 model AuditEvent {
@@ -1109,6 +1268,9 @@ model MediaAsset {
   catalogEntries             CatalogVersionEntry[]
   supplierRelationshipBadges SupplierRelationship[]
   previewStates              StandardPreviewState[]
+  portfolioOriginals         PortfolioMedia[]       @relation("portfolio_media_original")
+  portfolioDisplays          PortfolioMedia[]       @relation("portfolio_media_display")
+  portfolioThumbnails        PortfolioMedia[]       @relation("portfolio_media_thumbnail")
 
   @@index([publicationStatus], map: "media_asset_publication_idx")
   @@map("media_asset")
@@ -1566,6 +1728,7 @@ model OrderInquiry {
   items                    RequestItemSnapshot[]
   communicationEvents      RequestCommunicationEvent[]
   internalNotes            RequestInternalNote[]
+  customerContactLinks     CustomerContactRequest[]
 
   @@index([status, createdAt], map: "order_inquiry_status_created_idx")
   @@index([guestSessionId, createdAt], map: "order_inquiry_guest_created_idx")
@@ -1622,6 +1785,127 @@ model RequestInternalNote {
   @@unique([inquiryId, idempotencyKey], map: "request_internal_note_idempotency_key")
   @@index([inquiryId, createdAt], map: "request_internal_note_inquiry_idx")
   @@map("request_internal_note")
+}
+
+model CustomerContact {
+  id              String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  displayName     String                   @map("display_name") @db.VarChar(120)
+  phoneNormalized String                   @unique(map: "customer_contact_phone_key") @map("phone_normalized") @db.VarChar(32)
+  emailNormalized String?                  @map("email_normalized") @db.VarChar(254)
+  locality        String?                  @db.VarChar(160)
+  createdAt       DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(6)
+  requests        CustomerContactRequest[]
+  notes           CustomerContactNote[]
+
+  @@index([emailNormalized], map: "customer_contact_email_idx")
+  @@index([updatedAt], map: "customer_contact_updated_idx")
+  @@map("customer_contact")
+}
+
+model CustomerContactRequest {
+  id                String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  customerContactId String          @map("customer_contact_id") @db.Uuid
+  inquiryId         String          @unique(map: "customer_contact_request_inquiry_key") @map("inquiry_id") @db.Uuid
+  linkedAt          DateTime        @default(now()) @map("linked_at") @db.Timestamptz(6)
+  customerContact   CustomerContact @relation(fields: [customerContactId], references: [id], onDelete: Restrict)
+  inquiry           OrderInquiry    @relation(fields: [inquiryId], references: [id], onDelete: Restrict)
+
+  @@index([customerContactId, linkedAt], map: "customer_contact_request_contact_idx")
+  @@map("customer_contact_request")
+}
+
+model CustomerContactNote {
+  id                String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  customerContactId String          @map("customer_contact_id") @db.Uuid
+  authorActorId     String          @map("author_actor_id") @db.Uuid
+  body              String          @db.VarChar(1000)
+  idempotencyKey    String          @unique(map: "customer_contact_note_idempotency_key") @map("idempotency_key") @db.VarChar(255)
+  createdAt         DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  customerContact   CustomerContact @relation(fields: [customerContactId], references: [id], onDelete: Restrict)
+  authorActor       ActorIdentity   @relation(fields: [authorActorId], references: [id], onDelete: Restrict)
+
+  @@index([customerContactId, createdAt], map: "customer_contact_note_contact_idx")
+  @@map("customer_contact_note")
+}
+
+model PortfolioItem {
+  id                 String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug               String              @unique(map: "portfolio_item_slug_key") @db.VarChar(180)
+  title              String              @db.VarChar(180)
+  description        String              @db.VarChar(2000)
+  locality           String?             @db.VarChar(160)
+  category           String              @db.VarChar(120)
+  completedOn        DateTime?           @map("completed_on") @db.Date
+  status             PortfolioItemStatus @default(DRAFT)
+  rightsEvidence     String?             @map("rights_evidence") @db.VarChar(1000)
+  publicationVersion Int                 @default(0) @map("publication_version")
+  publishedAt        DateTime?           @map("published_at") @db.Timestamptz(6)
+  createdById        String              @map("created_by_id") @db.Uuid
+  updatedById        String              @map("updated_by_id") @db.Uuid
+  createdAt          DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime            @updatedAt @map("updated_at") @db.Timestamptz(6)
+  createdBy          ActorIdentity       @relation("portfolio_item_creator", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedBy          ActorIdentity       @relation("portfolio_item_updater", fields: [updatedById], references: [id], onDelete: Restrict)
+  media              PortfolioMedia[]
+
+  @@index([status, updatedAt], map: "portfolio_item_status_updated_idx")
+  @@map("portfolio_item")
+}
+
+model PortfolioMedia {
+  id                String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  portfolioItemId   String                 @map("portfolio_item_id") @db.Uuid
+  originalAssetId   String                 @map("original_asset_id") @db.Uuid
+  displayAssetId    String?                @map("display_asset_id") @db.Uuid
+  thumbnailAssetId  String?                @map("thumbnail_asset_id") @db.Uuid
+  sourceClass       String                 @default("LOCAL_PORTFOLIO") @map("source_class") @db.VarChar(32)
+  safeName          String                 @map("safe_name") @db.VarChar(180)
+  originalSha256    String                 @map("original_sha256") @db.Char(64)
+  detectedMimeType  String                 @map("detected_mime_type") @db.VarChar(64)
+  width             Int
+  height            Int
+  exifStripped      Boolean                @default(false) @map("exif_stripped")
+  status            PortfolioMediaStatus   @default(UPLOADED_PRIVATE)
+  rightsStatus      MediaRightsStatus      @default(OWNER_CREATED) @map("rights_status")
+  publicationStatus MediaPublicationStatus @default(PENDING) @map("publication_status")
+  createdAt         DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
+  portfolioItem     PortfolioItem          @relation(fields: [portfolioItemId], references: [id], onDelete: Restrict)
+  originalAsset     MediaAsset             @relation("portfolio_media_original", fields: [originalAssetId], references: [id], onDelete: Restrict)
+  displayAsset      MediaAsset?            @relation("portfolio_media_display", fields: [displayAssetId], references: [id], onDelete: Restrict)
+  thumbnailAsset    MediaAsset?            @relation("portfolio_media_thumbnail", fields: [thumbnailAssetId], references: [id], onDelete: Restrict)
+
+  @@index([portfolioItemId, status], map: "portfolio_media_item_status_idx")
+  @@map("portfolio_media")
+}
+
+model SiteSettingsRevision {
+  id            String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  version       Int                        @unique(map: "site_settings_revision_version_key")
+  status        SiteSettingsRevisionStatus @default(DRAFT)
+  settings      Json                       @db.JsonB
+  safeReason    String                     @map("safe_reason") @db.VarChar(500)
+  authoredById  String                     @map("authored_by_id") @db.Uuid
+  supersedesId  String?                    @map("supersedes_id") @db.Uuid
+  createdAt     DateTime                   @default(now()) @map("created_at") @db.Timestamptz(6)
+  activatedAt   DateTime?                  @map("activated_at") @db.Timestamptz(6)
+  authoredBy    ActorIdentity              @relation(fields: [authoredById], references: [id], onDelete: Restrict)
+  supersedes    SiteSettingsRevision?      @relation("site_settings_supersedes", fields: [supersedesId], references: [id], onDelete: Restrict)
+  supersededBy  SiteSettingsRevision[]     @relation("site_settings_supersedes")
+  activePointer SiteSettingsPointer?
+
+  @@index([status, version], map: "site_settings_revision_status_idx")
+  @@map("site_settings_revision")
+}
+
+model SiteSettingsPointer {
+  singletonId Int                  @id @default(1) @map("singleton_id") @db.SmallInt
+  revisionId  String               @unique(map: "site_settings_pointer_revision_key") @map("revision_id") @db.Uuid
+  updatedAt   DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
+  revision    SiteSettingsRevision @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+
+  @@map("site_settings_pointer")
 }
 
 model PricingVersionDecision {

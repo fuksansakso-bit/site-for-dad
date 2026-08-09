@@ -20,7 +20,13 @@ param(
     [int]$StoragePort = 4569,
 
     [ValidateRange(1, 65535)]
-    [int]$StorageAdminPort = 4570
+    [int]$StorageAdminPort = 4570,
+
+    [ValidateRange(1, 65535)]
+    [int]$MailpitSmtpPort = 1025,
+
+    [ValidateRange(1, 65535)]
+    [int]$MailpitHttpPort = 8025
 )
 
 Set-StrictMode -Version Latest
@@ -200,6 +206,8 @@ function Set-StorageComposeEnvironment {
     $env:CATALOG_S3_ADMIN_PORT = "$StorageAdminPort"
     $env:CATALOG_S3_PORT = "$StoragePort"
     $env:CATALOG_S3_VOLUME_PREFIX = 'project_name'
+    $env:MAILPIT_HTTP_PORT = "$MailpitHttpPort"
+    $env:MAILPIT_SMTP_PORT = "$MailpitSmtpPort"
     $env:S3_ACCESS_KEY_ID = if ($null -eq $Secrets) { 'local-placeholder-access' } else { [string]$Secrets.storageAccessKey }
     $env:S3_REGION = 'local'
     $env:S3_SECRET_ACCESS_KEY = if ($null -eq $Secrets) { 'local-placeholder-secret' } else { [string]$Secrets.storageSecretKey }
@@ -239,7 +247,7 @@ function Stop-Environment {
     }
     Set-StorageComposeEnvironment -Secrets $storageSecrets
     if ((Test-Path -LiteralPath $composeFile -PathType Leaf) -and $DockerExecutable -ne '') {
-        Invoke-StorageComposeQuiet -Arguments @('stop', '--timeout', '30', 'catalog-storage') -FailureMessage 'Graceful VersityGW stop failed'
+        Invoke-StorageComposeQuiet -Arguments @('stop', '--timeout', '30', 'catalog-storage', 'mailpit') -FailureMessage 'Graceful local services stop failed'
     }
     if (Test-Path -LiteralPath (Join-Path $postgresData 'PG_VERSION') -PathType Leaf) {
         & $pgCtl status -D $postgresData *> $null
@@ -279,6 +287,8 @@ if ($Action -eq 'Status') {
         database = if (Test-LoopbackPort -Port $DatabasePort) { 'running' } else { 'stopped' }
         storage = if (Test-LoopbackPort -Port $StoragePort) { 'running' } else { 'stopped' }
         storageAdmin = if (Test-LoopbackPort -Port $StorageAdminPort) { 'running' } else { 'stopped' }
+        email = if (Test-LoopbackPort -Port $MailpitSmtpPort) { 'running' } else { 'stopped' }
+        emailInbox = if (Test-LoopbackPort -Port $MailpitHttpPort) { 'running' } else { 'stopped' }
         web = Get-EndpointStatus -Uri "http://127.0.0.1:$WebPort/api/v1/health/live"
         worker = Get-EndpointStatus -Uri "http://127.0.0.1:$WorkerPort/health/live"
     } | ConvertTo-Json -Compress
@@ -412,11 +422,16 @@ try {
     $env:DATABASE_STATEMENT_TIMEOUT_MS = '5000'
     $env:DATABASE_URL = & $databaseUrlFor 'foundation_runtime' ([string]$secrets.runtimePassword)
     $env:HEALTH_CHECK_TIMEOUT_MS = '2000'
+    $env:EMAIL_FROM_ADDRESS = 'no-reply@project-name.local'
+    $env:EMAIL_FROM_NAME = 'PROJECT_NAME'
     $env:LOG_LEVEL = 'info'
     $env:MIGRATION_DATABASE_URL = & $databaseUrlFor 'foundation_migrator' ([string]$secrets.migrationPassword)
     $env:NEXT_PUBLIC_APP_ENV = 'local'
     $env:NEXT_TELEMETRY_DISABLED = '1'
     $env:REQUEST_BODY_LIMIT_BYTES = '1048576'
+    $env:SMTP_HOST = '127.0.0.1'
+    $env:SMTP_PORT = "$MailpitSmtpPort"
+    $env:SMTP_TIMEOUT_MS = '3000'
     $env:S3_ACCESS_KEY_ID = [string]$secrets.storageAccessKey
     $env:S3_BUCKET_PRIVATE = 'project-name-local-private'
     $env:S3_BUCKET_PUBLIC = 'project-name-local-public'
@@ -449,8 +464,8 @@ try {
     Invoke-Checked -Executable $psql -Arguments @('-h', '127.0.0.1', '-p', "$DatabasePort", '-U', 'foundation_migrator', '-d', 'foundation', '-v', 'ON_ERROR_STOP=1', '-f', (Join-Path $repositoryRoot 'infrastructure\local\runtime-grants.sql')) -FailureMessage 'Runtime grants failed'
 
     Invoke-Checked -Executable $DockerExecutable -Arguments ($composeArguments + @(
-        'up', '--detach', '--wait', '--wait-timeout', '60', 'catalog-storage'
-    )) -FailureMessage 'VersityGW Compose startup failed'
+        'up', '--detach', '--wait', '--wait-timeout', '60', 'catalog-storage', 'mailpit'
+    )) -FailureMessage 'Local storage/Mailpit Compose startup failed'
     $storageStarted = $true
     Invoke-Checked -Executable $pnpmExecutable -Arguments @('--dir', $repositoryRoot, '--filter', '@project-name/storage', 'storage:provision:local') -FailureMessage 'Local storage provisioning failed'
     Invoke-Checked -Executable $pnpmExecutable -Arguments @('--dir', $repositoryRoot, '--filter', '@project-name/storage', 'storage:provision:preview') -FailureMessage 'Preview asset provisioning failed'
@@ -475,6 +490,8 @@ try {
         }
         storageAdminPort = $StorageAdminPort
         storagePort = $StoragePort
+        mailpitHttpPort = $MailpitHttpPort
+        mailpitSmtpPort = $MailpitSmtpPort
         web = New-ProcessReference -Process $webProcess -Executable $nodeExecutable
         webPort = $WebPort
         worker = New-ProcessReference -Process $workerProcess -Executable $nodeExecutable
@@ -497,7 +514,7 @@ catch {
     }
     if ($storageStarted) {
         try {
-            Invoke-StorageComposeQuiet -Arguments @('stop', '--timeout', '30', 'catalog-storage') -FailureMessage 'VersityGW cleanup stop failed'
+            Invoke-StorageComposeQuiet -Arguments @('stop', '--timeout', '30', 'catalog-storage', 'mailpit') -FailureMessage 'Local service cleanup stop failed'
         }
         catch {
             # Preserve the original startup failure; exact container/volumes remain recoverable.

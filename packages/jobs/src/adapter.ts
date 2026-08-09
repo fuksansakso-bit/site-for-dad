@@ -39,12 +39,92 @@ import { createCatalogTaskList, type CatalogTaskLifecycleSink } from './catalog/
 import { FoundationJobError } from './errors.js';
 import { createFoundationGraphileLogger, type FoundationQueueLogSink } from './logger.js';
 import { createFoundationTaskList, type FoundationTaskLifecycleSink } from './task.js';
+import {
+  cleanupIdentityPayloadSchema,
+  deliverEmailPayloadSchema,
+  phase1fJobIdentifiers,
+  phase1fJobQueueName,
+  type CleanupIdentityPayload,
+  type DeliverEmailPayload,
+} from './phase1f/contracts.js';
+import {
+  createPhase1fTaskList,
+  type Phase1fJobServices,
+  type Phase1fTaskLifecycleSink,
+} from './phase1f/task.js';
 
 export interface EnqueuedFoundationJob {
   readonly attempts: number;
   readonly id: string;
   readonly maxAttempts: number;
   readonly taskIdentifier: typeof foundationProbeTaskIdentifier;
+}
+
+export interface EnqueuedPhase1fJob {
+  readonly id: string;
+  readonly taskIdentifier: string;
+}
+
+async function enqueuePhase1fJob(
+  pool: Pool,
+  taskIdentifier: string,
+  payload: Readonly<Record<string, unknown>>,
+  idempotencyKey: string,
+  runAt = new Date(),
+): Promise<EnqueuedPhase1fJob> {
+  const result = await pool.query<{ id: string }>(
+    `
+      SELECT (graphile_worker.add_job(
+        identifier := $1::text,
+        payload := $2::json,
+        queue_name := $3::text,
+        run_at := $4::timestamptz,
+        max_attempts := 5,
+        job_key := $5::text,
+        priority := 0,
+        flags := ARRAY['phase1f']::text[],
+        job_key_mode := 'replace'
+      )).id::text AS id
+    `,
+    [taskIdentifier, JSON.stringify(payload), phase1fJobQueueName, runAt, idempotencyKey],
+  );
+  const id = result.rows[0]?.id;
+  if (id === undefined) throw new FoundationJobError('FOUNDATION_JOB_DEPENDENCY_UNAVAILABLE');
+  return { id, taskIdentifier };
+}
+
+export async function enqueueEmailDelivery(
+  pool: Pool,
+  candidatePayload: DeliverEmailPayload,
+): Promise<EnqueuedPhase1fJob> {
+  const payload = deliverEmailPayloadSchema.parse(candidatePayload);
+  return enqueuePhase1fJob(
+    pool,
+    phase1fJobIdentifiers.deliverEmail,
+    payload,
+    payload.idempotencyKey,
+  );
+}
+
+export async function ensureDailyIdentityCleanup(
+  pool: Pool,
+  now = new Date(),
+): Promise<EnqueuedPhase1fJob> {
+  const nextRunAt = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1),
+  );
+  const payload: CleanupIdentityPayload = cleanupIdentityPayloadSchema.parse({
+    correlationId: `identity-cleanup-${nextRunAt.toISOString().slice(0, 10)}`,
+    idempotencyKey: `identity-cleanup:${nextRunAt.toISOString().slice(0, 10)}`,
+    scheduledFor: nextRunAt.toISOString(),
+  });
+  return enqueuePhase1fJob(
+    pool,
+    phase1fJobIdentifiers.cleanupIdentity,
+    payload,
+    payload.idempotencyKey,
+    nextRunAt,
+  );
 }
 
 export interface EnqueuedCatalogJob {
@@ -587,6 +667,8 @@ export async function runFoundationJobsOnce(
   logSink?: FoundationQueueLogSink,
   catalogLifecycle?: CatalogTaskLifecycleSink,
   catalogServices: CatalogJobServices = createCatalogJobServices(),
+  phase1fServices?: Phase1fJobServices,
+  phase1fLifecycle?: Phase1fTaskLifecycleSink,
 ): Promise<void> {
   await verifyFoundationQueueSchema(pool);
   const client: PoolClient = await pool.connect();
@@ -606,6 +688,13 @@ export async function runFoundationJobsOnce(
           environment.WORKER_JOB_TIMEOUT_MS,
           catalogLifecycle,
         ),
+        ...(phase1fServices === undefined
+          ? {}
+          : createPhase1fTaskList(
+              phase1fServices,
+              environment.WORKER_JOB_TIMEOUT_MS,
+              phase1fLifecycle,
+            )),
       },
       client,
     );
@@ -646,6 +735,8 @@ export async function startFoundationJobRuntime(
   logSink?: FoundationQueueLogSink,
   catalogLifecycle?: CatalogTaskLifecycleSink,
   catalogServices: CatalogJobServices = createCatalogJobServices(),
+  phase1fServices?: Phase1fJobServices,
+  phase1fLifecycle?: Phase1fTaskLifecycleSink,
 ): Promise<FoundationJobRuntime> {
   const pool = createFoundationJobPool(
     databaseEnvironment,
@@ -699,6 +790,13 @@ export async function startFoundationJobRuntime(
         workerEnvironment.WORKER_JOB_TIMEOUT_MS,
         catalogLifecycle,
       ),
+      ...(phase1fServices === undefined
+        ? {}
+        : createPhase1fTaskList(
+            phase1fServices,
+            workerEnvironment.WORKER_JOB_TIMEOUT_MS,
+            phase1fLifecycle,
+          )),
     },
     pool,
   );

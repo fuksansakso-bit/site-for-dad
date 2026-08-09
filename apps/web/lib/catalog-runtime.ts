@@ -20,6 +20,10 @@ import {
   createSyntheticIdentityAdapter,
   type SyntheticIdentityAdapter,
 } from '@project-name/identity/synthetic';
+import {
+  createPasswordlessIdentityAdapter,
+  type PasswordlessIdentityAdapter,
+} from '@project-name/identity/passwordless';
 import { createFoundationJobPool } from '@project-name/jobs';
 import { createS3ObjectStorage } from '@project-name/storage';
 
@@ -27,6 +31,7 @@ let catalogManagement: CatalogManagementAdapter | undefined;
 let catalogRead: ReturnType<typeof createCatalogReadAdapter> | undefined;
 let cart: CartAdapter | undefined;
 let identity: SyntheticIdentityAdapter | undefined;
+let passwordlessIdentity: PasswordlessIdentityAdapter | undefined;
 let jobPool: ReturnType<typeof createFoundationJobPool> | undefined;
 let objectStorage: ReturnType<typeof createS3ObjectStorage> | undefined;
 let pricing: PricingAdapter | undefined;
@@ -58,6 +63,14 @@ export function getWebIdentity(): SyntheticIdentityAdapter {
     parseIdentityEnvironment(process.env),
   );
   return identity;
+}
+
+export function getWebPasswordlessIdentity(): PasswordlessIdentityAdapter {
+  passwordlessIdentity ??= createPasswordlessIdentityAdapter(
+    databaseEnvironment(),
+    parseIdentityEnvironment(process.env),
+  );
+  return passwordlessIdentity;
 }
 
 export function getWebCatalogJobPool(): ReturnType<typeof createFoundationJobPool> {

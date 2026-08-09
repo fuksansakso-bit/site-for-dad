@@ -119,6 +119,9 @@ importers:
       '@playwright/test':
         specifier: 'catalog:'
         version: 1.62.1
+      '@project-name/identity':
+        specifier: workspace:*
+        version: link:packages/identity
       '@types/node':
         specifier: 'catalog:'
         version: 24.13.3
@@ -228,9 +231,15 @@ importers:
       '@project-name/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@project-name/identity':
+        specifier: workspace:*
+        version: link:../../packages/identity
       '@project-name/jobs':
         specifier: workspace:*
         version: link:../../packages/jobs
+      '@project-name/notifications':
+        specifier: workspace:*
+        version: link:../../packages/notifications
       '@project-name/observability':
         specifier: workspace:*
         version: link:../../packages/observability
@@ -386,6 +395,9 @@ importers:
       '@project-name/contracts':
         specifier: workspace:*
         version: link:../contracts
+      '@project-name/notifications':
+        specifier: workspace:*
+        version: link:../notifications
       pg:
         specifier: 'catalog:'
         version: 8.22.0
@@ -423,6 +435,9 @@ importers:
       '@project-name/db':
         specifier: workspace:*
         version: link:../db
+      '@project-name/notifications':
+        specifier: workspace:*
+        version: link:../notifications
       '@project-name/observability':
         specifier: workspace:*
         version: link:../observability
@@ -448,6 +463,25 @@ importers:
       tsx:
         specifier: 'catalog:'
         version: 4.23.4
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(vite@8.2.0(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.4)(yaml@2.9.0))
+
+  packages/notifications:
+    dependencies:
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
+    devDependencies:
+      '@project-name/tooling':
+        specifier: workspace:*
+        version: link:../tooling
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.13.3
       typescript:
         specifier: 'catalog:'
         version: 6.0.3

@@ -15,6 +15,10 @@
     "./request-security": {
       "types": "./dist/request-security.d.ts",
       "import": "./dist/request-security.js"
+    },
+    "./passwordless": {
+      "types": "./dist/passwordless.d.ts",
+      "import": "./dist/passwordless.js"
     }
   },
   "scripts": {
@@ -28,6 +32,7 @@
   "dependencies": {
     "@project-name/config": "workspace:*",
     "@project-name/contracts": "workspace:*",
+    "@project-name/notifications": "workspace:*",
     "pg": "catalog:",
     "zod": "catalog:"
   },
@@ -40,9 +45,10 @@
   },
   "projectName": {
     "layer": "auth",
-    "responsibility": "Provider-neutral identity port, deny-by-default capability policy, audit context, and explicit synthetic local/test adapter.",
+    "responsibility": "Provider-neutral identity port, passwordless account/staff sessions, deny-by-default capability policy, audit context, and explicit synthetic local/test adapter.",
     "publicInterface": [
       ".",
+      "./passwordless",
       "./request-security",
       "./synthetic"
     ]

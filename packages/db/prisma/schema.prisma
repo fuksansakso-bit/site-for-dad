@@ -1596,12 +1596,14 @@ model RequestCommunicationEvent {
   type            RequestCommunicationEventType
   actorType       AuditActorType                @map("actor_type")
   actorIdentityId String?                       @map("actor_identity_id") @db.Uuid
+  idempotencyKey  String?                       @map("idempotency_key") @db.VarChar(255)
   safeMetadata    Json                          @map("safe_metadata") @db.JsonB
   correlationId   String                        @map("correlation_id") @db.VarChar(128)
   createdAt       DateTime                      @default(now()) @map("created_at") @db.Timestamptz(6)
   inquiry         OrderInquiry                  @relation(fields: [inquiryId], references: [id], onDelete: Restrict)
   actorIdentity   ActorIdentity?                @relation(fields: [actorIdentityId], references: [id], onDelete: Restrict)
 
+  @@unique([inquiryId, idempotencyKey], map: "request_communication_event_idempotency_key")
   @@index([inquiryId, createdAt], map: "request_communication_event_inquiry_idx")
   @@map("request_communication_event")
 }

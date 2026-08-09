@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { cartItemResponseSchema, cartMoneySummarySchema } from './cart.js';
 
 export const requestNumberSchema = z.string().regex(/^REQ-[0-9]{6}-[A-Z2-9]{8}$/u);
+export const requestPublicReferenceSchema = z.string().regex(/^[A-Za-z0-9_-]{43}$/u);
 export const requestStatusSchema = z.enum([
   'NEW',
   'IN_REVIEW',
@@ -63,7 +64,37 @@ export const guestCheckoutResponseSchema = z
   })
   .strict();
 
+export const whatsappHandoffRequestSchema = z.object({}).strict();
+
+export const whatsappHandoffResponseSchema = z
+  .object({
+    correlationId: z.string().min(8).max(128),
+    message: z.string().min(1).max(32_768),
+    publicSummaryHref: z.string().regex(/^\/request\/[A-Za-z0-9_-]{43}$/u),
+    recipient: z.literal('79635851036'),
+    whatsappUrl: z.string().startsWith('https://wa.me/79635851036?text=').max(65_536),
+  })
+  .strict();
+
+export const requestCommunicationEventRequestSchema = z
+  .object({
+    type: z.enum(['WHATSAPP_LINK_OPENED', 'MESSAGE_COPIED']),
+  })
+  .strict();
+
+export const requestCommunicationEventResponseSchema = z
+  .object({
+    correlationId: z.string().min(8).max(128),
+    recorded: z.boolean(),
+    type: z.enum(['WHATSAPP_LINK_OPENED', 'MESSAGE_COPIED']),
+  })
+  .strict();
+
 export type GuestCheckoutRequest = z.infer<typeof guestCheckoutRequestSchema>;
 export type GuestCheckoutResponse = z.infer<typeof guestCheckoutResponseSchema>;
+export type RequestCommunicationEventRequest = z.infer<
+  typeof requestCommunicationEventRequestSchema
+>;
 export type RequestSafeSnapshot = z.infer<typeof requestSafeSnapshotSchema>;
 export type RequestStatus = z.infer<typeof requestStatusSchema>;
+export type WhatsAppHandoffResponse = z.infer<typeof whatsappHandoffResponseSchema>;

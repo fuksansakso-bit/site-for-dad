@@ -1,4 +1,5 @@
 import { RequestStoreError } from '@project-name/db';
+import type { NextRequest } from 'next/server';
 import { ZodError } from 'zod';
 
 import { PricingRequestError } from './pricing-security';
@@ -24,4 +25,18 @@ export function requestRouteErrorCode(error: unknown) {
     }
   }
   return 'INTERNAL_ERROR' as const;
+}
+
+export function requestPublicOrigin(request: NextRequest): string {
+  const origin = new URL(request.nextUrl.origin);
+  if (origin.username || origin.password) throw new TypeError('REQUEST_ORIGIN_INVALID');
+  const environment = process.env['APP_ENV'] ?? '';
+  if (['local', 'test', 'ci'].includes(environment)) {
+    if (!['127.0.0.1', 'localhost'].includes(origin.hostname)) {
+      throw new TypeError('REQUEST_ORIGIN_INVALID');
+    }
+  } else if (origin.protocol !== 'https:') {
+    throw new TypeError('REQUEST_ORIGIN_INVALID');
+  }
+  return origin.origin;
 }

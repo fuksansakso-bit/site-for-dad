@@ -11,6 +11,13 @@ export {
   type RequestStatus,
 } from './request.js';
 export {
+  businessWhatsAppRecipient,
+  createWhatsAppHandoff,
+  type WhatsAppHandoff,
+  type WhatsAppHandoffInput,
+  type WhatsAppHandoffItem,
+} from './whatsapp.js';
+export {
   cartItemPricingStatuses,
   type CartItemPricingStatus,
   type CartMoneySummary,

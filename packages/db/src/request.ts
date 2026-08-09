@@ -73,9 +73,36 @@ export interface GuestCheckoutCommand {
   readonly publicReference: string;
 }
 
+export type GuestRequestCommunicationType =
+  'WHATSAPP_LINK_GENERATED' | 'WHATSAPP_LINK_OPENED' | 'MESSAGE_COPIED';
+
+export interface GuestRequestCommandIdentity {
+  readonly correlationId: string;
+  readonly idempotencyKey: string;
+  readonly ownerTokenHash: string;
+  readonly publicReference: string;
+}
+
+export interface GuestRequestCommunicationCommand extends GuestRequestCommandIdentity {
+  readonly type: Exclude<GuestRequestCommunicationType, 'WHATSAPP_LINK_GENERATED'>;
+}
+
+export interface RequestHandoffSourceView {
+  readonly installmentInterest: boolean;
+  readonly locality: string;
+  readonly measurementRequested: boolean;
+  readonly publicSummaryHref: string;
+  readonly requestNumber: string;
+  readonly snapshot: RequestSafeSnapshotView;
+}
+
 export interface RequestAdapter {
   readonly checkout: (input: GuestCheckoutCommand) => Promise<RequestReceiptView>;
   readonly close: () => Promise<void>;
+  readonly generateHandoff: (
+    input: GuestRequestCommandIdentity,
+  ) => Promise<RequestHandoffSourceView>;
+  readonly recordCommunication: (input: GuestRequestCommunicationCommand) => Promise<boolean>;
 }
 
 interface ExistingRequestRow {
@@ -95,6 +122,15 @@ interface CheckoutItemRow {
   readonly price_version_id: string | null;
   readonly pricing_status:
     'CALCULATED' | 'SOURCE_DATA_STALE' | 'PRICE_ON_REQUEST' | 'MANUAL_REVIEW_REQUIRED';
+}
+
+interface HandoffRow {
+  readonly cart_snapshot: RequestSafeSnapshotView;
+  readonly id: string;
+  readonly installment_interest: boolean;
+  readonly locality: string;
+  readonly measurement_requested: boolean;
+  readonly request_number: string;
 }
 
 function mapError(error: unknown): RequestStoreError {
@@ -125,6 +161,17 @@ function assertInput(input: GuestCheckoutCommand): void {
     (input.address !== null && input.address.length > 500) ||
     (input.comment !== null && input.comment.length > 1_000) ||
     !/^[A-Za-z0-9._-]{3,64}$/u.test(input.consentVersion)
+  ) {
+    throw new RequestStoreError('REQUEST_INVALID_INPUT');
+  }
+}
+
+function assertGuestRequestIdentity(input: GuestRequestCommandIdentity): void {
+  if (
+    !/^[0-9a-f]{64}$/u.test(input.ownerTokenHash) ||
+    !/^[A-Za-z0-9:._-]{8,180}$/u.test(input.idempotencyKey) ||
+    !/^[A-Za-z0-9:._-]{8,128}$/u.test(input.correlationId) ||
+    !/^[A-Za-z0-9_-]{43}$/u.test(input.publicReference)
   ) {
     throw new RequestStoreError('REQUEST_INVALID_INPUT');
   }
@@ -205,6 +252,76 @@ async function insertOutbox(
     [topic, JSON.stringify(safePayload), `request:${requestId}:${topic}`, correlationId],
   );
   if (!requestNumber.startsWith('REQ-')) throw new RequestStoreError('REQUEST_DATABASE');
+}
+
+async function ownedRequest(
+  client: PoolClient,
+  ownerTokenHash: string,
+  publicReference: string,
+): Promise<HandoffRow> {
+  const result = await client.query<HandoffRow>(
+    `
+      SELECT inquiry.id::text, inquiry.request_number, inquiry.cart_snapshot,
+             inquiry.measurement_requested, inquiry.installment_interest, inquiry.locality
+      FROM order_inquiry inquiry
+      JOIN guest_cart_session session ON session.id = inquiry.guest_session_id
+      WHERE inquiry.public_reference_hash = $1
+        AND inquiry.public_reference_revoked_at IS NULL
+        AND session.token_hash = $2
+        AND session.revoked_at IS NULL
+        AND session.expires_at > NOW()
+    `,
+    [publicReferenceHash(publicReference), ownerTokenHash],
+  );
+  const row = result.rows[0];
+  if (row === undefined) throw new RequestStoreError('REQUEST_NOT_FOUND');
+  return row;
+}
+
+function communicationMetadata(
+  type: GuestRequestCommunicationType,
+): Readonly<Record<string, unknown>> {
+  if (type === 'WHATSAPP_LINK_GENERATED') {
+    return { automaticSend: false, channel: 'WA_ME', recipientFixed: true };
+  }
+  if (type === 'WHATSAPP_LINK_OPENED') {
+    return { channel: 'WA_ME', meaning: 'LINK_OPENED_ONLY' };
+  }
+  return { channel: 'LOCAL_CLIPBOARD', meaning: 'MESSAGE_COPIED_ONLY' };
+}
+
+async function appendGuestCommunication(
+  client: PoolClient,
+  inquiry: HandoffRow,
+  type: GuestRequestCommunicationType,
+  input: GuestRequestCommandIdentity,
+): Promise<boolean> {
+  const result = await client.query<{ id: string }>(
+    `
+      INSERT INTO request_communication_event (
+        inquiry_id, type, actor_type, idempotency_key, safe_metadata, correlation_id
+      ) VALUES ($1::uuid,$2::request_communication_event_type,'ANONYMOUS',$3,$4::jsonb,$5)
+      ON CONFLICT (inquiry_id, idempotency_key) DO NOTHING
+      RETURNING id::text
+    `,
+    [
+      inquiry.id,
+      type,
+      `${type}:${input.idempotencyKey}`,
+      JSON.stringify(communicationMetadata(type)),
+      input.correlationId,
+    ],
+  );
+  if (result.rows[0] === undefined) return false;
+  await client.query(
+    `
+      INSERT INTO audit_event (
+        actor_type, action, outcome, correlation_id, target_type, target_id, reason_code
+      ) VALUES ('ANONYMOUS',$1,'SUCCEEDED',$2,'ORDER_INQUIRY',$3,'PHASE_1E_LOCAL_HANDOFF')
+    `,
+    [`request.communication.${type.toLowerCase()}`, input.correlationId, inquiry.request_number],
+  );
+  return true;
 }
 
 export function createRequestAdapter(environment: DatabaseEnvironment): RequestAdapter {
@@ -420,6 +537,38 @@ export function createRequestAdapter(environment: DatabaseEnvironment): RequestA
       } catch (error) {
         throw mapError(error);
       }
+    },
+
+    async generateHandoff(input) {
+      assertGuestRequestIdentity(input);
+      return cartTransaction(
+        pool,
+        async (client) => {
+          const inquiry = await ownedRequest(client, input.ownerTokenHash, input.publicReference);
+          await appendGuestCommunication(client, inquiry, 'WHATSAPP_LINK_GENERATED', input);
+          return {
+            installmentInterest: inquiry.installment_interest,
+            locality: inquiry.locality,
+            measurementRequested: inquiry.measurement_requested,
+            publicSummaryHref: `/request/${input.publicReference}`,
+            requestNumber: inquiry.request_number,
+            snapshot: inquiry.cart_snapshot,
+          };
+        },
+        mapError,
+      );
+    },
+
+    async recordCommunication(input) {
+      assertGuestRequestIdentity(input);
+      return cartTransaction(
+        pool,
+        async (client) => {
+          const inquiry = await ownedRequest(client, input.ownerTokenHash, input.publicReference);
+          return appendGuestCommunication(client, inquiry, input.type, input);
+        },
+        mapError,
+      );
     },
   };
 }

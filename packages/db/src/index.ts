@@ -1,8 +1,12 @@
 export {
   createRequestAdapter,
   RequestStoreError,
+  type GuestRequestCommandIdentity,
+  type GuestRequestCommunicationCommand,
+  type GuestRequestCommunicationType,
   type GuestCheckoutCommand,
   type RequestAdapter,
+  type RequestHandoffSourceView,
   type RequestReceiptView,
   type RequestSafeSnapshotView,
   type RequestStoreErrorCode,

@@ -1,13 +1,20 @@
 export {
   guestCheckoutRequestSchema,
   guestCheckoutResponseSchema,
+  requestCommunicationEventRequestSchema,
+  requestCommunicationEventResponseSchema,
   requestNumberSchema,
+  requestPublicReferenceSchema,
   requestSafeSnapshotSchema,
   requestStatusSchema,
+  whatsappHandoffRequestSchema,
+  whatsappHandoffResponseSchema,
   type GuestCheckoutRequest,
   type GuestCheckoutResponse,
+  type RequestCommunicationEventRequest,
   type RequestSafeSnapshot,
   type RequestStatus,
+  type WhatsAppHandoffResponse,
 } from './request.js';
 export {
   cartItemAddRequestSchema,

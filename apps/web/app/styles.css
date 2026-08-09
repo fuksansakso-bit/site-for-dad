@@ -327,6 +327,174 @@ h1 {
   }
 }
 
+/* Phase 1E basic request administration. */
+.request-admin-shell {
+  min-height: 100vh;
+  background: #ebe5da;
+  padding: clamp(20px, 4vw, 54px);
+  color: var(--ink);
+}
+
+.request-admin-login {
+  display: grid;
+  place-items: center;
+}
+
+.request-admin-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 0 auto 28px;
+  max-width: 1380px;
+}
+
+.request-admin-header h1 {
+  font-family: var(--serif);
+}
+
+.request-admin-header p {
+  margin-bottom: 0;
+}
+
+.request-admin-list,
+.request-admin-detail-grid {
+  display: grid;
+  max-width: 1380px;
+  margin: 0 auto;
+  gap: 12px;
+}
+
+.request-admin-row {
+  display: grid;
+  align-items: center;
+  border: 1px solid var(--line);
+  background: #f8f4ec;
+  padding: 18px;
+  gap: 18px;
+  grid-template-columns: 1.1fr 1.3fr 1fr 1.2fr 1fr;
+}
+
+.request-admin-row > div {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+}
+
+.request-admin-row span {
+  color: rgb(29 29 27 / 62%);
+  font-size: 0.84rem;
+}
+
+.request-admin-row .primary-link {
+  width: fit-content;
+}
+
+.request-admin-notice {
+  max-width: 1380px;
+  margin: 0 auto 20px;
+  border-left: 4px solid var(--brass);
+  background: #fff9ec;
+  padding: 12px 16px;
+}
+
+.request-admin-detail-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.request-admin-panel {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: #f8f4ec;
+  padding: clamp(20px, 3vw, 32px);
+}
+
+.request-admin-panel h2 {
+  margin-top: 0;
+  font-family: var(--serif);
+}
+
+.request-admin-form {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0;
+}
+
+.request-admin-form input,
+.request-admin-form select,
+.request-admin-form textarea {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: #fff;
+  padding: 11px 13px;
+}
+
+.request-admin-form textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.request-admin-data {
+  display: grid;
+  gap: 10px;
+}
+
+.request-admin-data > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.request-admin-data dd {
+  margin: 0;
+  text-align: right;
+}
+
+.request-admin-comment {
+  border-left: 3px solid var(--brass);
+  padding-left: 14px;
+  white-space: pre-wrap;
+}
+
+.request-admin-items {
+  grid-column: 1 / -1;
+}
+
+.request-admin-items article,
+.request-admin-timeline article {
+  border-top: 1px solid var(--line);
+  padding: 14px 0;
+}
+
+.request-admin-items article p,
+.request-admin-timeline article p {
+  margin: 6px 0 0;
+}
+
+.request-admin-timeline time {
+  color: rgb(29 29 27 / 58%);
+  font-size: 0.78rem;
+}
+
+@media (max-width: 900px) {
+  .request-admin-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .request-admin-row,
+  .request-admin-detail-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .request-admin-items {
+    grid-column: auto;
+  }
+}
+
 /* Phase 1C functional configurator. */
 .configurator-shell {
   min-height: 100vh;

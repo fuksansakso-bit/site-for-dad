@@ -1,9 +1,13 @@
 import { createHash } from 'node:crypto';
 
 import {
+  canTransitionRequestStatus,
   createRequestNumber,
   publicReferenceHash,
   type CartMoneySummary,
+  type CartPricingStatus,
+  type RequestStaffRole,
+  type RequestStatus,
 } from '@project-name/cart';
 import type { DatabaseEnvironment } from '@project-name/config/server';
 import { Pool, type PoolClient } from 'pg';
@@ -72,6 +76,7 @@ export interface GuestCheckoutCommand {
   readonly measurementRequested: boolean;
   readonly ownerTokenHash: string;
   readonly publicReference: string;
+  readonly publicReferenceSealed: string;
 }
 
 export type GuestRequestCommunicationType =
@@ -107,7 +112,71 @@ export interface PublicRequestSummaryView {
   readonly status: 'NEW' | 'IN_REVIEW' | 'CONTACTED' | 'CONFIRMED' | 'CANCELLED';
 }
 
+export interface AdminRequestListItemView {
+  readonly contactName: string;
+  readonly contactPhone: string;
+  readonly createdAt: string;
+  readonly installmentInterest: boolean;
+  readonly itemCount: number;
+  readonly knownSubtotalKopecks: number;
+  readonly locality: string;
+  readonly measurementRequested: boolean;
+  readonly pricingStatus: CartPricingStatus;
+  readonly requestNumber: string;
+  readonly status: RequestStatus;
+  readonly totalQuantity: number;
+  readonly updatedAt: string;
+  readonly version: number;
+}
+
+export interface AdminRequestNoteView {
+  readonly body: string;
+  readonly createdAt: string;
+}
+
+export interface AdminRequestCommunicationView {
+  readonly createdAt: string;
+  readonly safeMetadata: Readonly<Record<string, unknown>>;
+  readonly type:
+    | 'REQUEST_CREATED'
+    | 'WHATSAPP_LINK_GENERATED'
+    | 'WHATSAPP_LINK_OPENED'
+    | 'MESSAGE_COPIED'
+    | 'STATUS_CHANGED';
+}
+
+export interface AdminRequestDetailView extends AdminRequestListItemView {
+  readonly address: string | null;
+  readonly comment: string | null;
+  readonly communicationEvents: readonly AdminRequestCommunicationView[];
+  readonly notes: readonly AdminRequestNoteView[];
+  readonly publicReferenceRevokedAt: string | null;
+  readonly publicReferenceSealed: string | null;
+  readonly snapshot: RequestSafeSnapshotView;
+}
+
+export interface AdminRequestListView {
+  readonly items: readonly AdminRequestListItemView[];
+  readonly page: number;
+  readonly pageSize: number;
+  readonly totalCount: number;
+}
+
+export interface AdminRequestActor {
+  readonly actorId: string;
+  readonly role: RequestStaffRole;
+}
+
+export interface AdminRequestMutationCommand extends AdminRequestActor {
+  readonly correlationId: string;
+  readonly idempotencyKey: string;
+  readonly requestNumber: string;
+}
+
 export interface RequestAdapter {
+  readonly addAdminNote: (
+    input: AdminRequestMutationCommand & { readonly body: string },
+  ) => Promise<AdminRequestDetailView>;
   readonly checkout: (input: GuestCheckoutCommand) => Promise<RequestReceiptView>;
   readonly close: () => Promise<void>;
   readonly generateHandoff: (
@@ -118,7 +187,27 @@ export interface RequestAdapter {
     sequence: number,
   ) => Promise<PreviewAssetDescriptor>;
   readonly getPublicSummary: (publicReference: string) => Promise<PublicRequestSummaryView>;
+  readonly getAdminRequest: (
+    input: AdminRequestActor & { readonly correlationId: string; readonly requestNumber: string },
+  ) => Promise<AdminRequestDetailView>;
+  readonly listAdminRequests: (
+    input: AdminRequestActor & {
+      readonly correlationId: string;
+      readonly page: number;
+      readonly pageSize: number;
+      readonly status: RequestStatus | null;
+    },
+  ) => Promise<AdminRequestListView>;
   readonly recordCommunication: (input: GuestRequestCommunicationCommand) => Promise<boolean>;
+  readonly revokePublicReference: (
+    input: AdminRequestMutationCommand,
+  ) => Promise<AdminRequestDetailView>;
+  readonly updateAdminStatus: (
+    input: AdminRequestMutationCommand & {
+      readonly expectedVersion: number;
+      readonly status: RequestStatus;
+    },
+  ) => Promise<AdminRequestDetailView>;
 }
 
 interface ExistingRequestRow {
@@ -159,6 +248,28 @@ interface PublicRequestRow {
   readonly status: PublicRequestSummaryView['status'];
 }
 
+interface AdminRequestRow {
+  readonly address: string | null;
+  readonly cart_snapshot: RequestSafeSnapshotView;
+  readonly comment: string | null;
+  readonly contact_name: string;
+  readonly contact_phone: string;
+  readonly created_at: Date;
+  readonly id: string;
+  readonly installment_interest: boolean;
+  readonly known_subtotal_minor: string;
+  readonly locality: string;
+  readonly measurement_requested: boolean;
+  readonly pricing_status: CartPricingStatus;
+  readonly public_reference_revoked_at: Date | null;
+  readonly public_reference_sealed: string | null;
+  readonly request_number: string;
+  readonly status: RequestStatus;
+  readonly total_count?: string;
+  readonly updated_at: Date;
+  readonly version: number;
+}
+
 function mapError(error: unknown): RequestStoreError {
   if (error instanceof RequestStoreError) return error;
   if (typeof error === 'object' && error !== null && 'code' in error) {
@@ -178,6 +289,8 @@ function assertInput(input: GuestCheckoutCommand): void {
     !/^[A-Za-z0-9:._-]{8,128}$/u.test(input.correlationId) ||
     !/^\+[1-9]\d{7,14}$/u.test(input.contactPhone) ||
     !/^[A-Za-z0-9_-]{43}$/u.test(input.publicReference) ||
+    !/^v1\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/u.test(input.publicReferenceSealed) ||
+    input.publicReferenceSealed.length > 512 ||
     !Number.isSafeInteger(input.expectedCartRevision) ||
     input.expectedCartRevision < 0 ||
     input.contactName.length < 2 ||
@@ -207,6 +320,154 @@ function checkoutKey(ownerTokenHash: string, idempotencyKey: string): string {
   return `checkout:${createHash('sha256')
     .update(`${ownerTokenHash}:${idempotencyKey}`)
     .digest('hex')}`;
+}
+
+function assertAdminActor(actor: AdminRequestActor): void {
+  if (
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(
+      actor.actorId,
+    ) ||
+    !['MANAGER', 'ADMIN', 'OWNER'].includes(actor.role)
+  ) {
+    throw new RequestStoreError('REQUEST_AUTHORIZATION');
+  }
+}
+
+function assertAdminCommand(input: AdminRequestMutationCommand): void {
+  assertAdminActor(input);
+  if (
+    !/^REQ-[0-9]{6}-[A-Z2-9]{8}$/u.test(input.requestNumber) ||
+    !/^[A-Za-z0-9:._-]{8,180}$/u.test(input.idempotencyKey) ||
+    !/^[A-Za-z0-9:._-]{8,128}$/u.test(input.correlationId)
+  ) {
+    throw new RequestStoreError('REQUEST_INVALID_INPUT');
+  }
+}
+
+async function requireStaffRole(client: PoolClient, actor: AdminRequestActor): Promise<void> {
+  assertAdminActor(actor);
+  const result = await client.query<{ allowed: boolean }>(
+    `
+      SELECT EXISTS (
+        SELECT 1 FROM actor_identity actor
+        JOIN role_grant grant_row ON grant_row.actor_id = actor.id
+        WHERE actor.id = $1::uuid AND actor.disabled_at IS NULL
+          AND grant_row.role = $2::system_role
+      ) AS allowed
+    `,
+    [actor.actorId, actor.role],
+  );
+  if (result.rows[0]?.allowed !== true) {
+    throw new RequestStoreError('REQUEST_AUTHORIZATION');
+  }
+}
+
+function safeIntegerText(value: string): number {
+  const parsed = Number(value);
+  if (!Number.isSafeInteger(parsed) || parsed < 0) {
+    throw new RequestStoreError('REQUEST_DATABASE');
+  }
+  return parsed;
+}
+
+function adminListItem(row: AdminRequestRow): AdminRequestListItemView {
+  return {
+    contactName: row.contact_name,
+    contactPhone: row.contact_phone,
+    createdAt: row.created_at.toISOString(),
+    installmentInterest: row.installment_interest,
+    itemCount: row.cart_snapshot.items.length,
+    knownSubtotalKopecks: safeIntegerText(row.known_subtotal_minor),
+    locality: row.locality,
+    measurementRequested: row.measurement_requested,
+    pricingStatus: row.pricing_status,
+    requestNumber: row.request_number,
+    status: row.status,
+    totalQuantity: row.cart_snapshot.summary.totalQuantity,
+    updatedAt: row.updated_at.toISOString(),
+    version: row.version,
+  };
+}
+
+async function adminRequestRow(
+  client: PoolClient,
+  requestNumber: string,
+  lock = false,
+): Promise<AdminRequestRow> {
+  const result = await client.query<AdminRequestRow>(
+    `
+      SELECT inquiry.id::text, inquiry.request_number, inquiry.contact_name,
+             inquiry.contact_phone, inquiry.locality, inquiry.address, inquiry.comment,
+             inquiry.measurement_requested, inquiry.installment_interest,
+             inquiry.cart_snapshot, inquiry.known_subtotal_minor::text,
+             inquiry.pricing_status::text, inquiry.status::text, inquiry.version,
+             inquiry.public_reference_sealed, inquiry.public_reference_revoked_at,
+             inquiry.created_at, inquiry.updated_at
+      FROM order_inquiry inquiry
+      WHERE inquiry.request_number = $1
+      ${lock ? 'FOR UPDATE' : ''}
+    `,
+    [requestNumber],
+  );
+  const row = result.rows[0];
+  if (row === undefined) throw new RequestStoreError('REQUEST_NOT_FOUND');
+  return row;
+}
+
+async function adminRequestDetail(
+  client: PoolClient,
+  requestNumber: string,
+): Promise<AdminRequestDetailView> {
+  const row = await adminRequestRow(client, requestNumber);
+  const notes = await client.query<{ body: string; created_at: Date }>(
+    `SELECT body, created_at FROM request_internal_note
+     WHERE inquiry_id = $1::uuid ORDER BY created_at DESC, id DESC LIMIT 100`,
+    [row.id],
+  );
+  const events = await client.query<{
+    created_at: Date;
+    safe_metadata: Readonly<Record<string, unknown>>;
+    type: AdminRequestCommunicationView['type'];
+  }>(
+    `SELECT type::text, safe_metadata, created_at FROM request_communication_event
+     WHERE inquiry_id = $1::uuid ORDER BY created_at DESC, id DESC LIMIT 200`,
+    [row.id],
+  );
+  return {
+    ...adminListItem(row),
+    address: row.address,
+    comment: row.comment,
+    communicationEvents: events.rows.map((event) => ({
+      createdAt: event.created_at.toISOString(),
+      safeMetadata: event.safe_metadata,
+      type: event.type,
+    })),
+    notes: notes.rows.map((note) => ({
+      body: note.body,
+      createdAt: note.created_at.toISOString(),
+    })),
+    publicReferenceRevokedAt: row.public_reference_revoked_at?.toISOString() ?? null,
+    publicReferenceSealed: row.public_reference_sealed,
+    snapshot: row.cart_snapshot,
+  };
+}
+
+async function auditAdmin(
+  client: PoolClient,
+  actorId: string,
+  correlationId: string,
+  action: string,
+  requestNumber: string | null,
+): Promise<void> {
+  await client.query(
+    `
+      INSERT INTO audit_event (
+        actor_type, actor_identity_id, action, outcome, correlation_id,
+        target_type, target_id, reason_code
+      ) VALUES ('IDENTITY',$1::uuid,$2,'SUCCEEDED',$3,'ORDER_INQUIRY',$4,'PHASE_1E_REQUEST_ADMIN')
+    `,
+    [actorId, action, correlationId, requestNumber],
+  );
 }
 
 function receipt(row: ExistingRequestRow, publicReference: string): RequestReceiptView {
@@ -358,6 +619,42 @@ export function createRequestAdapter(environment: DatabaseEnvironment): RequestA
   });
 
   return {
+    async addAdminNote(input) {
+      assertAdminCommand(input);
+      const body = input.body.trim();
+      if (body.length === 0 || body.length > 1_000) {
+        throw new RequestStoreError('REQUEST_INVALID_INPUT');
+      }
+      return cartTransaction(
+        pool,
+        async (client) => {
+          await requireStaffRole(client, input);
+          const inquiry = await adminRequestRow(client, input.requestNumber, true);
+          const inserted = await client.query<{ id: string }>(
+            `
+              INSERT INTO request_internal_note (
+                inquiry_id, author_actor_id, idempotency_key, body
+              ) VALUES ($1::uuid,$2::uuid,$3,$4)
+              ON CONFLICT (inquiry_id, idempotency_key) DO NOTHING
+              RETURNING id::text
+            `,
+            [inquiry.id, input.actorId, `NOTE:${input.idempotencyKey}`, body],
+          );
+          if (inserted.rows[0] !== undefined) {
+            await auditAdmin(
+              client,
+              input.actorId,
+              input.correlationId,
+              'request.admin.note_added',
+              input.requestNumber,
+            );
+          }
+          return adminRequestDetail(client, input.requestNumber);
+        },
+        mapError,
+      );
+    },
+
     async close() {
       await pool.end();
     },
@@ -409,15 +706,16 @@ export function createRequestAdapter(environment: DatabaseEnvironment): RequestA
               `
               INSERT INTO order_inquiry (
                 request_number, guest_session_id, cart_id, checkout_idempotency_key,
-                public_reference_hash, contact_name, contact_phone, locality, address, comment,
+                public_reference_hash, public_reference_sealed, contact_name, contact_phone,
+                locality, address, comment,
                 measurement_requested, installment_interest, consent_version, consent_at,
                 status, cart_snapshot, known_subtotal_minor, pricing_status,
                 catalog_version_ids, price_version_ids, source_channel, correlation_id,
                 audit_context, version, updated_at
               ) VALUES (
-                $1,$2::uuid,$3::uuid,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,NOW(),
-                'NEW',$14::jsonb,$15::bigint,$16::cart_pricing_status,$17::jsonb,$18::jsonb,
-                'WEB_GUEST',$19,$20::jsonb,1,NOW()
+                $1,$2::uuid,$3::uuid,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,NOW(),
+                'NEW',$15::jsonb,$16::bigint,$17::cart_pricing_status,$18::jsonb,$19::jsonb,
+                'WEB_GUEST',$20,$21::jsonb,1,NOW()
               ) RETURNING id::text, created_at
             `,
               [
@@ -426,6 +724,7 @@ export function createRequestAdapter(environment: DatabaseEnvironment): RequestA
                 cart.cart_id,
                 key,
                 referenceHash,
+                input.publicReferenceSealed,
                 input.contactName,
                 input.contactPhone,
                 input.locality,
@@ -669,6 +968,85 @@ export function createRequestAdapter(environment: DatabaseEnvironment): RequestA
       }
     },
 
+    async getAdminRequest(input) {
+      assertAdminActor(input);
+      if (
+        !/^REQ-[0-9]{6}-[A-Z2-9]{8}$/u.test(input.requestNumber) ||
+        !/^[A-Za-z0-9:._-]{8,128}$/u.test(input.correlationId)
+      ) {
+        throw new RequestStoreError('REQUEST_INVALID_INPUT');
+      }
+      return cartTransaction(
+        pool,
+        async (client) => {
+          await requireStaffRole(client, input);
+          const detail = await adminRequestDetail(client, input.requestNumber);
+          await auditAdmin(
+            client,
+            input.actorId,
+            input.correlationId,
+            'request.admin.viewed',
+            input.requestNumber,
+          );
+          return detail;
+        },
+        mapError,
+      );
+    },
+
+    async listAdminRequests(input) {
+      assertAdminActor(input);
+      if (
+        !Number.isSafeInteger(input.page) ||
+        input.page <= 0 ||
+        !Number.isSafeInteger(input.pageSize) ||
+        input.pageSize <= 0 ||
+        input.pageSize > 100 ||
+        !/^[A-Za-z0-9:._-]{8,128}$/u.test(input.correlationId)
+      ) {
+        throw new RequestStoreError('REQUEST_INVALID_INPUT');
+      }
+      return cartTransaction(
+        pool,
+        async (client) => {
+          await requireStaffRole(client, input);
+          const result = await client.query<AdminRequestRow>(
+            `
+              SELECT inquiry.id::text, inquiry.request_number, inquiry.contact_name,
+                     inquiry.contact_phone, inquiry.locality, inquiry.address, inquiry.comment,
+                     inquiry.measurement_requested, inquiry.installment_interest,
+                     inquiry.cart_snapshot, inquiry.known_subtotal_minor::text,
+                     inquiry.pricing_status::text, inquiry.status::text, inquiry.version,
+                     inquiry.public_reference_sealed, inquiry.public_reference_revoked_at,
+                     inquiry.created_at, inquiry.updated_at, COUNT(*) OVER()::text AS total_count
+              FROM order_inquiry inquiry
+              WHERE ($1::text IS NULL OR inquiry.status::text = $1)
+              ORDER BY inquiry.created_at DESC, inquiry.id DESC
+              LIMIT $2 OFFSET $3
+            `,
+            [input.status, input.pageSize, (input.page - 1) * input.pageSize],
+          );
+          await auditAdmin(
+            client,
+            input.actorId,
+            input.correlationId,
+            'request.admin.listed',
+            null,
+          );
+          return {
+            items: result.rows.map(adminListItem),
+            page: input.page,
+            pageSize: input.pageSize,
+            totalCount:
+              result.rows[0]?.total_count === undefined
+                ? 0
+                : safeIntegerText(result.rows[0].total_count),
+          };
+        },
+        mapError,
+      );
+    },
+
     async recordCommunication(input) {
       assertGuestRequestIdentity(input);
       return cartTransaction(
@@ -676,6 +1054,107 @@ export function createRequestAdapter(environment: DatabaseEnvironment): RequestA
         async (client) => {
           const inquiry = await ownedRequest(client, input.ownerTokenHash, input.publicReference);
           return appendGuestCommunication(client, inquiry, input.type, input);
+        },
+        mapError,
+      );
+    },
+
+    async revokePublicReference(input) {
+      assertAdminCommand(input);
+      if (input.role === 'MANAGER') throw new RequestStoreError('REQUEST_AUTHORIZATION');
+      return cartTransaction(
+        pool,
+        async (client) => {
+          await requireStaffRole(client, input);
+          const inquiry = await adminRequestRow(client, input.requestNumber, true);
+          const updated = await client.query(
+            `UPDATE order_inquiry
+             SET public_reference_revoked_at = COALESCE(public_reference_revoked_at, NOW()),
+                 version = CASE WHEN public_reference_revoked_at IS NULL THEN version + 1 ELSE version END,
+                 updated_at = CASE WHEN public_reference_revoked_at IS NULL THEN NOW() ELSE updated_at END
+             WHERE id = $1::uuid AND public_reference_revoked_at IS NULL`,
+            [inquiry.id],
+          );
+          if ((updated.rowCount ?? 0) > 0) {
+            await auditAdmin(
+              client,
+              input.actorId,
+              input.correlationId,
+              'request.admin.public_reference_revoked',
+              input.requestNumber,
+            );
+          }
+          return adminRequestDetail(client, input.requestNumber);
+        },
+        mapError,
+      );
+    },
+
+    async updateAdminStatus(input) {
+      assertAdminCommand(input);
+      if (
+        !Number.isSafeInteger(input.expectedVersion) ||
+        input.expectedVersion <= 0 ||
+        !['NEW', 'IN_REVIEW', 'CONTACTED', 'CONFIRMED', 'CANCELLED'].includes(input.status)
+      ) {
+        throw new RequestStoreError('REQUEST_INVALID_INPUT');
+      }
+      return cartTransaction(
+        pool,
+        async (client) => {
+          await requireStaffRole(client, input);
+          const eventKey = `STATUS_CHANGED:${input.idempotencyKey}`;
+          const replay = await client.query<{ found: boolean }>(
+            `
+              SELECT EXISTS (
+                SELECT 1 FROM request_communication_event event
+                JOIN order_inquiry inquiry ON inquiry.id = event.inquiry_id
+                WHERE inquiry.request_number = $1 AND event.idempotency_key = $2
+              ) AS found
+            `,
+            [input.requestNumber, eventKey],
+          );
+          if (replay.rows[0]?.found === true) {
+            return adminRequestDetail(client, input.requestNumber);
+          }
+          const inquiry = await adminRequestRow(client, input.requestNumber, true);
+          if (inquiry.version !== input.expectedVersion) {
+            throw new RequestStoreError('REQUEST_CONFLICT');
+          }
+          if (!canTransitionRequestStatus(inquiry.status, input.status, input.role)) {
+            throw new RequestStoreError('REQUEST_AUTHORIZATION');
+          }
+          if (inquiry.status === input.status)
+            return adminRequestDetail(client, input.requestNumber);
+          await client.query(
+            `UPDATE order_inquiry SET status = $1::order_inquiry_status,
+                    version = version + 1, updated_at = NOW()
+             WHERE id = $2::uuid AND version = $3`,
+            [input.status, inquiry.id, input.expectedVersion],
+          );
+          await client.query(
+            `
+              INSERT INTO request_communication_event (
+                inquiry_id, type, actor_type, actor_identity_id, idempotency_key,
+                safe_metadata, correlation_id
+              ) VALUES ($1::uuid,'STATUS_CHANGED','IDENTITY',$2::uuid,$3,$4::jsonb,$5)
+            `,
+            [
+              inquiry.id,
+              input.actorId,
+              eventKey,
+              JSON.stringify({ from: inquiry.status, to: input.status }),
+              input.correlationId,
+            ],
+          );
+          await auditAdmin(
+            client,
+            input.actorId,
+            input.correlationId,
+            'request.admin.status_changed',
+            input.requestNumber,
+          );
+          return adminRequestDetail(client, input.requestNumber);
         },
         mapError,
       );

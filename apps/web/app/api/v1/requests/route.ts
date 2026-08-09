@@ -1,4 +1,8 @@
-import { derivePublicReference, normalizeContactPhone } from '@project-name/cart';
+import {
+  derivePublicReference,
+  normalizeContactPhone,
+  sealPublicReference,
+} from '@project-name/cart';
 import {
   guestCheckoutRequestSchema,
   guestCheckoutResponseSchema,
@@ -31,6 +35,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (ownerToken === null) throw new TypeError('CART_OWNER_REQUIRED');
     const ownerTokenHash = cartOwnerTokenHash(ownerToken, signingKey);
     const input = await parseCartJson(request, guestCheckoutRequestSchema);
+    const publicReference = derivePublicReference(signingKey, ownerTokenHash, idempotencyKey);
     const body = guestCheckoutResponseSchema.parse({
       ...(await getWebRequests().checkout({
         address: input.address ?? null,
@@ -45,7 +50,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         locality: input.locality,
         measurementRequested: input.measurementRequested,
         ownerTokenHash,
-        publicReference: derivePublicReference(signingKey, ownerTokenHash, idempotencyKey),
+        publicReference,
+        publicReferenceSealed: sealPublicReference(signingKey, publicReference),
       })),
       correlationId: context.correlationId,
     });

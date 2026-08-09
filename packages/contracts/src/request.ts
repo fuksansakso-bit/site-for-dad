@@ -3,6 +3,7 @@ import { z } from 'zod';
 import {
   cartItemResponseSchema,
   cartMoneySummarySchema,
+  cartPricingStatusSchema,
   cartProductSnapshotSchema,
 } from './cart.js';
 
@@ -143,6 +144,86 @@ export const publicRequestSummaryResponseSchema = z
   })
   .strict();
 
+export const adminRequestListItemSchema = z
+  .object({
+    contactName: z.string().min(2).max(120),
+    contactPhone: z.string().regex(/^\+[1-9][0-9]{7,14}$/u),
+    createdAt: z.iso.datetime({ offset: true }),
+    installmentInterest: z.boolean(),
+    itemCount: z.number().int().positive(),
+    knownSubtotalKopecks: z.number().int().nonnegative(),
+    locality: z.string().min(2).max(160),
+    measurementRequested: z.boolean(),
+    pricingStatus: cartPricingStatusSchema,
+    requestNumber: requestNumberSchema,
+    status: requestStatusSchema,
+    totalQuantity: z.number().int().positive(),
+    updatedAt: z.iso.datetime({ offset: true }),
+    version: z.number().int().positive(),
+  })
+  .strict();
+
+export const adminRequestListResponseSchema = z
+  .object({
+    correlationId: z.string().min(8).max(128),
+    items: z.array(adminRequestListItemSchema).max(100),
+    page: z.number().int().positive(),
+    pageSize: z.number().int().positive().max(100),
+    totalCount: z.number().int().nonnegative(),
+  })
+  .strict();
+
+export const adminRequestDetailResponseSchema = adminRequestListItemSchema.extend({
+  address: z.string().max(500).nullable(),
+  comment: z.string().max(1_000).nullable(),
+  communicationEvents: z.array(
+    z
+      .object({
+        createdAt: z.iso.datetime({ offset: true }),
+        safeMetadata: z.record(z.string(), z.unknown()),
+        type: z.enum([
+          'REQUEST_CREATED',
+          'WHATSAPP_LINK_GENERATED',
+          'WHATSAPP_LINK_OPENED',
+          'MESSAGE_COPIED',
+          'STATUS_CHANGED',
+        ]),
+      })
+      .strict(),
+  ),
+  correlationId: z.string().min(8).max(128),
+  notes: z.array(
+    z
+      .object({
+        body: z.string().min(1).max(1_000),
+        createdAt: z.iso.datetime({ offset: true }),
+      })
+      .strict(),
+  ),
+  publicReferenceRevokedAt: z.iso.datetime({ offset: true }).nullable(),
+  publicSummaryHref: z
+    .string()
+    .regex(/^\/request\/[A-Za-z0-9_-]{43}$/u)
+    .nullable(),
+  snapshot: requestSafeSnapshotSchema,
+  whatsappUrl: z.string().startsWith('https://wa.me/79635851036?text=').nullable(),
+});
+
+export const adminRequestStatusMutationSchema = z
+  .object({
+    expectedVersion: z.number().int().positive(),
+    status: requestStatusSchema,
+  })
+  .strict();
+
+export const adminRequestNoteMutationSchema = z
+  .object({ body: z.string().trim().min(1).max(1_000) })
+  .strict();
+
+export const adminRequestRevokeMutationSchema = z.object({}).strict();
+
+export type AdminRequestDetailResponse = z.infer<typeof adminRequestDetailResponseSchema>;
+export type AdminRequestListResponse = z.infer<typeof adminRequestListResponseSchema>;
 export type GuestCheckoutRequest = z.infer<typeof guestCheckoutRequestSchema>;
 export type GuestCheckoutResponse = z.infer<typeof guestCheckoutResponseSchema>;
 export type PublicRequestSummaryResponse = z.infer<typeof publicRequestSummaryResponseSchema>;

@@ -1,6 +1,13 @@
 export {
   createRequestAdapter,
   RequestStoreError,
+  type AdminRequestActor,
+  type AdminRequestCommunicationView,
+  type AdminRequestDetailView,
+  type AdminRequestListItemView,
+  type AdminRequestListView,
+  type AdminRequestMutationCommand,
+  type AdminRequestNoteView,
   type GuestRequestCommandIdentity,
   type GuestRequestCommunicationCommand,
   type GuestRequestCommunicationType,

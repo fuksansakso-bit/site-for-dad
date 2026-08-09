@@ -33,6 +33,7 @@ describe('Phase 1E migration boundary', () => {
       '20260809113000_phase_1e_cart_request_intake',
       '20260809114500_phase_1e_cart_money_bigint',
       '20260809121000_phase_1e_communication_idempotency',
+      '20260809124500_phase_1e_request_admin_controls',
     ]);
 
     const tables = new Set<string>();
@@ -51,6 +52,9 @@ describe('Phase 1E migration boundary', () => {
         expect(sql).toContain('Phase 1E migration risk: LOW');
         expect(sql).toContain('Forward compensation');
       } else if (directory === '20260809121000_phase_1e_communication_idempotency') {
+        expect(sql).toContain('Phase 1E migration risk: LOW');
+        expect(sql).toContain('Forward compensation');
+      } else if (directory === '20260809124500_phase_1e_request_admin_controls') {
         expect(sql).toContain('Phase 1E migration risk: LOW');
         expect(sql).toContain('Forward compensation');
       } else {

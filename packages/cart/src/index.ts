@@ -5,8 +5,10 @@ export {
   createRequestNumber,
   derivePublicReference,
   normalizeContactPhone,
+  openPublicReference,
   publicReferenceHash,
   requestStatuses,
+  sealPublicReference,
   type RequestStaffRole,
   type RequestStatus,
 } from './request.js';

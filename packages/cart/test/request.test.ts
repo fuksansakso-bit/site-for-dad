@@ -5,7 +5,9 @@ import {
   createRequestNumber,
   derivePublicReference,
   normalizeContactPhone,
+  openPublicReference,
   publicReferenceHash,
+  sealPublicReference,
 } from '../src/index.js';
 
 describe('guest request intake primitives', () => {
@@ -38,6 +40,16 @@ describe('guest request intake primitives', () => {
     );
     expect(publicReferenceHash(reference)).toMatch(/^[0-9a-f]{64}$/u);
     expect(publicReferenceHash(reference)).not.toContain(reference);
+  });
+
+  it('seals the bearer reference for authorized administration', () => {
+    const reference = derivePublicReference('s'.repeat(32), 'b'.repeat(64), 'checkout-key-456');
+    const sealed = sealPublicReference('s'.repeat(32), reference);
+    expect(sealed).not.toContain(reference);
+    expect(openPublicReference('s'.repeat(32), sealed)).toBe(reference);
+    expect(() => openPublicReference('x'.repeat(32), sealed)).toThrow(
+      'PUBLIC_REFERENCE_SEALED_INVALID',
+    );
   });
 
   it('enforces allowlisted manager and owner transitions', () => {

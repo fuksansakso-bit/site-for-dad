@@ -1538,6 +1538,7 @@ model OrderInquiry {
   cartId                   String                      @unique(map: "order_inquiry_cart_key") @map("cart_id") @db.Uuid
   checkoutIdempotencyKey   String                      @unique(map: "order_inquiry_checkout_idempotency_key") @map("checkout_idempotency_key") @db.VarChar(255)
   publicReferenceHash      String                      @unique(map: "order_inquiry_public_reference_hash_key") @map("public_reference_hash") @db.Char(64)
+  publicReferenceSealed    String?                     @map("public_reference_sealed") @db.VarChar(512)
   publicReferenceRevokedAt DateTime?                   @map("public_reference_revoked_at") @db.Timestamptz(6)
   contactName              String                      @map("contact_name") @db.VarChar(120)
   contactPhone             String                      @map("contact_phone") @db.VarChar(32)
@@ -1609,14 +1610,16 @@ model RequestCommunicationEvent {
 }
 
 model RequestInternalNote {
-  id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  inquiryId     String        @map("inquiry_id") @db.Uuid
-  authorActorId String        @map("author_actor_id") @db.Uuid
-  body          String        @db.VarChar(1000)
-  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
-  inquiry       OrderInquiry  @relation(fields: [inquiryId], references: [id], onDelete: Restrict)
-  authorActor   ActorIdentity @relation(fields: [authorActorId], references: [id], onDelete: Restrict)
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  inquiryId      String        @map("inquiry_id") @db.Uuid
+  authorActorId  String        @map("author_actor_id") @db.Uuid
+  idempotencyKey String        @map("idempotency_key") @db.VarChar(255)
+  body           String        @db.VarChar(1000)
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  inquiry        OrderInquiry  @relation(fields: [inquiryId], references: [id], onDelete: Restrict)
+  authorActor    ActorIdentity @relation(fields: [authorActorId], references: [id], onDelete: Restrict)
 
+  @@unique([inquiryId, idempotencyKey], map: "request_internal_note_idempotency_key")
   @@index([inquiryId, createdAt], map: "request_internal_note_inquiry_idx")
   @@map("request_internal_note")
 }

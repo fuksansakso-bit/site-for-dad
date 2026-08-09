@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  adminRequestNoteMutationSchema,
+  adminRequestStatusMutationSchema,
   guestCheckoutRequestSchema,
   requestCommunicationEventRequestSchema,
   whatsappHandoffRequestSchema,
@@ -55,5 +57,18 @@ describe('guest checkout contract', () => {
       type: 'MESSAGE_COPIED',
     });
     expect(() => requestCommunicationEventRequestSchema.parse({ type: 'MESSAGE_SENT' })).toThrow();
+  });
+
+  it('admin mutations cannot carry price or snapshot overrides', () => {
+    expect(() =>
+      adminRequestStatusMutationSchema.parse({
+        expectedVersion: 1,
+        knownSubtotalKopecks: 1,
+        status: 'IN_REVIEW',
+      }),
+    ).toThrow();
+    expect(() =>
+      adminRequestNoteMutationSchema.parse({ body: 'Позвонить после 18:00', priceVersionId: 'x' }),
+    ).toThrow();
   });
 });

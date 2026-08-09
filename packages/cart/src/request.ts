@@ -1,4 +1,11 @@
-import { createHash, createHmac, randomInt } from 'node:crypto';
+import {
+  createCipheriv,
+  createDecipheriv,
+  createHash,
+  createHmac,
+  randomBytes,
+  randomInt,
+} from 'node:crypto';
 
 export const requestStatuses = ['NEW', 'IN_REVIEW', 'CONTACTED', 'CONFIRMED', 'CANCELLED'] as const;
 
@@ -51,6 +58,58 @@ export function publicReferenceHash(reference: string): string {
     throw new TypeError('PUBLIC_REFERENCE_INVALID');
   }
   return createHash('sha256').update(reference).digest('hex');
+}
+
+function publicReferenceEncryptionKey(signingKey: string): Buffer {
+  if (signingKey.length < 32) throw new TypeError('PUBLIC_REFERENCE_KEY_INVALID');
+  return createHash('sha256').update(`phase1e-public-reference-encryption:${signingKey}`).digest();
+}
+
+export function sealPublicReference(signingKey: string, reference: string): string {
+  publicReferenceHash(reference);
+  const nonce = randomBytes(12);
+  const cipher = createCipheriv('aes-256-gcm', publicReferenceEncryptionKey(signingKey), nonce);
+  const encrypted = Buffer.concat([cipher.update(reference, 'utf8'), cipher.final()]);
+  return `v1.${nonce.toString('base64url')}.${encrypted.toString('base64url')}.${cipher
+    .getAuthTag()
+    .toString('base64url')}`;
+}
+
+export function openPublicReference(signingKey: string, sealed: string): string {
+  const [version, nonceText, encryptedText, tagText, extra] = sealed.split('.');
+  if (
+    version !== 'v1' ||
+    nonceText === undefined ||
+    encryptedText === undefined ||
+    tagText === undefined ||
+    extra !== undefined
+  ) {
+    throw new TypeError('PUBLIC_REFERENCE_SEALED_INVALID');
+  }
+  try {
+    const nonce = Buffer.from(nonceText, 'base64url');
+    const encrypted = Buffer.from(encryptedText, 'base64url');
+    const tag = Buffer.from(tagText, 'base64url');
+    if (nonce.length !== 12 || tag.length !== 16 || encrypted.length === 0) {
+      throw new TypeError('PUBLIC_REFERENCE_SEALED_INVALID');
+    }
+    const decipher = createDecipheriv(
+      'aes-256-gcm',
+      publicReferenceEncryptionKey(signingKey),
+      nonce,
+    );
+    decipher.setAuthTag(tag);
+    const reference = Buffer.concat([decipher.update(encrypted), decipher.final()]).toString(
+      'utf8',
+    );
+    publicReferenceHash(reference);
+    return reference;
+  } catch (error) {
+    if (error instanceof TypeError && error.message === 'PUBLIC_REFERENCE_SEALED_INVALID') {
+      throw error;
+    }
+    throw new TypeError('PUBLIC_REFERENCE_SEALED_INVALID', { cause: error });
+  }
 }
 
 export function canTransitionRequestStatus(

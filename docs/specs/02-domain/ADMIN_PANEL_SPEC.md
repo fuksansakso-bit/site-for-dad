@@ -175,11 +175,14 @@ The Phase 1B.2 command layer exposes the two-step preview/apply contract for mat
 - **P1F-ADMIN-001 — MUST:** `/admin` is one Russian, responsive, keyboard-operable shell with routes dashboard, catalog, pricing, requests, customers, portfolio, settings, staff, audit and sync; existing catalog/pricing/request commands remain authoritative.
 - **P1F-ADMIN-002 — MUST:** every page and mutation rechecks the current staff session and server capability; navigation visibility is not authorization.
 - **P1F-ADMIN-003 — MUST:** dashboard uses aggregate operational counts only and does not expose contact data to unauthorized roles.
-- **P1F-ADMIN-004 — MUST:** customer administration supports bounded search/detail and linking of account-owned requests/projects without rewriting guest/request history.
+- **P1F-ADMIN-004 — MUST:** customer administration supports bounded staff-only search/detail of `CustomerContact`/lead records and linked immutable requests without creating an account or rewriting guest/request history.
 - **P1F-ADMIN-005 — MUST:** OWNER/ADMIN may invite staff; only OWNER may grant/revoke OWNER, and the last active OWNER cannot be disabled or demoted.
 - **P1F-ADMIN-006 — MUST:** SiteSettings changes are validated, versioned and audited with before/after safe snapshots; customer-facing services read the active settings instead of duplicated literals.
 - **P1F-ADMIN-007 — MUST:** portfolio management separates draft, rights review, publication approval, published, hidden and archived states and cannot publish client uploads or assets without evidence.
 - **P1F-ADMIN-008 — MUST:** audit UI is bounded/filterable and excludes secret hashes, OTP, sessions, storage keys, raw PII and arbitrary metadata dumps.
+- **P1F-ADMIN-009 — MUST:** repeated requests may link to one `CustomerContact` by normalized supplied phone and optional e-mail under deterministic conflict handling; no credential or customer identity is created.
+- **P1F-ADMIN-010 — MUST:** internal request/contact notes are bounded, staff-attributed and hidden from every publicReference, customer handoff and public DTO.
+- **P1F-ADMIN-011 — MUST:** the staff-session screen supports self-revocation and authorized revocation of other staff sessions; role disable/reduction invalidates affected sessions immediately.
 
 ## 15. Dependencies, risks and open questions
 
@@ -199,3 +202,4 @@ Links: `FR-ADMIN-*`, `RBAC-*`, `NFR-AUDIT-*`, `ADMIN-SPEC-001`–`034`.
 | 0.7.0 | 2026-08-03 | Expanded `/admin/catalog` to the full normalized inventory with server filters/pages, hierarchy facets, safe manifest and durable-run progress, paginated diff review, immutable histories and the exact review/bulk/composition/activation/rollback workflow in a responsive keyboard-operable control room. |
 | 0.8.0 | 2026-08-04 | Recorded accepted real manifest/progress/diff/review/bulk/activation/rollback histories and final authorization, recovery, browser and CI evidence for `/admin/catalog`; non-catalog and production admin remain gated. |
 | 0.9.0 | 2026-08-09 | Authorized the Phase 1F unified Russian admin shell, staff/customer operations, portfolio, versioned settings and redacted audit views without replacing existing domain commands. |
+| 0.10.0 | 2026-08-09 | Revised Phase 1F customer administration to request-derived `CustomerContact`/lead records and internal notes without customer accounts, credentials or sessions. |

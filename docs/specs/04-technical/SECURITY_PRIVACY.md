@@ -154,10 +154,12 @@ Phase 1E local/CI checkout uses synthetic contact data only. A 256-bit guest tok
 
 - **P1F-SEC-001 — MUST:** OTP/session/invitation secrets use CSPRNG, keyed hashing and constant-time comparison; plaintext is confined to the immediate response-to-delivery handoff and prohibited from logs, audit and persistence.
 - **P1F-SEC-002 — MUST:** login responses are enumeration-neutral; IP/coarse-client and keyed-identifier rate limits, attempt counters, resend delay and atomic consume resist brute force and replay.
-- **P1F-SEC-003 — MUST:** customer/staff cookies have separate names and validation contexts, HttpOnly/SameSite/production-Secure flags, rotation and revocation; fixation and cross-context reuse fail closed.
+- **P1F-SEC-003 — SUPERSEDED:** Phase 1F has no customer cookie. The staff cookie is HttpOnly, SameSite=Strict, production-Secure, hash-only, rotated/revocable, and fixation/replay fails closed.
 - **P1F-SEC-004 — MUST:** portfolio ingestion validates declared and detected MIME, signature, decoded dimensions, byte limit, safe generated name and SHA-256, strips EXIF/unsafe metadata into a derivative, and quarantines or rejects malformed/polyglot input.
 - **P1F-SEC-005 — MUST:** production e-mail and PII collection remain disabled until provider/residency/legal/retention gates close; local/CI uses Mailpit and synthetic data only.
 - **P1F-SEC-006 — MUST:** audit captures actor/action/outcome/correlation and safe before/after state without e-mail, phone, OTP, token, filename, storage locator or free-form secret-bearing payload.
+- **P1F-SEC-007 — MUST:** every customer-facing route remains guest-only and cannot issue a staff or customer credential; `/login` is staff-labelled and inaccessible as a customer-account creation path.
+- **P1F-SEC-008 — MUST:** CRM-contact and internal-note authorization is staff-only, deny-by-default and excluded from public references, caching, logs and broad dashboard aggregates.
 
 ## 20. Dependencies, risks and open questions
 
@@ -175,3 +177,4 @@ Dependencies: all specs, legal review, provider/hosting/storage/auth/AI ADR/eval
 | 0.6.0 | 2026-08-08 | Recorded Phase 1D opaque guest ownership, origin/CSRF/rate/idempotency, manifest allowlist, storage integrity, safe caching/errors and explicit no-photo/no-AI boundary. |
 | 0.7.0 | 2026-08-09 | Recorded verified Phase 1E hashed guest ownership, CSRF/origin/rate/idempotency, immutable server money, fixed recipient, revocable PII-free public projection, staff denial and synthetic log scan while production PII stays gated. |
 | 0.8.0 | 2026-08-09 | Added Phase 1F OTP/session/invitation, account/admin authorization, local Mailpit, portfolio ingestion and redacted audit boundaries while production PII/provider remains gated. |
+| 0.9.0 | 2026-08-09 | Narrowed Phase 1F to staff-only OTP/session security and request-derived CRM contact privacy; customer authentication/account cookies are prohibited. |

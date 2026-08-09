@@ -4,7 +4,7 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1F account and named staff lifecycle authorized and in progress |
+| Статус | Revised Phase 1F named staff lifecycle authorized; CUSTOMER reserved post-MVP |
 | Версия | 0.5.0 |
 | Дата | 2026-08-09 |
 | Scope | Public, client, staff, service identities and approvals |
@@ -190,9 +190,9 @@ The guest cart token authorizes only its own cart and checkout; the public reque
 
 ## 13. Phase 1F capability profile
 
-- **P1F-RBAC-001 — MUST:** the core runtime roles are exactly `GUEST`, `CUSTOMER`, `MANAGER`, `ADMIN`, `OWNER` and `SYSTEM_WORKER`; governance owners remain concepts outside RBAC.
-- **P1F-RBAC-002 — MUST:** CUSTOMER has object-scoped self-service only; MANAGER may process requests/customers and view published content; ADMIN may manage business settings/content/staff invitations except OWNER-only operations; OWNER may manage roles and protected settings.
-- **P1F-RBAC-003 — MUST:** staff grants are invitation-based, audited, immediately revocable and rechecked per mutation. Customer sign-in cannot self-upgrade.
+- **P1F-RBAC-001 — MUST:** the core runtime roles remain `GUEST`, reserved `CUSTOMER`, `MANAGER`, `ADMIN`, `OWNER` and `SYSTEM_WORKER`; Phase 1F issues credentials only to staff roles and governance owners remain concepts outside RBAC.
+- **P1F-RBAC-002 — MUST:** CUSTOMER has no Phase 1F authentication or account surface; MANAGER may process requests/CustomerContact records and view published content; ADMIN may manage business settings/content/staff invitations except OWNER-only operations; OWNER may manage roles and protected settings.
+- **P1F-RBAC-003 — MUST:** staff grants are invitation-based, audited, immediately revocable and rechecked per mutation. No customer sign-in path exists.
 - **P1F-RBAC-004 — MUST:** the last active OWNER protection is transactionally enforced under concurrency and cannot be bypassed by disable, role revoke or invitation replacement.
 - **P1F-RBAC-005 — MUST:** SYSTEM_WORKER executes only allowlisted versioned tasks and never receives a browser session.
 
@@ -208,4 +208,5 @@ Dependencies: `AUTH_ACCOUNTS_SPEC`, `ADMIN_PANEL_SPEC`, `SECURITY_PRIVACY`, doma
 | 0.2.0 | 2026-08-02 | Разделены governance owners и RBAC `OWNER`, добавлен Phase 1A `SYSTEM_WORKER`, а PriceVersion activation ограничена `OWNER`/`ADMIN` с diff, confirmation и audit. |
 | 0.3.0 | 2026-08-02 | Уточнено, что RBAC-права лишь исполняют решения authority из `OWNER-DECISION-008` и не позволяют менять AMIGO source fields или подменять Business Owner. |
 | 0.4.0 | 2026-08-09 | Recorded Phase 1E guest cart ownership, PII-free public projection, OWNER/ADMIN/MANAGER request read/note/transition allowlists and deny-all captured-price mutation. |
+| 0.5.0 | 2026-08-09 | `OWNER-DECISION-018` reserves CUSTOMER for post-MVP without credentials and limits Phase 1F identity/RBAC runtime to OWNER/ADMIN/MANAGER staff plus scoped workers. |
 | 0.5.0 | 2026-08-09 | Added Phase 1F CUSTOMER object scope, invitation-only MANAGER/ADMIN/OWNER lifecycle, transactional last-OWNER protection and worker-only task scope. |

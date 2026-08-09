@@ -4,7 +4,7 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A–1E passed; Phase 1F authorized and in progress; Phase 1G+ hold |
+| Статус | Phase 1A–1E passed; revised staff-only/business Phase 1F in progress; Phase 1G+ hold |
 | Версия | 0.22.0 |
 | Дата | 2026-08-09, Europe/Moscow |
 | Владелец документа | Product Owner — владелец проекта; Business Owner — отец владельца проекта (`OWNER-DECISION-001`) |
@@ -71,6 +71,7 @@
 | 0.20.0 | 2026-08-09 | `OWNER-DECISION-016` separately authorizes only Phase 1E: guest multi-item cart over immutable QuoteSnapshot records, immutable request intake snapshots, free-measurement and neutral installment flags, fixed-recipient `wa.me` handoff, revocable PII-free public summary, minimal request administration, audit/outbox and security/browser/recovery evidence. Production deployment, payment, official WhatsApp API, accounts, AI and Phase 1F+ remain prohibited. |
 | 0.21.0 | 2026-08-09 | Phase 1E completed as `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`: quote-backed guest cart, immutable `OrderInquiry` snapshots, honest mixed pricing, fixed-recipient WhatsApp handoff, revocable PII-free summary, minimal staff intake, audit/outbox and real PostgreSQL/Chromium/recovery evidence pass. Phase 1F and production remain unauthorized. |
 | 0.22.0 | 2026-08-09 | `OWNER-DECISION-017` authorizes only Phase 1F from merged-main commit `49695099b0eee3db4a4357eb3f3eb36f78fa3389`: optional passwordless customer accounts, guest ownership migration, saved workspace/favorites, invitation-only staff roles, unified Russian administration, customer/request operations, local portfolio media, SiteSettings, audit and durable delivery/cleanup/media jobs. Production providers/deployment, payment, client-photo/AI and Phase 1G+ remain prohibited. |
+| 0.23.0 | 2026-08-09 | `OWNER-DECISION-018` narrows Phase 1F before customer WIP is committed: customer registration/login/OTP/sessions, `/account`, guest migration, projects/favorites and account history move to post-MVP. Phase 1F is now staff-only authentication, OWNER/ADMIN/MANAGER administration, request-derived `CustomerContact`/lead CRM records and notes, portfolio, SiteSettings, audit and existing catalog/pricing/sync operations; the Phase 1E guest/publicReference path remains the only customer path. |
 
 ## 1. Нормативный язык и приоритет источников
 
@@ -138,6 +139,7 @@
 - **OWNER-DECISION-015 — MUST:** During Phase 1D the Product Owner explicitly confirmed partner permission and required the standard preview to use locally mirrored, registered AMIGO photoreal interior/product layers and crisp supplier geometry rather than a cartoon-like composition. This supplements only the scene/visual-layer choice in `OWNER-DECISION-014`: source URL, checksum, rights/publication status and any deterministic rectification MUST remain recorded; runtime hotlinking, arbitrary remote URLs, AMIGO client-request calls, copying supplier frontend code and AI generation remain forbidden. The Zebra 5992 right-sash layer MAY use a checksum-bound deterministic perspective rectification while preserving the source asset and provenance. No Phase 1E authority is granted.
 - **OWNER-DECISION-016 — MUST:** Product Owner authorizes only Phase 1E **CART, GUEST REQUESTS, WHATSAPP HANDOFF AND BASIC ORDER INTAKE** on branch `phase/1e-cart-whatsapp-orders` from merged-main commit `65780067537418a3230bb3d32ef3fb8e0af06917`. Allowed scope is an HttpOnly/SameSite guest cart containing one or more `CartItem` references to immutable `QuoteSnapshot` records; edit-by-new-snapshot, duplicate/remove/clear; server-only mixed-price summary; guest `/checkout`; free-measurement and neutral installment-interest flags; immutable `Request`/`OrderInquiry` composition; statuses `NEW`, `IN_REVIEW`, `CONTACTED`, `CONFIRMED`, `CANCELLED`; communication events limited to `REQUEST_CREATED`, `WHATSAPP_LINK_GENERATED`, `WHATSAPP_LINK_OPENED`, `MESSAGE_COPIED`, `STATUS_CHANGED`; server-generated `https://wa.me/79635851036` handoff; a cryptographically unpredictable revocable public reference whose summary excludes PII; minimal OWNER/ADMIN/MANAGER request administration; append-only audit and transactional outbox events `request.created`, `cart.checked_out`, optional `measurement.requested` and `installment.interest_recorded`; mobile/accessibility/security/recovery tests. Unknown price MUST remain non-numeric, existing quote bytes MUST remain immutable, and a changed active PriceVersion MUST produce a visible voluntary-recalculation warning rather than hidden repricing. `CONFIRMED` confirms only manager handling of the request and MUST NOT create or claim a confirmed order. Phase 1E local/CI verification uses synthetic contact data; unresolved `TBD-BIZ-005` and `TBD-PRIV-002/004/005` continue to block shared/production PII collection and do not receive invented legal/retention values. Online payment, acquiring, automated credit/installment, SMS/e-mail auth, full account/CRM/manufacturing planning, client-photo/AI, final landing/starfield/redesign, production provider/secrets/deployment and Phase 1F+ MUST NOT begin. Completion of Phase 1E does not authorize another phase.
 - **OWNER-DECISION-017 — MUST:** Product Owner authorizes only Phase 1F **CUSTOMER ACCOUNTS AND BUSINESS ADMINISTRATION** on branch `phase/1f-accounts-business-admin` from merged-main commit `49695099b0eee3db4a4357eb3f3eb36f78fa3389`. The guest catalog/configurator/preview/cart/checkout/request path MUST remain complete without registration. Allowed scope is passwordless e-mail code login through provider-neutral `EmailDeliveryPort` and local Mailpit; 10-minute single-use hash-only codes with five attempts and 60-second resend; HttpOnly/SameSite/production-Secure rotating sessions (customer 30 days, staff absolute 12 hours); atomic same-browser guest-to-account migration; `/account` projects/calculations/requests/favorites/profile/security; invitation-only OWNER/ADMIN/MANAGER staff lifecycle and local `pnpm dev:owner --email`; unified Russian `/admin`, dashboard/catalog/pricing/requests/customers/portfolio/settings/staff/audit/sync; portfolio upload/derivative/publication workflow through `StoragePort`; versioned `SiteSettings`; append-only audit/outbox; and Graphile Worker delivery/invitation/cleanup/migration/media tasks. Default operational settings are WhatsApp `+79635851036`, territory `Чеченская Республика`, lead time `2–7 календарных дней`, warranty `12 месяцев`, free measurement/delivery/installation, and the exact public installment text `Доступна рассрочка. Уточните условия у менеджера`. Staff accounts cannot be created through customer login, and the last active OWNER MUST NOT be disabled or demoted. Production e-mail/storage/hosting/provider selection, real production PII, account deletion beyond safe disable pending retention, arbitrary historical order claiming, online payment/acquiring, automated installment/credit, client-photo upload/AI, full CRM/manufacturing, final landing/starfield redesign, production deployment and Phase 1G+ MUST NOT begin. Completion of Phase 1F does not authorize another phase.
+- **OWNER-DECISION-018 — MUST:** Product Owner supersedes only the customer-account portions of `OWNER-DECISION-017` before their uncommitted WIP is accepted. Phase 1F is renamed **BUSINESS ADMINISTRATION, REQUEST MANAGEMENT, PORTFOLIO AND SETTINGS**. CUSTOMER remains a reserved architectural role only: Phase 1F MUST NOT expose customer registration, customer OTP/magic-link/provider/session, `/account` routes, guest-to-account/cart migration, account projects/favorites/order history/reorder or any purchase/request registration requirement. The customer journey remains Catalog → Configurator → Calculation → Preview → Cart → Request → WhatsApp, followed by the existing safe `publicReference`. Allowed scope is staff-only passwordless authentication, staff-session administration, OWNER/ADMIN/MANAGER invitation/permissions/last-OWNER protection, unified Russian admin/dashboard/request operations, a separate `CustomerContact`/lead business record derived from voluntarily supplied request name/phone/e-mail/locality with repeat-request linking and internal staff notes but no credentials, plus catalog/availability/local pricing/PriceVersion/AMIGO sync/diff/review, portfolio, SiteSettings, contacts/free-services/warranty/lead-time/installment settings and redacted audit. Client accounts and saved cross-device workspace are post-MVP. All unchanged defaults and prohibitions from `OWNER-DECISION-017` remain authoritative; Phase 1G is not authorized.
 
 Гарантийная политика MUST NOT уменьшать обязательные права потребителя, предусмотренные применимым законодательством. Порядок обращения, доказательства, сроки проверки и способы удовлетворения требования остаются в `TBD-WARRANTY-001` и не придумываются.
 
@@ -281,7 +283,7 @@ Phase 1C acceptance 2026-08-08 сохранил CatalogVersion v2 и актив�
 - **SCOPE-007 — MUST:** первый проверяемый scope визуализатора — рулонные жалюзи и «Зебра»/«День-Ночь»; остальные семейства проходят отдельный post-MVP gate.
 - **SCOPE-008 — MUST:** сравнение исходной фотографии и результата.
 - **SCOPE-009 — MUST:** отправка контекста расчёта/визуализации в WhatsApp и создание заявки.
-- **SCOPE-010 — MUST:** сохранение расчёта с версией цены доступно в базовом добровольном аккаунте; полноценный гостевой расчёт и заявка не требуют регистрации.
+- **SCOPE-010 — SUPERSEDED:** historical basic-account MVP requirement; superseded before implementation by `OWNER-DECISION-018` and reserved for post-MVP.
 - **SCOPE-011 — MUST:** портфолио только из разрешённых фотографий работ.
 - **SCOPE-012 — MUST:** админ-панель для реальных товаров, вариантов, наличия, ценовых категорий, прайс-листов, заявок и контента.
 - **SCOPE-013 — MUST:** минимальный жизненный цикл заявки и история изменений.
@@ -297,12 +299,13 @@ Phase 1C acceptance 2026-08-08 сохранил CatalogVersion v2 и актив�
 - **SCOPE-041 — MUST:** первая AI-примерка включает private upload, ручную коррекцию, геометрическую базу, optional gated refinement, before/after, fallback, evaluation и cost limits только для рулонных и Zebra.
 - **SCOPE-042 — MUST:** стандартный preview и AI-примерка имеют разные типы результата, data/privacy boundaries и release gates.
 - **SCOPE-043 — MUST:** разработка следует Phase 1A–1H из [IMPLEMENTATION_ROADMAP](../06-plans/IMPLEMENTATION_ROADMAP.md); завершение документационного gate не разрешает следующий этап автоматически.
+- **SCOPE-044 — MUST:** MVP customer journey is entirely guest-only and uses the existing safe public request reference after submission; no customer credential or registration gate exists.
 
 ### 6.2. После MVP или после отдельного quality gate
 
 - **SCOPE-015 — MAY:** optional generative refinement входит только в контролируемый MVP pilot рулонных/Zebra после provider, privacy, evaluation, protected-region и cost gates; для иных семейств это post-MVP.
 - **SCOPE-016 — MAY:** визуализация горизонтальных и вертикальных жалюзи после подтверждения качества первого scope.
-- **SCOPE-017 — MAY:** расширенный клиентский кабинет сверх базового сохранения расчётов — повторные заказы, адресная книга, избранное, полная история статусов и иные CRM-функции — относится к post-MVP, если отдельное решение не изменит scope.
+- **SCOPE-017 — MAY:** all customer accounts, passwordless customer authentication, saved projects/favorites/order history/reorder and cross-device workspace are post-MVP and require a new written scope decision.
 - **SCOPE-018 — MAY:** детальные производственные статусы, расписание и расширенная история заказа по `QUOTES_ORDERS_SPEC.md`.
 - **SCOPE-019 — MAY:** расширенная аналитика, сегментация, эксперименты и отчёты по причинам расхождения цены.
 - **SCOPE-020 — MAY:** онлайн-оплата после отдельного business/security/legal решения.
@@ -501,8 +504,8 @@ Phase 1C acceptance 2026-08-08 сохранил CatalogVersion v2 и актив�
 - **FR-SAVED-003 — MUST:** исторический расчёт остаётся читаемым после архивирования каталожной позиции.
 - **FR-SAVED-004 — MUST:** истёкший прайс-лист не меняет снимок, но UI предупреждает перед новой заявкой.
 - **FR-SAVED-005 — MUST:** ссылка гостя непредсказуема, ограничена сроком и не индексируется.
-- **FR-SAVED-006 — MUST:** присоединение гостевого расчёта к аккаунту требует подтверждения владения.
-- **FR-SAVED-007 — MAY:** пользователь создаёт проект из нескольких расчётов/вариантов после выбора модели аккаунта.
+- **FR-SAVED-006 — SUPERSEDED:** guest-to-account claim is post-MVP under `OWNER-DECISION-018`.
+- **FR-SAVED-007 — MAY:** account projects remain post-MVP and are not implemented in Phase 1F.
 
 ### 10.6. Визуализатор
 
@@ -607,13 +610,15 @@ Phase 1C acceptance 2026-08-08 сохранил CatalogVersion v2 и актив�
 ### 10.9. Аккаунты
 
 - **FR-AUTH-001 — MUST:** каталог, конфигуратор, стандартный preview, примерка на фото, расчёт, корзина и отправка заявки доступны гостю без обязательной регистрации.
-- **FR-AUTH-002 — MUST:** клиентская и административная аутентификация имеют раздельные политики и точки входа по `ASM-003`.
-- **FR-AUTH-003 — MUST:** зарегистрированный клиент видит только собственные проекты, фото и подтверждённо связанные заказы.
+- **FR-AUTH-002 — SUPERSEDED:** Phase 1F has staff authentication only; a future customer policy requires a post-MVP decision.
+- **FR-AUTH-003 — SUPERSEDED:** customer-owned private workspace is post-MVP under `OWNER-DECISION-018`.
 - **FR-AUTH-004 — MUST:** внутренние роли используют least privilege и deny-by-default.
 - **FR-AUTH-005 — MUST:** чувствительные административные действия требуют свежей/усиленной аутентификации после security design.
-- **FR-AUTH-006 — MUST:** восстановление доступа не раскрывает существование чужого аккаунта или заказа.
-- **FR-AUTH-007 — MUST:** базовый MVP-кабинет поддерживает собственные сохранённые расчёты. Расширенные проекты, повторные заказы, сохранённые визуализации, избранное, полная история статусов, адреса и CRM-функции требуют отдельного post-MVP scope decision.
-- **FR-AUTH-008 — MUST:** наличие кабинета не меняет и не блокирует гостевой путь каталога, конфигуратора, preview, расчёта, корзины и заявки.
+- **FR-AUTH-006 — MUST:** staff login/recovery responses do not reveal whether an e-mail or invitation exists.
+- **FR-AUTH-007 — SUPERSEDED:** the basic customer cabinet is deferred post-MVP by `OWNER-DECISION-018`.
+- **FR-AUTH-008 — MUST:** the guest catalog, configurator, preview, calculation, cart and request path remains complete without any customer authentication surface.
+- **FR-AUTH-009 — MUST NOT:** Phase 1F exposes customer registration, OTP, magic links, authentication provider, login session or `/account` route.
+- **FR-AUTH-010 — MUST:** after submission a guest uses the existing safe `publicReference`; no account is required to inspect the allowed public summary.
 
 ### 10.10. Портфолио
 
@@ -648,6 +653,10 @@ Phase 1C acceptance 2026-08-08 сохранил CatalogVersion v2 и актив�
 - **FR-ADMIN-019 — MUST:** права на активы, publication approval, наличие, pricing и orderability имеют независимые административные controls и фильтры.
 - **FR-ADMIN-020 — MUST:** администратор может перевести категорию или позицию в manual calculation/order blocked без удаления source data или исторических ссылок.
 - **FR-ADMIN-021 — MUST:** все попытки и успешные активации `PriceVersion` фиксируются в audit log с actor, diff/version, confirmation, outcome и correlation ID.
+- **FR-ADMIN-022 — MUST:** `CustomerContact`/lead is a business record linked to one or more immutable requests by normalized phone and, when supplied, normalized e-mail; it is never an identity or login account.
+- **FR-ADMIN-023 — MUST:** bounded staff-only customer-contact views may show supplied name, phone, e-mail, locality, request count, last request and timestamps according to role capabilities.
+- **FR-ADMIN-024 — MUST:** internal manager notes are append-only or versioned, staff-attributed, timestamped, bounded and excluded from public references, WhatsApp payloads and generic audit metadata.
+- **FR-ADMIN-025 — MUST NOT:** linking repeated requests creates a credential, customer session or customer authentication provider.
 - **FR-SETTINGS-001 — MUST:** сайт хранит версионируемые контакты, регион обслуживания, срок изготовления и гарантийный срок.
 - **FR-SETTINGS-002 — MUST:** настройки бесплатных услуг разделены по услуге, но их подтверждённое значение для всей обслуживаемой территории равно `0` рублей; изменение бизнес-смысла требует нового решения владельца.
 - **FR-SETTINGS-003 — MUST:** privacy/consent тексты версионируются с датой вступления в силу.
@@ -996,7 +1005,7 @@ Phase 1C acceptance 2026-08-08 сохранил CatalogVersion v2 и актив�
 8. **1C — Configurator and pricing:** compatibility, millimetres/quantity, versioned preliminary price, override/manual fallback и parity tests; не разрешена автоматически после 1B.2.
 9. **1D — Standard preview:** deterministic prepared-scene rendering for supported MVP profiles.
 10. **1E — Cart, WhatsApp and orders:** завершены multi-item cart, guest/measurement request, neutral installment interest, safe WhatsApp handoff and immutable saved request.
-11. **1F — Admin and accounts:** разрешена `OWNER-DECISION-017`; optional passwordless accounts, guest migration, saved workspace, staff lifecycle, unified business admin, portfolio, settings and audit выполняются только в установленной границе.
+11. **1F — Business administration, requests, portfolio and settings:** `OWNER-DECISION-018` narrows the authorization to staff authentication/lifecycle, unified business admin, request-derived CRM contacts/notes, portfolio, settings and audit; all customer accounts are post-MVP.
 12. **1G+ — Private photo/AI and later work:** не разрешены; client-photo/AI, payment, production deployment и любые следующие фазы требуют нового письменного решения.
 12. **1G — AI visualizer pilot:** private geometry-first roller/Zebra pilot, manual correction, optional refinement and evaluation/cost gates.
 13. **1H — Hardening and release:** security/accessibility/performance/browser/mobile/recovery/monitoring/deployment and launch gate.

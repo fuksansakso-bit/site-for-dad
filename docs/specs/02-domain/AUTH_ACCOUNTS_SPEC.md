@@ -4,7 +4,7 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1F authorized — passwordless accounts and staff identity in progress; production delivery/deletion gated |
+| Статус | Revised Phase 1F — staff-only passwordless identity; customer accounts deferred post-MVP |
 | Версия | 0.2.0 |
 | Дата | 2026-08-09 |
 | Permissions | [ROLES_PERMISSIONS.md](../01-product/ROLES_PERMISSIONS.md) |
@@ -141,20 +141,25 @@ Tests: guest full funnel; optional account; valid/invalid/expired/replayed ident
 
 ## 12. Phase 1F approved profile
 
-- **P1F-AUTH-001 — MUST:** `/login` uses a single-use e-mail code through `EmailDeliveryPort`; successful customer verification MAY create an account, while staff creation requires an invitation or local-only owner bootstrap.
+- **P1F-AUTH-001 — SUPERSEDED:** customer verification/account creation portion is withdrawn by `OWNER-DECISION-018`; `/login` is staff-only.
 - **P1F-AUTH-002 — MUST:** only keyed hashes of codes and session tokens are stored; codes expire after 10 minutes, allow five attempts, have a 60-second resend interval and are consumed atomically.
 - **P1F-AUTH-003 — MUST:** request/verify responses do not reveal whether an e-mail, account or invitation exists and are rate-limited by keyed normalized identifier and coarse client bucket.
-- **P1F-AUTH-004 — MUST:** customer sessions expire after 30 days and rotate; staff sessions expire absolutely after 12 hours. Login, privilege change and security actions rotate or revoke applicable sessions.
-- **P1F-AUTH-005 — MUST:** customer, staff and synthetic-local credentials remain distinct contexts; a customer session cannot access `/admin`, and customer code verification cannot grant staff roles.
-- **P1F-AUTH-006 — MUST:** same-browser guest ownership migration is atomic, idempotent and proof-bound to existing HttpOnly ownership cookies; immutable calculation, quote and request snapshots are not rewritten.
-- **P1F-AUTH-007 — MUST:** the account workspace exposes only the principal's projects, calculations, requests and favorites; profile fields are limited to name, phone, locality and optional address.
-- **P1F-AUTH-008 — MUST:** account deletion remains unavailable while `TBD-ACCOUNT-006` is open; security UI may revoke sessions and disable future login without deleting retained business records.
+- **P1F-AUTH-004 — SUPERSEDED:** customer-session portion is withdrawn; staff sessions retain an absolute 12-hour limit and rotation/revocation controls.
+- **P1F-AUTH-005 — SUPERSEDED:** no customer credential context exists in Phase 1F; staff and synthetic-local contexts remain distinct.
+- **P1F-AUTH-006 — SUPERSEDED:** guest ownership migration is deferred post-MVP by `OWNER-DECISION-018`.
+- **P1F-AUTH-007 — SUPERSEDED:** the customer account workspace is deferred post-MVP by `OWNER-DECISION-018`.
+- **P1F-AUTH-008 — SUPERSEDED:** customer account deletion/session controls are not part of Phase 1F because no customer account is created.
 - **P1F-AUTH-009 — MUST:** local/CI delivery uses Mailpit and synthetic addresses; the production sender, provider, region and credentials remain unselected.
-- **P1F-AUTH-010 — MUST:** code delivery, invitation delivery, session/code cleanup and guest migration are versioned idempotent Graphile Worker tasks with reference-only payloads.
+- **P1F-AUTH-010 — SUPERSEDED:** code/invitation delivery and staff cleanup remain durable jobs; guest migration is removed.
+- **P1F-AUTH-011 — MUST:** Phase 1F exposes only staff passwordless authentication; a verified e-mail can receive a staff session only when an active invitation/role or local-only OWNER bootstrap exists.
+- **P1F-AUTH-012 — MUST:** staff sessions use a distinct HttpOnly, SameSite=Strict, production-Secure cookie, keyed token hash, absolute 12-hour expiry, rotation and immediate revocation on disable or privilege reduction.
+- **P1F-AUTH-013 — MUST NOT:** customer registration, customer OTP/magic link/provider/session, `/account`, guest migration, account projects, favorites or authenticated customer history exists in Phase 1F.
+- **P1F-AUTH-014 — MUST:** the guest funnel and safe `publicReference` remain the complete customer access model and never redirect to staff `/login`.
+- **P1F-AUTH-015 — MUST:** code/invitation delivery and staff code/session cleanup are versioned idempotent Graphile Worker tasks with reference-only payloads.
 
 ## 13. Dependencies, risks and open questions
 
-Dependencies: RBAC, cart/orders, AI, admin, security/privacy, API/data, observability/deployment. Open: `TBD-ACCOUNT-002`–`006`, staff identity/MFA, recovery/support, session/guest TTL, account deletion/legal retention, auth provider/region and notification channel. `TBD-ACCOUNT-001` is resolved by the MVP freeze. Risks: account forcing hurts conversion, token leakage, enumeration, broken object authorization, weak recovery, shared staff accounts and deletion race.
+Dependencies: RBAC, cart/orders, admin, security/privacy, API/data, observability/deployment. Customer account questions are post-MVP; open Phase 1F risks are staff identity/MFA, recovery/support, production provider/region and notification channel. Risks: token leakage, enumeration, weak staff recovery, shared staff accounts and role/session revocation races.
 
 ## 14. Связанные требования and history
 
@@ -164,3 +169,4 @@ Links: `FR-AUTH-*`, `NFR-SEC-*`, `NFR-PRIV-*`, `RBAC-*`, `ACCOUNT-SPEC-001`–`0
 |---|---|---|
 | 0.1.0 | 2026-08-02 | Определены guest-first ownership, account/session/workload models, claim/recovery/delete boundaries and safe provider outage behavior. |
 | 0.2.0 | 2026-08-09 | `OWNER-DECISION-017` selected hash-only passwordless e-mail codes, provider-neutral delivery/local Mailpit, rotating customer/staff sessions, same-browser migration and account workspace while production delivery and deletion remain gated. |
+| 0.3.0 | 2026-08-09 | `OWNER-DECISION-018` withdraws customer auth/accounts from MVP before implementation acceptance; retained e-mail-code/session controls apply only to invited OWNER/ADMIN/MANAGER staff and the guest/publicReference journey remains unchanged. |

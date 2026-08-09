@@ -2,7 +2,7 @@
 
 ## 0. Статус
 
-Phase 1A–1E завершены. `OWNER-DECISION-017` разрешает только Phase 1F; QG-361–370 закрывают entry gate, а QG-371–420 остаются открыты до runtime acceptance. Client photo/AI, payment/final design, production and Phase 1G+ remain prohibited.
+Phase 1A–1E завершены. `OWNER-DECISION-017/018` разрешают только revised staff/business Phase 1F; QG-361–370 закрывают entry gate, а QG-371–420 остаются открыты до runtime acceptance. Customer accounts, client photo/AI, payment/final design, production and Phase 1G+ remain prohibited.
 
 ## 1. Порядок обязательного чтения
 
@@ -115,7 +115,7 @@ Phase 1A–1E завершены. `OWNER-DECISION-017` разрешает тол
 | [PHASE_1D_STANDARD_PREVIEW_PLAN.md](06-plans/active/PHASE_1D_STANDARD_PREVIEW_PLAN.md) | Authorized deterministic preview scope, stages, asset/fallback safety, exact commits, acceptance and Phase 1E hold |
 | [PHASE_1D_STANDARD_PREVIEW_REPORT.md](06-plans/completed/PHASE_1D_STANDARD_PREVIEW_REPORT.md) | Routes, four photoreal family profiles, scenes/assets/counts, visual/mobile/recovery/CI/PR evidence and final acceptance |
 | [PHASE_1E_CART_WHATSAPP_ORDERS_PLAN.md](06-plans/active/PHASE_1E_CART_WHATSAPP_ORDERS_PLAN.md) | Authorized guest cart/request/WhatsApp scope, immutable snapshots, security boundary, exact commits and Phase 1F hold |
-| [PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_PLAN.md](06-plans/active/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_PLAN.md) | Active passwordless accounts, guest migration, staff/admin, portfolio/settings/audit plan and Phase 1G hold |
+| [PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_PLAN.md](06-plans/active/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_PLAN.md) | Revised active staff auth/admin, requests/CRM contacts, portfolio/settings/audit plan; customer accounts are post-MVP |
 | [PHASE_1E_CART_WHATSAPP_ORDERS_REPORT.md](06-plans/completed/PHASE_1E_CART_WHATSAPP_ORDERS_REPORT.md) | Phase 1E routes/models, fixed WhatsApp recipient, real DB/browser/security/recovery evidence and acceptance result |
 | [PREVIEW_AND_CONFIGURATOR_MAPPING_GAPS.md](06-plans/PREVIEW_AND_CONFIGURATOR_MAPPING_GAPS.md) | Exact active family/system/model/variant/source gaps without expanding Phase 1C catalog or pricing |
 
@@ -168,7 +168,7 @@ Research snapshot не является вечным catalog/price fact. Нор�
 - Кто может выполнить действие — `ROLES_PERMISSIONS` и relevant domain spec.
 - Каких данных не хватает — `OPEN_QUESTIONS` по уникальному `TBD-*`.
 - Как требование проверяется — `TRACEABILITY_MATRIX`, AC и `TEST_STRATEGY`.
-- Можно ли начинать следующий код — да, только Phase 1F по `OWNER-DECISION-017`; Phase 1G+, photo/AI/payment and production remain prohibited.
+- Можно ли начинать следующий код — да, только revised Phase 1F по `OWNER-DECISION-017/018`; customer accounts, Phase 1G+, photo/AI/payment and production remain prohibited.
 
 ## 13. Правило навигации
 

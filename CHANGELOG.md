@@ -7,6 +7,7 @@
 
 ### Added
 
+- `OWNER-DECISION-018` narrows Phase 1F before customer authentication WIP is committed: customer login/OTP/sessions, `/account`, guest migration, saved projects/favorites/history move to post-MVP. Staff-only authentication, unified administration, request-derived CustomerContact/lead records and notes, portfolio, SiteSettings and audit remain; the Phase 1E guest/WhatsApp/publicReference flow stays registration-free.
 - `OWNER-DECISION-017` authorizes only Phase 1F from merged-main commit `49695099b0eee3db4a4357eb3f3eb36f78fa3389`; added ADR-0011, active plan and QG-361–420 for provider-neutral passwordless e-mail/local Mailpit, rotating account/staff sessions, same-browser guest migration, account workspace, invitation-only staff, unified Russian administration, portfolio, versioned SiteSettings, audit and durable jobs. Production providers/deployment, payment, client-photo/AI and Phase 1G+ remain prohibited.
 
 - Completed Phase 1E with an HttpOnly guest cart over immutable `QuoteSnapshot`, honest mixed-price totals, edit-by-new-snapshot, guest `/checkout`, immutable `OrderInquiry`/item snapshots, free-measurement and neutral installment-interest flags, fixed-recipient WhatsApp handoff, revocable PII-free public summary, minimal OWNER/ADMIN/MANAGER request intake, append-only audit and transactional outbox. Real PostgreSQL, Chromium mobile/admin/security and restart-recovery gates pass; Phase 1F remains unstarted.

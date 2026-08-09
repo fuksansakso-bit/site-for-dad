@@ -27,7 +27,7 @@
 | Phase 1E Completion Gate | **PASSED_PHASE_1E_CART_WHATSAPP_ORDERS** — QG-321–360 закрыты 2026-08-09 |
 | Phase 1F Entry Gate | **AUTHORIZED_PHASE_1F_IN_PROGRESS** — QG-361–370 закрыты 2026-08-09 |
 | Phase 1F Completion Gate | **IN PROGRESS** — QG-371–420 требуют runtime evidence |
-| Разрешённая реализация | Только Phase 1F по `OWNER-DECISION-017`; Phase 1G+ и production запрещены |
+| Разрешённая реализация | Только revised staff/business Phase 1F по `OWNER-DECISION-017/018`; customer accounts, Phase 1G+ и production запрещены |
 
 Entry gate подтверждает, что исправления 0A.1 внесены и письменное решение начать документную фазу 0B получено. Он не означает готовность ценовой формулы, импорта, приложения или запуска. Открытые TBD блокируют утверждение зависимой спецификации или функции, но не отменяют разрешение создавать документацию 0B с безопасным поведением.
 
@@ -532,7 +532,7 @@ Entry result: **AUTHORIZED_PHASE_1E_IN_PROGRESS**. Completion evidence is not in
 
 Completion result: **PASSED_PHASE_1E_CART_WHATSAPP_ORDERS**. `pnpm ci:verify` passed all 9 stages in 349.4 seconds and the post-CI real PostgreSQL/Chromium Phase 1E acceptance passed; the branch is delivered only as an unmerged Draft PR. Phase 1F was not started.
 
-## 13. Phase 1F customer accounts and business administration gates
+## 13. Phase 1F business administration, request management, portfolio and settings gates
 
 ### 13.1. Entry gate
 
@@ -540,35 +540,35 @@ Completion result: **PASSED_PHASE_1E_CART_WHATSAPP_ORDERS**. `pnpm ci:verify` pa
 - [x] **QG-362 — MUST:** Phase 1E находится в merged `main`; baseline `49695099b0eee3db4a4357eb3f3eb36f78fa3389`, чистое исходное дерево и branch `phase/1f-accounts-business-admin` зафиксированы без переписывания истории.
 - [x] **QG-363 — MUST:** mandatory repository/global/auth/admin/cart/content/RBAC/data/API/architecture/security/test/roadmap/report/ADR documents checked; the previous hold is resolved only by the new decision.
 - [x] **QG-364 — MUST:** PostgreSQL, VersityGW, Graphile Worker and web are healthy; `/catalog`, `/configure`, `/preview`, `/cart`, `/checkout` and readiness return success without deleting volumes.
-- [x] **QG-365 — MUST:** ADR-0011 selects provider-neutral passwordless e-mail codes and local Mailpit without selecting a production delivery/identity provider.
-- [x] **QG-366 — MUST:** active plan contains a verifiable outcome, one active stage, dependencies, verification/docs/delivery, twelve logical commits and explicit Phase 1G hold.
-- [x] **QG-367 — MUST:** guest catalog→request flow remains complete without registration; migration requires same-browser proof and preserves immutable quote/request bytes.
+- [x] **QG-365 — MUST:** ADR-0011 selects provider-neutral staff-only passwordless e-mail codes and local Mailpit without selecting a production delivery/identity provider.
+- [x] **QG-366 — MUST:** `OWNER-DECISION-018` revises the active plan before customer WIP is committed, preserves twelve reviewable commits and holds Phase 1G.
+- [x] **QG-367 — MUST:** guest catalog→request→WhatsApp/publicReference flow remains complete without registration; customer accounts, credentials, migration and `/account` are post-MVP.
 - [x] **QG-368 — MUST:** `TBD-BIZ-005`, `TBD-PRIV-002/004/005/006`, `TBD-ACCOUNT-003/006` and actual portfolio inventory remain visible production/retention/claim blockers with safe local behavior.
-- [x] **QG-369 — MUST:** profile specs define OTP/session/staff/last-OWNER/account/admin/portfolio/settings/audit boundaries and exact owner-provided business defaults before production code changes.
+- [x] **QG-369 — MUST:** profile specs define staff OTP/session/last-OWNER/admin/request-derived CustomerContact/portfolio/settings/audit boundaries and exact owner-provided business defaults before affected production code changes.
 - [x] **QG-370 — MUST:** entry documentation passes formatting, links/ID uniqueness and phase-scope checks before identity implementation.
 
 Entry result: **AUTHORIZED_PHASE_1F_IN_PROGRESS**. It does not infer completion evidence.
 
 ### 13.2. Completion gate
 
-- [ ] **QG-371 — MUST:** `/login` request/verify flow uses hash-only single-use codes, 10-minute expiry, five attempts, 60-second resend, neutral responses and bounded rate limits.
+- [ ] **QG-371 — MUST:** staff-only `/login` request/verify flow uses hash-only single-use codes, 10-minute expiry, five attempts, 60-second resend, neutral responses and bounded rate limits.
 - [ ] **QG-372 — MUST:** local Mailpit and `EmailDeliveryPort` pass delivery/unavailable/retry evidence without exposing a code in API/log/audit.
-- [ ] **QG-373 — MUST:** customer and staff session cookies are separated, HttpOnly/SameSite/production-Secure, hash-only, rotated/revocable and expire at 30 days/12 hours respectively.
-- [ ] **QG-374 — MUST:** fixation, replay, expired/revoked session, cross-context and customer-to-staff escalation tests fail closed.
-- [ ] **QG-375 — MUST:** same-browser guest migration atomically and idempotently links eligible calculations/previews/requests/cart context without changing immutable snapshots or cross-guest ownership.
-- [ ] **QG-376 — MUST:** guest catalog/configure/preview/cart/checkout/request flow remains successful without registration before and after account implementation.
-- [ ] **QG-377 — MUST:** `/account` shell and projects/calculations/requests/favorites/profile/security routes are responsive, accessible and self-scoped.
-- [ ] **QG-378 — MUST:** saved projects group selected immutable calculations/previews with bounded mutable title/state and never reprice history silently.
-- [ ] **QG-379 — MUST:** favorites reference active catalog identities, show unavailable/hidden states honestly and cannot make an item orderable/priced.
-- [ ] **QG-380 — MUST:** profile fields are limited to name/phone/locality/optional address; session listing/revoke works while account deletion remains safely unavailable under `TBD-ACCOUNT-006`.
+- [ ] **QG-373 — MUST:** the staff cookie is HttpOnly/SameSite=Strict/production-Secure, hash-only, rotated/revocable and expires absolutely after 12 hours; staff-session management works.
+- [ ] **QG-374 — MUST:** fixation, replay, expired/revoked session, invitation bypass and privilege escalation tests fail closed; no customer auth provider or session is reachable.
+- [ ] **QG-375 — MUST:** customer registration/OTP/magic link/session, `/account`, guest migration, account projects/favorites/history/reorder and purchase registration gates are absent from runtime and route inventory.
+- [ ] **QG-376 — MUST:** guest catalog/configure/preview/cart/checkout/request/WhatsApp/publicReference flow remains successful without registration before and after Phase 1F.
+- [ ] **QG-377 — MUST:** `CustomerContact`/lead is a separate business record derived from supplied request data and has no password, OTP, identity, role or session.
+- [ ] **QG-378 — MUST:** repeated requests link deterministically by normalized phone and optional e-mail without rewriting immutable request snapshots or merging ambiguous conflicts silently.
+- [ ] **QG-379 — MUST:** bounded role-protected customer-contact search/detail shows request count/history and last request while public responses expose none of it.
+- [ ] **QG-380 — MUST:** internal request/contact notes are bounded, staff-attributed and excluded from publicReference, WhatsApp handoff, logs and generic audit metadata.
 - [ ] **QG-381 — MUST:** `pnpm dev:owner --email` is local-only, idempotent and creates/repairs a named OWNER without committed credentials.
-- [ ] **QG-382 — MUST:** staff invitation create/deliver/accept/expire/revoke paths are hash-only, invitation-bound, auditable and cannot be reached through customer self-signup.
+- [ ] **QG-382 — MUST:** staff invitation create/deliver/accept/expire/revoke paths are hash-only, invitation-bound, auditable and cannot be bypassed by an uninvited e-mail.
 - [ ] **QG-383 — MUST:** OWNER/ADMIN/MANAGER capability matrix passes horizontal/vertical denial and immediate session revocation after role/disable changes.
 - [ ] **QG-384 — MUST:** concurrent disable/revoke/demotion cannot remove the last active OWNER.
 - [ ] **QG-385 — MUST:** `/admin` provides one Russian responsive accessible shell and all required dashboard/catalog/pricing/requests/customers/portfolio/settings/staff/audit/sync routes.
 - [ ] **QG-386 — MUST:** existing catalog/pricing/request actions remain server-authorized domain commands and are not replaced by generic database CRUD.
 - [ ] **QG-387 — MUST:** dashboard aggregates and navigation expose no unauthorized contact, secret, storage or internal payload data.
-- [ ] **QG-388 — MUST:** customer admin search/detail/linking is bounded, role-protected and does not rewrite guest/request history.
+- [ ] **QG-388 — MUST:** CustomerContact/lead admin search/detail/linking is bounded, role-protected, credential-free and does not rewrite guest/request history.
 - [ ] **QG-389 — MUST:** request administration preserves Phase 1E statuses, notes, optimistic concurrency, immutable captured prices and MANAGER restrictions.
 - [ ] **QG-390 — MUST:** portfolio draft/create/edit/upload/review/publish/hide/archive flow enforces source/right/publication separation and excludes client photos/supplier relabelling.
 - [ ] **QG-391 — MUST:** portfolio upload validates byte/signature/MIME/decode/dimensions/name/SHA, strips EXIF/unsafe metadata, creates display/thumbnail derivatives and rejects malformed/polyglot/oversize data.
@@ -576,30 +576,30 @@ Entry result: **AUTHORIZED_PHASE_1F_IN_PROGRESS**. It does not infer completion 
 - [ ] **QG-393 — MUST:** no real local work is seeded or published without Business Owner-supplied asset evidence; synthetic test media is never production content.
 - [ ] **QG-394 — MUST:** SiteSettings default values exactly match `OWNER-DECISION-017`, revisions are validated/audited and customer-facing service text reads the active revision.
 - [ ] **QG-395 — MUST:** the exact installment text is used without 0%, term, approval or overpayment claims; free services remain separate from product price.
-- [ ] **QG-396 — MUST:** audit view is bounded/filterable/redacted and captures staff/auth/account/portfolio/settings mutations with correlation and safe before/after evidence.
-- [ ] **QG-397 — MUST:** Graphile Worker task contracts cover e-mail/invitation, cleanup, guest migration and media processing with versioned minimal payload, idempotency and replay safety.
-- [ ] **QG-398 — MUST:** strict auth/account/admin/portfolio/settings contract schemas, safe error mapping, `no-store`, body limits, origin/CSRF/rate and idempotency gates pass.
+- [ ] **QG-396 — MUST:** audit view is bounded/filterable/redacted and captures staff/auth/request/contact-note/portfolio/settings mutations with correlation and safe before/after evidence.
+- [ ] **QG-397 — MUST:** Graphile Worker task contracts cover e-mail/invitation, staff cleanup and media processing with versioned minimal payload, idempotency and replay safety; no guest-migration job exists.
+- [ ] **QG-398 — MUST:** strict staff-auth/admin/request-contact/portfolio/settings contract schemas, safe error mapping, `no-store`, body limits, origin/CSRF/rate and idempotency gates pass.
 - [ ] **QG-399 — MUST:** additive Prisma migration passes empty/repeat/upgrade/drift and forward-compensation review while preserving existing PostgreSQL and object-storage volumes.
-- [ ] **QG-400 — MUST:** unit tests pass auth timing/expiry/attempt/resend/hash/session, permission/invite/last-OWNER, ownership migration, projects/favorites/settings and portfolio validation.
-- [ ] **QG-401 — MUST:** real PostgreSQL integration passes login/account/migration/invite/role/customer/portfolio/settings/audit/outbox/worker transactions and immutable-history checks.
-- [ ] **QG-402 — MUST:** Chromium E2E passes guest, customer and OWNER/ADMIN/MANAGER flows across every required account/admin route.
+- [ ] **QG-400 — MUST:** unit tests pass staff auth timing/expiry/attempt/resend/hash/session, permission/invite/last-OWNER, CustomerContact linking/notes, settings and portfolio validation.
+- [ ] **QG-401 — MUST:** real PostgreSQL integration passes staff login/invite/role/session, request/contact/note, portfolio/settings/audit/outbox/worker transactions and immutable-history checks.
+- [ ] **QG-402 — MUST:** Chromium E2E passes the guest flow and OWNER/ADMIN/MANAGER flows across every required admin route, with no account route or registration prompt.
 - [ ] **QG-403 — MUST:** 375×812 and desktop evidence has no horizontal overflow/covered critical controls; keyboard/focus/labels/live status and reduced-motion/high-contrast behavior pass.
 - [ ] **QG-404 — MUST:** enumeration, brute force, CSRF/origin, IDOR, privilege escalation, session/invite replay, upload and public-media abuse tests fail closed.
 - [ ] **QG-405 — MUST:** runtime/build/log/analytics scans contain no OTP, session/invite token, synthetic e-mail/phone/address, storage locator or image bytes.
-- [ ] **QG-406 — MUST:** recovery tests cover Mailpit/database/worker/storage failure, restart, expired/replayed code/invite, revoked session and interrupted media/migration with retained safe state.
-- [ ] **QG-407 — MUST:** public/account/admin caching prevents private/session-specific HTML or DTO sharing; public portfolio cache invalidates on hide/revoke.
+- [ ] **QG-406 — MUST:** recovery tests cover Mailpit/database/worker/storage failure, restart, expired/replayed code/invite, revoked staff session and interrupted media with retained safe state.
+- [ ] **QG-407 — MUST:** public/admin caching prevents staff/session/contact/note HTML or DTO sharing; public portfolio cache invalidates on hide/revoke.
 - [ ] **QG-408 — MUST:** production build, artifact/secret checks, route inventory and architecture boundaries pass without production provider/credential.
 - [ ] **QG-409 — MUST:** format/docs/scope/boundary/lint/type/test/coverage/database/build/browser/security and exact CI-equivalent gates pass with skips recorded.
 - [ ] **QG-410 — MUST:** affected README/changelog/index/global/auth/admin/RBAC/cart/content/data/API/architecture/security/test/open-question/traceability/gate/roadmap/report documents match runtime evidence.
 - [ ] **QG-411 — MUST:** all new requirement/QG/TBD/ADR IDs are unique, local links resolve and no unrelated normative source is duplicated.
 - [ ] **QG-412 — MUST:** the twelve requested logical commits remain separately reviewable and are not squashed or history-rewritten.
 - [ ] **QG-413 — MUST:** final tracked/untracked worktree is clean and preserved named volumes/data survive a graceful stop/start.
-- [ ] **QG-414 — MUST:** branch is pushed and an unmerged Draft PR titled `Phase 1F: customer accounts and business administration` targets `main`.
-- [ ] **QG-415 — MUST:** no password/SMS/social auth, production e-mail provider, arbitrary historical claim, payment/credit automation, client-photo/AI, full CRM/manufacturing, final redesign or production deployment exists.
+- [ ] **QG-414 — MUST:** branch is pushed and an unmerged Draft PR titled `Phase 1F: business administration, portfolio and settings` targets `main`.
+- [ ] **QG-415 — MUST:** no customer account/auth/session/routes, password/SMS/social auth, production e-mail provider, arbitrary historical claim, payment/credit automation, client-photo/AI, full CRM/manufacturing, final redesign or production deployment exists.
 - [ ] **QG-416 — MUST:** Phase 1G is not started and completion grants no authority for it.
-- [ ] **QG-417 — MUST:** completion report records baseline/branch/commits/routes, Mailpit/auth/session defaults, migration/account/staff/admin/customer/portfolio/settings/audit/jobs/tests/recovery/CI/PR/status evidence.
+- [ ] **QG-417 — MUST:** completion report records baseline/branch/commits/routes, Mailpit/staff-auth/session defaults, absence of customer auth/account, migration/staff/admin/request-contact/portfolio/settings/audit/jobs/tests/recovery/CI/PR/status evidence.
 - [ ] **QG-418 — MUST:** browser/API errors are Russian and actionable where user-facing while correlation-only technical details remain safe.
-- [ ] **QG-419 — MUST:** accessibility and non-JavaScript/progressive form fallback are documented and verified proportionally for auth and critical staff mutations.
+- [ ] **QG-419 — MUST:** accessibility and non-JavaScript/progressive form fallback are documented and verified proportionally for staff auth and critical staff mutations.
 - [ ] **QG-420 — MUST:** Phase 1F is marked complete only after QG-371–419 repository/runtime evidence exists.
 
 ## 14. История изменений
@@ -624,5 +624,6 @@ Entry result: **AUTHORIZED_PHASE_1F_IN_PROGRESS**. It does not infer completion 
 | 1.15.0 | 2026-08-09 | `OWNER-DECISION-016` and QG-311–320 authorize only Phase 1E from merged Phase 1D baseline; QG-321–360 define cart/request/WhatsApp/public-summary/admin/security/recovery/CI/PR acceptance while production and Phase 1F+ remain prohibited. |
 | 1.16.0 | 2026-08-09 | QG-321–360 closed on quote-backed cart, immutable request snapshots, fixed-recipient handoff, PII-free summary, basic staff intake, real DB/Chromium/security/recovery evidence and exact 9/9 CI; Phase 1F remains prohibited. |
 | 1.17.0 | 2026-08-09 | `OWNER-DECISION-017`, ADR-0011 and QG-361–370 authorize only Phase 1F from merged Phase 1E main; QG-371–420 define passwordless/account/staff/admin/portfolio/settings/audit/jobs/security/recovery/CI/PR completion while production and Phase 1G+ remain prohibited. |
+| 1.18.0 | 2026-08-09 | `OWNER-DECISION-018` revises QG-365–420 before customer WIP is committed: staff-only auth/session/invitations, credential-free request-derived CustomerContact/notes, unified admin, portfolio/settings/audit and guest/publicReference regression replace all customer-account/migration/workspace gates. |
 | 0.2.0 | 2026-08-02 | Entry gate обновлён для `GLOBAL_SPEC` 0.4.0 и partner-authorized scope; письменное поручение владельца зафиксировано как разрешение начать 0B; добавлен отдельный completion gate 0B. |
 | 0.1.0 | 2026-08-02 | Предыдущий self-audit 0A.1 для версии 0.3.1; проверки `QG-001`–`087` впоследствии зарезервированы. |

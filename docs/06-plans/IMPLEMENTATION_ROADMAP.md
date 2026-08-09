@@ -117,20 +117,20 @@ Execution contract: [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN](active/PHASE_1B2_FULL_AM
 | Запрещённые изменения | Auto-send without confirmation, final-price/order claim, collecting excess PII, automated installment application, online payment, supplier order. |
 | Rollback | Feature flags disable forms/deep link; retain/delete already collected PII by approved policy; queue retries stopped safely; cart remains local/read-only where allowed. |
 
-## 7. PHASE 1F — ADMIN AND ACCOUNTS
+## 7. PHASE 1F — BUSINESS ADMINISTRATION, REQUESTS, PORTFOLIO AND SETTINGS
 
 | Поле | Содержание |
 |---|---|
-| ID / цель | **ROADMAP-1F-001:** optional passwordless account workspace and unified named-staff business administration on existing PostgreSQL/worker/storage boundaries. |
-| Зависимости | Completed 1B/1C/1D/1E; ADR-0006/0008/0009/0010 and accepted ADR-0011; auth/admin/account/content/security specs. |
-| Входные условия | Satisfied by `OWNER-DECISION-017`, QG-361–370, local Mailpit plan, exact session/OTP defaults, named RBAC and safe production/retention holds. |
-| Deliverables | Passwordless login, guest migration, account projects/calculations/requests/favorites/profile/security; staff invitations/roles; unified Russian admin; customers/portfolio/settings/audit/jobs. |
-| Acceptance criteria | Server-side capability checks on every action; account sees own data only; audit includes actor/time/reason/before-after; dangerous action confirms/requires permission; guest still complete. |
-| Тесты | RBAC matrix/negative/IDOR; session expiry/revocation; account ownership; admin concurrency; audit immutability/redaction; portfolio rights; recovery/rate limiting; E2E/a11y. |
-| Риски | Privilege escalation, bootstrap credential leak, cross-customer data, harmful admin action, weak recovery. |
-| Definition of Done | Role matrix and negative tests pass; admin runbooks and access review exist; basic saved-calculation account works; no forced registration or extended CRM. |
-| Запрещённые изменения | Client data export without policy, shared admin account, client-side-only auth, silently deleting audit, forcing guest registration, production providers/PII, payment, client-photo/AI, full CRM/manufacturing and Phase 1G. |
-| Rollback | Revoke sessions/roles, disable account/admin modules separately, preserve audit and immutable versions, restore prior catalog/price/content state. |
+| ID / цель | **ROADMAP-1F-001:** staff-only identity and unified named-staff business administration on existing PostgreSQL/worker/storage boundaries. |
+| Зависимости | Completed 1B/1C/1D/1E; ADR-0006/0008/0009/0010 and amended ADR-0011; auth/admin/content/security specs. |
+| Входные условия | Satisfied by `OWNER-DECISION-017/018`, QG-361–370, local Mailpit plan, exact staff session/OTP defaults, named RBAC and safe production/retention holds. |
+| Deliverables | Staff passwordless login/invitations/roles/session controls; unified Russian admin; request-derived CustomerContact/lead records and notes; portfolio/settings/audit/jobs. |
+| Acceptance criteria | Server-side capability checks on every action; last OWNER protected; CRM contacts have no credentials; audit includes actor/time/reason/safe before-after; guest/publicReference path remains complete. |
+| Тесы | RBAC matrix/negative/IDOR; staff session expiry/revocation; contact/note privacy; admin concurrency; audit redaction; portfolio rights; recovery/rate limiting; guest regression/E2E/a11y. |
+| Риски | Privilege escalation, bootstrap credential leak, contact/note disclosure, harmful admin action, weak recovery. |
+| Definition of Done | Role matrix and negative tests pass; admin runbooks and access review exist; customer account routes are absent; guest flow remains registration-free. |
+| Запрещённые изменения | Customer authentication/accounts/workspace/migration, client data export without policy, shared admin account, client-side-only auth, silently deleting audit, production providers/PII, payment, client-photo/AI, full CRM/manufacturing and Phase 1G. |
+| Rollback | Revoke staff sessions/roles, disable staff/admin modules, preserve audit and immutable versions, restore prior catalog/price/content state. |
 
 ## 8. PHASE 1G — AI WINDOW VISUALIZER PILOT
 
@@ -192,3 +192,4 @@ Execution contract: [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN](active/PHASE_1B2_FULL_AM
 | 2.0.0 | 2026-08-09 | `OWNER-DECISION-016` authorizes only Phase 1E from merged Phase 1D main: immutable-quote guest cart, request snapshot/intake, fixed-recipient WhatsApp handoff, public safe summary, minimal staff administration and audit/outbox; production PII/deployment and Phase 1F+ remain gated. |
 | 2.1.0 | 2026-08-09 | Phase 1E marked passed with quote-backed mixed cart, immutable request snapshots, guest measurement/installment intake, fixed-recipient handoff, safe summary, basic staff administration and DB/browser/security/recovery evidence; Phase 1F remains unauthorized. |
 | 2.2.0 | 2026-08-09 | `OWNER-DECISION-017`, ADR-0011 and QG-361–370 authorize only Phase 1F: passwordless/local-Mailpit identity, guest migration, account workspace, invitation-only staff, unified admin, portfolio, SiteSettings, audit/jobs; Phase 1G+ and production remain gated. |
+| 2.3.0 | 2026-08-09 | `OWNER-DECISION-018` narrows Phase 1F to staff identity, unified admin, requests/credential-free CRM contacts, portfolio, SiteSettings and audit; all customer accounts/auth/workspace/migration move post-MVP. |

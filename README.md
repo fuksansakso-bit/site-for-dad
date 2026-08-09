@@ -18,7 +18,7 @@
 
 **Phase 1D — DETERMINISTIC STANDARD WINDOW PREVIEW** завершена на ветке `phase/1d-standard-preview` от merged-main commit `58eb25dcde460291ad98fde157956d7f264a666d`. Гостевой `/preview` использует две локальные photoreal scenes, четыре deterministic family profiles, approved partner layers через `StoragePort`, server-side preview state и visual regression. [Отчёт](docs/06-plans/completed/PHASE_1D_STANDARD_PREVIEW_REPORT.md) и [mapping gaps](docs/06-plans/PREVIEW_AND_CONFIGURATOR_MAPPING_GAPS.md).
 
-Phase 1E завершена со статусом `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`. Новое письменное `OWNER-DECISION-017` разрешило только **Phase 1F — CUSTOMER ACCOUNTS AND BUSINESS ADMINISTRATION** от merged-main commit `49695099b0eee3db4a4357eb3f3eb36f78fa3389`. Активный план охватывает optional passwordless accounts, guest migration, saved workspace, invitation-only staff, unified Russian admin, portfolio, SiteSettings and audit on the existing PostgreSQL/worker/storage boundary. Production providers/deployment, payment, client-photo/AI and Phase 1G+ remain prohibited.
+Phase 1E завершена со статусом `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`. `OWNER-DECISION-017`, суженное `OWNER-DECISION-018`, разрешает только **Phase 1F — BUSINESS ADMINISTRATION, REQUEST MANAGEMENT, PORTFOLIO AND SETTINGS** от merged-main commit `49695099b0eee3db4a4357eb3f3eb36f78fa3389`. Активный план охватывает staff-only passwordless authentication, OWNER/ADMIN/MANAGER lifecycle, unified Russian admin, request-derived CustomerContact/lead records and notes, portfolio, SiteSettings and audit. Customer accounts/authentication and every `/account` route are post-MVP; the Phase 1E guest/WhatsApp/publicReference path remains complete. Production providers/deployment, payment, client-photo/AI and Phase 1G+ remain prohibited.
 
 ## С чего начать
 
@@ -88,4 +88,4 @@ pnpm.cmd --filter @project-name/db pricing:bootstrap
 
 ## Текущая граница работы
 
-Phase 1A–1E завершены. Phase 1F выполняется по `OWNER-DECISION-017`; payment, client-photo/AI, production deployment and Phase 1G+ remain on hold.
+Phase 1A–1E завершены. Revised staff/business Phase 1F выполняется по `OWNER-DECISION-017/018`; customer accounts, payment, client-photo/AI, production deployment and Phase 1G+ remain on hold.

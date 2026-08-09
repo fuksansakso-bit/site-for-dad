@@ -30,8 +30,8 @@ Out of scope: payment/acquiring, automated credit/installment, official WhatsApp
 
 | Stage | Result | Status |
 |---|---|---|
-| 1. Authorization and plan | Canonical decision, cart spec, entry QG and active plan | **IN_PROGRESS** |
-| 2. Guest cart domain | Contracts, exact totals/statuses, guest ownership and persistence | PENDING |
+| 1. Authorization and plan | Canonical decision, cart spec, entry QG and active plan | COMPLETED |
+| 2. Guest cart domain | Contracts, exact totals/statuses, guest ownership and persistence | **IN_PROGRESS** |
 | 3. Immutable checkout/request | Cart/item snapshots, idempotent intake, audit/outbox | PENDING |
 | 4. WhatsApp and public summary | Fixed recipient, safe message/events, revocable PII-free route | PENDING |
 | 5. Basic administration and integrations | Request list/detail/status/notes plus configure/preview cart CTA | PENDING |

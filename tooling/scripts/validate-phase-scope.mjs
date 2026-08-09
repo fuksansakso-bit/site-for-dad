@@ -4,17 +4,15 @@ import { fileURLToPath } from 'node:url';
 
 const repositoryRoot = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const forbiddenPathSegments = new Set([
+  'accounts',
   'ai',
   'calculator',
-  'cart',
-  'checkout',
-  'installment',
-  'orders',
+  'credit',
+  'payments',
   'photos',
   'starfield',
   'uploads',
   'visualizer',
-  'whatsapp',
 ]);
 const allowedPrismaModels = new Set([
   'ActorIdentity',
@@ -64,6 +62,14 @@ const allowedPrismaModels = new Set([
   'QuoteSnapshot',
   'PricingVersionDecision',
   'StandardPreviewState',
+  'GuestCartSession',
+  'GuestCart',
+  'CartItem',
+  'CartItemRevision',
+  'OrderInquiry',
+  'RequestItemSnapshot',
+  'RequestCommunicationEvent',
+  'RequestInternalNote',
 ]);
 const allowedPhaseTables = new Set([
   '_prisma_migrations',
@@ -114,6 +120,14 @@ const allowedPhaseTables = new Set([
   'quote_snapshot',
   'pricing_version_decision',
   'standard_preview_state',
+  'guest_cart_session',
+  'guest_cart',
+  'cart_item',
+  'cart_item_revision',
+  'order_inquiry',
+  'request_item_snapshot',
+  'request_communication_event',
+  'request_internal_note',
 ]);
 
 async function collectFiles(directory) {
@@ -140,7 +154,7 @@ for (const rootName of ['apps', 'packages']) {
     }
     if (['.js', '.mjs', '.ts', '.tsx'].includes(extname(file))) {
       const source = await readFile(file, 'utf8');
-      if (/\b(?:whatsapp|visualizer|starfield)\b/i.test(source)) {
+      if (/\b(?:visualizer|starfield|payment_intent|checkout_session)\b/i.test(source)) {
         errors.push(`${repositoryPath}: later-phase feature reference is forbidden`);
       }
     }
@@ -151,7 +165,7 @@ const schemaPath = join(repositoryRoot, 'packages', 'db', 'prisma', 'schema.pris
 const schema = await readFile(schemaPath, 'utf8');
 for (const match of schema.matchAll(/^model\s+([A-Za-z][A-Za-z0-9_]*)\s*\{/gm)) {
   if (!allowedPrismaModels.has(match[1])) {
-    errors.push(`packages/db/prisma/schema.prisma: model ${match[1]} is outside Phase 1D`);
+    errors.push(`packages/db/prisma/schema.prisma: model ${match[1]} is outside Phase 1E`);
   }
 }
 
@@ -161,7 +175,7 @@ for (const file of await collectFiles(migrationRoot)) {
   const sql = await readFile(file, 'utf8');
   for (const match of sql.matchAll(/CREATE\s+TABLE\s+(?:"public"\.)?"?([a-z_][a-z0-9_]*)"?/gi)) {
     if (!allowedPhaseTables.has(match[1].toLowerCase())) {
-      errors.push(`${relative(repositoryRoot, file)}: table ${match[1]} is outside Phase 1D`);
+      errors.push(`${relative(repositoryRoot, file)}: table ${match[1]} is outside Phase 1E`);
     }
   }
 }
@@ -183,6 +197,7 @@ const allowedRouteFiles = new Set([
   'apps/web/app/api/v1/pricing/calculate/route.ts',
   'apps/web/app/api/v1/quotes/[token]/route.ts',
   'apps/web/app/api/v1/quotes/route.ts',
+  'apps/web/app/api/v1/quotes/request/route.ts',
   'apps/web/app/api/v1/previews/[id]/asset/route.ts',
   'apps/web/app/api/v1/previews/[id]/layers/[role]/route.ts',
   'apps/web/app/api/v1/previews/[id]/route.ts',
@@ -190,6 +205,19 @@ const allowedRouteFiles = new Set([
   'apps/web/app/api/v1/previews/route.ts',
   'apps/web/app/api/v1/previews/scenes/route.ts',
   'apps/web/app/api/v1/previews/scenes/[sceneId]/asset/route.ts',
+  'apps/web/app/api/v1/cart/route.ts',
+  'apps/web/app/api/v1/cart/items/route.ts',
+  'apps/web/app/api/v1/cart/items/[itemReference]/route.ts',
+  'apps/web/app/api/v1/cart/items/[itemReference]/duplicate/route.ts',
+  'apps/web/app/api/v1/cart/items/[itemReference]/edit-source/route.ts',
+  'apps/web/app/api/v1/requests/route.ts',
+  'apps/web/app/api/v1/requests/public/[publicReference]/route.ts',
+  'apps/web/app/api/v1/requests/[publicReference]/handoff/route.ts',
+  'apps/web/app/api/v1/requests/[publicReference]/events/route.ts',
+  'apps/web/app/api/v1/admin/requests/route.ts',
+  'apps/web/app/api/v1/admin/requests/[requestNumber]/route.ts',
+  'apps/web/app/api/v1/admin/requests/[requestNumber]/status/route.ts',
+  'apps/web/app/api/v1/admin/requests/[requestNumber]/notes/route.ts',
 ]);
 const allowedPageFiles = new Set([
   'apps/web/app/admin/catalog/page.tsx',
@@ -201,25 +229,30 @@ const allowedPageFiles = new Set([
   'apps/web/app/page.tsx',
   'apps/web/app/preview/page.tsx',
   'apps/web/app/quote/[token]/page.tsx',
+  'apps/web/app/cart/page.tsx',
+  'apps/web/app/checkout/page.tsx',
+  'apps/web/app/request/[publicReference]/page.tsx',
+  'apps/web/app/admin/requests/page.tsx',
+  'apps/web/app/admin/requests/[requestNumber]/page.tsx',
 ]);
 for (const file of await collectFiles(join(repositoryRoot, 'apps', 'web', 'app'))) {
   const repositoryPath = relative(repositoryRoot, file).replaceAll('\\', '/');
   if (file.endsWith('route.ts') && !allowedRouteFiles.has(repositoryPath)) {
-    errors.push(`${repositoryPath}: route is outside the current Phase 1D allowlist`);
+    errors.push(`${repositoryPath}: route is outside the current Phase 1E allowlist`);
   }
   if (file.endsWith('page.tsx') && !allowedPageFiles.has(repositoryPath)) {
-    errors.push(`${repositoryPath}: page is outside the current Phase 1D allowlist`);
+    errors.push(`${repositoryPath}: page is outside the current Phase 1E allowlist`);
   }
 }
 
 if (errors.length > 0) {
   process.stderr.write(
-    ['Phase 1D scope validation failed:', ...errors.map((error) => `- ${error}`)].join('\n'),
+    ['Phase 1E scope validation failed:', ...errors.map((error) => `- ${error}`)].join('\n'),
   );
   process.stderr.write('\n');
   process.exitCode = 1;
 } else {
   process.stdout.write(
-    'Phase 1D scope validation passed: only Foundation, catalog, configurator/pricing and deterministic standard-preview surfaces exist.\n',
+    'Phase 1E scope validation passed: only Foundation, catalog, configurator/pricing, deterministic preview and cart/request/WhatsApp basic-intake surfaces exist.\n',
   );
 }

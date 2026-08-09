@@ -1,4 +1,21 @@
 export {
+  cartItemAddRequestSchema,
+  cartItemCommandRequestSchema,
+  cartItemEditSourceResponseSchema,
+  cartItemReferenceSchema,
+  cartItemReplaceRequestSchema,
+  cartItemResponseSchema,
+  cartMoneySummarySchema,
+  cartPricingStatusSchema,
+  cartProductSnapshotSchema,
+  guestCartResponseSchema,
+  type CartItemAddRequest,
+  type CartItemEditSourceResponse,
+  type CartItemReplaceRequest,
+  type CartItemResponse,
+  type GuestCartResponse,
+} from './cart.js';
+export {
   publicCatalogFacetOptionSchema,
   publicCatalogFacetsSchema,
   publicCatalogMaterialSchema,

@@ -16,6 +16,10 @@
       "types": "./dist/catalog.d.ts",
       "import": "./dist/catalog.js"
     },
+    "./cart": {
+      "types": "./dist/cart.d.ts",
+      "import": "./dist/cart.js"
+    },
     "./health": {
       "types": "./dist/health.d.ts",
       "import": "./dist/health.js"
@@ -47,6 +51,7 @@
     "publicInterface": [
       ".",
       "./catalog",
+      "./cart",
       "./error",
       "./health",
       "./preview"

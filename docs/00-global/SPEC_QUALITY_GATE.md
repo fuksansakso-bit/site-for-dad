@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Версия gate | 1.20.0 |
-| Проверяемая входная база | Phase 0B baseline `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`; Phase 0C baseline `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; Phase 1A completion `943d4a2efa5e05f0d05493633cf5eb549e072a22`; Phase 1B.1 completion baseline `af8411d2b854e572b6b61b214d3e99a88b96cafc`; Phase 1D merged-main / Phase 1E baseline `65780067537418a3230bb3d32ef3fb8e0af06917`; Phase 1F merged-main / Phase 1F.1 baseline `289b1baef0b53ac7da457098353ee5e7c1e1953f`; Phase 2A baseline `3a0d7662a1b22724641ab29ca1cbd55fd575598e`; `GLOBAL_SPEC.md` 0.26.0 |
+| Версия gate | 1.22.0 |
+| Проверяемая входная база | Phase 0B baseline `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`; Phase 0C baseline `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; Phase 1A completion `943d4a2efa5e05f0d05493633cf5eb549e072a22`; Phase 1B.1 completion baseline `af8411d2b854e572b6b61b214d3e99a88b96cafc`; Phase 1D merged-main / Phase 1E baseline `65780067537418a3230bb3d32ef3fb8e0af06917`; Phase 1F merged-main / Phase 1F.1 baseline `289b1baef0b53ac7da457098353ee5e7c1e1953f`; Phase 2A merged-main / Phase 2B baseline `49ce3679de28c612662f78273cd265d73221163d`; `GLOBAL_SPEC.md` 0.28.0 |
 | Дата последнего self-audit | 2026-08-12, Europe/Moscow |
 | Решение по входу в 0B | **PASSED** |
 | Основание письменного решения | Приложенное владельцем задание «AUTHORIZED AMIGO FUNCTIONAL PARITY AND SPECIALIZED SPECS» и повторное указание «так приступай к работе» |
@@ -29,9 +29,11 @@
 | Phase 1F Completion Gate | **PASSED_PHASE_1F_BUSINESS_ADMINISTRATION** — QG-371–420 закрыты 2026-08-09 |
 | Phase 1F.1 Entry Gate | **AUTHORIZED_PHASE_1F1_IN_PROGRESS** — QG-421–430 закрыты 2026-08-12 |
 | Phase 1F.1 Completion Gate | **IN PROGRESS** — QG-431–480 требуют runtime evidence |
-| Phase 2A Entry Gate | **AUTHORIZED_PHASE_2A_IN_PROGRESS** — QG-481–490 закрываются pre-flight evidence |
-| Phase 2A Completion Gate | **IN PROGRESS** — QG-491–540 требуют runtime/migration evidence |
-| Разрешённая реализация | Только Phase 2A по `OWNER-DECISION-021`; customer accounts, AI/photo upload, payment, final premium redesign, destructive source removal and unverified production activation запрещены |
+| Phase 2A Entry Gate | **PASSED** — QG-481–490 закрыты |
+| Phase 2A Completion Gate | **PASSED_PHASE_2A_CODE_AND_PREVIEW** — merged completion report records evidence and credential-dependent activation skips |
+| Phase 2B Entry Gate | **AUTHORIZED_PHASE_2B_IN_PROGRESS** — QG-541–550 закрыты 2026-08-12 |
+| Phase 2B Completion Gate | **IN PROGRESS** — QG-551–600 require implementation/security/mock/build and optional live evidence |
+| Разрешённая реализация | Только Phase 2B по `OWNER-DECISION-023`; direct Google API/SDK, SAM/masks/segmentation, Python/GPU/worker service, accounts, payment, final redesign, production launch, destructive source removal and Phase 2C запрещены |
 
 Entry gate подтверждает, что исправления 0A.1 внесены и письменное решение начать документную фазу 0B получено. Он не означает готовность ценовой формулы, импорта, приложения или запуска. Открытые TBD блокируют утверждение зависимой спецификации или функции, но не отменяют разрешение создавать документацию 0B с безопасным поведением.
 
@@ -748,7 +750,77 @@ Entry result: **AUTHORIZED_PHASE_2A_IN_PROGRESS**. Completion evidence remains o
 - [ ] **QG-539 — MUST:** unresolved cloud/legal/privacy activation steps are explicit and do not invalidate completed code/migrations/instructions.
 - [ ] **QG-540 — MUST:** Phase 2A is marked complete only after QG-491–539 evidence or an explicit stop-condition report; completion grants no next phase or merge authority.
 
-## 16. История изменений
+## 16. Phase 2B Polza Gemini AI visualization gates
+
+### 16.1. Entry gate
+
+- [x] **QG-541 — MUST:** Product Owner instruction is recorded as `OWNER-DECISION-023`, selects Polza over direct Google and authorizes only Phase 2B.
+- [x] **QG-542 — MUST:** merged Phase 2A commit `49ce3679de28c612662f78273cd265d73221163d`, requested branch and initially clean tree are recorded.
+- [x] **QG-543 — MUST:** Phase 2A one-Next/Supabase catalog/calculator/cart/staff runtime and stable material/image evidence are read; no Docker prerequisite is added.
+- [x] **QG-544 — MUST:** baseline lint/typecheck/11 tests/production build pass on Node 24.18.1; the pre-existing two stale traceability links are recorded for minimal repair.
+- [x] **QG-545 — MUST:** official Polza create/status/model pages are verified on 2026-08-12; fields/status/result URL/model ID are not invented.
+- [x] **QG-546 — MUST:** ADR-0014 selects the asynchronous adapter/result-import topology and supersedes conflicting geometry/direct-Google/no-AI runtime decisions only for Phase 2B.
+- [x] **QG-547 — MUST:** private-media rights, consent/retention and external-source boundaries are updated before implementation; unresolved legal/provider contract claims remain production blockers.
+- [x] **QG-548 — MUST:** active plan has one in-progress step, exact baseline, credentials/live blockers, verification/docs and ten logical commits.
+- [x] **QG-549 — MUST:** missing Polza/Supabase credentials are not implementation blockers but prevent live/cloud claims and select the pending-live status.
+- [x] **QG-550 — MUST:** no catalog discovery, calculator/admin rewrite, direct Google SDK, SAM/Python/GPU/worker/account/final design/Phase 2C is authorized.
+
+Entry result: **AUTHORIZED_PHASE_2B_IN_PROGRESS**.
+
+### 16.2. Completion gate
+
+- [ ] **QG-551 — MUST:** additive migration creates required job fields/status constraints plus attempts/settings/rate metadata, stable material/order links, indexes, timestamps and no Base64/secrets/raw provider body.
+- [ ] **QG-552 — MUST:** private `ai-inputs`/`ai-results` buckets have image-only size/MIME limits, no public/list/cross-object policies and service-role-only server operations.
+- [ ] **QG-553 — MUST:** exact-path non-upsert signed upload sends browser bytes directly to Supabase and no full image passes through Vercel request bodies.
+- [ ] **QG-554 — MUST:** JPEG/PNG/WebP client and server validation covers magic/MIME/decode/orientation/metadata/dimensions/pixels/size and rejects SVG/GIF/PDF/HEIC/HTML/mismatch/bombs.
+- [ ] **QG-555 — MUST:** published material/category/image ownership is revalidated server-side and client paths/remote URLs cannot select the material reference.
+- [ ] **QG-556 — MUST:** HttpOnly guest ownership, unpredictable references and cross-session denial cover read/result/retry/delete; no guest list or ownership transfer exists.
+- [ ] **QG-557 — MUST:** explicit versioned consent and neutral temporary Polza/Gemini/AI/retention/approximation notice gate provider creation.
+- [ ] **QG-558 — MUST:** server-only `window-blinds-polza-v1` prompt and four family suffixes preserve confirmed scene/material intent without client disclosure or invented product facts.
+- [ ] **QG-559 — MUST:** Polza adapter uses standard `fetch`, environment base/model/key, official create/status fields, stores provider ID and never imports Google SDK/key.
+- [ ] **QG-560 — MUST:** provider status/error mapping, three-second minimum server polling, terminal stop, bounded timeout and safe error responses expose no raw body/prompt/cost/balance/key.
+- [ ] **QG-561 — MUST:** completed Polza URL passes HTTPS/SSRF/redirect/timeout/byte/MIME/magic/decode validation and immutable private result import before success.
+- [ ] **QG-562 — MUST:** client depends only on owned short-lived Supabase result grant and remains independent of the Polza URL after import.
+- [ ] **QG-563 — MUST:** idempotency keys, combined request hash/recent-result reuse and compare-and-set transitions prevent duplicate paid jobs/double click/replay.
+- [ ] **QG-564 — MUST:** environment/database kill switches, two-success guest/day default, guest/IP/global/day/concurrency/signed-upload/start limits and one active job fail before Polza.
+- [ ] **QG-565 — MUST:** only one safe transient retry is automatic; attempts preserve paid history and rejected/invalid/consent/balance/limit cases do not auto-retry.
+- [ ] **QG-566 — MUST:** default 24-hour expiration, owned delete, protected daily cron and OWNER/ADMIN bounded cleanup remove both buckets idempotently without active-job or business-fact loss.
+- [ ] **QG-567 — MUST:** `/visualizer` and owned `/visualizer/[publicReference]` implement the five clean responsive states and actionable Russian safe errors.
+- [ ] **QG-568 — MUST:** before/after is touch/keyboard usable and original/result preserve contained orientation without accidental crop or Base64 state retention.
+- [ ] **QG-569 — MUST:** catalog card/detail/calculator entries revalidate material; result can add safe reference to cart, create variant, change material, calculate and delete.
+- [ ] **QG-570 — MUST:** AI reference never affects price; order link is optional, survives expiry, and WhatsApp uses only existing safe summary without attachment/private URL claims.
+- [ ] **QG-571 — MUST:** admin stats/filters/provider/model/prompt/limits/retention/cleanup are safe; MANAGER read is limited and OWNER/ADMIN image grants are explicit, temporary and audited.
+- [ ] **QG-572 — MUST:** `.env.example` has only Polza/AI/bucket/cron variables with empty secrets and fail-safe defaults; obsolete Gemini variables/Google SDK are absent.
+- [ ] **QG-573 — MUST:** `POLZA_AI_API_KEY`, Supabase service role, signed paths/URLs and prompt are absent from source-controlled values, client imports, static chunks/source maps/logs/errors/audit.
+- [ ] **QG-574 — MUST:** cron uses daily Vercel configuration and constant-time Bearer `CRON_SECRET`; missing/incorrect secret is denied without cleanup.
+- [ ] **QG-575 — MUST:** mock provider is deterministic and tests only; production cannot implicitly select mock when Polza is missing.
+- [ ] **QG-576 — MUST:** unit tests cover prompt/families/transitions/ownership/rates/limits/idempotency/hash/retry/expiry/errors/aspect/material validation.
+- [ ] **QG-577 — MUST:** integration tests cover job/upload confirmation/provider lifecycle/result grant/dedup/retry/cleanup/cart/order/admin with safe fakes.
+- [ ] **QG-578 — MUST:** RLS/static/cloud tests prove no anon list/read/delete or cross-session access, staff boundaries and no RLS bypass; credential-dependent skips are exact.
+- [ ] **QG-579 — MUST:** browser tests cover full five-state flow, progress/result/before-after/cart/retry/delete/error and 320/360/375/390/430 mobile profiles.
+- [ ] **QG-580 — MUST:** security tests cover material/path/URL tamper, SSRF, fake MIME/SVG/oversize, replay/double click/rate bypass/cross-session/key leak and cron denial.
+- [ ] **QG-581 — MUST:** recovery tests cover Polza 429/5xx/timeout/invalid/rejected/balance, Supabase/upload/result failure, close/resume, expiry and partial cleanup.
+- [ ] **QG-582 — MUST:** lint, strict typecheck, unit/integration/RLS/browser/security, production build, Vercel configuration and client-artifact scans pass with explicit skips.
+- [ ] **QG-583 — MUST:** build/runtime contains no `@google/genai`, `GEMINI_API_KEY`, direct Google endpoint, SAM/OpenCV/Python/PyTorch/GPU/AI service/worker/masks/four-point/final-design implementation.
+- [ ] **QG-584 — MUST:** live QA creates no more than configured/max-three rights-cleared Polza tasks and proves create/ID/poll/model/result/import/provider-URL independence/idempotency, or records `Live visual QA pending` with zero calls.
+- [ ] **QG-585 — MUST:** visual QA checks room/window/family/material similarity without absolute accuracy; mock is never reported live.
+- [ ] **QG-586 — MUST:** related global/domain/architecture/data/API/security/storage/cart/admin/deployment/test/evaluation/source/rights/open/traceability/roadmap/index/README/changelog docs match runtime.
+- [ ] **QG-587 — MUST:** plan moves to a completed report with exact evidence/status/skips/live calls/cleanup/security/mobile/cart/provider/buckets/PR and remaining manual actions.
+- [ ] **QG-588 — MUST:** all new IDs are unique, normative specs remain only in `docs/specs`, local links resolve and no placeholder/duplicate spec is created.
+- [ ] **QG-589 — MUST:** ten logical commits are reviewable, branch is clean/pushed and unmerged Draft PR title is `Phase 2B: Gemini AI window visualization`.
+- [ ] **QG-590 — MUST:** no reset-hard/force/history rewrite/data/bucket/catalog/request deletion occurs and old runtime data remains intact.
+- [ ] **QG-591 — MUST:** absence of Polza key yields exactly `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`; live passed evidence yields `PASSED_PHASE_2B_POLZA_GEMINI_VISUALIZATION`.
+- [ ] **QG-592 — MUST:** commercial production remains unclaimed while provider legal/privacy/region/subprocessor and cloud activation gates are unresolved.
+- [ ] **QG-593 — MUST:** function/request payloads contain metadata only inbound; provider/result transfers are bounded server egress and image reads/writes do not block unrelated pages.
+- [ ] **QG-594 — MUST:** polling uses backoff, finite duration/unmount/final stop and never calls Polza create after reload without state/idempotency checks.
+- [ ] **QG-595 — MUST:** database/bucket cleanup and deleted/expired grants are verified idempotent without deleting active jobs.
+- [ ] **QG-596 — MUST:** admin cannot expose all photos as a table/gallery and image access is denied to MANAGER by default.
+- [ ] **QG-597 — MUST:** material reference rights remain `PARTNER_LICENSE`/approved and neither customer nor AMIGO media enters training/benchmark/demo fixtures.
+- [ ] **QG-598 — MUST:** live/cloud credential absence and every skipped test are listed without converting static/mock evidence into remote evidence.
+- [ ] **QG-599 — MUST:** final worktree is clean after push/PR and no Phase 2C file/branch/runtime work exists.
+- [ ] **QG-600 — MUST:** Phase 2B stops after the report/Draft PR and grants no merge, launch or Phase 2C authority.
+
+## 17. История изменений
 
 | Версия | Дата | Изменение |
 |---|---|---|
@@ -774,5 +846,6 @@ Entry result: **AUTHORIZED_PHASE_2A_IN_PROGRESS**. Completion evidence remains o
 | 1.19.0 | 2026-08-09 | QG-371–420 closed on staff-only passwordless/RBAC/admin/request-contact/portfolio/settings/audit/jobs, preserved guest/publicReference flow, 25-migration drift/recovery, five-profile browser, exact CI-equivalent, clean push and Draft PR #5 evidence; customer accounts and Phase 1G remain absent. |
 | 1.20.0 | 2026-08-12 | `OWNER-DECISION-019/020`, ADR-0012 and QG-421–480 authorize only Phase 1F.1 material coverage/cart/mobile/staff-password/VPS-template completion while customer accounts, AI runtime, final design and deployment remain excluded. |
 | 1.21.0 | 2026-08-12 | `OWNER-DECISION-021`, ADR-0013 and QG-481–540 authorize Phase 2A Supabase/Next.js/Vercel simplification while source deletion, customer accounts, AI, final redesign and unverified production activation remain excluded. |
+| 1.22.0 | 2026-08-12 | `OWNER-DECISION-023`, ADR-0014 and QG-541–600 authorize only Phase 2B Polza/Gemini visualization, record passed entry evidence and define private upload/provider/result/ownership/cost/cleanup/admin/mobile/test/live-pending completion without Phase 2C. |
 | 0.2.0 | 2026-08-02 | Entry gate обновлён для `GLOBAL_SPEC` 0.4.0 и partner-authorized scope; письменное поручение владельца зафиксировано как разрешение начать 0B; добавлен отдельный completion gate 0B. |
 | 0.1.0 | 2026-08-02 | Предыдущий self-audit 0A.1 для версии 0.3.1; проверки `QG-001`–`087` впоследствии зарезервированы. |

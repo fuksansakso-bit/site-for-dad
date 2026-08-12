@@ -4,8 +4,8 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 2A Supabase + Vercel simplification authorized and in progress; production activation, AI and final redesign hold |
-| Версия | 0.27.0 |
+| Статус | Phase 2A merged; Phase 2B Polza AI window visualization authorized and in progress; commercial production and final redesign hold |
+| Версия | 0.28.0 |
 | Дата | 2026-08-12, Europe/Moscow |
 | Владелец документа | Product Owner — владелец проекта; Business Owner — отец владельца проекта (`OWNER-DECISION-001`) |
 | Продукт | `PROJECT_NAME` до отдельного решения о бренде |
@@ -42,6 +42,7 @@
 - [Phase 1D standard preview plan](../06-plans/active/PHASE_1D_STANDARD_PREVIEW_PLAN.md)
 - [Phase 1F.1 MVP functional completion plan](../06-plans/active/PHASE_1F1_MVP_FUNCTIONAL_COMPLETION_PLAN.md)
 - [Phase 2A Supabase + Vercel migration plan](../06-plans/active/PHASE_2A_SUPABASE_VERCEL_MIGRATION_PLAN.md)
+- [Phase 2B Polza AI visualization plan](../06-plans/active/PHASE_2B_GEMINI_AI_VISUALIZATION_PLAN.md)
 - [Правила работы](../../AGENTS.md)
 - [История изменений](../../CHANGELOG.md)
 - [Правила референсов](../../reference/README.md)
@@ -78,6 +79,7 @@
 | 0.25.0 | 2026-08-12 | `OWNER-DECISION-019` authorizes only Phase 1F.1 from merged Phase 1F main: complete paginated configurator coverage, honest compatibility/manual-price classification, coverage administration, QuoteSnapshot-only cart repair, Russian public labels, critical 320–430 px responsiveness, Argon2id OWNER/ADMIN/MANAGER authentication/security, and provider-neutral Russian-VPS deployment preparation without deployment. `OWNER-DECISION-020` records the documentation-only next-phase Polza/Gemini visualization direction; no photo upload or AI call is authorized. |
 | 0.26.0 | 2026-08-12 | `OWNER-DECISION-021` authorizes Phase 2A as an architectural simplification: one standard Next.js application, Supabase PostgreSQL/Storage/staff-only Auth/RLS and Vercel-compatible delivery replace the active Prisma/Graphile/VersityGW/Docker/preview/configurator topology. Customer accounts, AI, client-photo upload, final redesign, payment and unverified production activation remain excluded. |
 | 0.27.0 | 2026-08-12 | `OWNER-DECISION-022` removes five explicitly marked product categories and every descendant material from the Phase 2A target catalog because the business does not manufacture them; the legacy source database remains intact and all other approved categories stay in migration scope. |
+| 0.28.0 | 2026-08-12 | `OWNER-DECISION-023` authorizes Phase 2B: a guest-only, approximate AI window visualization through asynchronous Polza AI Media API with the Gemini model selected server-side, direct private Supabase upload, private result copy, consent, ownership, cost/idempotency limits and 24-hour cleanup. Direct Google API/SDK, segmentation, masks, Python/GPU/worker services, customer accounts, final redesign, launch and Phase 2C remain excluded. |
 
 ## 1. Нормативный язык и приоритет источников
 
@@ -150,6 +152,7 @@
 - **OWNER-DECISION-020 — MUST:** Product Owner records **SIMPLE POLZA GEMINI WINDOW VISUALIZATION** only as the proposed next-phase architecture. The MVP direction has no SAM/segmentation service, Python AI service or GPU VPS; it uses a server-side `ImageVisualizationProvider` port with `createJob()`, `getJobStatus()`, `cancelJob()`, `getResult()` and `healthCheck()`, and a Polza AI Media API adapter whose model is selected by server-only `POLZA_IMAGE_MODEL`, initially evaluating `google/gemini-3.1-flash-image-preview`. A future authorized job would send the private client-window image, exact selected material image and embedded preservation prompt by controlled signed URL or Base64, execute asynchronously, copy the completed approximate result to private project storage, allow retry and never rely on provider retention. The feature name is «AI-визуализация»; it makes no technical-accuracy promise and preserves room, furniture and frame by prompt. If quality is insufficient, the first correction is manual four-corner markup, not SAM. This decision neither closes privacy/retention/legal/provider evaluation gates nor authorizes any Phase 1F.1 API call, upload, provider credential, adapter implementation or generated output.
 - **OWNER-DECISION-021 — MUST:** Product Owner authorizes exactly **PHASE 2A — SUPABASE + VERCEL SIMPLIFICATION MIGRATION** on branch `phase/2a-supabase-vercel-simplification` from commit `3a0d7662a1b22724641ab29ca1cbd55fd575598e`, protected by annotated tag `pre-supabase-vercel-migration`. The active product MUST become one Vercel-compatible Next.js App Router application using TypeScript strict mode, React, Tailwind CSS, Zod, `@supabase/supabase-js` and `@supabase/ssr`. Supabase PostgreSQL MUST be the only active database runtime, Supabase Storage the active media store, Supabase Auth staff-only for `OWNER`, `ADMIN` and `MANAGER`, and RLS plus server authorization MUST enforce every public or administrative operation. The public journey is `Главная → Каталог → Материал → Размеры → Расчёт → Корзина → Заявка → WhatsApp`; customer registration/accounts MUST NOT exist. The calculator uses integer kopecks, millimetres, `AREA`/`FIXED`/`MANUAL`, a 150,000-kopeck minimum per independently manufactured item, and mandatory server recalculation before immutable request snapshots. Existing approved catalog data and one deduplicated optimized primary image per material MAY be migrated through reproducible idempotent ETL while raw snapshots, worker metadata, AI/client photos, duplicate derivatives and development noise MUST NOT be migrated. Prisma, Graphile Worker, VersityGW, local production PostgreSQL/object storage, Mailpit, mandatory Docker, complex configurator/preview, AMIGO scraping and all AI/client-photo runtimes MUST leave the active build and navigation; their history is retained through Git and `LEGACY_FEATURES.md`. This decision supersedes conflicting active-runtime parts of `OWNER-DECISION-002/005/006/009/011`–`017/019/020` while retaining proven provenance, rights, truthful price fallback, immutable order evidence, named staff/RBAC, audit, no-customer-account and no-AI boundaries. Cloud activation MUST NOT be claimed without credentials and passed migration/RLS/auth tests; commercial production MUST NOT be claimed on Vercel Hobby or before open legal/privacy gates are resolved. Phase 2A does not authorize payment, final premium redesign, AI, client-photo upload, production data deletion, Git history rewrite or merge.
 - **OWNER-DECISION-022 — MUST:** From the Product Owner's marked category image dated 2026-08-12, Phase 2A MUST exclude exactly `ZIP системы для террас`, `Интерьерные ставни. Шаттерсы`, `Шторы Портьеры`, `Шторы гофре на пластиковые окна` and `Моторизованные шторы`, including every descendant system/model/material/variant and their target media, because the Business Owner does not manufacture these products. All other approved source categories remain in target scope. ETL MUST resolve and record the exact stable source IDs/slugs and excluded row/media counts with reason `OWNER_EXCLUDED_NOT_OFFERED`; name matching alone MUST NOT be the persistent identity. This is a target/publication exclusion, not permission to delete the legacy PostgreSQL rows, source dump, object storage or Git history.
+- **OWNER-DECISION-023 — MUST:** Product Owner authorizes exactly **PHASE 2B — SIMPLE POLZA GEMINI AI WINDOW VISUALIZATION** on branch `phase/2b-gemini-ai-visualization` from merged Phase 2A commit `49ce3679de28c612662f78273cd265d73221163d`. The active provider MUST be the asynchronous Polza AI Media API at server-configured `POLZA_AI_BASE_URL`, using server-only `POLZA_AI_API_KEY` and model `POLZA_AI_IMAGE_MODEL` with default `google/gemini-3.1-flash-image`; direct Google Gemini API, `GEMINI_API_KEY` and `@google/genai` MUST NOT be used. A server-only `PolzaImageVisualizationProvider` MUST send the validated private window photo and exact server-validated published material image plus prompt version `window-blinds-polza-v1`, store the returned Polza job ID, map provider states/errors, copy the validated final image from the temporary provider URL into private Supabase Storage, and expose only project status and short-lived Supabase signed URLs. Browser uploads MUST go directly to exact non-overwritable paths in private `ai-inputs`; results MUST live in private `ai-results`; neither file passes through a browser-to-Vercel body. The guest path MUST require explicit processing consent, HttpOnly-session ownership, unpredictable public references, server validation, idempotency, per-guest/global/concurrency/rate limits, one safe transient retry, approximate-result disclosure, deletion and default 24-hour retention. Supported prompt profiles are roller, Zebra/Day-Night, horizontal and vertical blinds; price remains exclusively authoritative in the existing calculator. Phase 2B MUST NOT add SAM, segmentation, masks, manual four-point markup, OpenCV, Python, GPU, a worker/microservice, customer accounts, 3D, final redesign, production launch or Phase 2C. Manual four-point markup is only the first possible future correction if quality proves insufficient. Missing Polza credentials do not block implementation and mock verification, but the only allowed completion status is `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`; `PASSED_PHASE_2B_POLZA_GEMINI_VISUALIZATION` requires bounded rights-cleared live evidence. This decision supersedes `OWNER-DECISION-020`, the Phase 2A no-AI runtime restriction and conflicting geometry-first requirements only within Phase 2B; unresolved legal/provider-contract and production activation gates remain fail-closed.
 
 Гарантийная политика MUST NOT уменьшать обязательные права потребителя, предусмотренные применимым законодательством. Порядок обращения, доказательства, сроки проверки и способы удовлетворения требования остаются в `TBD-WARRANTY-001` и не придумываются.
 
@@ -289,8 +292,8 @@ Phase 1C acceptance 2026-08-08 сохранил CatalogVersion v2 и актив�
 - **SCOPE-003 — MUST:** бинарное наличие `IN_STOCK` / `OUT_OF_STOCK` без показа точных остатков.
 - **SCOPE-004 — MUST:** серверный калькулятор предварительной стоимости для одного и нескольких окон.
 - **SCOPE-005 — MUST:** отдельные строки «Замер», «Доставка» и «Установка» со значением `0` рублей и подписью «Бесплатно» для всей обслуживаемой Чеченской Республики.
-- **SCOPE-006 — MUST:** загрузка фотографии, предложение области окна, ручная правка четырёх углов и геометрический рендер.
-- **SCOPE-007 — MUST:** первый проверяемый scope визуализатора — рулонные жалюзи и «Зебра»/«День-Ночь»; остальные семейства проходят отдельный post-MVP gate.
+- **SCOPE-006 — SUPERSEDED:** прежняя geometry-first примерка заменена для активной Phase 2B требованиями `P2B-AI-*` по `OWNER-DECISION-023`; четыре угла остаются только возможным будущим улучшением.
+- **SCOPE-007 — SUPERSEDED:** прежнее ограничение двумя семействами заменено четырьмя Phase 2B prompt profiles по `P2B-AI-005` без обещания технической точности.
 - **SCOPE-008 — MUST:** сравнение исходной фотографии и результата.
 - **SCOPE-009 — MUST:** отправка контекста расчёта/визуализации в WhatsApp и создание заявки.
 - **SCOPE-010 — SUPERSEDED:** historical basic-account MVP requirement; superseded before implementation by `OWNER-DECISION-018` and reserved for post-MVP.
@@ -306,7 +309,7 @@ Phase 1C acceptance 2026-08-08 сохранил CatalogVersion v2 и актив�
 - **SCOPE-038 — MUST:** канонический состав первого запуска задают `MVP-001`–`028` в [MVP_SCOPE](../06-plans/MVP_SCOPE.md); изменение состава требует письменного решения и impact analysis.
 - **SCOPE-039 — MUST:** для первого запуска обязательны четыре семейства — рулонные, «Зебра»/«День-Ночь», горизонтальные алюминиевые и вертикальные; полный ассортимент AMIGO не является launch dependency.
 - **SCOPE-040 — MUST:** Phase 1B начинает с 20–50 проверенных материалов, а каждая последующая категория/позиция активирует publication, availability, pricing, configurator, preview, AI и orderability независимо.
-- **SCOPE-041 — MUST:** первая AI-примерка включает private upload, ручную коррекцию, геометрическую базу, optional gated refinement, before/after, fallback, evaluation и cost limits только для рулонных и Zebra.
+- **SCOPE-041 — SUPERSEDED:** historical geometry-first scope is reserved; active Phase 2B is the prompt-based Polza flow in `P2B-AI-*` without masks or manual geometry.
 - **SCOPE-042 — MUST:** стандартный preview и AI-примерка имеют разные типы результата, data/privacy boundaries и release gates.
 - **SCOPE-043 — MUST:** разработка следует Phase 1A–1H из [IMPLEMENTATION_ROADMAP](../06-plans/IMPLEMENTATION_ROADMAP.md); завершение документационного gate не разрешает следующий этап автоматически.
 - **SCOPE-044 — MUST:** MVP customer journey is entirely guest-only and uses the existing safe public request reference after submission; no customer credential or registration gate exists.
@@ -321,11 +324,26 @@ Phase 1C acceptance 2026-08-08 сохранил CatalogVersion v2 и актив�
 - **P2A-SCOPE-009 — MUST NOT:** complex configurator, standard preview, AI/Polza/Gemini/SAM/Python, customer photo upload, Graphile jobs, AMIGO scraping, Mailpit and mandatory Docker appear in public navigation, client bundle or active deployment.
 - **P2A-SCOPE-010 — MUST NOT:** final premium visual redesign begins in Phase 2A; the UI is clean, responsive and operational only.
 - **P2A-SCOPE-011 — MUST:** the Phase 2A target catalog excludes the five categories in `OWNER-DECISION-022` and all descendants while retaining every other approved category; migration evidence records exact source IDs and counts.
+- **P2B-AI-001 — MUST:** the public flow is `Каталог → Материал → Примерить на своём окне → Фото → Согласие → Генерация → До/После → Корзина/Калькулятор → Заявка/WhatsApp`, requires no customer account and accepts only a server-revalidated published, visible material with its exact catalog image.
+- **P2B-AI-002 — MUST:** JPEG/PNG/WebP input is magic-byte checked, decoded, EXIF-oriented, metadata-stripped and resized client-side to a 2048-pixel long side and at most 4 MiB before an exact-path signed direct upload to private Supabase Storage; SVG/GIF/PDF/HEIC/unknown/mismatched, empty, damaged or unsafe images fail before provider use.
+- **P2B-AI-003 — MUST:** every job is bound to a hash of an HttpOnly guest session and has a cryptographically unpredictable public reference; public APIs re-check ownership and never list, transfer or accept client-chosen storage/material-image paths.
+- **P2B-AI-004 — MUST:** explicit consent is required before provider creation; the UI states temporary upload, transfer to Gemini through Polza AI, automatic deletion, AI origin and approximate/non-technical result.
+- **P2B-AI-005 — MUST:** the server-only prompt version is `window-blinds-polza-v1`, preserves the room/window/frame/handles/perspective/lighting, uses the exact selected material reference and has distinct instructions for roller, Zebra/Day-Night, horizontal and vertical blinds without inventing technical properties.
+- **P2B-AI-006 — MUST:** Polza transport is isolated behind `ImageVisualizationProvider`; create stores the provider job ID, controlled project status reads poll `GET /media/{id}`, provider statuses/errors are normalized, and raw responses/prompt/usage cost are never returned to guests.
+- **P2B-AI-007 — MUST:** a completed provider result is HTTPS-downloaded by the server under SSRF/timeout/redirect/MIME/byte/decode guards, hashed, copied once to private `ai-results`, and served only through an owned short-lived Supabase signed URL; provider CDN is never the project result URL.
+- **P2B-AI-008 — MUST:** one result and the nearest supported portrait/landscape/square aspect ratio are requested; output profile is `1K`, and 2K/4K or multiple outputs require another owner decision.
+- **P2B-AI-009 — MUST:** creation/start/retry use hashed idempotency keys; a combined hash covers input, material/image, family, prompt/model/output profile, and a recent successful same-session result is reused without a second paid provider task.
+- **P2B-AI-010 — MUST:** environment and database kill switches, maximum two successful guest runs/day by default, one active job/guest, global/day, IP-hash, signed-upload, concurrency and controlled-retry limits fail before a paid call; internal price/balance signals are not public.
+- **P2B-AI-011 — MUST:** input and result default retention is 24 hours; owner deletion and secret-protected daily Vercel Cron remove objects in bounded idempotent batches, preserve request/cart facts and mark jobs expired/deleted without touching active tasks.
+- **P2B-AI-012 — MUST:** AI result never affects price; cart/order store at most the safe owned public reference/job relation and remain usable after image expiry, while WhatsApp contains only the existing safe request-summary URL and never a private Supabase/Polza URL.
+- **P2B-AI-013 — MUST:** `/admin/ai-visualizations` exposes safe metadata/stats/filters to staff, configuration and deletion only to OWNER/ADMIN, no gallery/list of customer photos, and audited time-limited image access only to OWNER/ADMIN.
+- **P2B-AI-014 — MUST NOT:** Phase 2B uses direct Google Gemini API/SDK/key, SAM, segmentation, masks, OpenCV, Python, PyTorch, GPU, a worker/microservice, four-point/manual editor, automatic pane recognition, customer accounts, 3D/final design or Phase 2C.
+- **P2B-AI-015 — MUST:** absence of Polza/Supabase live credentials fails closed and permits only documented mock/static verification; mocks cannot be selected implicitly in production or reported as live evidence.
 
 ### 6.2. После MVP или после отдельного quality gate
 
-- **SCOPE-015 — MAY:** optional generative refinement входит только в контролируемый MVP pilot рулонных/Zebra после provider, privacy, evaluation, protected-region и cost gates; для иных семейств это post-MVP.
-- **SCOPE-016 — MAY:** визуализация горизонтальных и вертикальных жалюзи после подтверждения качества первого scope.
+- **SCOPE-015 — SUPERSEDED:** Phase 2B uses one prompt-based result rather than geometry plus optional refinement; commercial production still requires provider/privacy/legal review.
+- **SCOPE-016 — SUPERSEDED:** Phase 2B includes horizontal and vertical prompt profiles under the same approximate-result disclosure.
 - **SCOPE-017 — MAY:** all customer accounts, passwordless customer authentication, saved projects/favorites/order history/reorder and cross-device workspace are post-MVP and require a new written scope decision.
 - **SCOPE-018 — MAY:** детальные производственные статусы, расписание и расширенная история заказа по `QUOTES_ORDERS_SPEC.md`.
 - **SCOPE-019 — MAY:** расширенная аналитика, сегментация, эксперименты и отчёты по причинам расхождения цены.
@@ -396,7 +414,7 @@ Phase 2A supersedes the active runtime of historical `FLOW-002`–`007`, `FLOW-0
 | FLOW-004 | Загрузка фотографии | Пользователь читает privacy notice, выбирает файл, проходит валидацию и получает preview. | Ошибка формата/качества объясняется; расчёт остаётся доступным без фото. |
 | FLOW-005 | Выбор окна/створки | Система показывает найденные кандидаты, пользователь выбирает окно и нужные створки. | Нет/много кандидатов → ручное создание или выбор четырёхугольника. |
 | FLOW-006 | Выбор материала | Пользователь выбирает реальный `IN_STOCK` Material Variant из совместимых вариантов. | `OUT_OF_STOCK` остаётся видимым по контент-правилу, но не выдаётся за доступный. |
-| FLOW-007 | Получение визуализации | Четыре угла → высота полотна → геометрический render → optional refinement → сравнение. | AI недоступен → геометрический результат; render неуспешен → сохранённая конфигурация и повтор. |
+| FLOW-007 | Получение визуализации | Материал → подготовленное фото → согласие → direct private upload → Polza job → private result import → «До/После». | AI недоступен/лимит → материал, калькулятор, корзина и WhatsApp остаются доступны; безопасный ручной повтор без двойного paid job. |
 | FLOW-008 | Отправка заявки | Пользователь проверяет контакт и согласия → отправляет расчёт/ссылку в WhatsApp или форму. | Не передавать приватное фото без авторизованной ссылки и явного действия. |
 | FLOW-009 | Сохранение проекта | Расчёт получает стабильный ID, snapshot цены и владельца/guest-token. | Истёкший токен не раскрывает данные; предлагается новый расчёт или подтверждение владения. |
 | FLOW-010 | Просмотр статуса | Клиент открывает собственный заказ и видит доступный человеку статус/историю. | Детальная taxonomy не определена до `QUOTES_ORDERS_SPEC`; неизвестный статус не угадывается. |
@@ -543,28 +561,13 @@ Phase 2A supersedes the active runtime of historical `FLOW-002`–`007`, `FLOW-0
 
 ### 10.6. Визуализатор
 
-- **FR-VIS-001 — MUST:** принимать пользовательское фото только после понятного уведомления о приватности и сроке хранения.
-- **FR-VIS-002 — MUST:** валидировать формат, фактический тип, размер, декодируемость и ориентацию до постановки в обработку.
-- **FR-VIS-003 — MUST:** pipeline обнаружения/сегментации автоматически предлагает одну или несколько областей окна и применимые маски с confidence, не скрывая неопределённость.
-- **FR-VIS-004 — MUST:** позволять выбрать найденное окно и отдельные створки.
-- **FR-VIS-005 — MUST:** позволять создать/исправить область ручным перемещением четырёх углов.
-- **FR-VIS-006 — MUST:** сохранять исходные координаты, пользовательскую геометрию и её ревизии независимо от AI-провайдера.
-- **FR-VIS-007 — MUST:** выполнять детерминированный геометрический рендер выбранного Material Variant с коррекцией перспективы.
-- **FR-VIS-008 — MUST:** позволять регулировать высоту полотна в допустимой геометрии.
-- **FR-VIS-009 — MUST:** поддерживать отдельные полотна/маски для выбранных створок.
-- **FR-VIS-010 — MUST:** для «Зебры» моделировать чередование плотных/прозрачных полос из подтверждённых параметров варианта и регулировать их взаимное положение для режимов «День»/«Ночь».
-- **FR-VIS-011 — MUST:** texture/reference image связано с известным артикулом, цветом и Price Category.
-- **FR-VIS-012 — MUST:** поддерживать маски окна, рамы и окклюзий; ручная маска сохраняется как отдельная производная.
-- **FR-VIS-013 — MUST:** AI/generative refinement является опциональным слоем после геометрического результата.
-- **FR-VIS-014 — MUST:** внешний image provider доступен только через adapter и не влияет на доменные правила товара/цены.
-- **FR-VIS-015 — MUST:** AI не изменяет мебель, стены, потолок, форму комнаты, оконную раму, ручки, число створок или посторонние объекты.
-- **FR-VIS-016 — MUST:** refinement не меняет выбранный артикул, Hardware Color, число полотен и пользовательскую геометрию.
-- **FR-VIS-017 — MUST:** при недоступном AI сохранять и отдавать геометрический результат с понятным сообщением.
-- **FR-VIS-018 — MUST:** сравнение «до/после» использует одинаковое кадрирование и не подменяет исходник.
-- **FR-VIS-019 — MAY:** пользователь сохраняет несколько вариантов одного фото для сравнения.
-- **FR-VIS-020 — MUST:** исходник, preview, маски, geometry render и refinement имеют происхождение и отдельные lifecycle states.
-- **FR-VIS-021 — MUST:** горизонтальные/вертикальные жалюзи не обещаются в первом visualizer scope до отдельного quality gate.
-- **FR-VIS-022 — MUST:** результат содержит disclosure о приблизительности цвета/фактуры и необходимости реального образца/замера.
+- **FR-VIS-001 — MUST:** принимать пользовательское фото только после понятного уведомления о приватности, Gemini-through-Polza processing и 24-часовом default retention.
+- **FR-VIS-002 — MUST:** валидировать формат, фактический тип, размер, декодируемость, pixel limits и ориентацию до provider creation.
+- **FR-VIS-003–021 — SUPERSEDED:** identifiers remain reserved for the historical geometry-first design; active Phase 2B behavior is defined by `P2B-AI-001`–`015` and the specialized AI visualizer specification.
+- **FR-VIS-022 — MUST:** результат содержит disclosure о приблизительности цвета, пропорций и внешнего вида и не считается техническим чертежом, гарантией монтажа или точной цветопробой.
+- **FR-AI-VIS-002 — MUST:** result view presents the owned original and imported project result in a touch/keyboard before-after comparison with actions to add the material to cart, create another variant, choose another material, calculate and delete both files.
+- **FR-AI-VIS-003 — MUST:** progress communicates only «Подготавливаем фотографию», «Создаём визуализацию» and «Обрабатываем результат»; it does not claim segmentation, geometry or technical modelling.
+- **FR-AI-VIS-004 — MUST:** safe Russian errors cover disabled, invalid image/material/consent, rate/daily/concurrency limits, provider/storage/output/expiry and internal failures without stack, provider body, prompt, paths or credentials.
 
 ### 10.6.1. Стандартный интерьерный preview
 
@@ -577,7 +580,7 @@ Phase 2A supersedes the active runtime of historical `FLOW-002`–`007`, `FLOW-0
 - **FR-STANDARD-PREVIEW-007 — MUST:** результат явно называется демонстрационным preview и не выдаётся за фотографию работы бизнеса или точную цветопробу.
 - **FR-STANDARD-PREVIEW-008 — MUST:** стандартный preview и примерка на фото клиента имеют разные data classes, privacy rules, analytics events и acceptance criteria.
 
-- **FR-AI-VIS-001 — MUST:** примерка на фото клиента создаёт минимум `GEOMETRIC_PREVIEW`; optional `AI_REFINED_PREVIEW` является отдельной производной и не заменяет геометрический результат.
+- **FR-AI-VIS-001 — SUPERSEDED:** the historical mandatory `GEOMETRIC_PREVIEW` is reserved; Phase 2B creates one approximate `AI_VISUALIZATION_RESULT` through Polza and retains the original separately.
 
 ### 10.7. Заявки, замеры и заказы
 
@@ -694,7 +697,7 @@ Phase 2A supersedes the active runtime of historical `FLOW-002`–`007`, `FLOW-0
 - **FR-SETTINGS-001 — MUST:** сайт хранит версионируемые контакты, регион обслуживания, срок изготовления и гарантийный срок.
 - **FR-SETTINGS-002 — MUST:** настройки бесплатных услуг разделены по услуге, но их подтверждённое значение для всей обслуживаемой территории равно `0` рублей; изменение бизнес-смысла требует нового решения владельца.
 - **FR-SETTINGS-003 — MUST:** privacy/consent тексты версионируются с датой вступления в силу.
-- **FR-SETTINGS-004 — MUST:** feature flags MAY отключать AI/refinement без отключения геометрического визуализатора и калькулятора.
+- **FR-SETTINGS-004 — MUST:** environment and OWNER/ADMIN kill switches MAY disable AI upload/generation without disabling catalog, calculator, cart or requests.
 - **FR-SETTINGS-005 — MUST:** нейтральный текст рассрочки и WhatsApp-контакт версионируются; администратор не может опубликовать неподтверждённые финансовые обещания без нового нормативного решения.
 
 ### 10.12. Аналитика
@@ -778,26 +781,24 @@ Phase 2A supersedes the active runtime of historical `FLOW-002`–`007`, `FLOW-0
 
 ### 12.1. Требования к точности
 
-- **FR-VIS-023 — MUST:** геометрический слой совпадает с четырьмя подтверждёнными пользователем углами и сохраняет их перспективу.
-- **FR-VIS-024 — MUST:** разные створки не сливаются автоматически в одно полотно без выбора пользователя.
-- **FR-VIS-025 — MUST:** ритм полос «Зебра» строится из полей конкретного варианта, а не декоративного шаблона по умолчанию.
+- **FR-VIS-023–025 — SUPERSEDED:** historical geometry/mask accuracy identifiers remain reserved; Phase 2B has no four-point, pane or deterministic stripe geometry.
 - **FR-VIS-026 — MUST:** цветовой pipeline документируется, но не заявляет физически точный цвет на некалиброванном экране.
-- **FR-VIS-027 — MUST:** критерии pixel/geometric/subjective accuracy и пороги определяются на разрешённом benchmark по `TBD-AI-002`.
-- **FR-VIS-028 — SHOULD:** результат сохраняет резкость рамы/ручек через маски и не размывает всю сцену.
+- **FR-VIS-027 — MUST:** Phase 2B quality review uses rights-cleared test photos and separately records room preservation, window recognizability, family, approximate material/color similarity and technical validity without claiming absolute accuracy.
+- **FR-VIS-028 — SUPERSEDED:** Phase 2B preserves frame/handles through the closed prompt and QA rather than masks.
 
 ### 12.2. Известные ограничения
 
-Отражения, сильные блики, занавески, растения, низкая освещённость, motion blur, экстремальная перспектива, широкоугольные искажения, частично закрытая рама и неизвестный масштаб могут снизить точность. Экран, камера и освещение изменяют воспринимаемый цвет. Геометрический результат не проверяет физическую возможность монтажа.
+Отражения, сильные блики, занавески, растения, низкая освещённость, motion blur, экстремальная перспектива, широкоугольные искажения, частично закрытая рама и неизвестный масштаб могут снизить качество. Экран, камера и освещение изменяют воспринимаемый цвет. AI-результат может изменить детали и не проверяет размеры или физическую возможность монтажа.
 
 ### 12.3. Ошибочные сценарии
 
 | Требование | Сценарий | Обязательное поведение |
 |---|---|---|
-| FR-VIS-029 | Окно не найдено | Предложить ручные четыре угла; не блокировать калькулятор. |
-| FR-VIS-030 | Найдено несколько объектов | Показать кандидатов, не выбирать скрытно; разрешить несколько створок. |
+| FR-VIS-029 | Provider не может корректно обработать окно | Показать безопасную ошибку/ручной повтор и не блокировать калькулятор или корзину; четыре угла не реализуются в Phase 2B. |
+| FR-VIS-030 | Provider изменил сцену или тип изделия | Не обещать точность; разрешить удалить/создать ещё вариант и зафиксировать QA signal без скрытого автоматического выбора. |
 | FR-VIS-031 | Низкое качество | Объяснить проблему и дать рекомендации пересъёмки/ручного режима. |
 | FR-VIS-032 | Слишком тёмное фото | Предупредить о снижении достоверности; разрешить замену без потери расчёта. |
-| FR-VIS-033 | AI-провайдер недоступен | Завершить геометрическим результатом или поставить осознанный retry. |
+| FR-VIS-033 | AI-провайдер недоступен | Не запускать бесконечный retry; показать временную недоступность, сохранить material/cart path и разрешить один осознанный ручной повтор. |
 | FR-VIS-034 | Превышен лимит | Объяснить лимит без раскрытия внутренних anti-abuse сигналов; сохранить текущий проект. |
 | FR-VIS-035 | Неправильный формат | Отклонить до хранения/обработки и перечислить утверждённые форматы после `TBD-AI-003`. |
 | FR-VIS-036 | Обработка зависла | Перевести job в timeout/failed, разрешить безопасный повтор и исключить двойное списание лимита. |
@@ -914,20 +915,20 @@ Phase 2A supersedes the active runtime of historical `FLOW-002`–`007`, `FLOW-0
 
 ### 16.2. Приватность фотографий
 
-- **NFR-PRIV-001 — MUST:** пользовательские оригиналы, preview, маски, geometry render и refinement являются приватными.
+- **NFR-PRIV-001 — MUST:** пользовательские оригиналы и AI visualization results являются приватными; Phase 2B не создаёт preview/mask/geometry intermediates.
 - **NFR-PRIV-002 — MUST:** эти объекты не размещаются в публичном bucket; доступ выдаётся краткоживущими авторизованными ссылками.
-- **NFR-PRIV-003 — MUST:** цель, правовое основание, срок и внешние обработчики показываются до upload/AI-обработки по `TBD-PRIV-*`.
+- **NFR-PRIV-003 — MUST:** цель, Polza/Gemini external processing, approximate AI result, automatic deletion and 24-hour default project retention показываются до generation; unresolved legal/controller/provider-contract details remain visible through `TBD-PRIV-*` and block unreviewed production launch.
 - **NFR-PRIV-004 — MUST:** EXIF/метаданные минимизируются в производных файлах; допустимый оригинал обрабатывается по retention policy.
 - **NFR-PRIV-005 — MUST:** пользователь может запросить удаление доступными каналами; выполнение трассируется без сохранения содержимого.
 - **NFR-PRIV-006 — MUST:** фото не используется для портфолио, обучения, benchmark или отладки без отдельного основания/согласия.
-- **NFR-PRIV-007 — MUST:** внешний провайдер получает минимальный payload и только после проверки запрета обучения, retention и географии обработки.
+- **NFR-PRIV-007 — MUST:** Polza receives only the closed prompt, two short-lived image grants and a pseudonymous abuse identifier after consent; it never receives contacts/order/staff/internal IDs. Provider-contract, retention/training and geography claims MUST NOT be invented and remain production gates where evidence is absent.
 - **NFR-PRIV-008 — MUST:** ошибки, логи, traces и аналитика не содержат бинарные данные, presigned URL, object key или свободный текст с адресом.
 
 ### 16.3. Политика удаления гостевых загрузок
 
-- **NFR-PRIV-009 — MUST:** точный TTL утверждается до production-upload по `TBD-PRIV-001` и виден гостю до загрузки.
-- **NFR-PRIV-010 — MUST:** scheduled deletion каскадно удаляет оригинал, preview, маски, промежуточные и конечные результаты.
-- **NFR-PRIV-011 — MUST:** job удаления идемпотентен, повторяется при временной ошибке и отправляет неуспех в контролируемый dead-letter/alert flow.
+- **NFR-PRIV-009 — MUST:** Phase 2B project input/result TTL defaults to exactly 24 hours from creation and is visible before generation; a future change requires owner decision and settings audit.
+- **NFR-PRIV-010 — MUST:** scheduled deletion removes both `ai-inputs` and `ai-results` objects then marks metadata expired/deleted without deleting cart/order business facts.
+- **NFR-PRIV-011 — MUST:** cleanup is authenticated, bounded and idempotent, records per-object safe outcomes, continues after one object failure and leaves retryable metadata for a later run.
 - **NFR-PRIV-012 — MUST:** сохранённый бизнес-факт заявки не продлевает хранение фото без отдельного основания; исключения документируются.
 - **NFR-PRIV-013 — MUST:** резервные копии обрабатывают удаление по утверждённой процедуре `TBD-PRIV-006`.
 
@@ -953,10 +954,11 @@ Phase 2A supersedes the active runtime of historical `FLOW-002`–`007`, `FLOW-0
 - **NFR-ARCH-001 — Web application:** публичный responsive UI, клиентский кабинет при включении и отдельная административная поверхность.
 - **NFR-ARCH-002 — API:** единая серверная граница авторизации, каталога, расчёта, проектов, заявок и orchestrated jobs.
 - **NFR-ARCH-003 — Database:** PostgreSQL является локальным транзакционным operational system of record для source snapshots, нормализованных каталоговых проекций, локальных решений, версий цены, расчётов, заявок, статусов, consent и audit references. По `OWNER-DECISION-009` его активная одобренная версия является единственным каноническим runtime-источником публичных catalog/search/filter/configurator/calculation/lead/analytics данных; это MUST NOT подменять upstream/decision authority из `OWNER-DECISION-008`, а object storage и rebuildable projections остаются delivery/derived layers.
-- **NFR-ARCH-004 — Object storage:** private хранилище оригиналов и производных с lifecycle controls; провайдер не выбран.
-- **NFR-ARCH-005 — Background jobs:** идемпотентные задачи upload processing, detection, render, refinement, уведомлений и удаления.
-- **NFR-ARCH-006 — AI/CV worker:** изолированная вычислительная граница для detection/segmentation/rendering без коммерческих правил.
-- **NFR-ARCH-007 — External image provider adapter:** внутренний контракт, provider-specific mapping, timeout, retry, cost/usage metadata и fallback.
+- **NFR-ARCH-004 — Object storage:** Supabase Storage holds public approved catalog media and separate private `ai-inputs`/`ai-results` buckets with exact-path signed upload and short-lived signed read grants.
+- **NFR-ARCH-005 — Asynchronous jobs:** PostgreSQL job/attempt/rate metadata plus bounded Next.js route-handler polling and daily Vercel cleanup cron provide idempotent lifecycle without a separate worker.
+- **NFR-ARCH-006 — SUPERSEDED:** the historical AI/CV worker identifier is reserved; Phase 2B adds no detection, segmentation, Python/GPU worker or second backend.
+- **NFR-ARCH-007 — External image provider adapter:** `PolzaImageVisualizationProvider` maps official Media API transport/status/error/result data behind a small domain port; key, prompt, raw body, provider URL and cost remain server-private.
+- **NFR-ARCH-016 — MUST:** Polza configuration is server-only and fail-closed; direct Google API/SDK and implicit production mock fallback are prohibited.
 - **NFR-ARCH-008 — Monitoring:** logs, metrics, traces, synthetic checks, alert routing и privacy-safe correlation.
 - **NFR-ARCH-009 — MUST:** multi-tenancy не реализуется, но новые глобальные сущности SHOULD допускать будущий ownership scope без преждевременных tenant features.
 - **NFR-ARCH-010 — MUST:** окончательные технологии и topology оформляются ADR после профильных спек.
@@ -1009,8 +1011,8 @@ Phase 2A supersedes the active runtime of historical `FLOW-002`–`007`, `FLOW-0
 | RISK-001 | Нет разрешённой активной версии AMIGO и подтверждённых локальных правил; калькулятор выдаст неверную цену. | Блокировать `PRICING_CALCULATOR_SPEC` Approved и production-pricing до source verification, `TBD-PRICE-001`–`005` и parity cases; использовать Manual Review. |
 | RISK-002 | Неизвестные размеры/ограничения создадут неисполняемый заказ. | Источник на Product System, `TBD-SIZE-001`, server validation и `REQUIRES_MANUAL_REVIEW`. |
 | RISK-003 | Неактуальное наличие разочарует клиента. | Бинарный статус, freshness, audit, повторная проверка перед заявкой. |
-| RISK-004 | Экранная/AI-визуализация исказит материал. | Известные reference images, geometric-first, disclosure, benchmark и запрет менять товар. |
-| RISK-005 | AI изменит интерьер или геометрию окна. | Маски, инварианты `FR-VIS-015/016`, visual regression и fallback без AI. |
+| RISK-004 | Экранная/AI-визуализация исказит материал. | Exact server-validated material reference, family prompt, disclosure, live QA and unchanged pricing/cart facts. |
+| RISK-005 | AI изменит интерьер или геометрию окна. | Closed preservation prompt, before/after, bounded QA, delete/regenerate path and no technical-accuracy promise. |
 | RISK-006 | Утечка фотографий интерьера. | Private storage, short-lived access, least privilege, retention/delete tests, no URLs in analytics. |
 | RISK-007 | Внешний AI недоступен или заблокирован в регионе. | Adapter, provider evaluation, geometric fallback, network tests без VPN. |
 | RISK-008 | Стоимость AI станет неконтролируемой. | Quotas, rate limits, usage metrics, feature flag и cost alerts без выдуманных лимитов. |
@@ -1040,10 +1042,10 @@ Phase 2A supersedes the active runtime of historical `FLOW-002`–`007`, `FLOW-0
 9. **1D — Standard preview:** deterministic prepared-scene rendering for supported MVP profiles.
 10. **1E — Cart, WhatsApp and orders:** завершены multi-item cart, guest/measurement request, neutral installment interest, safe WhatsApp handoff and immutable saved request.
 11. **1F — Business administration, requests, portfolio and settings:** `OWNER-DECISION-018` narrows the authorization to staff authentication/lifecycle, unified business admin, request-derived CRM contacts/notes, portfolio, settings and audit; all customer accounts are post-MVP.
-12. **1G+ — Private photo/AI and later work:** не разрешены; client-photo/AI, payment, production deployment и любые следующие фазы требуют нового письменного решения.
-12. **1G — AI visualizer pilot:** private geometry-first roller/Zebra pilot, manual correction, optional refinement and evaluation/cost gates.
-13. **1H — Hardening and release:** security/accessibility/performance/browser/mobile/recovery/monitoring/deployment and launch gate.
-14. **Post-MVP:** только перечисленные в [MVP_SCOPE §3](../06-plans/MVP_SCOPE.md#3-post-mvp-scope) функции по отдельным решениям.
+12. **2A — Supabase + Vercel simplification:** merged one-Next.js runtime with Supabase catalog/calculator/browser-cart/request/staff administration.
+13. **2B — Polza AI visualizer:** authorized simple private guest photo flow, asynchronous Polza/Gemini model, before/after, cart/request linkage, limits and cleanup without geometry/SAM/worker service.
+14. **2C — Final design/hardening/release:** not authorized and MUST NOT start automatically.
+15. **Post-MVP:** только перечисленные в [MVP_SCOPE §3](../06-plans/MVP_SCOPE.md#3-post-mvp-scope) функции по отдельным решениям.
 
 ## 22. Definition of Ready для специализированных спек
 

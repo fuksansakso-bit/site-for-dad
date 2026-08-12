@@ -7,6 +7,8 @@
 
 ### Added
 
+- `OWNER-DECISION-023`, ADR-0014 and the active Phase 2B plan authorize a simple guest-only Polza AI Media API window visualization from merged Phase 2A commit `49ce3679de28c612662f78273cd265d73221163d`: direct private Supabase upload, server-only Polza key/prompt, asynchronous job/result import, ownership, consent, limits, 24-hour cleanup and approximate before/after. Direct Google API/SDK, SAM/segmentation/masks, Python/GPU/worker service, accounts, final redesign, production launch and Phase 2C remain excluded.
+
 - `OWNER-DECISION-021`, ADR-0013, QG-481–540 and the active Phase 2A plan authorize the Supabase + Vercel simplification from protected baseline `3a0d7662a1b22724641ab29ca1cbd55fd575598e`; the target is one standard Next.js application with Supabase PostgreSQL/Storage/staff-only Auth/RLS and no customer accounts, AI, final redesign or mandatory Docker runtime.
 - Defined the Phase 2A guest-only catalog → calculator → local cart → server-recalculated request → WhatsApp scope, staff-only administration and explicit legacy inventory without starting the final redesign or AI.
 - `OWNER-DECISION-022` excludes five owner-marked categories and every descendant material from the Phase 2A target because the business does not manufacture them; ETL must record stable source IDs/counts while the legacy database and media remain untouched.

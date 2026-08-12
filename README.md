@@ -1,6 +1,6 @@
 # PROJECT_NAME
 
-> Phase 2A runtime: один Next.js App Router + Supabase PostgreSQL/Storage/staff-only Auth/RLS. Обычный запуск — `pnpm install` и `pnpm dev`; Docker, Prisma, Graphile Worker, VersityGW, Mailpit, preview/configurator и AI больше не active prerequisites. Cloud activation: [Supabase](SUPABASE_SETUP.md), [Vercel](VERCEL_DEPLOYMENT.md). Финальный дизайн не начат.
+> Phase 2B runtime: существующий Next.js App Router + Supabase PostgreSQL/Storage/staff-only Auth/RLS получает простую guest-only AI-визуализацию через Polza AI Media API. Обычный запуск не требует Docker/Python/GPU/worker; прямой Google API/SDK не используется. Cloud/live activation требует собственных Supabase/Polza credentials. Финальный дизайн и Phase 2C не начаты.
 
 `PROJECT_NAME` — рабочее обозначение веб-приложения локального бизнеса по изготовлению и установке рулонных жалюзи, систем «Зебра»/«День-Ночь», горизонтальных алюминиевых и вертикальных жалюзи.
 
@@ -23,6 +23,8 @@
 Phase 1E завершена со статусом `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`. Суженная `OWNER-DECISION-018` **Phase 1F — BUSINESS ADMINISTRATION, REQUEST MANAGEMENT, PORTFOLIO AND SETTINGS** завершена со статусом `PASSED_PHASE_1F_BUSINESS_ADMINISTRATION`: staff-only passwordless authentication, OWNER/ADMIN/MANAGER lifecycle, русская admin shell, request-derived CustomerContact/notes, portfolio, SiteSettings и audit работают; customer accounts отсутствуют.
 
 `OWNER-DECISION-021/022` и ADR-0013 завершили **Phase 2A — Supabase + Vercel simplification**: один Next.js App Router, Supabase PostgreSQL/Storage/staff Auth/RLS, простой калькулятор, localStorage-корзина, гостевая заявка/WhatsApp и русская админка. Docker/Prisma/Graphile/VersityGW/Mailpit/AI/сложный preview не входят в активный runtime. Облачная Supabase activation остаётся ручным шагом без credentials; Preview Vercel создан только для тестирования. [План](docs/06-plans/active/PHASE_2A_SUPABASE_VERCEL_MIGRATION_PLAN.md) и [отчёт](docs/06-plans/completed/PHASE_2A_SUPABASE_VERCEL_MIGRATION_REPORT.md).
+
+`OWNER-DECISION-023` и ADR-0014 авторизуют **Phase 2B — SIMPLE POLZA GEMINI AI WINDOW VISUALIZATION** из merged-main commit `49ce3679de28c612662f78273cd265d73221163d`: private direct upload в Supabase, закрытый prompt, асинхронный Polza Media job с моделью `google/gemini-3.1-flash-image`, private result import, consent/ownership/limits/24-hour cleanup, before/after и безопасная связь с корзиной/заявкой. Прямой Gemini API, Google SDK, SAM/segmentation/masks, Python/GPU/worker service, customer accounts, final design, production launch и Phase 2C запрещены. [Активный план](docs/06-plans/active/PHASE_2B_GEMINI_AI_VISUALIZATION_PLAN.md).
 
 `OWNER-DECISION-021` заменил прежнюю траекторию и разрешил **Phase 2A — SUPABASE + VERCEL SIMPLIFICATION MIGRATION** из commit `3a0d7662a1b22724641ab29ca1cbd55fd575598e`, защищённого тегом `pre-supabase-vercel-migration`. Phase 2A завершена на границе code/Preview; Prisma, Graphile Worker, VersityGW, Mailpit, обязательный Docker, сложный конфигуратор/preview и AI исключены из active runtime, а история сохранена в Git и [LEGACY_FEATURES.md](LEGACY_FEATURES.md). [План Phase 2A](docs/06-plans/active/PHASE_2A_SUPABASE_VERCEL_MIGRATION_PLAN.md).
 
@@ -66,9 +68,9 @@ Phase 1E завершена со статусом `PASSED_PHASE_1E_CART_WHATSAPP
 - Базовая цена имеет provenance AMIGO. Каталожная v2 сохраняет 1 664 source card/base/price-from records; отдельная активная расчётная PriceVersion v5 фиксирует четыре проверенных rule scope, source metadata, parity evidence и local override precedence. Не доказанные формулы не получают числовую цену.
 - Рассрочка входит в scope только как нейтральный ручной WhatsApp-сценарий; подробные условия, eligibility, порядок заявки и география остаются `TBD-INSTALLMENT-001`–`013`.
 - Изображения AMIGO разрешены в партнёрском scope; hotlink, снятие водяных знаков, смена авторства и training use запрещены, а локальная публикация требует asset-level `PUBLICATION_APPROVED`.
-- Окончательный бренд, хостинг и AI-провайдер не выбраны.
+- Окончательный бренд и commercial hosting launch не утверждены; Phase 2B AI provider выбран как Polza Media API, но live/provider-contract/privacy evidence остаётся gated.
 
-## Локальная разработка Phase 2A
+## Локальная разработка Phase 2A/2B
 
 Требуются Git, Node.js `24.18.1` и pnpm `11.18.0`. Создайте ignored `.env.local` по `.env.example`, затем:
 
@@ -107,4 +109,4 @@ pnpm.cmd --filter @project-name/db pricing:bootstrap
 
 ## Текущая граница работы
 
-Phase 1A–1F завершены; Phase 2A выполняется. Customer accounts, payment, client-photo/AI, финальный премиальный редизайн, удаление исходных данных, неподтверждённый production launch и Phase 1G+ остаются на hold.
+Phase 1A–1F и Phase 2A завершены; выполняется только Phase 2B по `OWNER-DECISION-023`. Customer accounts, payment, direct Google AI, SAM/Python/GPU/worker service, финальный премиальный редизайн, удаление исходных данных, неподтверждённый production launch и Phase 2C остаются на hold.

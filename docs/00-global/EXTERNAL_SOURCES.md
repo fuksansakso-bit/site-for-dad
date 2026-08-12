@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Нормативный глобальный реестр; Phase 1B.2 catalog accepted and Phase 1C dated calculator verification active; official export remains unproved |
-| Версия | 1.10.0 |
-| Дата проверки источников | 2026-08-08, Europe/Moscow |
+| Статус | Нормативный глобальный реестр; accepted local AMIGO catalog plus Phase 2B Polza Media API contract evidence |
+| Версия | 1.11.0 |
+| Дата проверки источников | 2026-08-12, Europe/Moscow |
 | Главный источник правды | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) |
 | Связанные политики | [PRICING_SOURCE_POLICY.md](PRICING_SOURCE_POLICY.md), [ASSET_RIGHTS_REGISTER.md](ASSET_RIGHTS_REGISTER.md) |
 
@@ -38,6 +38,10 @@
 - **EXTSRC-022 — MUST:** full catalog semantic source version строится из сортированных безопасных распознанных category/system/model/material facts при pinned parser/mapping versions. Raw HTML hash MAY оставаться capture evidence, но scripts, cookies, form/CAPTCHA/session tokens, персональные данные и capture timestamp MUST NOT попадать в safe snapshot или создавать ложную новую catalog version.
 - **EXTSRC-023 — MUST:** full discovery MUST сохранять все обнаруженные категории и честно учитывать failures/skips/duplicates/source-removed/checksums в manifest. Нераспознанная массовая структура, credential/login/CAPTCHA, technical refusal, нестабильная identity, дубликаты или невозможность доказать coverage являются stop condition; частичный результат MUST NOT называться полным каталогом.
 - **EXTSRC-024 — MUST:** Phase 1C pricing evidence uses dated, hash-identified, low-rate public calculator input/output captures only for independently implemented parity rules. Public runtime MUST use committed/activated PostgreSQL rules and MUST NOT call the observed customizer endpoint during a client calculation.
+- **EXTSRC-025 — MUST:** Polza AI is an external media processor/API provider, not a catalog, price, rights or product authority. Phase 2B uses only the official Media API create/status contract and the server-configured model registry ID verified on 2026-08-12.
+- **EXTSRC-026 — MUST:** Polza transport uses authenticated `POST /api/v1/media` and `GET /api/v1/media/{id}` through the server adapter; exact current fields are `model`, `input.prompt`, ordered `input.images[{type,data}]`, supported generation fields, `async` and pseudonymous `user`. Raw provider JSON/usage/reasoning/warnings/content are not product records.
+- **EXTSRC-027 — MUST:** a Polza `data.url` is a temporary acquisition locator only. PROJECT_NAME validates and imports result bytes into private Supabase Storage, never publishes or stores the provider URL as the client result.
+- **EXTSRC-028 — MUST:** Polza documentation/model availability and contract terms are mutable external facts; provider/model changes require re-verification, tests and when product/security/privacy boundaries change a superseding ADR. Public documentation MUST NOT be treated as proof of no-training, retention, region, DPA or subprocessors.
 
 ## 2. Модель внешнего значения
 
@@ -379,6 +383,25 @@
 | Fallback | Honest `NORMALIZED_COLOR_ONLY` disclosure or `PREVIEW_UNAVAILABLE`; never remote request/random material |
 | Связанные требования | `STD-PREV-003/004/017`, `MEDIA-PIPE-013`, `ASSET-005/013/016`, `QG-285`–`289` |
 
+### SOURCE-POLZA-MEDIA-API-001
+
+| Поле | Значение |
+|---|---|
+| Организация | Polza AI |
+| URL | `https://polza.ai/docs/api-reference/media/create`, `https://polza.ai/docs/api-reference/media/status`, `https://polza.ai/models/google/gemini-3.1-flash-image` |
+| Назначение | Phase 2B asynchronous image-editing transport and selected model registry evidence |
+| Разрешённые данные | Documented request/response fields, status names, model ID and short-lived private image grants after consent |
+| Запрещённые данные/действия | Contact/order/staff data, credentials, service-role key, arbitrary URLs, raw response logging, price/catalog authority, training claim or permanent provider URL dependency |
+| Статус доступа | Public official documentation; authenticated API requires server-only `POLZA_AI_API_KEY` |
+| Последняя проверка | 2026-08-12; Media create/status pages crawled same day and model page identified `google/gemini-3.1-flash-image` |
+| Надёжность | High for the documented API shape on capture date; live behavior unverified without a key |
+| Изменяемость | High; API/model availability and pricing/policies may change |
+| Юридический статус | Technical API selection accepted by `OWNER-DECISION-023`; DPA/subprocessor/region/training/retention evidence remains `TBD-AI-007`, `TBD-PRIV-005`, `TBD-INFRA-004` |
+| Изображения | Window/material sent by short-lived signed URL; result copied immediately to private project storage |
+| Обновление | Re-read official create/status/model documentation and contract tests before model/provider rollout |
+| Fallback | Disable AI; catalog, calculator, cart, request and WhatsApp remain available |
+| Связанные требования | `P2B-AI-005`–`010`, `AI-PIPE-021`–`029`, ADR-0014 |
+
 ## 5. Границы ассортимента при обновлении
 
 Импорт или ручная фиксация данных MAY регистрировать любую текущую или будущую категорию AMIGO без изменения программного кода ядра. Наличие сущности на странице AMIGO не активирует локальную публикацию, наличие, pricing readiness, visualizer support или orderability. Эти состояния управляются независимо; сложные категории MAY оставаться `POST_MVP_CANDIDATE` для отдельных функций.
@@ -411,3 +434,4 @@
 | 1.8.0 | 2026-08-04 | Зафиксированы accepted full manifest/import, active CatalogVersion/PriceVersion v2, 1 655 variants, 2 818 approved local objects, no-op/restart evidence и закрытие current inventory aspect; official partner API/export/file/schema остаётся открытым. |
 | 1.9.0 | 2026-08-08 | Added hash/versioned Grozny-context public calculator verification for Phase 1C, four bounded MVP rule scopes and an explicit no-live-AMIGO runtime boundary. |
 | 1.10.0 | 2026-08-08 | Registered the exact Phase 1D customizer scene/product asset paths, owner-confirmed partner permission, checksum-bound local serving and no-runtime-hotlink/code-copy boundary. |
+| 1.11.0 | 2026-08-12 | Registered Polza AI Media create/status/model documentation for Phase 2B, exact mutable transport boundary, temporary result import and explicit non-evidence for provider legal/privacy claims. |

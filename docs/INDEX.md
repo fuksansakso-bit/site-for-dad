@@ -1,13 +1,14 @@
 # Карта документации PROJECT_NAME
 
-## Phase 2A operations
+## Phase 2B operations
 
-- [Active plan](06-plans/active/PHASE_2A_SUPABASE_VERCEL_MIGRATION_PLAN.md) и [Free Tier audit](06-plans/SUPABASE_FREE_TIER_AUDIT.md).
+- [Active plan](06-plans/active/PHASE_2B_GEMINI_AI_VISUALIZATION_PLAN.md), [AI product spec](specs/02-domain/AI_WINDOW_VISUALIZER_SPEC.md), [Polza pipeline](specs/04-technical/AI_PIPELINE.md), [evaluation](evaluations/AI_EVALUATION_SPEC.md) and [ADR-0014](adr/ADR-0014-polza-ai-window-visualization.md).
+- Phase 2A evidence remains in its [plan](06-plans/active/PHASE_2A_SUPABASE_VERCEL_MIGRATION_PLAN.md), [report](06-plans/completed/PHASE_2A_SUPABASE_VERCEL_MIGRATION_REPORT.md) and [Free Tier audit](06-plans/SUPABASE_FREE_TIER_AUDIT.md).
 - [Supabase setup](../SUPABASE_SETUP.md), [Vercel deployment](../VERCEL_DEPLOYMENT.md), [migration report](../DATA_MIGRATION_REPORT.md), [backup/restore](../BACKUP_RESTORE.md), [legacy inventory](../LEGACY_FEATURES.md).
 
 ## 0. Статус
 
-Phase 1A–1F завершены. `OWNER-DECISION-021` авторизует Phase 2A Supabase + Vercel simplification из tagged baseline `3a0d7662a1b22724641ab29ca1cbd55fd575598e`; QG-481–490 закрывают entry, QG-491–540 выполняются. Customer accounts, AI/photo upload, payment, final premium redesign, destructive source retirement, unverified production launch и Phase 1G+ не разрешены.
+Phase 1A–1F и Phase 2A завершены. `OWNER-DECISION-023` авторизует только Phase 2B Polza/Gemini visualization из merged-main `49ce3679de28c612662f78273cd265d73221163d`; QG-541–550 закрывают entry, QG-551–600 выполняются. Direct Google API/SDK, SAM/masks/segmentation, Python/GPU/worker service, customer accounts, payment, final premium redesign, destructive source retirement, unverified production launch и Phase 2C не разрешены.
 
 ## 1. Порядок обязательного чтения
 

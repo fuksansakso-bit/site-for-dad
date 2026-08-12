@@ -164,20 +164,22 @@ Execution contract: [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN](active/PHASE_1B2_FULL_AM
 
 `OWNER-DECISION-021` authorizes only this migration from tagged baseline `3a0d7662a1b22724641ab29ca1cbd55fd575598e`. It does not authorize Phase 1G, AI, final redesign or production launch before legal/privacy/plan gates.
 
-## 8. PHASE 1G — AI WINDOW VISUALIZER PILOT
+## 8. PHASE 2B — SIMPLE POLZA GEMINI AI WINDOW VISUALIZATION
 
 | Поле | Содержание |
 |---|---|
-| ID / цель | **ROADMAP-1G-001:** выпустить ограниченный private geometry-first AI pilot для рулонных и Zebra с ручной коррекцией и deterministic fallback. |
-| Зависимости | 1A storage/jobs, 1B catalog/media, 1C config, 1F identity where saved result; ADR-0005/0006/0009/0010; AI specs/evaluation/security/privacy. |
-| Входные условия | Legal basis/consent/notice; TTL/delete/backup policy; data residency and processor contract; provider/region/model/version/cost caps; rights-cleared evaluation dataset; quality thresholds and kill switch. |
-| Deliverables | Private upload; validation/quarantine; window/sash detection; manual correction; mask; `GEOMETRIC_PREVIEW`; optional `AI_REFINED_PREVIEW`; before/after; deletion; fallback; evaluation/cost dashboard. |
-| Acceptance criteria | Only roller/Zebra; private short-lived access; no protected-region change beyond tolerance; manual correction always available; AI failure returns geometric result; delete covers originals/derivatives/provider; budget/quality hard gates enforced. |
-| Тесты | Malicious/oversize/orientation upload; auth/IDOR/signed URL; geometry/mask/property; provider timeout/refusal/unsafe output; retry/idempotency; protected pixels; deletion/backup; rights dataset; device/a11y; cost/latency thresholds. |
-| Риски | Privacy/biometric-like inference, provider retention, hallucinated geometry, cost spike, abusive uploads, misleading output. |
-| Definition of Done | Evaluation and privacy gates pass with recorded versions; kill switch/fallback/deletion/incident runbooks rehearsed; pilot scope and usage caps visible. |
-| Запрещённые изменения | Public bucket/logging image URLs, training use, all-family activation, automatic every-sash recognition claim, removal of manual correction, AI-only result. |
-| Rollback | Disable upload/refinement independently; stop/cancel jobs; revoke grants; execute retention deletion; keep standard/geometric fallback; revoke provider keys and preserve non-sensitive audit evidence. |
+| ID / цель | **ROADMAP-2B-001:** add one approximate Polza/Gemini result to the existing guest catalog→calculator→cart→request flow without a second backend. |
+| Зависимости | Merged Phase 2A Next.js/Supabase runtime; approved catalog material images; `OWNER-DECISION-023`; ADR-0014; AI product/pipeline/evaluation/security/storage specs. |
+| Входные условия | QG-541–550 passed; exact Polza Media create/status/model contract verified; consent/24-hour project retention/limits selected; unresolved provider legal/privacy and cloud credentials remain explicit live/production gates. |
+| Deliverables | Private exact-path direct upload; safe image preparation; guest-owned jobs/attempts; closed family prompt; async Polza adapter/poll/result import; before/after; cart/request reference; cleanup cron; safe admin stats/settings/audit. |
+| Acceptance criteria | Four prompt families, one 1K result, server-only keys/prompt, private Supabase result, idempotency/cost/rate limits, expiry/delete and responsive mobile flow; live or exact pending-live status. |
+| Тесты | Unit/integration/static+cloud RLS/browser/security/recovery/build; material/path/SSRF/MIME/replay/cross-session/cron/key leak; 320–430 mobile; at most three rights-cleared live calls when key exists. |
+| Риски | Private-room transfer, provider contract/model drift, hallucinated scene/material, double spend, temporary URL/SSRF abuse and incomplete cleanup. |
+| Definition of Done | QG-551–600, clean ten commits, report, push and Draft PR; mock/cloud/live evidence are labelled separately and Phase 2C remains unstarted. |
+| Запрещённые изменения | Direct Google SDK/key, SAM/segmentation/masks/four points, Python/GPU/worker/service, training, account/payment, final redesign, production launch, merge or Phase 2C. |
+| Rollback | Disable environment/database kill switches, deny new upload/generation, expire/delete private objects, retain safe job/audit and keep catalog/calculator/cart/request fully usable. |
+
+`OWNER-DECISION-023` authorizes this phase from merged-main commit `49ce3679de28c612662f78273cd265d73221163d`. Completion with no Polza key is `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`; live pass requires bounded Polza and private Supabase evidence. Neither starts Phase 2C.
 
 ## 9. PHASE 1H — HARDENING AND RELEASE
 

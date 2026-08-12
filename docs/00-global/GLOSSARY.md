@@ -120,8 +120,9 @@
 |---|---|
 | Визуализация | Производное изображение, показывающее выбранное изделие на пользовательской фотографии; это иллюстрация, а не гарантия физического результата. |
 | Standard Interior Preview | Детерминированное отображение выбранной конфигурации на подготовленной лицензированной интерьерной сцене без пользовательского фото и обязательной generative AI. |
-| GEOMETRIC_PREVIEW | Базовый результат примерки на фото клиента, построенный из подтверждённой геометрии, масок и реального reference выбранного товара. |
-| AI_REFINED_PREVIEW | Опциональная производная `GEOMETRIC_PREVIEW` с generative refinement, которая обязана сохранять товар, геометрию и сцену. |
+| AI_VISUALIZATION_RESULT | Phase 2B approximate image produced by Gemini through Polza from the private window photo, exact selected material and closed prompt, then copied into private project storage. |
+| GEOMETRIC_PREVIEW | Historical geometry/mask result type, superseded for active Phase 2B and not created by its runtime. |
+| AI_REFINED_PREVIEW | Historical optional derivative of `GEOMETRIC_PREVIEW`, superseded for active Phase 2B. |
 | Обнаружение окна | Автоматическое определение кандидатов оконных блоков или створок на изображении. |
 | Сегментация | Выделение пикселей или областей, относящихся к окну, створке, стеклу, раме либо перекрывающему объекту. |
 | Маска | Растровое или векторное описание области, в которой разрешён/запрещён рендер или обработка. |
@@ -130,7 +131,12 @@
 | Перспективное преобразование | Отображение плоского материала в четырёхугольник изображения так, чтобы сохранить визуальную перспективу окна. |
 | Окклюзия | Частичное перекрытие окна ручкой, растением, шторой или другим объектом, который должен находиться перед частью визуализации. |
 | Generative refinement | Опциональная внешняя или внутренняя генеративная обработка геометрического результата для повышения фотореалистичности без изменения выбранного товара и основной геометрии. |
-| AI/CV worker | Изолированный исполнитель задач computer vision и/или AI, не являющийся источником бизнес-правил каталога и цены. |
+| AI/CV worker | Historical separate executor concept; explicitly absent from Phase 2B. |
+| Polza AI Media API | Selected server-to-server asynchronous Phase 2B media transport; it is not a catalog, rights, pricing or permanent storage authority. |
+| Polza provider job ID | Opaque external media-generation identifier stored only as provider mapping and never used as a guest ownership token. |
+| Prompt version | Non-secret identifier for a server-only prompt revision; Phase 2B begins with `window-blinds-polza-v1`. |
+| Signed upload token | Time-limited Supabase capability generated server-side for one exact private object path; it is not a bucket credential and does not allow listing. |
+| Combined request hash | SHA-256-derived idempotency identity over input/material/family/prompt/model/output facts used to prevent duplicate paid generation. |
 | Fallback | Предусмотренный режим продолжения сценария при неуверенном распознавании или недоступности внешней обработки. |
 | Сравнение «до/после» | Управляемое пользователем сопоставление исходной фотографии и результата при одинаковом кадрировании. |
 

@@ -4,190 +4,86 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 0C `READY_WITH_NON_BLOCKING_TBD` for Foundation; Phase 1G activation blocked by provider, benchmark, privacy/legal, TTL and cost gates |
-| Версия | 0.1.0 |
-| Дата | 2026-08-02 |
-| Standard preview | [STANDARD_INTERIOR_PREVIEW_SPEC.md](STANDARD_INTERIOR_PREVIEW_SPEC.md) |
+| Статус | Phase 2B authorized by `OWNER-DECISION-023`; live Polza/Supabase evidence pending credentials |
+| Версия | 0.3.0 |
+| Дата | 2026-08-12 |
+| Prompt version | `window-blinds-polza-v1` |
+| Provider | Polza AI Media API; Gemini model through Polza |
 | Technical pipeline | [AI_PIPELINE.md](../04-technical/AI_PIPELINE.md) |
 
-## 1. Назначение and boundaries
+## 1. Product boundary
 
-AI visualizer privately places an exact selected product/material onto a user-confirmed window in the user's photo. Base geometry rendering is authoritative and usable without generative AI. Optional refinement may improve blending only under strict invariants.
+Phase 2B adds one approximate AI-edited image of a selected blind material on a guest's own window photograph. It uses the existing Next.js/Supabase catalog, calculator, browser cart, request and staff administration. The result is illustrative, never a measurement, technical drawing, installation guarantee, price input or exact color proof.
 
-In scope: notice/upload validation, window/sash detection, user selection/correction, masks/perspective/occlusion, exact material rendering, multiple sashes, product position, optional refinement, before/after, project attachment, WhatsApp-safe reference, deletion and quality evaluation.
+The active flow is `Каталог → Материал → Примерить на своём окне → Фото → Согласие → Генерация → До/После → Корзина/Калькулятор → Заявка/WhatsApp`. No client account is required.
 
-Out of scope: precise measurement from photo, installation feasibility guarantee, room redesign, changing product/SKU/material, training on production images, public gallery, provider choice and physical color guarantee.
+Out of scope: direct Google API/SDK, SAM, detection/segmentation, masks, four-corner/manual geometry, OpenCV, Python/PyTorch, training, GPU, a separate worker/service/backend, pane recognition, technical fitting, complex editor, 3D, final design and Phase 2C. If quality is inadequate, four-point markup is a future owner decision, not a Phase 2B fallback.
 
-## 2. Actors, permissions and data classification
+## 2. Material and entry validation
 
-Guest/customer owns the private photo graph. AI worker has job-scoped access. Manager access is not automatic and requires an approved support purpose/policy. Admin/content roles cannot browse client media. Storage/AI subprocessors receive minimum permitted data.
+- **AIVIS-SPEC-024 — MUST:** catalog card, material page and calculator result expose «Примерить на своём окне» with a stable material slug/ID; the query string is only a lookup hint.
+- **AIVIS-SPEC-025 — MUST:** before job creation the server re-reads `materials`/`categories`, requires both published, requires a non-empty exact `primary_image_path`, and derives name/article/color/type/family/image path itself.
+- **AIVIS-SPEC-026 — MUST:** the material image is downloaded from the configured catalog bucket by a server credential, MIME/bytes/decode/hash checked and proven to be the selected material's own primary image; remote/client image URLs are rejected.
+- **AIVIS-SPEC-027 — MUST:** roller, Zebra/Day-Night, horizontal and vertical family profiles are supported only when category/material metadata maps deterministically; an unsupported family fails safely without substitution.
 
-All originals, stripped originals, thumbnails, masks, geometry points, intermediate layers, prompts/requests, outputs and metadata capable of reconstructing a room are `PRIVATE_USER_MEDIA` or sensitive derivatives. Object URLs and contents are excluded from logs, analytics, errors and test fixtures.
+## 3. Guest ownership and consent
 
-## 3. Нормативные требования
+- **AIVIS-SPEC-028 — MUST:** first API use creates/reuses a cryptographically random HttpOnly, SameSite, production-Secure guest cookie; only a keyed hash is stored with jobs.
+- **AIVIS-SPEC-029 — MUST:** `public_reference` is at least 192 bits of unpredictable URL-safe entropy and is never sequential.
+- **AIVIS-SPEC-030 — MUST:** read, result grant, retry and delete require the same guest-session hash; an opaque reference alone never transfers ownership and no guest list endpoint exists.
+- **AIVIS-SPEC-031 — MUST:** generation requires an explicit unchecked-by-default consent: «Я согласен на обработку фотографии для создания визуализации.»
+- **AIVIS-SPEC-032 — MUST:** before consent the UI states that the photo is temporarily stored, sent to Gemini through Polza AI, automatically deleted, and produces an approximate AI visualization. It makes no absolute privacy/provider-retention claim.
 
-- **AIVIS-SPEC-001 — MUST:** upload begins only after clear purpose/processing/retention/provider notice and required consent/legal-basis flow.
-- **AIVIS-SPEC-002 — MUST:** input validation checks authorization, file signature/MIME, approved formats, size/dimensions, decode, orientation, malware and minimum quality.
-- **AIVIS-SPEC-003 — MUST:** prohibited metadata is removed before downstream processing; original handling follows approved retention.
-- **AIVIS-SPEC-004 — MUST:** automatic detection never silently chooses the final window when multiple candidates or low confidence exist; user confirms target.
-- **AIVIS-SPEC-005 — MUST:** user can correct at least four perspective points and, where needed, masks/occlusions/sashes using accessible alternatives.
-- **AIVIS-SPEC-006 — MUST:** geometry state stores normalized coordinates relative to oriented image, source dimensions, transform version and user confirmation.
-- **AIVIS-SPEC-007 — MUST:** exact selected `MaterialVariant` and product render profile revisions are used; substitution/generative recoloring is prohibited.
-- **AIVIS-SPEC-008 — MUST:** base render preserves perspective, window frames, handles and foreground occlusions and supports confirmed multiple sashes.
-- **AIVIS-SPEC-009 — MUST:** product position/open percentage/slat angle/stripe phase changes only through supported controls and versioned rules.
-- **AIVIS-SPEC-010 — MUST:** base geometry render remains available when generative provider is disabled, unavailable or rejected.
-- **AIVIS-SPEC-011 — MUST:** optional refinement receives minimum constrained input and cannot alter protected regions, product identity, material pattern/category or geometry beyond approved tolerance.
-- **AIVIS-SPEC-012 — MUST:** refinement output is compared against base invariants; failing output is discarded and never replaces base.
-- **AIVIS-SPEC-013 — MUST:** outputs are labelled illustrative; AI-refined revision is distinguishable from deterministic base.
-- **AIVIS-SPEC-014 — MUST:** every result traces photo revision, geometry/masks, configuration/material/assets, renderer/model/provider versions and quality checks.
-- **AIVIS-SPEC-015 — MUST:** storage and delivery are private, short-lived/authorized and never public bucket/CDN.
-- **AIVIS-SPEC-016 — MUST:** training/fine-tuning/evaluation use of production client or AMIGO media is prohibited without separate lawful basis and explicit permission; default is no training.
-- **AIVIS-SPEC-017 — MUST:** delete/TTL traverses original, normalized copy, thumbnail, masks, intermediates, requests, outputs, shares and jobs idempotently.
-- **AIVIS-SPEC-018 — MUST:** WhatsApp/project attachment uses opaque application reference and allowed thumbnail/summary, never storage URL.
-- **AIVIS-SPEC-019 — MUST:** low confidence/unsupported geometry offers manual correction or clear failure, never fabricated successful preview.
-- **AIVIS-SPEC-020 — MUST:** quality thresholds are approved through evaluation; no invented numeric threshold is encoded in this spec.
-- **AIVIS-SPEC-021 — MUST:** user can compare original/base/refined revisions and revert to base without changing configuration.
-- **AIVIS-SPEC-022 — MUST:** photo is not required for catalog, quote, cart or contact flow.
-- **AIVIS-SPEC-023 — MUST:** first-launch activation is limited to roller and Zebra product profiles; horizontal, vertical and all other families remain disabled/post-MVP until a separate profile/evaluation/privacy gate is passed.
+## 4. Client image preparation and direct upload
 
-## 4. Data model and fields
+- **AIVIS-SPEC-033 — MUST:** accept only JPEG, PNG or WebP whose magic bytes match the declared type; reject SVG, GIF, PDF, HEIC/HEIF, HTML, unknown, empty and corrupt files.
+- **AIVIS-SPEC-034 — MUST:** before upload the browser decodes with EXIF orientation, rejects unsafe dimensions/pixel count, draws to a clean canvas to remove EXIF/metadata, preserves portrait/landscape orientation, resizes the long side to at most 2048 px and produces at most 4 MiB.
+- **AIVIS-SPEC-035 — MUST:** minimum decoded side is 320 px, maximum source pixels are 40 million and maximum original compressed bytes are 20 MiB; these are Phase 2B technical safety defaults and failures ask the user to choose another photograph.
+- **AIVIS-SPEC-036 — MUST:** the browser requests a server-created exact-path signed upload token then sends bytes directly to Supabase Storage; no full input image appears in a Vercel request body or React Base64 state.
+- **AIVIS-SPEC-037 — MUST:** the server owns `ai-inputs/<job-id>/window.<ext>`, uses no client filename/path, disallows upsert and confirms upload by re-downloading and validating actual size/MIME/magic/decode/hash before status `READY`.
+- **AIVIS-SPEC-038 — MUST:** upload guidance says the full frame should be visible, photograph straight on with light, avoid people/obstructions/blur/crops/screenshots, and «Чем лучше видно окно, тем точнее будет AI-визуализация.»
 
-| Entity | Key fields |
-|---|---|
-| `PhotoUpload` | owner scope, purpose/notice/consent version, object ref, hash, MIME/dimensions/orientation, created/expiry/deletion status |
-| `PhotoRevision` | parent, normalization transform, stripped metadata status, private derivatives |
-| `WindowCandidate` | model version, polygon/bbox, confidence, sash candidates, status |
-| `ConfirmedGeometry` | selected candidate, normalized corner points, sash polygons, user edits/confirmation, version |
-| `MaskSet` | glass/product/protected frame/handle/foreground masks, model/manual sources, checksum |
-| `VisualizationJob` | type/stage/state/idempotency/correlation, private input/output refs, retry/provider metadata |
-| `VisualizationRevision` | base/refined kind, configuration/material/asset/profile/model versions, controls, invariant report, disclosure |
-| `ShareAttachment` | opaque scoped reference, allowed summary/thumbnail policy, expiry/revocation |
-| `DeletionTask` | graph roots, object/job/provider deletion states, attempts/evidence |
+## 5. Five UI states
 
-## 5. Primary flow
+1. Selected material: image, name, article, color, category, availability and choose-another action.
+2. Window photo: camera/file input (`accept="image/*"`, camera hint where supported), guidance, contained preview, replace and continue.
+3. Consent: processor/temporary-use notice and required checkbox.
+4. Generation: stable soft states «Подготавливаем фотографию», «Создаём визуализацию», «Обрабатываем результат»; one enabled request at a time.
+5. Result: contained original/result touch/keyboard before-after, selected material, disclosure and actions «Добавить в корзину», «Создать ещё вариант», «Выбрать другой материал», «Рассчитать стоимость», «Удалить фотографию».
 
-1. User selects valid product configuration and invokes personal visualization.
-2. Product displays notice and accepts supported private upload.
-3. Worker validates/normalizes/strips metadata; invalid inputs are rejected and cleaned.
-4. Detection returns one or more window/sash candidates and confidence metadata.
-5. User chooses target and confirms/corrects four+ points, sash boundaries and occlusions where needed.
-6. System produces versioned masks and perspective transform.
-7. Base renderer projects exact product geometry/material and applies protected/foreground layers.
-8. Automated quality invariants and user-visible review run; result becomes `READY_BASE` or returns correction/failure.
-9. User adjusts supported product state and compares before/base.
-10. If explicitly requested and permitted, constrained generative refinement creates a separate candidate.
-11. Candidate passes invariant/quality check or is discarded; base remains.
-12. User attaches opaque revision to project/quote and optionally handoff; deletes at will/TTL.
+- **AIVIS-SPEC-039 — MUST:** result disclosure is exactly: «AI-визуализация носит ознакомительный характер. Оттенок, пропорции и внешний вид могут немного отличаться от реального изделия.»
+- **AIVIS-SPEC-040 — MUST:** 320, 360, 375, 390 and 430 px layouts have no horizontal scroll, accidental image crop or covered CTA; touch target is at least 44 px and errors recover without reload.
+- **AIVIS-SPEC-041 — MUST:** polling backs off from the provider-documented 3–5 second image interval, stops on terminal state/timeout/unmount and resumes the existing project job after reload without creating a provider job.
 
-## 6. Geometry and coordinate contract
+## 6. Jobs, idempotency and limits
 
-All points are stored normalized `[0,1]` relative to the correctly oriented image plus original pixel dimensions and orientation transform. Quadrilateral ordering is canonical and self-intersection invalid. Multiple sashes have distinct IDs/polygons and target product assignment.
+- **AIVIS-SPEC-042 — MUST:** internal states are `CREATED`, `UPLOAD_PENDING`, `READY`, `PROCESSING`, `SUCCEEDED`, `FAILED`, `REJECTED`, `EXPIRED`, `DELETED`; transitions are allowlisted and terminal states never return to processing except an explicit new attempt.
+- **AIVIS-SPEC-043 — MUST:** create/start/retry mutations require correlation and idempotency keys stored only as hashes; replay returns the prior safe result.
+- **AIVIS-SPEC-044 — MUST:** `combined_request_hash` covers input hash, material ID/image hash, family, prompt version, model and output profile. A successful same-session result in a 30-minute dedup window is reused without a new paid call.
+- **AIVIS-SPEC-045 — MUST:** `AI_VISUALIZER_ENABLED` and an OWNER/ADMIN database kill switch must both permit generation; missing key/service role/bucket or invalid model/output configuration fails closed.
+- **AIVIS-SPEC-046 — MUST:** defaults are two successful guest generations/day, one active job/guest, one globally configured concurrency slot, one 1K output, 24-hour retention and a configurable global/day limit; signed upload and start also use guest/IP-hash/database rate events.
+- **AIVIS-SPEC-047 — MUST:** one automatic retry is allowed only for transient network/429/5xx/storage errors; no automatic retry for invalid/unsupported/consent/safety/rejected/balance/daily-limit cases. Each paid attempt is an immutable attempt row.
 
-Perspective transform maps a canonical product plane to target quadrilateral. Masks separate target glass/product region, protected frame/handle, and foreground occlusion. Geometry revision includes creation source (`MODEL`, `USER`, `HYBRID`), detector/editor versions and confirmation timestamp.
+## 7. Result, cart/request and deletion
 
-Irregular/roof/arched windows need explicit geometry profiles; unsupported shapes route manual/unsupported state, not approximation presented as accurate.
+- **AIVIS-SPEC-048 — MUST:** one decoded JPEG/PNG result is hashed and stored once at `ai-results/<job-id>/result.<ext>`; browser APIs return metadata plus a short-lived owned Supabase signed URL, never Base64 or the Polza URL.
+- **AIVIS-SPEC-049 — MUST:** cart item may store only optional `aiVisualizationPublicReference`; server pricing ignores it and revalidates ownership/material when creating a request.
+- **AIVIS-SPEC-050 — MUST:** order item may retain an optional foreign key to the visualization job. Expired/deleted media shows «AI-визуализация больше недоступна» while material, dimensions, quantity and price remain intact.
+- **AIVIS-SPEC-051 — MUST:** WhatsApp receives only the existing safe request-summary link and text; it never claims that an image is attached and never contains Supabase/Polza private URL.
+- **AIVIS-SPEC-052 — MUST:** guest deletion removes input/result if present, tombstones the job, invalidates future grants/polls/retries and preserves non-media cart/request facts.
 
-## 7. Product rendering behavior
+## 8. Administration
 
-Renderer uses catalog `ProductRenderProfile` and `MaterialRenderProfile`. It handles family-specific geometry:
+- **AIVIS-SPEC-053 — MUST:** `/admin/ai-visualizations` shows provider/model/prompt/enabled state, today/total/success/failed/rejected/rate-limited/active counts, safe provider error groups, storage estimate, duration, attempts, next cleanup and expired count with status/model/date/material/error filters.
+- **AIVIS-SPEC-054 — MUST:** OWNER/ADMIN may disable/enable only within the environment gate, edit guest/global limits and retention, delete jobs, run cleanup and request an audited image grant. Model ID/key/prompt/raw response/balance are never editable or displayed.
+- **AIVIS-SPEC-055 — MUST:** MANAGER has limited aggregate read-only statistics and no image grant, settings or deletion permission. The list is metadata-only and never a photo gallery.
 
-- roller: plane/roll/cassette/lower bar/open percentage;
-- Zebra: band scale/phase and open/closed alignment;
-- horizontal/vertical: post-MVP only, after a separately approved slat/lamella profile and evaluation gate;
-- pleated/cellular: fold/compression profile;
-- complex/soft products/ZIP/roof/shutters only after profile and benchmark readiness.
+## 9. Safe public error contract
 
-Selected material asset is sampled/warped with approved scale/orientation/transparency. Generative model cannot synthesize a different pattern or hide hardware.
+Public codes are `AI_DISABLED`, `INVALID_IMAGE`, `IMAGE_TOO_LARGE`, `IMAGE_TOO_SMALL`, `UNSUPPORTED_IMAGE_TYPE`, `MATERIAL_NOT_FOUND`, `MATERIAL_IMAGE_UNAVAILABLE`, `CONSENT_REQUIRED`, `RATE_LIMITED`, `DAILY_LIMIT_REACHED`, `JOB_ALREADY_RUNNING`, `PROVIDER_UNAVAILABLE`, `PROVIDER_RATE_LIMITED`, `PROVIDER_REJECTED`, `OUTPUT_INVALID`, `STORAGE_UNAVAILABLE`, `JOB_EXPIRED`, `INTERNAL_ERROR`.
 
-## 8. Optional generative refinement contract
+Provider diagnostics `POLZA_AUTH_ERROR`, `POLZA_RATE_LIMITED`, `POLZA_BALANCE_ERROR`, `POLZA_MODEL_UNAVAILABLE`, `POLZA_INVALID_REQUEST`, `POLZA_PROVIDER_ERROR`, `POLZA_TIMEOUT`, `POLZA_OUTPUT_INVALID` remain staff-safe metadata and map to the public codes. Responses never include stack/SQL/path/prompt/provider body/Bearer/service-role/key/balance/contact data.
 
-Allowed purpose: local blending, edge/lighting harmonization and limited occlusion cleanup. Protected invariants:
+## 10. Acceptance status
 
-- window/frame/handle/room structure outside allowed blend band;
-- product quadrilateral/geometry and visible hardware/control;
-- selected material pattern/texture/color identity within approved metric/tolerance;
-- count/shape of sashes and product instances;
-- no new objects, text, logo, watermark or room redesign.
-
-Provider request is ephemeral/minimal, identifies no user where possible, disables provider training/retention under contract, and uses no AMIGO asset for provider training. Exact provider/region/retention remains evaluation/ADR gated.
-
-## 9. States and transitions
-
-| State | Meaning / allowed next |
-|---|---|
-| `NOTICE_REQUIRED` | Show notice; accept/cancel |
-| `UPLOADED` | Private object received; validate/delete |
-| `VALIDATING` | Decode/security/quality; `REJECTED` or `DETECTING` |
-| `DETECTING` | Candidates; `CORRECTION_REQUIRED` or `GEOMETRY_CONFIRMED` |
-| `CORRECTION_REQUIRED` | User edit/retry/cancel |
-| `GEOMETRY_CONFIRMED` | Create masks/base job |
-| `RENDERING_BASE` | `READY_BASE`, `CORRECTION_REQUIRED`, `FAILED` |
-| `READY_BASE` | Compare/attach/refine/delete |
-| `REFINING` | `READY_REFINED` or return `READY_BASE` |
-| `READY_REFINED` | Compare/attach/revert/delete |
-| `FAILED/REJECTED` | Explain/retry/delete |
-| `EXPIRED/DELETION_PENDING/DELETED` | No new access; idempotent cleanup |
-
-## 10. Validation and quality invariants
-
-Input: supported file and decode; dimensions/quality sufficient; no dangerous payload; actor owns job. Geometry: ordered nondegenerate polygon, bounds, sensible transform, confirmed target, mask alignment. Product: correct family/system/material revision and rights. Output: protected-region change below approved tolerance, expected product region coverage, material identity metric, no NaN/transparent leak, safe format/metadata.
-
-Quality evaluation dimensions:
-
-- window detection/selection success;
-- corner/sash/mask accuracy;
-- frame/handle/foreground preservation;
-- perspective/scale/product geometry plausibility;
-- material/SKU identity and pattern fidelity;
-- artifacts/edge/blending realism;
-- user correction effort and task success;
-- failure detection/calibration rather than forced result;
-- performance/cost/privacy by pipeline stage.
-
-Exact datasets, sample sizes and thresholds are governed by [AI_EVALUATION_SPEC.md](../../evaluations/AI_EVALUATION_SPEC.md) and `TBD-AI-*`.
-
-## 11. Errors, edge cases and recovery
-
-| Code | Trigger | Safe behavior |
-|---|---|---|
-| `UPLOAD_UNSUPPORTED/UNSAFE` | Format/signature/malware/decode | Reject and cleanup |
-| `PHOTO_LOW_QUALITY` | Blur/dark/glare/crop | Guidance and retry |
-| `NO_WINDOW/MULTIPLE_WINDOWS` | Detection uncertain | Manual selection/correction |
-| `GEOMETRY_INVALID` | Points/mask/transform invalid | Editor guidance, no render |
-| `PRODUCT_PROFILE_UNSUPPORTED` | Family/system not ready | Standard preview/contact |
-| `ASSET_BLOCKED` | Rights/mapping changed | Stop job/invalidate output |
-| `BASE_RENDER_FAILED` | Renderer failure | Retry/manual support, no refinement |
-| `PROVIDER_UNAVAILABLE` | Refinement dependency | Keep base |
-| `REFINEMENT_DRIFT` | Invariant failed | Discard candidate, keep base |
-| `ACCESS_DENIED/EXPIRED` | Ownership/token/TTL | Neutral response, no leak |
-| `DELETE_PARTIAL` | Object/provider/job cleanup retry | Access remains revoked; retry/alert |
-
-Edge cases: multiple windows/sashes, reflections, curtains/plants, bars/screens, open windows, tilted perspective, panoramic/portrait, EXIF rotation, very high resolution, transparent fabric, fine Zebra bands, faces/documents in scene, duplicate uploads, deletion during job, provider completion after delete, asset revoke after output, account claim/merge and accessible point editing.
-
-## 12. Security and privacy
-
-Upload uses authenticated/scoped endpoint, allowlisted decode pipeline, malware/content checks where approved, rate/size limits and random private object keys. Delivery is short-lived and owner/purpose checked. Workers run least privilege; egress only approved providers; secrets isolated. Logs/traces store IDs, stages, durations, model versions and error codes, never pixels/URLs/prompts containing scene data. Backups, subprocessors, legal basis, guest TTL, consent withdrawal and DSAR remain policy/TBD gated.
-
-## 13. Performance and analytics
-
-Stages are asynchronous with progress/cancel and idempotency. Large image normalization precedes expensive work; bounded derivatives, queue limits, timeout/circuit breaker and base/refinement separation protect resources. Numeric budgets remain in `PERFORMANCE.md`/evaluation after measurement.
-
-Analytics: opt-in/approved events for upload started/validated/rejected reason class, correction needed, base ready, refinement requested/accepted/discarded, attach/delete and stage latency/cost. No content, exact coordinates, object URLs or private free text.
-
-## 14. Acceptance criteria and test scenarios
-
-Primary: `AC-AI-UPLOAD-001`, `AC-GEOMETRY-001`, `AC-AI-VIS-001`, `AC-AI-REFINE-001`, `AC-VIS-DELETE-001`, `AC-PRIV-001`, `AC-SEC-001`, `AC-ACCESS-001`.
-
-Tests: file spoof/malware/decompression; EXIF/orientation; poor/multiple/no-window; manual corners/keyboard editor; multi-sash/occlusion; exact material mapping; protected-region/geometry/pattern metrics; provider outage/timeout/drift; retry/idempotency; cross-owner/object URL; delete during each stage/late callback/backups; asset revoke; reduced motion/responsive; benchmark regression.
-
-## 15. Dependencies, risks and open questions
-
-Dependencies: configurator/catalog/media/storage/AI pipeline/security/API/accounts/performance/observability/evaluation. Open: `TBD-AI-001`–`009`, `TBD-PRIV-*`, guest TTL, provider/region/retention, dataset rights, benchmark thresholds, maximum file/queue/time, complex family readiness. Risks: privacy leak, wrong material, geometry fabrication, provider retention/training, generative drift, inaccessible editor, late output after deletion and cost/latency abuse.
-
-## 16. Связанные требования и история
-
-Links: `FR-VIS-001`–`022`, `FR-AI-VIS-001`, `NFR-PRIV-*`, `NFR-SEC-*`, `NFR-UPLOAD-*`, `ASSET-*`, `AIVIS-SPEC-001`–`023`.
-
-| Версия | Дата | Изменение |
-|---|---|---|
-| 0.1.0 | 2026-08-02 | Определены private geometry-first flow, data graph, optional constrained refinement, quality dimensions, deletion and failure behavior. |
+With no configured Polza key, code/migrations/mock/static/build evidence may close implementation only as `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`. Live status `PASSED_PHASE_2B_POLZA_GEMINI_VISUALIZATION` additionally requires bounded rights-cleared Polza job create/poll/result import/idempotency evidence. Neither status authorizes commercial production or Phase 2C.

@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Нормативный global rights register; Phase 1B.2 catalog and Phase 1D preview assets accepted under per-asset gate |
-| Версия | 1.6.0 |
-| Дата | 2026-08-08, Europe/Moscow |
+| Статус | Нормативный global rights register; approved catalog media and private Phase 2B AI processing boundary |
+| Версия | 1.7.0 |
+| Дата | 2026-08-12, Europe/Moscow |
 | Главный источник правды | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) |
 | Реестр происхождения | [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md) |
 
@@ -106,11 +106,11 @@
 | Разрешённое использование | Только приватный расчёт и визуализация в заявленной цели; портфолио — по отдельному согласию |
 | Запрещённое использование | Публичный bucket/CDN, скрытая публикация, demo, debug, benchmark или training без отдельного основания |
 | Необходимость согласия | Обязательно до upload/AI; отдельное доказуемое согласие для портфолио |
-| Срок хранения | `TBD-PRIV-001` и `TBD-PRIV-002`; срок MUST быть показан до загрузки |
+| Срок хранения | Phase 2B project default 24 hours from job creation by `OWNER-DECISION-023`; provider/backup/legal aspects remain governed by `TBD-PRIV-002/005/006` |
 | Публикационный статус | По умолчанию `PUBLICATION_BLOCKED`; даже `CLIENT_CONSENT` требует scope review |
 | Атрибуция | Не публикуется без отдельного согласия; персональные данные минимизируются |
-| Использование в AI | Только утверждённая обработка с проверенным provider policy; обучение запрещено по умолчанию |
-| Удаление | Каскадно оригинал, preview, маски, промежуточные и результаты; поведение backup — `TBD-PRIV-006` |
+| Использование в AI | Only the consented one-result Polza/Gemini processing purpose; production training/benchmark/demo/debug reuse is prohibited and unverified provider policy remains a launch gate |
+| Удаление | Phase 2B deletes private input/result objects and tombstones the job; no masks/geometry derivatives exist; backup behavior remains `TBD-PRIV-006` |
 
 ### 4.3. Фотографии физического каталога
 
@@ -162,9 +162,9 @@
 | Разрешённое использование | Приватный показ клиенту и передача по его явному действию в рамках расчёта |
 | Запрещённое использование | Публичное портфолио, реклама, benchmark или training без отдельного основания и согласия |
 | Необходимость согласия | Согласие на обработку обязательно; публикационное согласие отдельно |
-| Срок хранения | Как производное пользовательского фото по `TBD-PRIV-001/002` |
+| Срок хранения | Same 24-hour Phase 2B project default as the source photo; a request/cart reference does not extend media retention |
 | Публикационный статус | По умолчанию `PUBLICATION_BLOCKED` |
-| Атрибуция | По условиям провайдера и согласованному disclosure |
+| Атрибуция | Public disclosure identifies an approximate AI visualization; provider-specific attribution follows verified contract terms without invented claims |
 | Использование в AI | Разрешена только заявленная генерация/обработка; повторное обучение запрещено |
 | Удаление | Каскадно вместе с исходником и другими производными |
 
@@ -230,3 +230,4 @@ Phase 1D evidence: `OWNER-DECISION-015` explicitly confirms partner permission f
 | 1.4.0 | 2026-08-03 | `OWNER-DECISION-012` разрешил controlled full-catalog media manifest/import через existing pipeline; per-asset rights/publication, no-hotlink, private storage, validation/dedup и local approved placeholder сохранены. |
 | 1.5.0 | 2026-08-04 | Зафиксированы accepted 3 053 typed media references, 2 818 distinct approved private objects, 1 655/1 655 primary mappings, zero failures/hotlinks и post-restart integrity без расширения derivative/AI/training scope. |
 | 1.6.0 | 2026-08-08 | Registered the explicitly permitted Phase 1D photoreal customizer assets, per-file local manifest and deterministic Zebra derivative provenance without changing authorship, portfolio role or AI/training scope. |
+| 1.7.0 | 2026-08-12 | Applied the Phase 2B 24-hour private input/result lifecycle, Polza/Gemini one-purpose processing, approved exact material-reference use and no training/benchmark/demo/provider-policy assumptions. |

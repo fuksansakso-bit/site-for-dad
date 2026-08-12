@@ -1,5 +1,15 @@
 # Матрица трассируемости PROJECT_NAME
 
+## Phase 2B trace
+
+| Decision/scope | Implementation evidence | Verification/report |
+|---|---|---|
+| `OWNER-DECISION-023`, ADR-0014, `P2B-AI-001`–`015` | `apps/web/lib/ai-visualization`, `apps/web/app/visualizer`, AI route handlers | Phase 2B unit/integration/browser/security suites and completion report |
+| private input/result, ownership, cleanup | additive Supabase migration, `ai-inputs`, `ai-results`, guest session and cron | RLS/static/cloud tests, cleanup/audit tests |
+| Polza adapter/prompt/result import | `PolzaImageVisualizationProvider`, server-only prompt | contract/error/SSRF/idempotency tests; bounded live QA if key exists |
+| cart/request/admin linkage | optional safe references and `/admin/ai-visualizations` | pricing regression, role/audit and expiry tests |
+| no direct Google/SAM/Python/GPU/worker/Phase 2C | dependency/source/client-bundle scans | build/security report |
+
 ## Phase 2A trace
 
 | Decision/scope | Implementation evidence | Verification/report |
@@ -14,11 +24,11 @@
 
 | Поле | Значение |
 |---|---|
-| Фаза | Phase 1A–1F passed; Phase 1F.1 authorized; Phase 1G+ hold |
-| Версия | 1.17.0 |
+| Фаза | Phase 1A–1F and Phase 2A passed; Phase 2B authorized; Phase 2C hold |
+| Версия | 1.18.0 |
 | Дата | 2026-08-12, Europe/Moscow |
 | Состояние покрытия | `COVERED_WITH_VISIBLE_TBD` |
-| Главный источник требований | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.25.0 |
+| Главный источник требований | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.28.0 |
 | Feature contract | [FEATURE_SPEC.md](../specs/01-product/FEATURE_SPEC.md) |
 | Stories | [USER_STORIES.md](../specs/01-product/USER_STORIES.md) |
 | Acceptance | [ACCEPTANCE_CRITERIA.md](../specs/01-product/ACCEPTANCE_CRITERIA.md) |
@@ -61,7 +71,7 @@
 | `FR-CONFIG-001` | [PRODUCT_CONFIGURATOR_SPEC](../specs/02-domain/PRODUCT_CONFIGURATOR_SPEC.md) | [US-GUEST-003](../specs/01-product/USER_STORIES.md) | [AC-CONFIG-001](../specs/01-product/ACCEPTANCE_CRITERIA.md) | [TS-CONFIG-001](../quality/TEST_STRATEGY.md) | `COVERED_WITH_VISIBLE_TBD`: размеры/compatibility |
 | `FR-PRICE-001` | [PRICING_CALCULATOR_SPEC](../specs/02-domain/PRICING_CALCULATOR_SPEC.md) | [US-GUEST-004](../specs/01-product/USER_STORIES.md) | [AC-PRICE-001](../specs/01-product/ACCEPTANCE_CRITERIA.md) | [TS-PRICE-001](../quality/TEST_STRATEGY.md) | `COVERED_WITH_VISIBLE_TBD`: active PriceVersion/formula/source fixtures; parity tolerance resolved |
 | `FR-STANDARD-PREVIEW-001` | [STANDARD_INTERIOR_PREVIEW_SPEC](../specs/02-domain/STANDARD_INTERIOR_PREVIEW_SPEC.md) | [US-GUEST-005](../specs/01-product/USER_STORIES.md) | [AC-STANDARD-PREVIEW-001](../specs/01-product/ACCEPTANCE_CRITERIA.md) | [TS-STANDARD-PREVIEW-001](../quality/TEST_STRATEGY.md) | `IMPLEMENTED_PHASE_1D`: launch profiles/assets passed; broader gaps remain explicit |
-| `FR-AI-VIS-001` | [AI_WINDOW_VISUALIZER_SPEC](../specs/02-domain/AI_WINDOW_VISUALIZER_SPEC.md) | [US-GUEST-006](../specs/01-product/USER_STORIES.md) | [AC-AI-VIS-001](../specs/01-product/ACCEPTANCE_CRITERIA.md) | [TS-AI-VIS-001](../quality/TEST_STRATEGY.md) | `COVERED_WITH_VISIBLE_TBD`: benchmark/privacy/provider |
+| `P2B-AI-001`–`015` | [AI_WINDOW_VISUALIZER_SPEC](../specs/02-domain/AI_WINDOW_VISUALIZER_SPEC.md), [AI_PIPELINE](../specs/04-technical/AI_PIPELINE.md) | [US-GUEST-006](../specs/01-product/USER_STORIES.md) | [AC-AI-VIS-001](../specs/01-product/ACCEPTANCE_CRITERIA.md) | [TS-AI-VIS-001](../quality/TEST_STRATEGY.md), `QG-551`–`600` | `IN_PROGRESS_PHASE_2B`; live/provider-contract/privacy gates remain visible |
 | `FR-CART-001` | [CART_CHECKOUT_ORDERS_SPEC](../specs/02-domain/CART_CHECKOUT_ORDERS_SPEC.md) | [US-GUEST-007](../specs/01-product/USER_STORIES.md) | [AC-CART-001](../specs/01-product/ACCEPTANCE_CRITERIA.md) | [TS-CART-001](../quality/TEST_STRATEGY.md) | `COVERED` |
 | `FR-ORDER-001` | [CART_CHECKOUT_ORDERS_SPEC](../specs/02-domain/CART_CHECKOUT_ORDERS_SPEC.md) | [US-MANAGER-001](../specs/01-product/USER_STORIES.md) | [AC-ORDER-001](../specs/01-product/ACCEPTANCE_CRITERIA.md) | [TS-ORDER-001](../quality/TEST_STRATEGY.md) | `COVERED_WITH_VISIBLE_TBD`: business state machine |
 | `FR-INSTALLMENT-001` | [INSTALLMENT_SPEC](../specs/02-domain/INSTALLMENT_SPEC.md) | [US-GUEST-008](../specs/01-product/USER_STORIES.md) | [AC-INSTALLMENT-001](../specs/01-product/ACCEPTANCE_CRITERIA.md) | [TS-INSTALLMENT-001](../quality/TEST_STRATEGY.md) | `COVERED`; условия `TBD-INSTALLMENT-*` не обещаются |
@@ -224,7 +234,7 @@ Detailed runtime versions, commit list, skipped production-only checks and accep
 
 | Gate / behavior | Implementation | Verification / result |
 |---|---|---|
-| `QG-241`–`252`, configurator/pricing/quote/admin/security | [`packages/pricing`](../../packages/pricing/), [PostgreSQL adapter](../../packages/db/src/pricing.ts), [public flow](../../apps/web/app/configure/) and versioned API routes | Active CatalogVersion v2 + calculation PriceVersion v5; dynamic eligibility/dimensions, server totals, local override, immutable quote, safe statuses, OWNER/ADMIN and CSRF/origin/rate/idempotency/audit boundaries passed |
+| `QG-241`–`252`, configurator/pricing/quote/admin/security | [`packages/pricing`](../../packages/pricing/), [PostgreSQL adapter](../../packages/db/src/pricing.ts), [active calculator](../../apps/web/app/calculator/) and versioned API routes | Historical Phase 1C evidence plus active Phase 2A server calculator; immutable price/source authority remains preserved |
 | `QG-253`–`258`, unit/contract/integration/browser/parity/property | [engine tests](../../packages/pricing/test/engine.test.ts), [real PostgreSQL test](../../packages/db/test/integration/pricing-real.integration.test.ts), [browser tests](../../tests/browser/configurator-pricing.spec.ts) | 13 pricing unit/property + 9 contract + real PostgreSQL scenario + 8 Playwright scenarios passed; 40/40 fixtures, maximum deviation 100 kopecks |
 | `QG-259`–`269`, performance/degradation/migration/quality/history | Version/configuration indexes, bounded projections, additive migration, no-store snapshots, transaction/idempotency checks and repository gates | No N+1/full-browser catalog load/live AMIGO; migration preserves v2 data/volumes; rollback/duplicate/old-snapshot assertions and CI-equivalent quality checks passed; Phase 1D absent |
 | `QG-270`, documentation | Canonical affected specs, plan, report, changelog and traceability | Base/branch/commits/routes/families/rules/fixtures/deviation/examples/version/snapshot/tests/skips/gate/PR/status/TBD recorded |
@@ -235,7 +245,7 @@ Detailed runtime versions, commit list, skipped production-only checks and accep
 |---|---|---|
 | `QG-321`–`328`, owned cart/mixed totals/edit/integration | [`packages/cart`](../../packages/cart/), [cart adapter](../../packages/db/src/cart.ts), [cart routes/UI](../../apps/web/app/cart/) and configurator/preview CTAs | Quote-only server authority; multiple/duplicate/remove/clear; all three cart statuses; unknown null; new-snapshot edit and old quote immutability pass unit/DB/browser tests |
 | `QG-329`–`334`, immutable guest intake | [request adapter](../../packages/db/src/request.ts), [checkout UI](../../apps/web/app/checkout/) and Phase 1E migrations | Validated consent/contact/flags; idempotent atomic `OrderInquiry`/item snapshots, audit and exact outbox events pass real PostgreSQL tests |
-| `QG-335`–`343`, WhatsApp/public/admin | [message domain](../../packages/cart/src/whatsapp.ts), [safe summary](../../apps/web/app/request/), [admin requests](../../apps/web/app/admin/requests/) | Fixed `79635851036`, truthful five events, revocable hash reference, PII-free public DTO and OWNER/ADMIN/MANAGER transition/note policy pass browser/integration tests |
+| `QG-335`–`343`, WhatsApp/public/admin | [message domain](../../packages/cart/src/whatsapp.ts), [safe summary](../../apps/web/app/request/), [active admin orders](../../apps/web/app/admin/orders/) | Fixed `79635851036`, safe summary and staff request/order handling remain active after Phase 2A simplification |
 | `QG-344`–`354`, contracts/security/mobile/recovery/quality | [Phase 1E DB test](../../packages/db/test/integration/phase1e-real.integration.test.ts), [Chromium flow](../../tests/browser/cart-request-flow.spec.ts), [acceptance runner](../../tooling/scripts/phase-1e-acceptance.ps1) | CSRF/origin/rate/idempotency/ownership/tamper/enumeration checks; 375×812 layout; safe DB/preview failure; outbox restart preservation; log scan and repository gates pass |
 | `QG-355`–`360`, docs/history/scope/delivery | Affected canonical docs, plan/report, ten logical commits and Draft PR | `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`; no payment/account/photo/AI/production/Phase 1F scope |
 

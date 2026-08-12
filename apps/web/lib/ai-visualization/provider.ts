@@ -33,8 +33,7 @@ export type ProviderJobStatus = {
 };
 
 export type ProviderImageResult =
-  | { kind: 'url'; url: string }
-  | { bytes: Uint8Array; kind: 'bytes'; mimeType: SupportedImageMime };
+  { kind: 'url'; url: string } | { bytes: Uint8Array; kind: 'bytes'; mimeType: SupportedImageMime };
 
 export type ProviderHealth = {
   configured: boolean;
@@ -48,4 +47,3 @@ export interface ImageVisualizationProvider {
   getResult(status: ProviderJobStatus): Promise<ProviderImageResult>;
   healthCheck(): Promise<ProviderHealth>;
 }
-

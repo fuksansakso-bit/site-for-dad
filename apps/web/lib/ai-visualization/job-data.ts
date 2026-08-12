@@ -37,10 +37,7 @@ export async function getEffectiveAiSettings(
   const settings = data as SettingsRow;
   return {
     enabled: config.effectiveProviderAvailable && settings.is_enabled,
-    globalDailyJobLimit: Math.min(
-      config.globalDailyJobLimit,
-      settings.global_daily_job_limit,
-    ),
+    globalDailyJobLimit: Math.min(config.globalDailyJobLimit, settings.global_daily_job_limit),
     maxAttemptsPerGuestPerDay: Math.min(
       config.maxAttemptsPerGuestPerDay,
       settings.max_attempts_per_guest_per_day,

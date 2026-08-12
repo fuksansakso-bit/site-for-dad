@@ -1,5 +1,9 @@
 # Test strategy PROJECT_NAME
 
+## Phase 2C executed verification profile
+
+The final local gate runs 6 Node artifact/database-URL tests and 55 Vitest unit/contract/security tests with no skips. Six Chromium checks cover exact Zebra pricing/cart, the signed-upload visibility retry, Polza single-result parsing, keyboard-only premium listboxes, all ten 320–1920 px viewports, route/error safety, 13 visual baselines and measured local production observations. Configured Supabase verification covers active-version counts, OWNER readiness and an order transaction rollback; ignored database/Storage backups pass manifest verification. The target-account Vercel Preview is Ready, while direct Product Owner inspection remains separate from implementation completion.
+
 ## Phase 2B executed verification profile
 
 The local Phase 2B gate runs 49 Vitest tests across prompt/families, states, schemas/errors, aspect/hash/expiry, Polza transport/status/error/retry, direct-upload/storage/RLS/security contracts and cart price isolation. A Playwright scenario covers the five-state mock flow, direct upload interception, progress, before/after, cart, retry, delete and 320/360/375/390/430 px viewports. Lint, strict typecheck, phase-scope/secret scans and production Next.js build pass. The pgTAP RLS suite is committed but remote execution, real private Storage/cron and live Polza quality remain explicit credential-dependent skips; mock output is not live evidence.
@@ -12,9 +16,9 @@ Suites cover pricing/minimum/quantity/MANUAL, phone/WhatsApp, roles; migrations 
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1F.1 unit/integration/browser/security/recovery gate authorized and in progress |
-| Версия | 1.4.0 |
-| Дата | 2026-08-12 |
+| Статус | Phase 2C local/Supabase gate passed; Vercel Preview delivery in progress |
+| Версия | 1.6.0 |
+| Дата | 2026-08-13 |
 | Requirements | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) and profile specs |
 | Acceptance | [ACCEPTANCE_CRITERIA.md](../specs/01-product/ACCEPTANCE_CRITERIA.md) |
 | Traceability | [TRACEABILITY_MATRIX.md](../00-global/TRACEABILITY_MATRIX.md) |
@@ -233,10 +237,22 @@ The final pinned-Node-24 `pnpm ci:verify` passed 9/9 stages in 349.4 seconds. It
 
 Dependencies: all specs/ADRs/evaluations, implementation stack/environments, approved fixtures/business data/support matrix. Open: numeric budgets/thresholds, dimensional pricing/parity fixtures, browser/AT matrix, provider sandboxes, test tooling/owners, UAT roles, security test scope and retention of artifacts. Risks: fake fixtures mistaken production truth, flaky E2E, unlicensed media, provider dependence, automated a11y/AI false confidence and unsafe production testing.
 
-## 15. History
+## 15. Phase 2C exact-price evidence
+
+- **P2C-TEST-001 — MUST:** generated artifact tests prove semantic-version shape, positive current `FROM` amount, distinct card/calculator identities, complete IDs and no local minimum for every `READY` row.
+- **P2C-TEST-002 — MUST:** adapter tests cover exact cache reuse, pinned provider request, RUB integer conversion, cache persistence and fail-closed oversized/invalid response.
+- **P2C-TEST-003 — MUST:** live database verification proves active version, public category/material counts, at least 100 Zebra descendants, OWNER readiness and exact order snapshot inside a rolled-back transaction.
+- **P2C-TEST-004 — MUST:** browser acceptance selects «День-ночь / Зебра», finds a real fabric, enters width/height, receives `KNOWN` exact price and reaches cart/AI actions without native select or manager placeholder.
+- **P2C-TEST-005 — MUST:** regression runs docs validation, lint, strict typecheck, unit tests, production build, secrets/artifacts and verifies historical snapshot immutability plus no test order pollution.
+
+Executed local evidence on 2026-08-13: artifact `amigo-67c782a10449cdb7` contains 1,428 retained rows, 1,131 `READY`, 297 excluded and 137 Zebra; Node tests pass 6/6, web tests pass 51/51, six Phase 2C Chromium checks pass, live Supabase rollback verification passes, and browser price for Zebra `amigo-material-12114` at 1000×1000 is 1,185,000 kopecks. Source/artifact scans and verified 695,878-byte DB plus 1,371-object Storage backup evidence pass; the disposable-project restore drill remains explicit.
+
+## 16. History
 
 | Версия | Дата | Изменение |
 |---|---|---|
+| 1.6.0 | 2026-08-13 | Recorded six browser checks, ten viewports, 13 baselines, local production observations, premium listbox keyboard coverage, backup verification and 51/51 current web tests. |
+| 1.5.0 | 2026-08-13 | Added and executed artifact, exact adapter/cache, Supabase rollback/order, Zebra browser and no-local-minimum evidence for `OWNER-DECISION-025`. |
 | 1.4.0 | 2026-08-12 | Authorized complete catalog traversal, coverage/cart/auth/RBAC/mobile/security/recovery and one-pass CI-equivalent evidence for Phase 1F.1. |
 | 0.1.0 | 2026-08-02 | Defined risk-based multi-layer strategy and 40 critical scenarios mapped one-to-one to current acceptance criteria. |
 | 0.2.0 | 2026-08-02 | Updated parity tolerance/input contract and regional production matrix from `OWNER-DECISION-006/007`; Foundation execution evidence will be added at Phase 1A completion. |

@@ -57,4 +57,3 @@ export function normalizedProviderFailure(error: unknown): NormalizedProviderFai
     safeDiagnostic: provider.safeDiagnostic,
   };
 }
-

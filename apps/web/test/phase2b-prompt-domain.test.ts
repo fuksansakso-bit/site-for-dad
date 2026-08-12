@@ -5,7 +5,10 @@ import { detectImageMime } from '../lib/ai-visualization/image-validation';
 import { resolveBlindFamily } from '../lib/ai-visualization/material';
 import { buildVisualizationPrompt } from '../lib/ai-visualization/prompt';
 import { combinedRequestHash } from '../lib/ai-visualization/request-hash';
-import { canTransitionAiVisualization } from '../lib/ai-visualization/state-machine';
+import {
+  canTransitionAiVisualization,
+  completionTimestampForDeletion,
+} from '../lib/ai-visualization/state-machine';
 
 const basePrompt = {
   article: 'A-42',
@@ -77,6 +80,15 @@ describe('Phase 2B prompt and domain', () => {
     expect(canTransitionAiVisualization('DELETED', 'READY')).toBe(false);
   });
 
+  it('deletes an interrupted upload without inventing a completion timestamp', () => {
+    const now = '2026-08-13T00:00:00.000Z';
+    expect(completionTimestampForDeletion(null, null, now)).toBeNull();
+    expect(completionTimestampForDeletion('2026-08-12T23:00:00.000Z', null, now)).toBe(now);
+    expect(
+      completionTimestampForDeletion('2026-08-12T23:00:00.000Z', '2026-08-12T23:01:00.000Z', now),
+    ).toBe('2026-08-12T23:01:00.000Z');
+  });
+
   it('maps catalog families without trusting a client family value', () => {
     expect(
       resolveBlindFamily({
@@ -106,11 +118,8 @@ describe('Phase 2B prompt and domain', () => {
 
   it('detects magic bytes and rejects SVG/HTML masquerading as an image', () => {
     expect(detectImageMime(Uint8Array.from([0xff, 0xd8, 0xff, 0xdb]))).toBe('image/jpeg');
-    expect(
-      detectImageMime(Uint8Array.from([137, 80, 78, 71, 13, 10, 26, 10])),
-    ).toBe('image/png');
+    expect(detectImageMime(Uint8Array.from([137, 80, 78, 71, 13, 10, 26, 10]))).toBe('image/png');
     expect(detectImageMime(new TextEncoder().encode('<svg><script/></svg>'))).toBeNull();
     expect(detectImageMime(new TextEncoder().encode('<html>image/jpeg</html>'))).toBeNull();
   });
 });
-

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { cartItemSchema, checkoutSchema } from '../lib/phase2a/schemas';
 import { normalizeRussianPhone } from '../lib/phase2a/phone';
+import { isSameOriginOrLoopbackAlias } from '../lib/phase2a/origin';
 import { can } from '../lib/phase2a/permissions';
 describe('Phase 2A boundaries', () => {
   it('normalizes Russian phone', () =>
@@ -31,5 +32,19 @@ describe('Phase 2A boundaries', () => {
     expect(can('MANAGER', 'ORDERS')).toBe(true);
     expect(can('MANAGER', 'CATALOG')).toBe(false);
     expect(can('OWNER', 'STAFF')).toBe(true);
+  });
+  it('accepts only an exact origin or an equivalent local loopback alias', () => {
+    expect(isSameOriginOrLoopbackAlias('https://example.test', 'https://example.test/path')).toBe(
+      true,
+    );
+    expect(isSameOriginOrLoopbackAlias('http://127.0.0.1:3000', 'http://localhost:3000/api')).toBe(
+      true,
+    );
+    expect(isSameOriginOrLoopbackAlias('http://127.0.0.1:3001', 'http://localhost:3000/api')).toBe(
+      false,
+    );
+    expect(isSameOriginOrLoopbackAlias('https://evil.test', 'https://example.test/api')).toBe(
+      false,
+    );
   });
 });

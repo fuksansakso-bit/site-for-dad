@@ -59,4 +59,3 @@ export async function GET(request: Request, context: Context) {
     { headers: { 'Cache-Control': 'no-store' } },
   );
 }
-

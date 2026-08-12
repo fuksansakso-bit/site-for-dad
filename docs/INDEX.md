@@ -1,5 +1,12 @@
 # Карта документации PROJECT_NAME
 
+## Phase 2C final experience
+
+- [Active Phase 2C plan](06-plans/active/PHASE_2C_FINAL_DESIGN_PLAN.md), [canonical contract](specs/GLOBAL_SPEC.md#611-phase-2c-final-experience-contract), [quality gate](00-global/SPEC_QUALITY_GATE.md#17-phase-2c-final-premium-design-gates) and [implementation roadmap](06-plans/IMPLEMENTATION_ROADMAP.md).
+- Implemented UX companions: [final design system](specs/03-ux/FINAL_DESIGN_SYSTEM.md), [typography](specs/03-ux/FINAL_TYPOGRAPHY_SPEC.md), [motion](specs/03-ux/FINAL_MOTION_SPEC.md) and [component inventory](specs/03-ux/FINAL_COMPONENT_INVENTORY.md). Release evidence: [route UX audit](06-plans/FINAL_ROUTE_UX_AUDIT.md), [release QA](06-plans/FINAL_RELEASE_QA.md), [exact AMIGO mapping](06-plans/AMIGO_EXACT_PRICING_MAPPING_2026-08-13.md), [live AI QA](06-plans/AI_VISUALIZATION_LIVE_QA.md) and the [Phase 2C completion report](06-plans/completed/PHASE_2C_FINAL_DESIGN_REPORT.md).
+- Target-account Vercel Preview and unmerged Draft PR #1 exist in `fuksansakso-bit/site-for-dad`; direct Preview inspection is reserved for the Product Owner and production promotion is excluded.
+- `OWNER-DECISION-025` exact-price evidence: [ADR-0015](adr/ADR-0015-amigo-exact-price-adapter.md), [pricing source policy](00-global/PRICING_SOURCE_POLICY.md), generated `amigo-67c782a10449cdb7` mapping artifact and live Supabase verification. Public scope is 1,131 mapped materials/seven groups, including 137 Zebra materials; 297 incomplete rows are hidden.
+
 ## Phase 2B operations
 
 - [Completed plan](06-plans/active/PHASE_2B_GEMINI_AI_VISUALIZATION_PLAN.md), [completion report](06-plans/completed/PHASE_2B_GEMINI_AI_VISUALIZATION_REPORT.md), [live QA](06-plans/AI_VISUALIZATION_LIVE_QA.md), [AI product spec](specs/02-domain/AI_WINDOW_VISUALIZER_SPEC.md), [Polza pipeline](specs/04-technical/AI_PIPELINE.md), [evaluation](evaluations/AI_EVALUATION_SPEC.md) and [ADR-0014](adr/ADR-0014-polza-ai-window-visualization.md).
@@ -8,7 +15,7 @@
 
 ## 0. Статус
 
-Phase 1A–1F и Phase 2A завершены. Phase 2B implementation завершена в Draft PR #7 со статусом `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`: live Polza и remote Supabase RLS/Storage/cron ожидают credentials. Direct Google API/SDK, SAM/masks/segmentation, Python/GPU/worker service, customer accounts, payment, final premium redesign, destructive source retirement, unverified production launch и Phase 2C не разрешены.
+Phase 1A–1F и Phase 2A завершены. Phase 2B implementation и один полный live Zebra path завершены; формальный multi-family quality gate остаётся pending. Phase 2C implementation и Draft PR готовы, owner Preview review ожидается. `OWNER-DECISION-024/025` разрешают premium presentation и узкий AMIGO exact-price repair from `bdaa053`; direct Google API/SDK, SAM/masks/segmentation, Python/GPU/worker service, customer accounts, payment, uncontrolled source expansion, destructive source retirement, merge и production launch не разрешены.
 
 ## 1. Порядок обязательного чтения
 
@@ -181,7 +188,7 @@ Research snapshot не является вечным catalog/price fact. Нор�
 - Кто может выполнить действие — `ROLES_PERMISSIONS` и relevant domain spec.
 - Каких данных не хватает — `OPEN_QUESTIONS` по уникальному `TBD-*`.
 - Как требование проверяется — `TRACEABILITY_MATRIX`, AC и `TEST_STRATEGY`.
-- Можно ли начинать следующий код — Phase 2A завершена на границе code/Preview; cloud activation требует Supabase credentials, а customer accounts, photo/AI runtime, payment, final design и Phase 1G остаются запрещены.
+- Можно ли начинать следующий код — Phase 2C implementation доставлена в unmerged Draft PR с Ready Preview, но Product Owner review, полный AI family-quality gate и production decisions остаются открыты; customer accounts, payment, merge и production promotion не разрешены.
 
 ## 13. Правило навигации
 

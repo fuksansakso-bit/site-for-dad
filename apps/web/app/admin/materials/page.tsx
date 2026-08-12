@@ -1,10 +1,18 @@
 import Link from 'next/link';
 
+import { StatusBadge } from '../../../components/ui/primitives';
+import { PremiumSelect } from '../../../components/ui/premium-select';
 import { publicImageUrl } from '../../../lib/phase2a/data';
 import { formatMoney } from '../../../lib/phase2a/pricing';
 import { requireStaff } from '../../../lib/phase2a/staff';
 import { createSupabaseServerClient } from '../../../lib/phase2a/supabase';
+import {
+  presentAmigoMappingStatus,
+  presentAvailability,
+  presentPricingMode,
+} from '../../../lib/presentation';
 import { createCategory, updateCategory, updateMaterial } from '../actions';
+import { AdminEmptyState, AdminPageHeader, AdminSectionHeader } from '../admin-components';
 import { AdminFrame } from '../admin-frame';
 
 const PAGE_SIZE = 100;
@@ -22,7 +30,7 @@ export default async function MaterialsAdmin({
   let materialQuery = client
     ?.from('materials')
     .select(
-      'id,name,article,primary_image_path,pricing_mode,price_per_m2_kopecks,fixed_price_kopecks,availability,is_published,categories(name)',
+      'id,name,article,primary_image_path,pricing_mode,availability,is_published,amigo_from_price_kopecks,amigo_from_price_label,amigo_price_version,amigo_mapping_status,amigo_calculator_model_id,amigo_calculator_material_id,categories(name)',
       { count: 'exact' },
     )
     .order('name')
@@ -45,158 +53,228 @@ export default async function MaterialsAdmin({
 
   return (
     <AdminFrame staff={staff}>
-      <h1>Материалы и категории</h1>
+      <AdminPageHeader
+        actions={
+          <Link className="button secondary" href="/catalog" target="_blank" rel="noreferrer">
+            Открыть каталог ↗
+          </Link>
+        }
+        description="Публикация, наличие и способ расчёта для материалов, уже загруженных в Supabase."
+        eyebrow="Ассортимент"
+        title="Материалы и категории"
+      />
 
-      <details className="card">
+      <details className="admin-disclosure admin-panel">
         <summary>
-          <strong>Категории ({categories.length})</strong>
+          <span>
+            <strong>Категории каталога</strong>
+            <small>{categories.length} разделов</small>
+          </span>
+          <span aria-hidden="true">+</span>
         </summary>
-        <form action={createCategory} className="form card">
-          <h2>Новая категория</h2>
-          <label>
-            Название
-            <input name="name" required maxLength={160} />
-          </label>
-          <label>
-            Slug латиницей
-            <input name="slug" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" maxLength={160} />
-          </label>
-          <label>
-            Описание
-            <textarea name="description" maxLength={2000} />
-          </label>
-          <label>
-            Порядок
-            <input name="sortOrder" type="number" min="0" defaultValue="0" />
-          </label>
-          <label>
-            <span>
-              <input name="published" type="checkbox" /> Опубликовать
-            </span>
-          </label>
-          <button>Создать категорию</button>
-        </form>
-        <div className="grid">
-          {categories.map((category) => (
-            <form action={updateCategory} className="form card" key={category.id}>
-              <input type="hidden" name="id" value={category.id} />
+        <div className="admin-disclosure-content">
+          <form action={createCategory} className="form admin-category-create">
+            <AdminSectionHeader
+              description="Новый раздел появится публично только после включения публикации."
+              title="Новая категория"
+            />
+            <div className="admin-form-grid">
               <label>
                 Название
-                <input name="name" defaultValue={category.name} required maxLength={160} />
+                <input name="name" required maxLength={160} />
               </label>
-              <p className="muted">/{category.slug}</p>
               <label>
-                Описание
-                <textarea
-                  name="description"
-                  defaultValue={category.description ?? ''}
-                  maxLength={2000}
+                Адрес страницы латиницей
+                <input
+                  name="slug"
+                  required
+                  pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
+                  maxLength={160}
+                  placeholder="rulonnye-shtory"
                 />
+              </label>
+              <label className="admin-field-wide">
+                Описание
+                <textarea name="description" maxLength={2000} />
               </label>
               <label>
                 Порядок
-                <input name="sortOrder" type="number" min="0" defaultValue={category.sort_order} />
+                <input name="sortOrder" type="number" min="0" defaultValue="0" />
               </label>
-              <label>
-                <span>
-                  <input name="published" type="checkbox" defaultChecked={category.is_published} />{' '}
-                  Опубликована
-                </span>
+              <label className="admin-check">
+                <input name="published" type="checkbox" />
+                <span>Опубликовать сразу</span>
               </label>
-              <button>Сохранить категорию</button>
-            </form>
-          ))}
+            </div>
+            <button>Создать категорию</button>
+          </form>
+          <div className="admin-category-grid">
+            {categories.map((category) => (
+              <form action={updateCategory} className="form admin-category-card" key={category.id}>
+                <input type="hidden" name="id" value={category.id} />
+                <div className="admin-category-card-head">
+                  <span>{category.is_published ? 'Опубликована' : 'Скрыта'}</span>
+                  <small>/{category.slug}</small>
+                </div>
+                <label>
+                  Название
+                  <input name="name" defaultValue={category.name} required maxLength={160} />
+                </label>
+                <label>
+                  Описание
+                  <textarea
+                    name="description"
+                    defaultValue={category.description ?? ''}
+                    maxLength={2000}
+                  />
+                </label>
+                <label>
+                  Порядок
+                  <input
+                    name="sortOrder"
+                    type="number"
+                    min="0"
+                    defaultValue={category.sort_order}
+                  />
+                </label>
+                <label className="admin-check">
+                  <input name="published" type="checkbox" defaultChecked={category.is_published} />
+                  <span>Показывать в каталоге</span>
+                </label>
+                <button className="secondary">Сохранить</button>
+              </form>
+            ))}
+          </div>
         </div>
       </details>
 
-      <form className="actions" method="get">
+      <AdminSectionHeader
+        description="На странице по 100 позиций. Изменения применяются к каждой карточке отдельно."
+        title="Управление материалами"
+      />
+      <form className="admin-filter-bar" method="get" role="search">
         <input
           name="q"
           defaultValue={queryText}
           aria-label="Поиск материала"
-          placeholder="Название"
+          placeholder="Название материала"
         />
         <button>Найти</button>
+        {queryText && (
+          <Link className="button secondary" href="/admin/materials">
+            Сбросить
+          </Link>
+        )}
+        <span>
+          Найдено <strong>{count}</strong> · страница {page}
+        </span>
       </form>
-      <p className="muted">
-        Найдено: {count}. Страница {page}.
-      </p>
-      <div style={{ overflow: 'auto' }}>
-        <table>
-          <thead>
-            <tr>
-              <th>Изображение</th>
-              <th>Материал</th>
-              <th>Категория</th>
-              <th>Цена</th>
-              <th>Управление</th>
-            </tr>
-          </thead>
-          <tbody>
-            {materials.map((item) => {
-              const image = publicImageUrl('catalog', item.primary_image_path);
-              return (
-                <tr key={item.id}>
-                  <td>
-                    {image && (
-                      // eslint-disable-next-line @next/next/no-img-element -- approved Supabase object
-                      <img src={image} alt="" width="88" height="66" />
-                    )}
-                  </td>
-                  <td>
-                    <strong>{item.name}</strong>
-                    <br />
-                    {item.article}
-                  </td>
-                  <td>{(item.categories as unknown as { name: string } | null)?.name}</td>
-                  <td>
-                    {item.pricing_mode === 'MANUAL'
-                      ? 'Уточняет менеджер'
-                      : formatMoney(item.price_per_m2_kopecks ?? item.fixed_price_kopecks ?? 0)}
-                  </td>
-                  <td>
-                    <form action={updateMaterial} className="form">
-                      <input type="hidden" name="id" value={item.id} />
-                      <select name="pricingMode" defaultValue={item.pricing_mode}>
-                        <option value="AREA">За м²</option>
-                        <option value="FIXED">Фиксированная</option>
-                        <option value="MANUAL">Уточнить</option>
-                      </select>
-                      <input
-                        name="price"
-                        type="number"
-                        min="0.01"
-                        max="20000000"
-                        step="0.01"
-                        defaultValue={
-                          (item.price_per_m2_kopecks ?? item.fixed_price_kopecks ?? 150_000) / 100
+      {materials.length === 0 ? (
+        <AdminEmptyState
+          action={
+            queryText ? (
+              <Link className="button secondary" href="/admin/materials">
+                Очистить поиск
+              </Link>
+            ) : undefined
+          }
+          description="Измените поисковый запрос или проверьте импорт каталога."
+          title="Материалы не найдены"
+        />
+      ) : (
+        <div className="admin-table-scroll admin-material-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Изображение</th>
+                <th>Материал</th>
+                <th>Категория</th>
+                <th>Цена</th>
+                <th>Управление</th>
+              </tr>
+            </thead>
+            <tbody>
+              {materials.map((item) => {
+                const image = publicImageUrl('catalog', item.primary_image_path);
+                return (
+                  <tr key={item.id}>
+                    <td className="admin-material-media">
+                      {image && (
+                        // eslint-disable-next-line @next/next/no-img-element -- approved Supabase object
+                        <img src={image} alt="" width="88" height="66" />
+                      )}
+                    </td>
+                    <td>
+                      <strong className="admin-table-title">{item.name}</strong>
+                      <small>Артикул {item.article}</small>
+                    </td>
+                    <td>
+                      {(item.categories as unknown as { name: string } | null)?.name ??
+                        'Без категории'}
+                      <StatusBadge
+                        tone={
+                          item.availability === 'AVAILABLE'
+                            ? 'success'
+                            : item.availability === 'OUT_OF_STOCK'
+                              ? 'error'
+                              : 'warning'
                         }
-                        aria-label="Цена в рублях"
-                      />
-                      <select name="availability" defaultValue={item.availability}>
-                        <option value="AVAILABLE">В наличии</option>
-                        <option value="OUT_OF_STOCK">Нет в наличии</option>
-                        <option value="INQUIRY_ONLY">Уточнить</option>
-                      </select>
-                      <label>
-                        <span>
-                          <input
-                            name="published"
-                            type="checkbox"
-                            defaultChecked={item.is_published}
-                          />{' '}
-                          Опубликован
-                        </span>
-                      </label>
-                      <button>Сохранить</button>
-                    </form>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                      >
+                        {presentAvailability(item.availability)}
+                      </StatusBadge>
+                    </td>
+                    <td>
+                      <span className="admin-table-title">
+                        {presentPricingMode(item.pricing_mode)}
+                      </span>
+                      <small>
+                        {item.amigo_from_price_kopecks
+                          ? `от ${formatMoney(item.amigo_from_price_kopecks)}`
+                          : 'Не опубликован: нет полной связи AMIGO'}
+                      </small>
+                      {item.amigo_price_version && <small>{item.amigo_price_version}</small>}
+                    </td>
+                    <td>
+                      {item.pricing_mode === 'AMIGO_EXACT' &&
+                      item.amigo_mapping_status === 'READY' ? (
+                        <form
+                          action={updateMaterial}
+                          className="admin-inline-editor admin-inline-editor-compact"
+                        >
+                          <input type="hidden" name="id" value={item.id} />
+                          <PremiumSelect
+                            ariaLabel={`Наличие: ${item.name}`}
+                            name="availability"
+                            defaultValue={item.availability}
+                            options={[
+                              { label: 'В наличии', value: 'AVAILABLE' },
+                              { label: 'Нет в наличии', value: 'OUT_OF_STOCK' },
+                              { label: 'Уточнить', value: 'INQUIRY_ONLY' },
+                            ]}
+                          />
+                          <label className="admin-check admin-check-compact">
+                            <input
+                              name="published"
+                              type="checkbox"
+                              defaultChecked={item.is_published}
+                            />
+                            <span>Опубликован</span>
+                          </label>
+                          <button className="button-compact">Сохранить</button>
+                        </form>
+                      ) : (
+                        <StatusBadge tone="warning">
+                          {presentAmigoMappingStatus(item.amigo_mapping_status)}
+                        </StatusBadge>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
       <nav className="actions" aria-label="Страницы материалов">
         {page > 1 && (
           <Link

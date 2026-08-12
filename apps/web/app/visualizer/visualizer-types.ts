@@ -1,4 +1,7 @@
-import type { AiVisualizationErrorCode, AiVisualizationStatus } from '../../lib/ai-visualization/types';
+import type {
+  AiVisualizationErrorCode,
+  AiVisualizationStatus,
+} from '../../lib/ai-visualization/types';
 
 export type VisualizerMaterial = {
   article: string;
@@ -19,4 +22,3 @@ export type VisualizerInitialJob = {
   resultAvailable: boolean;
   status: AiVisualizationStatus;
 };
-

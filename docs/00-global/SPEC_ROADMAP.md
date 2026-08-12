@@ -4,18 +4,19 @@
 
 | Поле | Значение |
 |---|---|
-| Состояние | Phase 1A, Phase 1B.1 and Phase 1B.2 complete; no next phase authorized; Phase 1C+ hold |
-| Версия roadmap | 1.9.0 |
-| Дата | 2026-08-04 |
+| Состояние | Phase 1A–1F and Phase 2A complete; Phase 2B live Zebra path passed / family matrix pending; Phase 2C implementation complete / owner Preview pending |
+| Версия roadmap | 2.1.0 |
+| Дата | 2026-08-13 |
 | Entry gate | `PASSED`, [QG-088–QG-111](SPEC_QUALITY_GATE.md) |
 | Обязательный комплект 0B | `PASSED`, [QG-112–QG-130](SPEC_QUALITY_GATE.md) |
 | Phase 0C readiness | `AUTHORIZED_FOR_PHASE_1A_FOUNDATION`, [QG-131–QG-148](SPEC_QUALITY_GATE.md) |
 | Phase 1A acceptance | `PASSED_PHASE_1A_FOUNDATION`, [QG-149–QG-158](SPEC_QUALITY_GATE.md) |
 | Phase 1B.1 acceptance | `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT`, [QG-169–QG-194](SPEC_QUALITY_GATE.md) |
 | Phase 1B.2 acceptance | `PASSED_PHASE_1B2_FULL_AMIGO_CATALOG`, [QG-195–QG-230](SPEC_QUALITY_GATE.md) |
-| Разрешённая implementation | Нет; Phase 1C+ и production запрещены до нового письменного решения |
+| Phase 2C entry | `AUTHORIZED_PHASE_2C_IN_PROGRESS`; implementation delivery is `IMPLEMENTATION_COMPLETE_OWNER_PREVIEW_PENDING`, [QG-601–QG-670](SPEC_QUALITY_GATE.md) |
+| Разрешённая implementation | Только Phase 2C presentation/interaction/quality scope по `OWNER-DECISION-024`; merge и production запрещены |
 
-Глобальная база: [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.15.0, [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md), [ASSET_RIGHTS_REGISTER.md](ASSET_RIGHTS_REGISTER.md) и [PRICING_SOURCE_POLICY.md](PRICING_SOURCE_POLICY.md). `OWNER-DECISION-008/009` задают authority и PostgreSQL-only public runtime; отдельно разрешённая `OWNER-DECISION-012` Phase 1B.2 завершена по stable plan/completion report. Phase 1C+ остаются gated.
+Глобальная база: [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.29.0, [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md), [ASSET_RIGHTS_REGISTER.md](ASSET_RIGHTS_REGISTER.md) и [PRICING_SOURCE_POLICY.md](PRICING_SOURCE_POLICY.md). Catalog/price/media provenance остаётся source-backed, активный runtime задают Phase 2A/2B, а `OWNER-DECISION-024` разрешает только финальный presentation/interaction слой по [активному плану](../06-plans/active/PHASE_2C_FINAL_DESIGN_PLAN.md).
 
 Нормативные спецификации находятся только в `docs/specs/`. Gate, реестры, policies, quality strategy, evaluations и ADR остаются в профильных каталогах.
 
@@ -153,6 +154,7 @@ ADR принимают устойчивую границу, а не неподт
 - **До Phase 1E/1F:** legal/privacy/retention, business state mapping, identity/recovery and operational roles.
 - **До Phase 1G:** rights-cleared AI benchmark, provider/model/region/contract, upload limits, TTL, thresholds and cost caps.
 - **До Phase 1H:** production topology/regions, network evidence, performance/SLO, RPO/RTO, backup/restore and launch legal review.
+- **В Phase 2C:** финальные бренд/логотип остаются `TBD-DESIGN-001`; Preview использует нейтральный settings-backed fallback. Remote Supabase/Polza evidence остаётся отдельным live gate, а private-media/legal/production вопросы не закрываются визуальным редизайном.
 
 Все вопросы имеют `TBD-*` в [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md); новый факт сначала закрывает канонический TBD и обновляет specs/changelog/tests.
 
@@ -161,9 +163,10 @@ ADR принимают устойчивую границу, а не неподт
 1. Product Owner принял ADR-0007–0010 и письменно разрешил Phase 1A 2026-08-02.
 2. Phase 1A выполнена по [завершённому плану](../06-plans/active/PHASE_1A_FOUNDATION_PLAN.md) без AMIGO import и business features; результат зафиксирован в [completion report](../06-plans/completed/PHASE_1A_FOUNDATION_REPORT.md).
 3. `OWNER-DECISION-010` разрешил и завершил только Phase 1B.1 по [stable plan](../06-plans/active/PHASE_1B1_AMIGO_CATALOG_PILOT_PLAN.md) и [report](../06-plans/completed/PHASE_1B1_AMIGO_CATALOG_PILOT_REPORT.md).
-4. `OWNER-DECISION-012` разрешила и завершила только Phase 1B.2 по [stable plan](../06-plans/active/PHASE_1B2_FULL_AMIGO_CATALOG_PLAN.md) и [completion report](../06-plans/completed/PHASE_1B2_FULL_AMIGO_CATALOG_REPORT.md); Phase 1C–1H не начинаются до собственных письменных transition decisions и entry gates.
-5. Закрываются только те P0/P1 business/data/privacy вопросы, от которых зависит выбранный slice; safe fallback не выдаётся за решение.
-6. Source/hosting/AI evaluations используют только разрешённые данные и завершаются ADR до provider commitment.
+4. Subsequent written decisions completed Phase 1C–1F and Phase 2A; Phase 2B implementation is complete/live pending under `OWNER-DECISION-023` and ADR-0014.
+5. `OWNER-DECISION-024` now authorizes only Phase 2C from target-main `bdaa053`; its active plan and QG-601–670 control final presentation, verification and Preview delivery.
+6. Закрываются только те P0/P1 business/data/privacy вопросы, от которых зависит выбранный slice; safe fallback не выдаётся за решение.
+7. Source/hosting/AI evaluations используют только разрешённые данные и завершаются ADR до provider commitment; Phase 2C does not choose or replace a provider.
 
 ## 10. Правило изменения roadmap
 
@@ -185,3 +188,4 @@ ADR принимают устойчивую границу, а не неподт
 | 1.7.0 | 2026-08-03 | Phase 1B.1 completion report and QG-169–194 recorded; global source advanced to 0.12.0 and no-next-phase hold preserved. |
 | 1.8.0 | 2026-08-03 | `OWNER-DECISION-012`, QG-195–202 and active Phase 1B.2 plan authorize only full catalog expansion; Phase 1C+ and production remain gated. |
 | 1.9.0 | 2026-08-04 | Phase 1B.2 completion report and QG-203–230 record accepted manifest, active v2 versions, media/restart/no-op/public/CI evidence; no next phase is authorized. |
+| 2.0.0 | 2026-08-12 | Roadmap synchronized with completed Phase 1C–2A, complete/live-pending Phase 2B and the separately authorized Phase 2C final-design plan/QG-601–670; provider/data/production gates remain visible. |

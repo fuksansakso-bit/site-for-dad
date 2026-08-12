@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 2B implementation contract; live provider pending credentials |
-| Версия | 0.3.0 |
-| Дата | 2026-08-12 |
+| Статус | Phase 2B implementation contract; live Zebra pipeline passed; remaining family-quality cases pending |
+| Версия | 0.4.0 |
+| Дата | 2026-08-13 |
 | Product behavior | [AI_WINDOW_VISUALIZER_SPEC.md](../02-domain/AI_WINDOW_VISUALIZER_SPEC.md) |
 | ADR | [ADR-0014](../../adr/ADR-0014-polza-ai-window-visualization.md) |
 
@@ -108,4 +108,6 @@ Daily `/api/internal/ai-cleanup` requires constant-time `Authorization: Bearer <
 
 ## 9. Recovery
 
-Interrupted upload remains `UPLOAD_PENDING` until expiry. Browser closure during processing is recovered by owned status polling. Supabase/provider temporary failure produces a safe retryable terminal state. Result-storage failure never marks success. Deleted/expired jobs deny all read/retry grants. Cleanup partial failure is retried on the next bounded run.
+Interrupted upload remains `UPLOAD_PENDING` until expiry. Signed-upload confirmation MUST tolerate the short interval in which a successful private Storage write is not yet readable: both the browser confirmation request and the server-side object read use bounded idempotent retries before exposing a safe storage error. Browser closure during processing is recovered by owned status polling. Supabase/provider temporary failure produces a safe retryable terminal state. Result-storage failure never marks success. Deleted/expired jobs deny all read/retry grants. Cleanup partial failure is retried on the next bounded run.
+
+Polza completed media responses are accepted only when exactly one HTTPS result URL is present, whether the provider returns the documented `data.url` object or the observed single-item `data[0].url` array. Any empty, multi-item or malformed result remains fail-closed as `OUTPUT_INVALID`.

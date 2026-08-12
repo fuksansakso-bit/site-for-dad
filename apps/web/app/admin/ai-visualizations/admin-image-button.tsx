@@ -9,10 +9,10 @@ export function AdminImageButton({ jobId, kind }: { jobId: string; kind: 'input'
     const popup = window.open('', '_blank');
     if (popup) popup.opener = null;
     try {
-      const response = await fetch(
-        `/api/admin/ai-visualizations/${jobId}/image?kind=${kind}`,
-        { cache: 'no-store', credentials: 'same-origin' },
-      );
+      const response = await fetch(`/api/admin/ai-visualizations/${jobId}/image?kind=${kind}`, {
+        cache: 'no-store',
+        credentials: 'same-origin',
+      });
       const body = (await response.json()) as { signedUrl?: string; message?: string };
       if (!response.ok || !body.signedUrl) throw new Error(body.message ?? 'Просмотр недоступен.');
       if (popup) popup.location.replace(body.signedUrl);

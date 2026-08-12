@@ -13,17 +13,6 @@ const slug = z
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u)
   .max(160);
 
-function rublesToKopecks(value: FormDataEntryValue | null): number {
-  const normalized = String(value ?? '').replace(',', '.');
-  if (!/^[0-9]+(?:\.[0-9]{1,2})?$/u.test(normalized)) throw new Error('INVALID_PRICE');
-  const [rubles = '0', kopecks = ''] = normalized.split('.');
-  const result = Number(rubles) * 100 + Number(kopecks.padEnd(2, '0'));
-  if (!Number.isSafeInteger(result) || result < 1 || result > 2_000_000_000) {
-    throw new Error('INVALID_PRICE');
-  }
-  return result;
-}
-
 async function audit(
   staff: Staff,
   action: string,
@@ -126,20 +115,28 @@ export async function updateCategory(form: FormData): Promise<void> {
 export async function updateMaterial(form: FormData): Promise<void> {
   const staff = await requireStaff(['OWNER', 'ADMIN']);
   const id = uuid.parse(form.get('id'));
-  const mode = z.enum(['AREA', 'FIXED', 'MANUAL']).parse(form.get('pricingMode'));
-  const price = mode === 'MANUAL' ? null : rublesToKopecks(form.get('price'));
+  const client = await createSupabaseServerClient();
+  if (!client) throw new Error('SUPABASE_NOT_CONFIGURED');
+  const { data: material, error: readError } = await client
+    .from('materials')
+    .select('pricing_mode,amigo_mapping_status,amigo_price_version')
+    .eq('id', id)
+    .maybeSingle();
+  if (
+    readError ||
+    !material ||
+    material.pricing_mode !== 'AMIGO_EXACT' ||
+    material.amigo_mapping_status !== 'READY' ||
+    !material.amigo_price_version
+  ) {
+    throw new Error('AMIGO_PRICE_MAPPING_NOT_READY');
+  }
   const update = {
     availability: z
       .enum(['AVAILABLE', 'OUT_OF_STOCK', 'INQUIRY_ONLY'])
       .parse(form.get('availability')),
-    fixed_price_kopecks: mode === 'FIXED' ? price : null,
     is_published: form.get('published') === 'on',
-    minimum_price_kopecks: mode === 'AREA' ? 150_000 : null,
-    price_per_m2_kopecks: mode === 'AREA' ? price : null,
-    pricing_mode: mode,
   };
-  const client = await createSupabaseServerClient();
-  if (!client) throw new Error('SUPABASE_NOT_CONFIGURED');
   const { error } = await client.from('materials').update(update).eq('id', id);
   if (error) throw new Error('MATERIAL_UPDATE_FAILED');
   await audit(staff, 'MATERIAL_UPDATED', 'materials', id, update);

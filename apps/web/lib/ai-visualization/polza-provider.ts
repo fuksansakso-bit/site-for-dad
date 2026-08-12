@@ -70,6 +70,14 @@ function diagnosticText(body: JsonRecord): string {
     .slice(0, 500);
 }
 
+function mediaResultUrl(value: unknown): string | null {
+  const direct = object(value);
+  if (direct) return string(direct['url']);
+  if (!Array.isArray(value) || value.length !== 1) return null;
+  const item = object(value[0]);
+  return string(item?.['url']);
+}
+
 function normalizeHttpError(status: number, body: JsonRecord): PolzaProviderError {
   const diagnostic = diagnosticText(body).toLocaleLowerCase('en-US');
   if (status === 401 || status === 403) {
@@ -112,8 +120,7 @@ function parseProviderStatus(body: JsonRecord, fallbackModel: string): ProviderJ
     throw new PolzaProviderError('POLZA_OUTPUT_INVALID', 'INVALID_STATUS_RESPONSE');
   }
   const normalized = providerStatus.toLocaleLowerCase('en-US');
-  const data = object(body['data']);
-  const resultUrl = string(data?.['url']);
+  const resultUrl = mediaResultUrl(body['data']);
   if (normalized === 'completed') {
     if (!resultUrl) throw new PolzaProviderError('POLZA_OUTPUT_INVALID', 'MISSING_RESULT_URL');
     return {
@@ -172,7 +179,11 @@ export class PolzaImageVisualizationProvider implements ImageVisualizationProvid
     this.#modelName = input.modelName;
   }
 
-  async #request(path: string, init: RequestInit, retryStatusRead = false): Promise<{
+  async #request(
+    path: string,
+    init: RequestInit,
+    retryStatusRead = false,
+  ): Promise<{
     body: JsonRecord;
     requestId: string | null;
   }> {
@@ -211,9 +222,7 @@ export class PolzaImageVisualizationProvider implements ImageVisualizationProvid
         lastError = normalized;
         if (
           attempt + 1 < attempts &&
-          ['POLZA_RATE_LIMITED', 'POLZA_PROVIDER_ERROR', 'POLZA_TIMEOUT'].includes(
-            normalized.code,
-          )
+          ['POLZA_RATE_LIMITED', 'POLZA_PROVIDER_ERROR', 'POLZA_TIMEOUT'].includes(normalized.code)
         ) {
           await delay(250);
           continue;

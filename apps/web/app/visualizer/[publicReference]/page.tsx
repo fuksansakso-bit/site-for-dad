@@ -1,8 +1,9 @@
 import Link from 'next/link';
 
+import { Breadcrumbs, EmptyState } from '../../../components/ui/primitives';
 import { getOwnedAiJob } from '../../../lib/ai-visualization/job-data';
 import { safeJobPayload } from '../../../lib/ai-visualization/lifecycle';
-import { isAiVisualizerAvailable } from '../../../lib/ai-visualization/public-availability';
+import { getAiVisualizerPublicAvailability } from '../../../lib/ai-visualization/public-availability';
 import { getAiGuestSession } from '../../../lib/ai-visualization/session';
 import { createSupabaseAdminClient } from '../../../lib/phase2a/supabase';
 import { VisualizerFlow } from '../visualizer-flow';
@@ -10,12 +11,16 @@ import { VisualizerFlow } from '../visualizer-flow';
 function unavailable() {
   return (
     <section className="shell visualizer-shell">
-      <p className="eyebrow">AI-визуализация</p>
-      <h1>Визуализация недоступна</h1>
-      <p className="notice">AI-визуализация больше недоступна.</p>
-      <Link className="button" href="/catalog">
-        Выбрать материал
-      </Link>
+      <Breadcrumbs items={[{ href: '/', label: 'Главная' }, { label: 'AI-визуализация' }]} />
+      <EmptyState
+        action={
+          <Link className="button" href="/catalog">
+            Выбрать материал
+          </Link>
+        }
+        description="Ссылка могла устареть или данные уже были удалены."
+        title="Визуализация недоступна"
+      />
     </section>
   );
 }
@@ -36,9 +41,10 @@ export default async function SavedVisualizationPage({
     return unavailable();
   }
   const safe = safeJobPayload(job);
+  const availability = await getAiVisualizerPublicAvailability();
   return (
     <VisualizerFlow
-      aiEnabled={await isAiVisualizerAvailable()}
+      aiEnabled={availability.enabled}
       initialDimensions={{
         heightMm: job.product_metadata.heightMm ?? null,
         widthMm: job.product_metadata.widthMm ?? null,
@@ -66,6 +72,7 @@ export default async function SavedVisualizationPage({
         name: safe.material.name,
         slug: safe.material.slug,
       }}
+      retentionHours={availability.retentionHours}
     />
   );
 }

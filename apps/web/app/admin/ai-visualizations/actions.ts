@@ -32,7 +32,12 @@ async function audit(
 export async function updateAiVisualizerSettings(form: FormData): Promise<void> {
   const staff = await requireStaff(['OWNER', 'ADMIN']);
   const update = {
-    global_daily_job_limit: z.coerce.number().int().min(1).max(1_000).parse(form.get('globalLimit')),
+    global_daily_job_limit: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(1_000)
+      .parse(form.get('globalLimit')),
     is_enabled: form.get('enabled') === 'on',
     max_attempts_per_guest_per_day: z.coerce
       .number()
@@ -40,12 +45,7 @@ export async function updateAiVisualizerSettings(form: FormData): Promise<void> 
       .min(1)
       .max(20)
       .parse(form.get('guestLimit')),
-    max_concurrent_jobs: z.coerce
-      .number()
-      .int()
-      .min(1)
-      .max(20)
-      .parse(form.get('concurrentLimit')),
+    max_concurrent_jobs: z.coerce.number().int().min(1).max(20).parse(form.get('concurrentLimit')),
     retention_hours: z.coerce.number().int().min(1).max(168).parse(form.get('retentionHours')),
     updated_by: staff.auth_user_id,
   };
@@ -109,4 +109,3 @@ export async function deleteAiVisualizationJob(form: FormData): Promise<void> {
   await audit(staff, 'AI_VISUALIZATION_JOB_DELETED', id, { previous_status: data.status });
   revalidatePath('/admin/ai-visualizations');
 }
-

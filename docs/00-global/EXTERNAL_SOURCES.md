@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Нормативный глобальный реестр; accepted local AMIGO catalog plus Phase 2B Polza Media API contract evidence |
-| Версия | 1.11.0 |
-| Дата проверки источников | 2026-08-12, Europe/Moscow |
+| Статус | Нормативный глобальный реестр; accepted local AMIGO catalog, Phase 2B Polza contract and Phase 2C exact-price transport evidence |
+| Версия | 1.12.0 |
+| Дата проверки источников | 2026-08-13, Europe/Moscow |
 | Главный источник правды | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) |
 | Связанные политики | [PRICING_SOURCE_POLICY.md](PRICING_SOURCE_POLICY.md), [ASSET_RIGHTS_REGISTER.md](ASSET_RIGHTS_REGISTER.md) |
 
@@ -22,26 +22,32 @@
 - **EXTSRC-006 — MUST NOT:** наличие публичной страницы трактуется как лицензия на коммерческое использование текста, фотографии, дизайна, программного кода, закрытого алгоритма или товарного знака.
 - **EXTSRC-007 — MUST NOT:** запрещены обход авторизации, CAPTCHA, rate limit, ограничений доступа и обращение к закрытым интерфейсам без полномочий.
 - **EXTSRC-008 — MUST:** официальный партнёрский статус подтверждён `PARTNER-001`; конкретный transport партнёрского кабинета/API/export и schema не предполагаются и остаются `TBD-SOURCE-AMIGO-002`, тогда как cadence/staleness заданы `OWNER-DECISION-005`.
-- **EXTSRC-009 — MUST:** отключение или изменение AMIGO не останавливает публичный сайт PROJECT_NAME; применяются подтверждённая локальная версия, ручной процесс либо безопасное сообщение об отсутствии подтверждённых данных.
+- **EXTSRC-009 — MUST:** отключение или изменение AMIGO не останавливает landing/catalog browsing. Historical/manual scopes сохраняют прежний fallback; active exact-price calculation по `OWNER-DECISION-025` использует exact cache текущей version либо fail-closed technical error без суммы и manager placeholder.
 - **EXTSRC-010 — MUST:** получение, проверка, отклонение, локальная корректировка и публикация внешних данных оставляют audit trail.
 - **EXTSRC-011 — MUST:** permission scope AMIGO охватывает каталог, названия, артикулы, технические сведения, цены, фотографии товаров/материалов/примеров, самостоятельное воспроизведение калькуляторной логики и партнёрский бейдж; код, DOM, закрытые API, обход доступа и training use в scope не входят.
 - **EXTSRC-012 — MUST:** публичные страницы остаются изменяемыми research/acquisition endpoints даже при партнёрском статусе; `AUTHORIZED_PARTNER_SOURCE` не делает их URL, структуру или iframe постоянными.
 - **EXTSRC-013 — MUST:** будущая проверка обновлений выполняется автоматически раз в сутки и вручную администратором; после 7 дней показывается `STALE_WARNING`, а возраст более 30 дней требует admin verification до публикации изменённой цены или нового товара.
 - **EXTSRC-014 — MUST:** по `OWNER-DECISION-008` AMIGO является upstream authority для AMIGO-origin products, materials, technical data, catalog images и base prices; capture/normalization MAY менять представление, но MUST NOT менять их бизнес-смысл без новой source version/evidence.
 - **EXTSRC-015 — MUST:** локальная PostgreSQL-проекция хранит source snapshots и решения Business Owner, но AMIGO sync MUST NOT перезаписывать local availability, local visibility/publication, local price overrides, local portfolio или commercial conditions. Эти поля имеют отдельные provenance, версии и audit.
-- **EXTSRC-016 — MUST:** по `OWNER-DECISION-009` AMIGO является только upstream acquisition source, а не public-serving runtime source. Catalog/search/filter/configurator/calculation/lead/analytics flows MUST использовать активную одобренную PostgreSQL `CatalogVersion` и связанные транзакционные записи; raw/staging/rejected data публично не читаются.
+- **EXTSRC-016 — MUST:** по `OWNER-DECISION-009` catalog/search/filter/lead/analytics flows используют только активную одобренную PostgreSQL projection; raw/staging/rejected data публично не читаются. `OWNER-DECISION-025` creates one narrow exception for an allowlisted server-only exact calculator call after the local active material/model mapping has been resolved; browser and catalog serving remain local-only.
 - **EXTSRC-017 — MUST:** AMIGO addition/change/removal сначала создаёт immutable capture, staged candidate и diff. Source removal MUST NOT автоматически удалять, скрывать или архивировать локальные сущности, local-only data, Business Owner overlays или историю.
-- **EXTSRC-018 — MUST:** опубликованная локальная версия требует Business Owner approval и явной administrator activation; applicable local overrides имеют приоритет только в composed public projection и не меняют source snapshot.
+- **EXTSRC-018 — MUST:** опубликованная локальная версия требует Business Owner approval и явной administrator activation. Historical overrides remain preserved, but the new public exact-price projection authorized by `OWNER-DECISION-025` does not apply a local override or minimum.
 - **EXTSRC-019 — MUST:** каждая `CatalogVersion` хранит timestamp и source/source-version manifest, а capture/import/validation/diff/override/approval/activation/rejection/rollback/projection rebuild оставляют audit trail.
 - **EXTSRC-020 — MUST:** в Phase 1B.1 выбран только owner-authorized public-page transport четырёх явных `shop.amigo.ru` material paths из dated transport discovery: concurrency `1`, bounded rate/backoff/timeout/redirects, descriptive user agent, HTTPS/host/path allowlist, без cookies/login/CAPTCHA/search/filter/action/Bitrix endpoints. Нормализация ограничена 32-ID manifest; это решение не доказывает официальный API/export и не разрешает полный crawl/import.
 - **EXTSRC-021 — MUST:** `OWNER-DECISION-012` разрешает Phase 1B.2 расширить существующий adapter до полного доступного разрешённого catalog discovery. Каждый обнаруженный category/page path MUST сначала пройти HTTPS host/path classification, access/CAPTCHA/identity/parser preflight и затем войти в dated allowlist/manifest; concurrency, rate, timeout, retry/backoff/jitter, redirects, payload limits, checkpoint/resume/cancellation и graceful shutdown остаются bounded и диагностируемыми.
 - **EXTSRC-022 — MUST:** full catalog semantic source version строится из сортированных безопасных распознанных category/system/model/material facts при pinned parser/mapping versions. Raw HTML hash MAY оставаться capture evidence, но scripts, cookies, form/CAPTCHA/session tokens, персональные данные и capture timestamp MUST NOT попадать в safe snapshot или создавать ложную новую catalog version.
 - **EXTSRC-023 — MUST:** full discovery MUST сохранять все обнаруженные категории и честно учитывать failures/skips/duplicates/source-removed/checksums в manifest. Нераспознанная массовая структура, credential/login/CAPTCHA, technical refusal, нестабильная identity, дубликаты или невозможность доказать coverage являются stop condition; частичный результат MUST NOT называться полным каталогом.
-- **EXTSRC-024 — MUST:** Phase 1C pricing evidence uses dated, hash-identified, low-rate public calculator input/output captures only for independently implemented parity rules. Public runtime MUST use committed/activated PostgreSQL rules and MUST NOT call the observed customizer endpoint during a client calculation.
+- **EXTSRC-024 — MUST:** Phase 1C historical pricing evidence uses dated, hash-identified captures and no runtime AMIGO call. This remains authoritative for its immutable snapshots; `OWNER-DECISION-025` supersedes only the new public quote path through `EXTSRC-029`–`034` and ADR-0015.
 - **EXTSRC-025 — MUST:** Polza AI is an external media processor/API provider, not a catalog, price, rights or product authority. Phase 2B uses only the official Media API create/status contract and the server-configured model registry ID verified on 2026-08-12.
 - **EXTSRC-026 — MUST:** Polza transport uses authenticated `POST /api/v1/media` and `GET /api/v1/media/{id}` through the server adapter; exact current fields are `model`, `input.prompt`, ordered `input.images[{type,data}]`, supported generation fields, `async` and pseudonymous `user`. Raw provider JSON/usage/reasoning/warnings/content are not product records.
 - **EXTSRC-027 — MUST:** a Polza `data.url` is a temporary acquisition locator only. PROJECT_NAME validates and imports result bytes into private Supabase Storage, never publishes or stores the provider URL as the client result.
 - **EXTSRC-028 — MUST:** Polza documentation/model availability and contract terms are mutable external facts; provider/model changes require re-verification, tests and when product/security/privacy boundaries change a superseding ADR. Public documentation MUST NOT be treated as proof of no-training, retention, region, DPA or subprocessors.
+- **EXTSRC-029 — MUST:** Phase 2C price refresh reads only the nine retained, previously known AMIGO material collection paths and their own `PAGEN_*` references at concurrency 1 with bounded delay, timeout, retry, response-size, HTTPS host/path and parser checks. It does not discover/import a new category or material; rows not already present in the retained Supabase catalog are counted but ignored.
+- **EXTSRC-030 — MUST:** source-card ID from `shop.amigo.ru` and calculator material ID from the customizer are distinct namespaces and MUST NOT be equated. Mapping uses exact current category/model membership plus reviewed normalized material name/article/width evidence; zero, multiple or stale matches make the local row non-public.
+- **EXTSRC-031 — MUST:** the active semantic price version hashes sorted retained source-card amount/label/identity and exact calculator model/material mappings, excluding timestamps, raw HTML, scripts, cookies and volatile tokens. Activation stores counts/checksums and never rewrites a prior version.
+- **EXTSRC-032 — MUST:** browser sends only local material slug and integer width/height to PROJECT_NAME. Server resolves the active local mapping and MAY call only `POST /api/calculate` on the exact customizer origin pinned by the active version; arbitrary origin/path/redirect/model/material/options/amount from the client is rejected.
+- **EXTSRC-033 — MUST:** server call uses no AMIGO cookie, login, credential, CAPTCHA bypass or copied supplier code. It has strict timeout, rate/concurrency and response schema/amount bounds; only safe result facts are stored in the exact cache. A changed/blocked interface fails closed and triggers operator review.
+- **EXTSRC-034 — MUST:** `GET /api/models`, `GET /api/models/{id}/materials`, `GET /api/models/{id}/options` and `POST /api/calculate` are recorded only as observed public customizer transport, not claimed as official AMIGO API. Their use is limited to the owner-authorized partner pricing scope and must be reverified for every replacement version.
 
 ## 2. Модель внешнего значения
 
@@ -72,14 +78,14 @@
 |---|---|
 | Организация | AMIGO; публичный интернет-магазин `shop.amigo.ru` |
 | Статус отношения | `AUTHORIZED_PARTNER_SOURCE`; официальный партнёрский статус подтверждён владельцем |
-| Наблюдаемый access method | Controlled public catalog pages: Phase 1B.2 capture 2026-08-03 прошёл 114 safe paths, обнаружил 28 categories/56 systems/9 models/1655 variants при 0 failures. Partner export/API не подтверждён до отдельного доказательства |
+| Наблюдаемый access method | Controlled public catalog pages: Phase 1B.2 capture 2026-08-03 прошёл 114 safe paths. Phase 2C reuses only nine retained material paths for price refresh and the observed public customizer transport for exact mapping/calculation; neither is claimed as official partner API/export |
 | Надёжность | Первичный публичный источник для того, что опубликовано на конкретной странице; не гарантирует локальную применимость, наличие или неизменность |
 | Изменяемость | Высокая: ассортимент, названия, цены, город, условия и структура страниц могут изменяться без уведомления PROJECT_NAME |
 | Правовое/договорное основание | `PARTNER_LICENSE`, подтверждённое владельцем бизнеса 2026-08-02; копия evidence reference необязательна для документирования |
 | Разрешение на изображения | `PARTNER_LICENSE`; локальный файл в подтверждённом scope публикуется при asset record `PUBLICATION_APPROVED` |
 | Базовый способ обновления | Предпочтение: partner API/export/file; доказанный Phase 1B.2 fallback: существующий public-page adapter, dynamic dated path/entity manifest, semantic version и stop conditions |
-| Базовый fallback | Последняя подтверждённая локальная версия, ручная проверка менеджера либо нейтральное сообщение без выдуманного значения |
-| Разделение authority и serving | AMIGO определяет AMIGO-origin source fields; Business Owner определяет локальные availability/visibility/override/portfolio/commercial fields; активная одобренная PostgreSQL `CatalogVersion` является единственным public-serving source, не новым upstream source |
+| Базовый fallback | Catalog remains local. Exact calculation uses active-version cache or fails without amount; incomplete material is not public and manager-price placeholder is forbidden |
+| Разделение authority и serving | AMIGO определяет AMIGO-origin material and price facts; active PostgreSQL projection controls public membership/mapping/card price. Only the server exact-price adapter MAY call the pinned customizer calculation path; browser and all other public flows remain local-only |
 
 ## 4. Зарегистрированные страницы
 
@@ -354,19 +360,37 @@
 | Поле | Значение |
 |---|---|
 | Организация | AMIGO |
-| URL | `https://80bcbf2544d2118d6c1ffc708b32c673.customizer.amigo.ru/` — re-observed 2026-08-08; volatile, не канонический постоянный URL |
+| URL | `https://80bcbf2544d2118d6c1ffc708b32c673.customizer.amigo.ru/` — re-observed 2026-08-13; volatile, не канонический постоянный URL |
 | Назначение | Наблюдение functional parity, category/system hierarchy, шагов Size → Material → Options, preview и cart entry |
 | Разрешённые данные | Наблюдаемые labels, states, flows, validation outcomes и контрольные quotes в авторизованном scope |
-| Запрещённые данные/действия | iframe как основное решение; копирование DOM/code/network API/закрытого алгоритма; обход login/CAPTCHA/rate limits |
+| Запрещённые данные/действия | iframe как основное решение; копирование DOM/code/закрытого алгоритма; произвольные или закрытые endpoints; обход login/CAPTCHA/rate limits. Узкий observed server transport регулируется отдельно `SOURCE-AMIGO-EXACT-CALCULATOR-001` |
 | Статус доступа | Публичный JavaScript customizer, подключённый calculator iframe; `AUTHORIZED_PARTNER_SOURCE` |
-| Последняя проверка | 2026-08-08 во встроенном браузере; normalized evidence in `AMIGO_PRICING_VERIFICATION_2026-08-08.md` |
+| Последняя проверка | 2026-08-13 во встроенном браузере: normal UI quote `MINI` + material `ЛИНА BLACK-OUT 2259` + `1000×1000` = `2695 ₽`; identical bounded `POST /api/calculate` response verified |
 | Надёжность | Высокая для наблюдаемого UI на дату; URL и поведение очень изменяемы |
 | Изменяемость | Очень высокая |
 | Юридический статус | Разрешено воспроизвести бизнес-логику самостоятельно; реализация AMIGO не копируется |
 | Изображения | Наблюдаемый preview; import media регулируется `PARTNER_LICENSE` и asset registry |
-| Обновление | Всегда повторно обнаруживать iframe с calculator page; не хардкодить текущий hostname как постоянный |
+| Обновление | Каждая replacement price version повторно проверяет calculator page/origin and pins the exact observed origin in immutable version evidence; hostname не считается постоянным между версиями |
 | Fallback | Документированная parity snapshot и локальный собственный configurator |
 | Связанные требования | `AMIGO-PARITY-001`–`005`, `AMIGO-SYNC-001`–`006`, `FR-CONFIG-*` |
+
+### SOURCE-AMIGO-EXACT-CALCULATOR-001
+
+| Поле | Значение |
+|---|---|
+| Организация | AMIGO |
+| URL | Active-version pinned origin `https://80bcbf2544d2118d6c1ffc708b32c673.customizer.amigo.ru`; allowlisted observed paths `/api/models`, `/api/models/{id}/materials`, `/api/models/{id}/options`, `/api/calculate` |
+| Назначение | Dated material→model/default validation and exact server calculation for the public material + width + height flow authorized by `OWNER-DECISION-025` |
+| Разрешённые данные | Public model/material identities and compatibility, default-option behavior, integer width/height request and safe RUB result facts (`cost_currency`, currency, area); no personal/customer data |
+| Запрещённые данные/действия | Browser call, arbitrary host/path/model/material/options/amount, cookies/login/credentials, CAPTCHA/rate bypass, source code/DOM copying, hidden endpoints, bulk quote precomputation or raw response logging |
+| Статус доступа | Observed public customizer transport in `AUTHORIZED_PARTNER_SOURCE` scope; not claimed as official API |
+| Последняя проверка | 2026-08-13; UI/server parity fixture above and endpoint schema checks; full retained mapping/activation tracked by `TBD-PRICE-009` |
+| Надёжность | Medium: exact for a validated response, but undocumented/volatile transport; bounded adapter, active local mapping and exact cache required |
+| Изменяемость | Very high; every version pins origin, path set, model/material map, source-card snapshot and semantic checksum |
+| Юридический статус | Product Owner and partner permission allow price use and independent calculator scenario; `OWNER-DECISION-025`/ADR-0015 authorize this narrow transport without expanding to supplier code or closed interfaces |
+| Обновление | Controlled price refresh over nine retained shop paths plus the allowlisted model/material endpoints; diff, validation and OWNER/ADMIN activation required |
+| Fallback | Exact cache for the active version; otherwise explicit temporary calculation failure with no amount. Incomplete material is removed from public projection |
+| Связанные требования | `FR-CALC-025`–`031`, `PRICING-SOURCE-020`–`025`, `EXTSRC-029`–`034`, `TBD-PRICE-009` |
 
 ### SOURCE-AMIGO-PREVIEW-ASSETS-001
 
@@ -435,3 +459,4 @@
 | 1.9.0 | 2026-08-08 | Added hash/versioned Grozny-context public calculator verification for Phase 1C, four bounded MVP rule scopes and an explicit no-live-AMIGO runtime boundary. |
 | 1.10.0 | 2026-08-08 | Registered the exact Phase 1D customizer scene/product asset paths, owner-confirmed partner permission, checksum-bound local serving and no-runtime-hotlink/code-copy boundary. |
 | 1.11.0 | 2026-08-12 | Registered Polza AI Media create/status/model documentation for Phase 2B, exact mutable transport boundary, temporary result import and explicit non-evidence for provider legal/privacy claims. |
+| 1.12.0 | 2026-08-13 | `OWNER-DECISION-025`/ADR-0015 add a narrow bounded server-only AMIGO exact-price transport: nine retained shop paths, distinct card/calculator IDs, versioned material→model mapping, browser isolation, exact cache/fail-closed behavior and no claim of an official API. |

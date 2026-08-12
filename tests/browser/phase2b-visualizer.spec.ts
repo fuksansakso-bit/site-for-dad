@@ -52,7 +52,8 @@ test('completes mock visualizer UI, before/after, cart, retry, delete and mobile
           bucket: 'ai-inputs',
           expiresInSeconds: 7200,
           path: `${jobId}/window.jpg`,
-          signedUrl: 'http://127.0.0.1:54321/storage/v1/object/upload/sign/ai-inputs/window?token=x',
+          signedUrl:
+            'http://127.0.0.1:54321/storage/v1/object/upload/sign/ai-inputs/window?token=x',
           token: 'signed-upload-token',
         },
       });
@@ -140,11 +141,11 @@ test('completes mock visualizer UI, before/after, cart, retry, delete and mobile
   await expect(fileInputs.nth(0)).toHaveAttribute('accept', 'image/*');
   await expect(fileInputs.nth(0)).toHaveAttribute('capture', 'environment');
   await expect(fileInputs.nth(1)).toHaveAttribute('accept', 'image/*');
-  await fileInputs.nth(1).setInputFiles(
-    resolve(
-      'tests/browser/standard-preview.spec.ts-snapshots/roller-window-chromium-win32.png',
-    ),
-  );
+  await fileInputs
+    .nth(1)
+    .setInputFiles(
+      resolve('tests/browser/standard-preview.spec.ts-snapshots/roller-window-chromium-win32.png'),
+    );
   await expect(page.getByAltText('Выбранная фотография окна')).toBeVisible();
   await page.getByRole('button', { name: 'Продолжить', exact: true }).click();
   const generate = page.getByRole('button', { name: 'Создать визуализацию' });
@@ -178,7 +179,8 @@ test('completes mock visualizer UI, before/after, cart, retry, delete and mobile
   await expect(page.getByText(/готовый вариант|платный запуск/u)).toBeVisible();
   expect(generationCalls).toBe(1);
   await page.getByRole('button', { name: 'Удалить фотографию' }).click();
-  await expect(page.getByRole('heading', { name: 'Фотография и результат больше недоступны' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Фотография и результат больше недоступны' }),
+  ).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
-

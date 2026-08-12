@@ -4,6 +4,8 @@
 
 **Acceptance status:** `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`
 
+**2026-08-13 live addendum:** the configured Supabase project and paid Polza account now pass one complete rights-cleared Zebra path: direct private upload, confirmation, provider job creation, polling, `google/gemini-3.1-flash-image` completion, single-result import into private `ai-results`, 1,500×937 before/after rendering and owned deletion with zero remaining job objects. Live QA corrected a bounded upload-visibility race and Polza's observed `data[0].url` response shape. Formal status remains pending only because `AIEVAL-019` still requires roller and horizontal-or-vertical quality cases; provider connectivity and private result import are no longer unverified. See [AI_VISUALIZATION_LIVE_QA.md](../AI_VISUALIZATION_LIVE_QA.md).
+
 **Date:** 2026-08-12
 
 **Initial commit:** `49ce3679de28c612662f78273cd265d73221163d`
@@ -12,7 +14,7 @@
 
 **Draft PR:** [#7 — Phase 2B: Gemini AI window visualization](https://github.com/bataevabdullah2009-pixel/site-for-dad/pull/7)
 
-The implementation, additive migration, mock/provider contract tests, responsive browser flow and production build are complete. `POLZA_AI_API_KEY`, Supabase cloud/service-role credentials and `CRON_SECRET` were not present, so no paid Polza call or remote bucket/RLS/cron claim was made.
+The original report below records the state at the close of the Phase 2B branch, when credentials were absent. The dated addendum above is the current live evidence and does not retroactively change that historical execution record.
 
 ## Commits
 
@@ -103,11 +105,11 @@ The implementation, additive migration, mock/provider contract tests, responsive
 
 ## Explicitly skipped
 
-- Live Polza generation: skipped because `POLZA_AI_API_KEY` is absent; live calls executed: **0**.
+- Live Polza generation at original report close: skipped because `POLZA_AI_API_KEY` was absent; this historical zero-call record is superseded for current runtime evidence by the 2026-08-13 addendum.
 - Remote Supabase migration/private buckets/RLS pgTAP: skipped because cloud credentials are absent.
 - Connected Supabase project verification: unavailable because the workspace Supabase connector reported that it is not connected; no project was guessed or mutated.
 - Real cleanup/cron execution: skipped because remote Storage and `CRON_SECRET` are absent.
-- Live visual quality for the four families: `Live visual QA pending`; mock imagery is not claimed as Polza output.
+- Live visual quality at original report close: pending. The later Zebra case is real Polza output; the remaining family matrix is still pending and mock imagery is never counted as live.
 
 ## Remaining manual actions
 

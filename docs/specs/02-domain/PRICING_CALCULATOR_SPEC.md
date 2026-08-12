@@ -1,24 +1,24 @@
 # Pricing calculator specification PROJECT_NAME
 
-## Phase 2A simple calculation
+## Active Phase 2C exact AMIGO calculation
 
-The client supplies only material ID, width/height in millimetres and quantity. `AREA` computes `widthMm * heightMm / 1_000_000 * pricePerM2`, then applies 150,000 kopecks minimum to each unit before multiplying by quantity. `FIXED` uses configured fixed unit price; `MANUAL` shows «Стоимость уточнит менеджер» and never `0 ₽`. Server recalculation is the only order price authority; unproven legacy “from” prices remain `MANUAL`.
+`OWNER-DECISION-025` and ADR-0015 supersede the Phase 2A `AREA/FIXED/MANUAL` public path for new quotes. A published material now has a current versioned AMIGO `FROM` card amount and one unambiguous calculator model/material mapping. The customer selects the material and enters only integer width/height; quantity is one in the calculator and MAY be changed later through server recalculation in the cart. The server calls only the pinned allowlisted AMIGO calculator adapter or an exact complete cache key and returns integer kopecks. No local minimum, local formula, local override, zero or manager-price placeholder is permitted. Historical Phase 1C/2A snapshots retain their old versioned rules and are not recalculated.
 
 ## 0. Метаданные
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1C implemented and verified for four AMIGO-backed rule scopes; unsupported scopes remain non-numeric |
-| Версия | 0.5.0 |
-| Дата | 2026-08-08 |
-| Policy | [PRICING_SOURCE_POLICY.md](../../00-global/PRICING_SOURCE_POLICY.md) 1.4.0 |
+| Статус | Phase 2C exact AMIGO version `amigo-67c782a10449cdb7` active for 1,131 mapped materials; historical versions retained |
+| Версия | 0.6.0 |
+| Дата | 2026-08-13 |
+| Policy | [PRICING_SOURCE_POLICY.md](../../00-global/PRICING_SOURCE_POLICY.md) 2.2.0 |
 | Inputs | [PRODUCT_CONFIGURATOR_SPEC.md](PRODUCT_CONFIGURATOR_SPEC.md) |
 
 ## 1. Назначение, границы и запрещённые выводы
 
 Документ определяет versioned, deterministic, auditable preliminary pricing without inventing AMIGO formulas. It covers provider contract, source/local layers, exact arithmetic, status, breakdown, history, activation, fallback and parity testing.
 
-Out of scope until confirmed: price tables and formulas outside the four dated Phase 1C scopes, unverified option surcharges, tax display, discount rules and price validity period. The 1500-ruble per-item minimum is confirmed by `OWNER-DECISION-003` and implemented only after all Phase 1C activation gates. No other sample number in this spec is a business price.
+Out of scope until confirmed: unverified option selection, tax display, discount rules and price validity period. The 1500-ruble per-item minimum remains historical evidence under `OWNER-DECISION-003` but is superseded for every new public quote by `OWNER-DECISION-025`. No sample number in this spec is a new business price.
 
 ## 2. Термины, акторы и roles
 
@@ -50,7 +50,7 @@ Actors: guest/customer requester, manager draft/confirmation role, price editor,
 - **PRICE-SPEC-006 — MUST:** allowed conceptual overrides are absolute replacement, additive amount, multiplicative/percentage adjustment or explicit rule replacement; exact permitted set/precedence remains owner-approved.
 - **PRICE-SPEC-007 — MUST:** `sourcePriceCategory` accepts dynamic source strings; unknown category stores safely but blocks price unless an applicable rule exists.
 - **PRICE-SPEC-008 — MUST:** service lines for confirmed free measurement/delivery/installation are shown separately as zero only within approved region/scope and never alter mechanism formula.
-- **PRICE-SPEC-009 — MUST:** minimum 1500 rubles applies to each separately manufactured item before order aggregation; formula result 1100 becomes 1500 and two such items total 3000. It is documented only and MUST NOT be implemented in Phase 1A.
+- **PRICE-SPEC-009 — MUST:** historical snapshots created under `OWNER-DECISION-003` reproduce the 1500-ruble per-item minimum. `OWNER-DECISION-025` supersedes this requirement for all new public quotes, which MUST NOT apply any local minimum.
 - **PRICE-SPEC-010 — MUST:** missing input/rule/version/currency/context returns `UNAVAILABLE` or `MANUAL_REQUIRED`, never zero/guess/partial total.
 - **PRICE-SPEC-011 — MUST:** historical quote and its inputs/version/breakdown are immutable after creation; recalculation creates a new revision.
 - **PRICE-SPEC-012 — MUST:** price activation is atomic, preserves previous active version and is allowed only to `OWNER` or `ADMIN` after exact diff review and explicit confirmation; every attempt/outcome is audited.
@@ -66,6 +66,14 @@ Actors: guest/customer requester, manager draft/confirmation role, price editor,
 - **PRICE-SPEC-022 — MUST:** Business Owner is decision authority for local price overrides and commercial conditions; each is a separate versioned/audited layer with applicable approval/legal/financial gates and never rewrites the base price.
 - **PRICE-SPEC-023 — MUST:** PostgreSQL stores source snapshots, override/commercial-condition revisions, active pointers and quote history as the operational system of record; physical presence of imported rows does not make an incomplete or unverified PriceVersion active.
 - **PRICE-SPEC-024 — MUST:** public calculation input resolution follows `OWNER-DECISION-009`: server runtime reads only compatible active approved `CatalogVersion` and `PriceVersion` records from PostgreSQL. AMIGO adapters, raw captures, staged candidates and rebuildable cache/search projections MUST NOT become independent calculation sources; every quote snapshot pins both version IDs and the selected source/override revisions.
+- **PRICE-SPEC-025 — MUST:** every active public material has one current AMIGO source-card `FROM` amount, source card identity, capture time and semantic source version; the card renders that amount as «от … ₽».
+- **PRICE-SPEC-026 — MUST:** every active public material maps to exactly one pinned calculator model ID and material ID inside its authorized family; zero or multiple matches exclude it from public projection.
+- **PRICE-SPEC-027 — MUST:** new calculator input is material slug plus integer `widthMm`/`heightMm`; quantity defaults to one and client-supplied amount/model/options/version are never trusted.
+- **PRICE-SPEC-028 — MUST:** the server adapter uses only the pinned HTTPS origin and `/api/calculate`, rejects redirects, bounds timeout/concurrency/body size, validates the response schema/currency/integer amount and fails closed.
+- **PRICE-SPEC-029 — MUST:** exact cache identity includes source version, calculator model/material IDs and both dimensions; a partial or cross-version key is invalid.
+- **PRICE-SPEC-030 — MUST:** order creation recalculates server-side and persists the exact cache-verified amount plus source/model/material version snapshots; historical order-item rows are immutable.
+- **PRICE-SPEC-031 — MUST NOT:** public/admin runtime edits AMIGO source price, substitutes a local override/formula/minimum, or publishes incomplete mapping as `MANUAL`.
+- **PRICE-SPEC-032 — MUST:** activation is atomic, keeps previous versions immutable and exposes only complete priceable descendant groups; the active evidence contains 1,131 materials/seven groups, including 137 Zebra materials.
 
 ## 5. Provider contract
 
@@ -82,6 +90,8 @@ Conceptual operations:
 | `activate/rollback` | approved command/current version | atomic pointer transition/audit |
 
 Provider types: `AdminManagedPricingProvider`, `AmigoAuthorizedProvider`, `AmigoSnapshotProvider`, `ManualQuoteProvider` and test-only `MockPricingProvider`. Exact transport is an adapter behind the contract and requires evidence/ADR.
+
+The active public provider is `AmigoExactPriceProvider` under ADR-0015. Historical provider types remain solely for old snapshot reproduction and non-public evidence.
 
 ## 6. Symbolic calculation pipeline
 
@@ -153,7 +163,7 @@ Multiple applicable overrides require explicit precedence and conflict detection
 
 Client breakdown SHOULD include product/system/material/quantity, base/options/services/adjustment groups, total/currency, preliminary label, data freshness/version reference and manager-confirmation note. It MUST NOT reveal confidential formula expressions, credentials, internal margins or security metadata.
 
-If exact line-level transparency is unresolved (`TBD-PRICE-009`), safe minimum is total status/amount, included free services, preliminary nature and why price is unavailable/stale. No fake validity deadline is shown before `TBD-PRICE-008`.
+If exact line-level transparency is unresolved (`TBD-PRICE-011`), safe minimum is total status/amount, included free services, preliminary nature and why price is unavailable/stale. No fake validity deadline is shown before `TBD-PRICE-008`.
 
 ## 11. Errors and edge cases
 
@@ -221,6 +231,7 @@ Links: `PRICING-SOURCE-*`, `PRICING-SNAPSHOT-*`, `PRICING-VERSION-*`, `PRICING-L
 
 | Версия | Дата | Изменение |
 |---|---|---|
+| 0.6.0 | 2026-08-13 | Activated `OWNER-DECISION-025`/ADR-0015 exact AMIGO mapping, `FROM` cards, width/height-only server calculation/cache, fail-closed projection and immutable order snapshots; retired the local minimum for new quotes. |
 | 0.1.0 | 2026-08-02 | Определены provider contract, symbolic pipeline, versions/overrides, exact arithmetic, breakdown, failures and parity matrix without invented business values. |
 | 0.2.0 | 2026-08-02 | Зафиксированы per-item minimum, `OWNER`/`ADMIN` activation с diff/audit и parity tolerance ≤1 рубля; pricing implementation остаётся вне Phase 1A. |
 | 0.3.0 | 2026-08-02 | По `OWNER-DECISION-008` AMIGO base-price authority отделена от Business Owner overrides/commercial conditions и PostgreSQL operational storage; Phase 1C gates сохранены. |

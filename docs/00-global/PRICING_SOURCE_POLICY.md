@@ -4,14 +4,16 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Нормативная политика; Phase 1C verified server pricing implemented and accepted |
-| Версия | 2.1.0 |
-| Дата | 2026-08-08, Europe/Moscow |
+| Статус | Нормативная политика; Phase 2C AMIGO exact-price replacement authorized/in progress |
+| Версия | 2.2.0 |
+| Дата | 2026-08-12, Europe/Moscow |
 | Главный источник правды | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) |
 | Внешние источники | [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md) |
 | Будущая детализация | `PRICING_CALCULATOR_SPEC.md` и `TEST_STRATEGY.md`, запланированные в [SPEC_ROADMAP.md](SPEC_ROADMAP.md) |
 
-Политика задаёт происхождение, версии, подтверждение и деградацию цены. Phase 1B.2 импортировала source/base/card prices; Phase 1C применяет только reviewed rules from dated AMIGO evidence, integer local minimum and immutable quote snapshots. Unproved combinations remain non-numeric.
+Политика задаёт происхождение, версии, подтверждение и деградацию цены. Phase 1B.2 импортировала source/base/card prices; Phase 1C сохранила исторические reviewed rules и immutable quote snapshots. По `OWNER-DECISION-025` новые public quotes больше не применяют локальный minimum или manager-price placeholder: материал публикуется только при наличии versioned AMIGO `FROM` price и проверяемого exact dimensional path.
+
+Active evidence on 2026-08-13 is semantic version `amigo-67c782a10449cdb7`: all 1,428 retained candidates were compared against the nine fixed AMIGO collection paths and fixed calculator model set. Exactly 1,131 rows are `READY`, 297 missing-price/unmatched/ambiguous rows remain hidden, seven governed parent groups are public and Zebra contains 137 priceable descendants. Capture timestamp is evidence metadata and is excluded from the semantic hash.
 
 ## 1. Основные требования владельца
 
@@ -20,7 +22,7 @@
 - **PRICING-SOURCE-003 — MUST:** каждый price snapshot сохраняет источник, дату, город или регион расчёта, систему, материал, артикул, ширину, высоту, тип монтажа, выбранные опции, результат, валюту, версию, способ получения и статус проверки администратором.
 - **PRICING-SOURCE-004 — MUST:** старый расчёт клиента никогда не меняется автоматически после изменения данных AMIGO.
 - **PRICING-SOURCE-005 — MUST:** новый расчёт использует только активную подтверждённую версию прайса.
-- **PRICING-SOURCE-006 — MUST:** при недоступности внешнего источника система не придумывает цену и использует последнюю подтверждённую локальную версию, ручной расчёт менеджера либо сообщение «Стоимость требует уточнения».
+- **PRICING-SOURCE-006 — MUST:** historical/manual scopes при недоступности внешнего источника сохраняют прежнюю подтверждённую локальную версию или ручной статус. Новый public exact-price scope по `OWNER-DECISION-025` MUST fail closed без суммы и MUST NOT публиковать manager-price placeholder.
 - **PRICING-SOURCE-007 — MUST NOT:** запрещено копировать программный код, сетевые API, дизайн или закрытые алгоритмы калькулятора AMIGO; разрешена самостоятельная реализация аналогичного пользовательского сценария с коммерчески необходимыми параметрами.
 - **PRICING-SOURCE-008 — MUST:** AMIGO имеет status `AUTHORIZED_PARTNER_SOURCE`; владелец подтвердил право использовать цены и самостоятельно воспроизводить калькуляторную логику, но конкретный transport/export/API и формулы должны иметь собственное доказательство.
 - **PRICING-SOURCE-009 — MUST:** source price category хранится как `sourcePriceCategory: string`; nullable `localPriceTier: string` является отдельным локальным отображением. Наблюдаемые `E`, `0`, `1`, `2`, `3`, `4`, `5` не образуют закрытый общий enum.
@@ -34,6 +36,12 @@
 - **PRICING-SOURCE-017 — MUST:** если одна карточка источника содержит несколько денежных значений без доказанного однозначного контекста, importer сохраняет исходную метку и контекст, но нормализует цену как `PRICE_ON_REQUEST`. Склеивать цифры, выбирать минимум/максимум или публиковать одно значение по догадке запрещено.
 - **PRICING-SOURCE-018 — MUST:** verified Phase 1C rule stores source/version/verified-at/family/system/price-category/rounding/constraints/examples/confirmation state. A rule is automatic only inside its reviewed scope and only while its PriceVersion is active.
 - **PRICING-SOURCE-019 — MUST:** roller/Zebra exact lookup fixtures and horizontal/vertical integer area rules from source version `amigo-public-calculator-2026-08-08-9f9246330385` are the initial four MVP scopes; no interpolation, extrapolation or cross-material substitution is allowed.
+- **PRICING-SOURCE-020 — MUST:** новая public price version закрепляет точную AMIGO `FROM` revision для каждого опубликованного material: integer kopecks, currency, source material identity/URL, visible source label, captured/verified time, region/context and semantic source version.
+- **PRICING-SOURCE-021 — MUST:** material with `PRICE_ON_REQUEST`, null/zero/unparseable amount, ambiguous source identity or stale/unapproved revision is excluded from `public_materials` and public category counts until a complete revision is reviewed and activated.
+- **PRICING-SOURCE-022 — MUST:** bounded server calculator transport is evidence-backed acquisition/calculation, not a browser API. Only the allowlisted observed HTTPS origin and explicit read/calculate paths MAY be called; redirects to another origin, login, CAPTCHA, cookies/credentials, arbitrary URLs and supplier frontend code are forbidden.
+- **PRICING-SOURCE-023 — MUST:** each calculator mapping pins the exact local material, AMIGO source material ID, AMIGO source model ID, normalized mandatory defaults, supported width/height bounds and source version. A material present in several models is not resolved by guessing; its reviewed mapping is explicit.
+- **PRICING-SOURCE-024 — MUST:** exact responses are schema-validated, integer-normalized and cached by the complete normalized calculation key. Cache provenance distinguishes `LIVE_SOURCE` and `EXACT_CACHE`; neither result may be synthesized from card `FROM` price or an unverified area formula.
+- **PRICING-SOURCE-025 — MUST:** the browser sends only local material slug plus integer width/height. Server-side code independently resolves every source identity/default and snapshots the exact result; client-supplied external model, option, origin, amount or price version is ignored/rejected.
 
 ## 2. Приоритет источников и способ получения
 
@@ -91,25 +99,31 @@
 - **PRICING-OVERRIDE-002 — MUST:** ручное изменение подтверждённой клиенту суммы сохраняет предыдущую сумму, новую сумму, причину, автора и связь с новой ревизией предложения.
 - **PRICING-OVERRIDE-003 — MUST:** неподтверждённые наценки, скидки, округления и формулы не применяются автоматически.
 - **PRICING-OVERRIDE-004 — MUST:** AMIGO sync/import не создаёт, не изменяет и не удаляет Business Owner override или commercial condition; конфликт ownership блокирует affected candidate до review.
-- **PRICING-OVERRIDE-005 — MUST:** applicable approved local override имеет приоритет над AMIGO base price только при композиции public/local result в заявленных scope/effective interval; исходный snapshot сохраняется, а выбранные source и override revisions фиксируются в `CatalogVersion`, `PriceVersion` и calculation snapshot.
+- **PRICING-OVERRIDE-005 — MUST:** applicable approved local override имеет приоритет над AMIGO base price только для historical/non-public scopes, явно оставленных активными соответствующей версией. Новый public exact-price scope по `OWNER-DECISION-025` MUST NOT применять local override; исходные snapshots и исторические revisions сохраняются.
 
 ## 5. Локальные ценовые правила
 
 - **PRICING-LOCAL-001 — MUST:** после базовой цены AMIGO применяются только подтверждённые локальные правила бизнеса.
 - **PRICING-LOCAL-002 — MUST:** «Замер», «Доставка» и «Установка» являются отдельными строками расчёта со значением `0` рублей и клиентской подписью «Бесплатно» в пределах всей обслуживаемой Чеченской Республики.
 - **PRICING-LOCAL-003 — MUST:** цены AMIGO на замер, доставку и монтаж для Москвы или другого региона не переносятся в PROJECT_NAME.
-- **PRICING-LOCAL-004 — MUST:** минимальная стоимость равна 1500 рублей для каждой отдельно изготавливаемой единицы изделия и применяется до суммирования заказа: 1100 рублей по формуле → 1500 рублей; две такие единицы → 3000 рублей.
-- **PRICING-LOCAL-005 — MUST:** Phase 1C applies `PRICING-LOCAL-004` after the verified unit base plus confirmed options/override and before quantity; it is never applied once to the aggregate.
+- **PRICING-LOCAL-004 — MUST:** historical Phase 1C snapshots применяли minimum 1500 рублей к каждой отдельно изготавливаемой единице: 1100 рублей по формуле → 1500 рублей; две такие единицы → 3000 рублей. Это значение остаётся только evidence воспроизводимости старых snapshots.
+- **PRICING-LOCAL-005 — MUST:** historical Phase 1C applies `PRICING-LOCAL-004` after the verified unit base plus confirmed options/override and before quantity. Новая версия по `OWNER-DECISION-025` MUST NOT применять этот minimum.
 - **PRICING-LOCAL-006 — MUST:** money is stored and calculated as integer kopecks with currency `RUB`; verified area rules use integer half-up division and reject overflow instead of using float.
 - **PRICING-LOCAL-007 — MUST:** для первой версии `localSalePrice = sourceAmigoPrice` из активного проверенного snapshot, если отсутствует применимый утверждённый `LocalOverride`.
 - **PRICING-LOCAL-008 — MUST:** `LocalOverride` MAY задавать fixed price, процентную надбавку, процентную скидку, minimum, manual price или price-on-request с датами действия; конкретные значения и приоритеты не активируются без owner approval.
+- **PRICING-LOCAL-009 — MUST NOT:** new public calculations apply 150,000 kopecks or any other local minimum.
+- **PRICING-LOCAL-010 — MUST NOT:** new public calculations apply a local fixed/area/percentage override, invented rounding tier or card-price-as-formula substitution; exact AMIGO result is authoritative.
+- **PRICING-LOCAL-011 — MUST:** public material cards render the active AMIGO source-card amount as «от … ₽» without an area suffix unless that suffix is explicitly part of the verified source label.
+- **PRICING-LOCAL-012 — MUST:** quantity for the first material calculation is one. A later cart quantity change requests a fresh server calculation for the same dimensions and multiplies only the returned unit amount using checked integer arithmetic.
+- **PRICING-LOCAL-013 — MUST:** no public route renders «Стоимость уточнит менеджер», «Стоимость рассчитает менеджер», `PRICE_ON_REQUEST`, `MANUAL`, zero or a numeric guess for an incomplete material; incomplete materials are not public.
+- **PRICING-LOCAL-014 — MUST:** measurement, delivery and installation remain separate zero-cost service facts and MUST NOT be hidden inside or added to the AMIGO product amount.
 
 ## 6. Собственный калькулятор
 
-- **PRICING-CALC-001 — MUST:** собственный калькулятор принимает семейство изделия, систему, конкретный материал, ширину, высоту, количество, способ монтажа, цвет фурнитуры, дополнительные опции, несколько окон и отдельное изделие на каждую створку.
+- **PRICING-CALC-001 — MUST:** Phase 2C public calculator accepts a selected published material and only integer width/height from the customer. Server-side mapping resolves family/model/default options; quantity defaults to one and multi-item composition occurs in the cart.
 - **PRICING-CALC-002 — MUST:** результат называется «Предварительная стоимость», показывает подробную расшифровку, сохраняет price version и может быть передан в WhatsApp.
 - **PRICING-CALC-003 — MUST:** одинаковые нормализованные входы и одна активная price version дают воспроизводимый результат.
-- **PRICING-CALC-004 — MUST:** отсутствие подтверждённой совместимости, ограничения или цены переводит позицию в Manual Review, а не в приблизительную выдуманную сумму.
+- **PRICING-CALC-004 — MUST:** отсутствие подтверждённой совместимости, mapping, ограничения или цены блокирует публикацию/расчёт affected material; приблизительная или manual-manager сумма на public surface запрещена.
 - **PRICING-CALC-005 — MUST:** несколько окон сохраняют независимые параметры и breakdown; ошибка одной позиции не стирает остальные и не включается скрытно в общий итог.
 
 ## 7. Ручной расчёт и fallback
@@ -117,12 +131,13 @@
 - **PRICING-FALLBACK-001 — MUST:** `ManualQuoteProvider` принимает нормализованный контекст расчёта и возвращает либо подтверждённую уполномоченным менеджером сумму, либо состояние `REQUIRES_MANUAL_REVIEW`; он не имитирует внешний snapshot.
 - **PRICING-FALLBACK-002 — MUST:** ручной результат содержит автора, время, входы, валюту, причину ручного режима и доступную клиенту оговорку.
 - **PRICING-FALLBACK-003 — MUST:** последняя локальная версия используется при недоступности AMIGO только если она остаётся активной и подтверждённой администратором.
-- **PRICING-FALLBACK-004 — MUST:** если активной подтверждённой версии нет и менеджер не подтвердил сумму, клиент видит «Стоимость требует уточнения» и путь в WhatsApp.
+- **PRICING-FALLBACK-004 — MUST:** historical/manual scopes MAY retain their recorded fallback. In the active public exact-price scope, missing active evidence returns a clear temporary technical error without amount and without manager-price copy; affected material is removed from later public projections until corrected.
 - **PRICING-FALLBACK-005 — MUST:** timeout, невалидный ответ, смена города, CAPTCHA, недоступность или структурное изменение страницы AMIGO не превращаются в нулевую цену.
 
 ## 8. Исторические цены и изменение между расчётом и заказом
 
 - **PRICING-HISTORY-001 — MUST:** прошлый расчёт воспроизводится по сохранённым входам, breakdown и `priceVersionId` даже после архивирования каталога или смены источника.
+- **PRICING-HISTORY-005 — MUST:** replacement activation never rewrites historical snapshots that contain the 150,000-kopeck minimum or manual status. Recalculation creates a new snapshot under the current source version and leaves the original byte-identical.
 - **PRICING-QUOTE-001 — MUST:** срок действия предварительного предложения не указывается до решения существующего `TBD-PRICE-008`.
 - **PRICING-QUOTE-002 — MUST:** перед созданием заказа уполномоченная роль проверяет применимость предложения; это не означает молчаливый пересчёт.
 - **PRICING-QUOTE-003 — MUST:** если цена изменилась, создаётся новая ревизия с прежней и новой суммой, причиной, версиями и явным подтверждением клиента/менеджера по будущей спецификации.
@@ -207,3 +222,4 @@ Active calculation PriceVersion v5 `7618714e-0baf-463a-8311-e9cf84879dd1` pins `
 | 1.9.0 | 2026-08-04 | Зафиксированы accepted 1 664-record PriceVersion v2, exact diff/OWNER approval/ADMIN activation, no-op/rollback evidence и закрытие `TBD-PRICE-001` для catalog price version без утверждения dimensional calculator inputs. |
 | 2.0.0 | 2026-08-08 | `OWNER-DECISION-013` authorizes reviewed Phase 1C pricing only: four dated rule scopes, integer half-up/kopecks, per-unit minimum, active-version runtime, immutable quote and non-numeric fallback elsewhere. |
 | 2.1.0 | 2026-08-08 | Recorded accepted calculation PriceVersion v5, four rules/40 fixtures/100-kopeck maximum deviation, source/override separation, immutable snapshots and completed Phase 1C activation. |
+| 2.2.0 | 2026-08-12 | `OWNER-DECISION-025` removes the 150,000-kopeck minimum/local override/manager fallback from new public quotes; requires an active AMIGO `FROM` revision plus explicit material/model mapping for every public material, a bounded server-only exact calculator adapter/cache, width/height-only customer input, fail-closed publication and immutable historical snapshots. |

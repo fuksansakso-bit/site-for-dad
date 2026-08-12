@@ -13,8 +13,14 @@ function provider() {
 const createInput = {
   aspectRatio: '16:9' as const,
   images: [
-    { mimeType: 'image/jpeg' as const, signedUrl: 'https://project.supabase.co/window.jpg?token=x' },
-    { mimeType: 'image/webp' as const, signedUrl: 'https://project.supabase.co/material.webp?token=y' },
+    {
+      mimeType: 'image/jpeg' as const,
+      signedUrl: 'https://project.supabase.co/window.jpg?token=x',
+    },
+    {
+      mimeType: 'image/webp' as const,
+      signedUrl: 'https://project.supabase.co/material.webp?token=y',
+    },
   ] as const,
   modelName: 'google/gemini-3.1-flash-image',
   prompt: 'A'.repeat(100),
@@ -75,7 +81,7 @@ describe('Polza Media API adapter', () => {
       .mockResolvedValueOnce(
         new Response(
           JSON.stringify({
-            data: { url: 'https://cdn.polza.ai/results/result.jpg' },
+            data: [{ url: 'https://cdn.polza.ai/results/result.jpg' }],
             id: 'media_job_123',
             model: 'google/gemini-3.1-flash-image',
             status: 'completed',
@@ -102,6 +108,27 @@ describe('Polza Media API adapter', () => {
     expect(fetchMock.mock.calls[0]?.[0]).toBe('https://polza.ai/api/v1/media/media_job_123');
   });
 
+  it('also accepts the documented object result shape', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            data: { url: 'https://s3.polza.ai/results/result.jpg' },
+            id: 'media_job_123',
+            model: 'google/gemini-3.1-flash-image',
+            status: 'completed',
+          }),
+        ),
+      ),
+    );
+
+    await expect(provider().getJobStatus('media_job_123')).resolves.toMatchObject({
+      resultUrl: 'https://s3.polza.ai/results/result.jpg',
+      state: 'SUCCEEDED',
+    });
+  });
+
   it.each([
     [401, 'POLZA_AUTH_ERROR'],
     [402, 'POLZA_BALANCE_ERROR'],
@@ -112,7 +139,9 @@ describe('Polza Media API adapter', () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({ message: 'provider detail must stay private' }), { status }),
+        new Response(JSON.stringify({ message: 'provider detail must stay private' }), {
+          status,
+        }),
       ),
     );
     await expect(provider().createJob(createInput)).rejects.toMatchObject({

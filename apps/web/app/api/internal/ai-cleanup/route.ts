@@ -29,14 +29,11 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'SERVICE_UNAVAILABLE' }, { status: 503 });
   }
   try {
-    const summary = await cleanupExpiredAiVisualizations(
-      client,
-      getAiVisualizerServerConfig(),
-      { maximumBatches: 10 },
-    );
+    const summary = await cleanupExpiredAiVisualizations(client, getAiVisualizerServerConfig(), {
+      maximumBatches: 10,
+    });
     return NextResponse.json(summary, { headers: { 'Cache-Control': 'no-store' } });
   } catch {
     return NextResponse.json({ error: 'CLEANUP_FAILED' }, { status: 503 });
   }
 }
-

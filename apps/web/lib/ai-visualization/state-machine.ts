@@ -19,3 +19,10 @@ export function canTransitionAiVisualization(
   return ALLOWED_TRANSITIONS[from].includes(to);
 }
 
+export function completionTimestampForDeletion(
+  startedAt: string | null,
+  completedAt: string | null,
+  now: string,
+): string | null {
+  return startedAt ? (completedAt ?? now) : null;
+}

@@ -11,10 +11,7 @@ import {
   correlationId,
 } from '../../../../../lib/ai-visualization/route-utils';
 import { publicReferenceSchema } from '../../../../../lib/ai-visualization/schemas';
-import {
-  getAiGuestSession,
-  getDailyIpHash,
-} from '../../../../../lib/ai-visualization/session';
+import { getAiGuestSession, getDailyIpHash } from '../../../../../lib/ai-visualization/session';
 import { createSupabaseAdminClient } from '../../../../../lib/phase2a/supabase';
 
 export const dynamic = 'force-dynamic';
@@ -52,4 +49,3 @@ export async function GET(request: Request, context: Context) {
     return aiErrorResponse(error, requestCorrelationId);
   }
 }
-

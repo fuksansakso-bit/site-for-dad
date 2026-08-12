@@ -229,10 +229,20 @@ Dependencies: all domain specs, API/storage/security/deployment, ADRs and `OWNER
 - **P1F1-DATA-005 — MUST:** final active OWNER is protected by transaction/lock/constraint-equivalent checks across disable, role change and credential operations; no destructive migration or shared-table rewrite is used.
 - **P1F1-DATA-006 — MUST:** additive migration passes empty/repeat/upgrade/drift and forward-compensation review and preserves all CatalogVersion, PriceVersion, QuoteSnapshot, cart/request, staff/audit and storage data.
 
-## 20. History
+## 20. Phase 2C exact-price physical additions
+
+- **P2C-DATA-001 — MUST:** `amigo_price_versions` stores immutable semantic hash, fixed shop/calculator origins, capture time, counts and a single atomically selected active pointer.
+- **P2C-DATA-002 — MUST:** an `AMIGO_EXACT` material contains positive source-card `FROM` kopecks, label/card identity, source version/capture time, pinned calculator model/material identity, `READY` mapping and public group name/slug; local area/fixed/minimum fields are null.
+- **P2C-DATA-003 — MUST:** `amigo_calculation_cache` primary key is the complete source-version/model/material/width/height tuple and stores only positive exact integer kopecks plus calculation time.
+- **P2C-DATA-004 — MUST:** exact order items snapshot source version and calculator model/material IDs in addition to immutable dimensions, quantity and integer amounts; old rows are not rewritten.
+- **P2C-DATA-005 — MUST:** `public_materials` projects only active-version `AMIGO_EXACT/READY` rows with approved local image, while `public_categories` groups only priceable descendants by governed parent group.
+- **P2C-DATA-006 — MUST:** activation of version `amigo-67c782a10449cdb7` publishes 1,131 retained rows/seven groups; 297 missing-price, absent or ambiguous mappings remain stored but hidden.
+
+## 21. History
 
 | Версия | Дата | Изменение |
 |---|---|---|
+| 0.19.0 | 2026-08-13 | Added immutable AMIGO price versions, complete material mappings, exact dimensional cache, order snapshots and descendant public projections for Phase 2C. |
 | 0.18.0 | 2026-08-12 | Authorized additive coverage overrides and staff credential/session security records without customer accounts or destructive migration. |
 | 0.1.0 | 2026-08-02 | Defined aggregate/entity model, version/provenance, classifications, private media graph, integrity/deletion and evolution rules. |
 | 0.2.0 | 2026-08-02 | Recorded the seven-table Phase 1A infrastructure schema and confirmed that logical business aggregates were not implemented. |

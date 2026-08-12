@@ -1,16 +1,25 @@
 # Матрица трассируемости PROJECT_NAME
 
+## Phase 2C authorization trace
+
+| Decision/scope | Planned implementation evidence | Verification/report |
+|---|---|---|
+| `OWNER-DECISION-024`, `P2C-DESIGN-001`–`020` | central tokens/fonts/components, intro, complete public/admin route presentation | QG-601–670, Phase 2C route/visual/accessibility/performance suites and completion report |
+| `OWNER-DECISION-025`, `FR-CALC-025`–`031`, `TBD-PRICE-009` | AMIGO `FROM` price revisions, exact material/model mapping, bounded server adapter/cache, fail-closed public projection and width/height-only calculator | complete mapping report, schema/adapter/parity/cache/security tests, Zebra/browser full flow and immutable-history regression |
+| retained data/provider authority | unchanged Supabase settings/portfolio/staff and Polza/private-media contracts; pricing changes only within the narrow replacement scope | regression, secret/artifact, feature-off and route-state evidence |
+| truthful Preview-only delivery | neutral brand fallback, no invented content, target-account Vercel Preview | route audit, release QA and unmerged Draft PR |
+
 ## Phase 2B trace
 
 | Decision/scope | Implementation evidence | Verification/report |
 |---|---|---|
 | `OWNER-DECISION-023`, ADR-0014, `P2B-AI-001`–`015` | `apps/web/lib/ai-visualization`, `apps/web/app/visualizer`, AI route handlers | Phase 2B unit/integration/browser/security suites and completion report |
 | private input/result, ownership, cleanup | additive Supabase migration, `ai-inputs`, `ai-results`, guest session and cron | RLS/static/cloud tests, cleanup/audit tests |
-| Polza adapter/prompt/result import | `PolzaImageVisualizationProvider`, server-only prompt | contract/error/SSRF/idempotency tests; bounded live QA if key exists |
+| Polza adapter/prompt/result import | `PolzaImageVisualizationProvider`, server-only prompt | contract/error/SSRF/idempotency tests; 2026-08-13 live Zebra create/poll/private-import/delete pass; remaining family matrix pending |
 | cart/request/admin linkage | optional safe references and `/admin/ai-visualizations` | pricing regression, role/audit and expiry tests |
 | no direct Google/SAM/Python/GPU/worker/Phase 2C | dependency/source/client-bundle scans | build/security report |
 
-Implementation evidence is complete in commits `5596278`–`7f54aad`; verification is commit `6e69708` and the Phase 2B completion report. Local evidence is 49 passing tests, one passing full-flow Playwright scenario, mobile profiles, lint/type/scope/secret scans and production build. The committed pgTAP suite, cloud buckets/RLS/cron and live Polza QA remain credential-dependent and are not represented as executed evidence.
+Implementation evidence is complete in commits `5596278`–`7f54aad`; verification is commit `6e69708`, the Phase 2B completion report and the 2026-08-13 Phase 2C live addendum. Current evidence includes 55 passing web tests, one real Zebra Supabase/Polza/private-result/delete flow, deterministic full-flow Playwright coverage, mobile profiles, lint/type/scope/secret scans and production build. The remaining roller plus horizontal-or-vertical visual matrix, isolated restore and production activation are not represented as passed.
 
 ## Phase 2A trace
 
@@ -26,11 +35,11 @@ Implementation evidence is complete in commits `5596278`–`7f54aad`; verificati
 
 | Поле | Значение |
 |---|---|
-| Фаза | Phase 1A–1F and Phase 2A passed; Phase 2B implementation complete/live pending; Phase 2C hold |
-| Версия | 1.18.0 |
-| Дата | 2026-08-12, Europe/Moscow |
+| Фаза | Phase 1A–1F and Phase 2A passed; Phase 2B live Zebra path passed / family matrix pending; Phase 2C implementation complete / owner Preview pending |
+| Версия | 1.21.0 |
+| Дата | 2026-08-13, Europe/Moscow |
 | Состояние покрытия | `COVERED_WITH_VISIBLE_TBD` |
-| Главный источник требований | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.28.0 |
+| Главный источник требований | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.30.0 |
 | Feature contract | [FEATURE_SPEC.md](../specs/01-product/FEATURE_SPEC.md) |
 | Stories | [USER_STORIES.md](../specs/01-product/USER_STORIES.md) |
 | Acceptance | [ACCEPTANCE_CRITERIA.md](../specs/01-product/ACCEPTANCE_CRITERIA.md) |
@@ -152,7 +161,7 @@ Implementation evidence is complete in commits `5596278`–`7f54aad`; verificati
 |---|---|---|---|
 | `OWNER-DECISION-001` | `TBD-BIZ-001` | `GLOBAL_SPEC`, glossary, roles, quality gate | Governance review; QG-147/148 |
 | `OWNER-DECISION-002` | `TBD-PRICE-007` | pricing policy/spec, admin, RBAC, audit | `TS-PRICE-ACTIVATE-001`; Phase 1C |
-| `OWNER-DECISION-003` | `TBD-MIN-PRICE-001` | `FR-CALC-009`, pricing policy/spec, MVP | pricing table/property cases; Phase 1C, not 1A |
+| `OWNER-DECISION-003` | `TBD-MIN-PRICE-001` | Historical `FR-CALC-009`, pricing policy/spec and immutable snapshots; superseded for new quotes by `OWNER-DECISION-025` | historical pricing regression; Phase 1C evidence remains immutable |
 | `OWNER-DECISION-004` | `TBD-INVENTORY-002` | catalog/admin/sync specs | availability conflict/overwrite tests; Phase 1B+ |
 | `OWNER-DECISION-005` | `TBD-PRICE-SOURCE-002` | external/pricing/sync/admin/observability | freshness boundary tests; Phase 1B/1C |
 | `OWNER-DECISION-006` | `TBD-PRICE-PARITY-001` | global/pricing/test strategy | pricing parity suite; Phase 1C |
@@ -166,6 +175,8 @@ Implementation evidence is complete in commits `5596278`–`7f54aad`; verificati
 | `OWNER-DECISION-014/015` | Initial two-scene/four-family launch aspect of `TBD-PREVIEW-001` resolved with registered photoreal partner layers; individual exact-swatch gaps remain explicit | `GLOBAL_SPEC`, standard preview/configurator/media/storage/data/API/architecture/security/performance/test specs, QG-271–310, plan/report and mapping-gap register | `PASSED_PHASE_1D_STANDARD_PREVIEW`; Phase 1E+ excluded |
 | `OWNER-DECISION-016` | Phase 1E request statuses/fixed recipient/safe handoff are resolved for the local/CI scope; production PII/legal/retention and official WhatsApp API remain open | `GLOBAL_SPEC`, cart/configurator/preview/roles/data/API/architecture/security/test specs, QG-311–360, plan and completion report | `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`; Phase 1F+ excluded |
 | `OWNER-DECISION-017/018` | Staff OTP/session/invitation defaults and business settings fixed for local/CI; customer accounts moved post-MVP; production PII/provider/portfolio inventory TBD remain open | `GLOBAL_SPEC`, auth/admin/roles/content/data/API/architecture/security/test specs, ADR-0011, QG-361–420, plan and completion report | `PASSED_PHASE_1F_BUSINESS_ADMINISTRATION`; customer auth and Phase 1G excluded |
+| `OWNER-DECISION-024` | Palette/type/motion/route/viewport/Preview direction resolved; final brand/logo and production/live provider evidence remain open | `GLOBAL_SPEC`, UX/accessibility/performance/test/deployment specs, active Phase 2C plan, QG-601–670, final design documents and route audit | `AUTHORIZED_PHASE_2C_IN_PROGRESS`; runtime/provider/data authority unchanged and production excluded |
+| `OWNER-DECISION-025` | New-quote minimum and manager-price placeholder resolved; `TBD-PRICE-009` closed by `amigo-67c782a10449cdb7` with 1,131 ready/297 excluded/137 Zebra | `GLOBAL_SPEC`, ADR-0015, pricing/source policy, generated artifact, schema/adapter/cache, data/API/security/test specs, live rollback evidence and Phase 2C plan | `IMPLEMENTED_AND_LIVE_SUPABASE_VERIFIED`; incomplete materials fail publication, historical snapshots stay immutable, Preview only |
 
 ## 7. Phase 0C MVP and implementation traceability
 
@@ -185,6 +196,7 @@ Implementation evidence is complete in commits `5596278`–`7f54aad`; verificati
 | `ROADMAP-1D-001`, `OWNER-DECISION-014/015` | `FR-STANDARD-PREVIEW-*`, `STD-PREV-*`, ADR-0004/0006 and active local catalog/configuration | Preview domain/API/renderer/browser/visual/recovery evidence in [Phase 1D report](../06-plans/completed/PHASE_1D_STANDARD_PREVIEW_REPORT.md) | 1D | QG-271–310 passed; Phase 1E forbidden |
 | `ROADMAP-1E-001`, `OWNER-DECISION-016` | `FR-CART-008`–`012`, `FR-REQUEST-001`–`011`, `CART-SPEC-023`–`036` and ADR-0001/0003/0008/0010 | [Phase 1E plan](../06-plans/active/PHASE_1E_CART_WHATSAPP_ORDERS_PLAN.md), [report](../06-plans/completed/PHASE_1E_CART_WHATSAPP_ORDERS_REPORT.md), cart/contracts/DB/BFF/UI and acceptance tests | 1E | `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`; Phase 1F forbidden |
 | `ROADMAP-1F-001`, `OWNER-DECISION-017/018` | Staff `P1F-AUTH-*`, `P1F-ADMIN-*`, request-contact, portfolio, settings, audit and ADR-0011 contracts | [Phase 1F plan](../06-plans/active/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_PLAN.md), [report](../06-plans/completed/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_REPORT.md), identity/notifications/DB/jobs/BFF/UI and acceptance evidence | 1F | `PASSED_PHASE_1F_BUSINESS_ADMINISTRATION`; customer accounts and Phase 1G forbidden |
+| `ROADMAP-2C-001`, `OWNER-DECISION-024/025` | `P2C-DESIGN-001`–`020`, `FR-CALC-025`–`031`, existing UX/NFR and retained Phase 2A/2B contracts | [Phase 2C plan](../06-plans/active/PHASE_2C_FINAL_DESIGN_PLAN.md), QG-601–670 plus exact-price mapping/parity/security/Zebra/browser evidence | 2C | `AUTHORIZED_PHASE_2C_IN_PROGRESS`; incomplete pricing fails closed, Preview only, production/merge forbidden |
 | `ROADMAP-1H-001` | deployment/security/performance/a11y/test specs | NFR stories/AC/tests + recovery/admin chains | 1H | Full launch checklist and go/no-go |
 
 Post-MVP IDs `POST-MVP-001`–`015` have no Phase 1 delivery commitment and MUST NOT be inferred from existing general feature stories without a future scope/traceability update.
@@ -323,3 +335,5 @@ Detailed runtime versions, commit list, skipped production-only checks and accep
 | 1.15.0 | 2026-08-09 | Closed Phase 1E traceability with cart/request/domain/DB/BFF/UI, fixed WhatsApp recipient, public/admin projections, real DB/Chromium/security/recovery evidence, completion report and QG-311–360; Phase 1F remains prohibited. |
 | 1.16.0 | 2026-08-09 | Linked and closed revised Phase 1F staff auth/RBAC/admin/request-contact/portfolio/settings/audit/jobs, preserved guest/publicReference flow, exact CI-equivalent evidence, report and QG-361–420; customer accounts and Phase 1G remain prohibited. |
 | 1.17.0 | 2026-08-12 | Linked `OWNER-DECISION-019/020`, ADR-0012, unique canonical Phase 1F.1 profile requirements, active plan and QG-421–480; implementation evidence remains explicitly open. |
+| 1.19.0 | 2026-08-12 | Linked `OWNER-DECISION-024`, `P2C-DESIGN-001`–`020`, active Phase 2C plan and QG-601–670 to final route/design/motion/responsive/accessibility/performance/Preview evidence while preserving data/provider/production gates. |
+| 1.20.0 | 2026-08-12 | Linked `OWNER-DECISION-025`, `FR-CALC-025`–`031` and `TBD-PRICE-009` to removal of the new-quote minimum, mandatory AMIGO `FROM` cards, exact server material+width+height calculation, fail-closed publication, Zebra/category repair, historical immutability and Preview-only verification. |

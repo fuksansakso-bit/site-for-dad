@@ -4,21 +4,35 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 
-const connection = process.env.SUPABASE_DB_URL ?? process.env.MIGRATION_DATABASE_URL;
-if (!connection) throw new Error('SUPABASE_DB_URL (or MIGRATION_DATABASE_URL) is required');
+import { resolveSupabaseDatabaseUrl } from '../supabase-db.mjs';
+
+const { connectionString: connection } = resolveSupabaseDatabaseUrl();
 const stamp = new Date().toISOString().replaceAll(':', '-');
 const directory = path.resolve('.local/phase-2a-backups', stamp);
 await mkdir(directory, { recursive: true });
 const dump = path.join(directory, 'database.dump');
+const parsedConnection = new URL(connection);
+const password = decodeURIComponent(parsedConnection.password);
+parsedConnection.password = '';
+parsedConnection.searchParams.delete('pgbouncer');
+const credentialFreeConnection = parsedConnection.toString();
+const pgDumpExecutable = process.env.PG_DUMP_PATH?.trim() || 'pg_dump';
 await new Promise((resolve, reject) => {
   const child = spawn(
-    'pg_dump',
-    ['--format=custom', '--no-owner', '--no-acl', '--file', dump, connection],
+    pgDumpExecutable,
+    ['--format=custom', '--no-owner', '--no-acl', '--file', dump, credentialFreeConnection],
     {
+      env: { ...process.env, PGPASSWORD: password },
       stdio: ['ignore', 'inherit', 'inherit'],
     },
   );
-  child.once('error', reject);
+  child.once('error', (error) => {
+    reject(
+      new Error('pg_dump is unavailable or failed to start', {
+        cause: { code: error.code },
+      }),
+    );
+  });
   child.once('exit', (code) =>
     code === 0 ? resolve() : reject(new Error(`pg_dump exited ${code}`)),
   );

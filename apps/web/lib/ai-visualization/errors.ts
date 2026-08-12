@@ -1,7 +1,8 @@
 import type { AiVisualizationErrorCode } from './types';
 
 const SAFE_MESSAGES: Record<AiVisualizationErrorCode, string> = {
-  AI_DISABLED: 'AI-визуализация временно недоступна. Вы можете добавить материал в корзину или написать нам в WhatsApp.',
+  AI_DISABLED:
+    'AI-визуализация временно недоступна. Вы можете добавить материал в корзину или написать нам в WhatsApp.',
   INVALID_IMAGE: 'Не удалось обработать фотографию. Выберите другое фото окна.',
   IMAGE_TOO_LARGE: 'Фотография слишком большая. Выберите другое фото или уменьшите его.',
   IMAGE_TOO_SMALL: 'Фотография слишком маленькая. Выберите более чёткое фото окна.',
@@ -10,11 +11,13 @@ const SAFE_MESSAGES: Record<AiVisualizationErrorCode, string> = {
   MATERIAL_IMAGE_UNAVAILABLE: 'Изображение выбранного материала временно недоступно.',
   CONSENT_REQUIRED: 'Подтвердите согласие на обработку фотографии.',
   RATE_LIMITED: 'Слишком много попыток. Подождите немного и попробуйте снова.',
-  DAILY_LIMIT_REACHED: 'Лимит AI-визуализаций на сегодня исчерпан. Вы можете добавить материал в корзину или написать нам в WhatsApp.',
+  DAILY_LIMIT_REACHED:
+    'Лимит AI-визуализаций на сегодня исчерпан. Вы можете добавить материал в корзину или написать нам в WhatsApp.',
   JOB_ALREADY_RUNNING: 'Визуализация уже создаётся. Дождитесь результата текущей задачи.',
   PROVIDER_UNAVAILABLE: 'AI-визуализация временно недоступна. Попробуйте позже.',
   PROVIDER_RATE_LIMITED: 'Сервис визуализации временно перегружен. Попробуйте немного позже.',
-  PROVIDER_REJECTED: 'Не удалось создать визуализацию по этой фотографии. Выберите другое фото и попробуйте снова.',
+  PROVIDER_REJECTED:
+    'Не удалось создать визуализацию по этой фотографии. Выберите другое фото и попробуйте снова.',
   OUTPUT_INVALID: 'Не удалось получить готовое изображение. Попробуйте создать ещё один вариант.',
   STORAGE_UNAVAILABLE: 'Хранилище фотографий временно недоступно. Попробуйте позже.',
   JOB_EXPIRED: 'AI-визуализация больше недоступна.',
@@ -74,4 +77,3 @@ export function safeAiError(error: unknown): AiVisualizationError {
 export function safeAiMessage(code: AiVisualizationErrorCode): string {
   return SAFE_MESSAGES[code];
 }
-

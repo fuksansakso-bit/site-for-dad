@@ -1,5 +1,17 @@
 # Deployment and release specification PROJECT_NAME
 
+## Phase 2C Preview delivery profile
+
+Phase 2C is review-only: push `phase/2c-final-premium-design` and the safety tag
+to `https://github.com/fuksansakso-bit/site-for-dad.git`, open the exact Draft
+PR, and let the target-account Git integration build `apps/web`. Preview secrets
+are Vercel-scoped and absent from Git/client artifacts. The Product Owner has
+reserved direct Preview inspection; until its target-account URL, READY state
+and smoke evidence are recorded, QG-666 remains open and no passed/production
+claim is allowed. The historical Preview in another Vercel account is expressly
+not Phase 2C evidence. Production promotion, alias assignment and merge remain
+forbidden.
+
 ## Phase 2B deployment profile
 
 Apply the additive Phase 2B migration before enabling the feature, verify both buckets remain private, then inject `POLZA_AI_API_KEY`, optional Polza base/model settings, AI limits, bucket names and `CRON_SECRET` only into server environments. `AI_VISUALIZER_ENABLED=false` is the default and a missing Polza key or service-role configuration fails closed; production never selects the mock provider implicitly. `apps/web/vercel.json` schedules protected `/api/internal/ai-cleanup` daily. Current local evidence is implementation-complete only: live Polza, remote RLS/Storage and cron execution remain required before activation.
@@ -12,9 +24,9 @@ Normal startup is `pnpm install` then `pnpm dev` against an environment-selected
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1F.1 Russian VPS templates authorized; production deployment and provider selection remain unexecuted |
-| Версия | 0.6.0 |
-| Дата | 2026-08-12 |
+| Статус | Phase 2C target-repository Draft PR / owner-inspected Preview; production remains unexecuted |
+| Версия | 0.7.0 |
+| Дата | 2026-08-13 |
 | Architecture | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | Quality gate | [SPEC_QUALITY_GATE.md](../../00-global/SPEC_QUALITY_GATE.md) |
 
@@ -171,6 +183,7 @@ Dependencies: architecture/data/API/sync/media/AI/storage/security/performance/o
 
 | Версия | Дата | Изменение |
 |---|---|---|
+| 0.7.0 | 2026-08-13 | Recorded target `fuksansakso-bit` repository, `apps/web` Preview root, owner-inspected target-account Preview evidence boundary and explicit rejection of the historical other-account deployment. |
 | 0.6.0 | 2026-08-12 | Authorized Ubuntu 24.04 Compose/Nginx/image/env/checklist readiness artifacts without executing deployment or binding REG.RU API. |
 | 0.1.0 | 2026-08-02 | Defined vendor-neutral environments, artifact/config/migration/data release, progressive rollout/rollback and release evidence. |
 | 0.2.0 | 2026-08-02 | Phase 1A-only authorization and exact future regional production evidence matrix recorded; no production deployment authorized. |

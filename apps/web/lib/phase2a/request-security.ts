@@ -1,5 +1,7 @@
 import 'server-only';
 
+import { isSameOriginOrLoopbackAlias } from './origin';
+
 type RateBucket = { count: number; resetAt: number };
 
 const buckets = new Map<string, RateBucket>();
@@ -14,11 +16,7 @@ export function isTrustedSameOrigin(request: Request): boolean {
   if (fetchSite && fetchSite !== 'same-origin' && fetchSite !== 'none') return false;
   const origin = request.headers.get('origin');
   if (!origin) return true;
-  try {
-    return new URL(origin).origin === new URL(request.url).origin;
-  } catch {
-    return false;
-  }
+  return isSameOriginOrLoopbackAlias(origin, request.url);
 }
 
 export async function readJsonBody(request: Request): Promise<unknown> {

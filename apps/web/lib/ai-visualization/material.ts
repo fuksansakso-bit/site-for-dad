@@ -45,10 +45,10 @@ export function resolveBlindFamily(input: {
 function safeStoragePath(value: string | null): value is string {
   return Boolean(
     value &&
-      value.length <= 512 &&
-      !value.startsWith('/') &&
-      !value.includes('..') &&
-      /^[\p{L}\p{N}._/-]+$/u.test(value),
+    value.length <= 512 &&
+    !value.startsWith('/') &&
+    !value.includes('..') &&
+    /^[\p{L}\p{N}._/-]+$/u.test(value),
   );
 }
 
@@ -119,7 +119,7 @@ export async function downloadValidatedMaterialImage(
   try {
     return await validateMaterialImage(
       await data.arrayBuffer(),
-      data.type ? data.type.split(';')[0] ?? null : null,
+      data.type ? (data.type.split(';')[0] ?? null) : null,
     );
   } catch (error) {
     throw new AiVisualizationError('MATERIAL_IMAGE_UNAVAILABLE', { cause: error });

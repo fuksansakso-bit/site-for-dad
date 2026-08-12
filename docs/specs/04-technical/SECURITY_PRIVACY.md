@@ -184,10 +184,19 @@ Phase 1E local/CI checkout uses synthetic contact data only. A 256-bit guest tok
 
 Dependencies: all specs, legal review, provider/hosting/storage/auth/AI ADR/evaluation. Open: `TBD-PRIV-*`, `TBD-ACCOUNT-*`, `TBD-INFRA-*`, controller/legal docs, exact retention/RPO/RTO, providers/regions/subprocessors, incident owners/timings, vulnerability SLAs and support access. Risks: legal incompleteness, public storage, IDOR, provider training/retention, secret/log leakage, incomplete deletion and security controls deferred after launch.
 
-## 21. History
+## 21. Phase 2C exact-price security controls
+
+- **P2C-SEC-009 — MUST:** AMIGO calculator traffic is server-only and restricted to the exact pinned HTTPS origin plus `/api/calculate`; redirects, arbitrary URLs/paths and browser transport are rejected.
+- **P2C-SEC-010 — MUST:** transport uses bounded timeout, serialized per-instance concurrency, existing public rate limit, response byte cap and strict JSON/currency/positive-integer validation.
+- **P2C-SEC-011 — MUST:** only service-role code reads/writes exact cache tables and invokes order creation; anonymous/authenticated roles receive only the governed public views.
+- **P2C-SEC-012 — MUST:** price/order commands resolve mappings from active database rows and verify the complete cache tuple inside PostgreSQL, preventing client amount/version/model tampering.
+- **P2C-SEC-013 — MUST:** external bodies, source URLs, calculator IDs and errors are excluded from logs/public failures; the adapter uses no supplier credential, cookie, login or CAPTCHA bypass.
+
+## 22. History
 
 | Версия | Дата | Изменение |
 |---|---|---|
+| 0.12.0 | 2026-08-13 | Added pinned-origin, bounded-response, service-role/cache and database revalidation controls for the AMIGO exact-price adapter. |
 | 0.11.0 | 2026-08-12 | Authorized Argon2id/login/session controls, public technical-data redaction and quote-only price authority. |
 | 0.1.0 | 2026-08-02 | Defined threat model, mandatory controls, data inventory, provider/media/privacy/retention/incident and test contracts without invented policy values. |
 | 0.2.0 | 2026-08-02 | Recorded verified synthetic Foundation controls while retaining all PII/media/legal/provider production gates. |

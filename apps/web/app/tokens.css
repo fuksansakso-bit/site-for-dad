@@ -1,0 +1,77 @@
+:root {
+  color-scheme: light;
+
+  --color-canvas: #f3f0e9;
+  --color-surface: #fbf9f4;
+  --color-surface-raised: #ffffff;
+  --color-ink: #171816;
+  --color-muted: #686b65;
+  --color-subtle: #8a8d86;
+  --color-charcoal: #1b1d1a;
+  --color-near-black: #111310;
+  --color-walnut: #644b38;
+  --color-bronze: #a98564;
+  --color-gold: #b79a63;
+  --color-sage: #6e766a;
+  --color-success: #356b4c;
+  --color-warning: #9a6c2e;
+  --color-error: #9c3f3b;
+  --color-line: rgb(23 24 22 / 13%);
+  --color-line-strong: rgb(23 24 22 / 24%);
+  --color-overlay: rgb(17 19 16 / 72%);
+
+  --font-ui: var(--font-manrope), Manrope, Inter, system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-cormorant), 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+
+  --text-xs: clamp(0.73rem, 0.7rem + 0.08vw, 0.78rem);
+  --text-sm: clamp(0.84rem, 0.8rem + 0.12vw, 0.92rem);
+  --text-base: clamp(0.98rem, 0.94rem + 0.15vw, 1.06rem);
+  --text-lg: clamp(1.08rem, 1rem + 0.32vw, 1.28rem);
+  --text-xl: clamp(1.3rem, 1.1rem + 0.72vw, 1.75rem);
+  --text-2xl: clamp(1.75rem, 1.32rem + 1.55vw, 2.8rem);
+  --text-display: clamp(3rem, 1.65rem + 5.2vw, 7.4rem);
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+
+  --radius-xs: 0.45rem;
+  --radius-sm: 0.7rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.45rem;
+  --radius-xl: 2rem;
+  --radius-pill: 999px;
+
+  --shadow-soft: 0 1px 0 rgb(255 255 255 / 70%) inset, 0 16px 48px rgb(36 31 26 / 7%);
+  --shadow-raised: 0 1px 0 rgb(255 255 255 / 80%) inset, 0 24px 80px rgb(36 31 26 / 12%);
+  --shadow-float: 0 28px 90px rgb(17 19 16 / 18%);
+
+  --layout-wide: 90rem;
+  --layout-content: 75rem;
+  --layout-reading: 46rem;
+
+  --motion-instant: 120ms;
+  --motion-fast: 180ms;
+  --motion-base: 260ms;
+  --motion-slow: 420ms;
+  --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  /* Compatibility aliases while route components migrate to semantic names. */
+  --ink: var(--color-ink);
+  --muted: var(--color-muted);
+  --paper: var(--color-canvas);
+  --card: var(--color-surface-raised);
+  --accent: var(--color-walnut);
+  --line: var(--color-line);
+  --danger: var(--color-error);
+}

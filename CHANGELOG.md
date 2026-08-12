@@ -5,9 +5,32 @@
 
 ## [Unreleased]
 
+- Recorded the Phase 2C delivery boundary: 113-document validation, 6 Node + 55 Vitest + 6 Chromium checks, 13 visual baselines, final 32-item report, Ready target-account Vercel branch Preview and unmerged Draft PR #1. Direct Product Owner Preview inspection, the complete AI family-quality matrix, merge and production promotion remain explicitly open.
+- Verified the real paid AI path after owner-authorized balance top-up: one Zebra case completed through private Supabase upload, Polza/Gemini create/poll, 142,600-byte private result import, 1,500×937 before/after rendering and zero-object owned cleanup. Two paid diagnostic jobs cost 15.70932384 ₽ in total; the remaining multi-family quality matrix and production gates stay explicit.
+- Fixed the real AI visualizer signed-upload race found in local Supabase/Polza QA: a successful direct private upload is now confirmed through bounded idempotent browser retries and bounded server-side Storage visibility retries instead of failing immediately with a false storage outage. Deleting an interrupted upload now also preserves the database lifecycle invariant instead of inventing a generation completion timestamp.
+- Updated the Polza Media adapter from paid live evidence to accept both the documented single result object and Polza's observed single-item result array while continuing to reject empty, multiple or malformed result payloads.
+
 ### Added
 
-- Completed Phase 2B implementation in Draft PR #7: private direct upload, asynchronous Polza Media lifecycle and result import, hidden versioned family prompt, guest ownership, idempotency/cost controls, 24-hour cleanup, responsive before/after, cart/request linkage and safe administration. Local unit/browser/security/build gates pass; zero live Polza calls and unexecuted cloud RLS/Storage/cron are explicitly recorded as `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`.
+- `OWNER-DECISION-025` authorizes the narrow Phase 2C catalog/pricing repair requested by the Product Owner: new quotes remove the 1,500-ruble local minimum and every manager-price placeholder; each public material requires an active versioned AMIGO `FROM` amount plus exact material/model calculator mapping, the customer supplies only material/width/height, incomplete rows fail publication, and historical quote/order snapshots remain immutable.
+
+- Activated exact version `amigo-67c782a10449cdb7`: 1,131 of 1,428 retained materials are public across seven parent groups, including 137 Zebra fabrics; 297 incomplete rows are hidden, exact cache/order rollback and OWNER login were verified against the connected Supabase project.
+
+- Rebuilt AI visualization as the same premium interior-tech system rather than a separate utility shell: a connected five-step track now fills completed segments and runs a reduced-motion-safe light pulse through the active segment; material, photo, consent, generation, before/after, disabled, error and deletion states share private-data guidance and real configured retention. The dated partner-scene QA now includes one complete paid Zebra provider/result/import/delete pass; remaining family-quality coverage stays pending.
+
+- Redesigned the complete guest conversion path from source-backed calculator through reactive local cart, checkout and request summary: active-version exact AMIGO repricing, resilient loading/error/empty states, quantity editing, optional AI linkage, privacy-safe contact form, WhatsApp handoff and a real copyable request URL now share the final premium interface.
+
+- Activated the retained Phase 2A catalog against the configured Supabase project after the owner applied migrations: 19 published categories, 1,428 published materials, one settings row and 1,371 checksum-addressed WebP objects passed idempotent import, public/service REST count checks and browser rendering with no invented orders or portfolio work. Local Next.js and cloud operator commands now use ignored `apps/web/.env.local` as the single canonical environment file.
+
+- Redesigned the source-backed catalog and material detail: category tabs, deferred search, premium availability/type filters, stable sorting, incremental 24-card rendering, responsive optimized images, honest empty/unavailable states, current AMIGO `FROM` amount on every public card, semantic breadcrumbs, material facts/order panel, settings-backed service facts, related materials and conditional AI entry points.
+
+- Added the bounded first-visit starfield intro with skip, reduced-motion bypass, DPR/frame caps, visibility pause and CSS fallback; rebuilt the landing as a source-backed interior-tech journey with exact owner-approved hero copy, real published categories/materials/portfolio, conditional AI and WhatsApp entry points, calculator/trust/AMIGO/FAQ sections and honest empty states without invented business facts.
+
+- Established the Phase 2C visual foundation: approved semantic palette/spacing/radius/shadow/motion tokens, `next/font` Manrope + Cormorant Garamond Cyrillic typography, reusable UI primitives, centralized Russian presentation helpers, neutral public brand fallback, responsive site chrome/footer and safe-area mobile navigation.
+
+- `OWNER-DECISION-024`, QG-601–670 and the active Phase 2C plan authorize final light-first premium interior-tech presentation from target-main `bdaa053`: central tokens/local typography, bounded first-visit starfield, complete public/admin route redesign, responsive/accessibility/performance/visual evidence and target-account Vercel Preview. Existing Supabase/Polza/catalog/price/privacy boundaries remain fixed; final brand/logo, merge and production stay gated.
+
+- Completed Phase 2B implementation in Draft PR #7: private direct upload, asynchronous Polza Media lifecycle and result import, hidden versioned family prompt, guest ownership, idempotency/cost controls, 24-hour cleanup, responsive before/after, cart/request linkage and safe administration. The original branch-close report recorded zero live calls; the 2026-08-13 addendum supersedes that runtime evidence with a successful Zebra case while retaining the formal pending status for the incomplete family matrix.
 
 - `OWNER-DECISION-023`, ADR-0014 and the active Phase 2B plan authorize a simple guest-only Polza AI Media API window visualization from merged Phase 2A commit `49ce3679de28c612662f78273cd265d73221163d`: direct private Supabase upload, server-only Polza key/prompt, asynchronous job/result import, ownership, consent, limits, 24-hour cleanup and approximate before/after. Direct Google API/SDK, SAM/segmentation/masks, Python/GPU/worker service, accounts, final redesign, production launch and Phase 2C remain excluded.
 
@@ -149,6 +172,8 @@
 - `TBD-LEAD-001`, `TBD-SYSTEM-001`, `TBD-HORIZONTAL-001`, `TBD-VERTICAL-001` и `TBD-SERVICE-001`–`003` сохранены как решённые записи с датой и нормативными ссылками.
 
 ### Fixed
+
+- Phase 2A transform now deterministically collapses repeated slug separators before Supabase import and rejects post-normalization collisions, fixing nine retained AMIGO category slugs that correctly preserved source identity but violated the target public-slug CHECK constraint. Same-origin protection also recognizes only equivalent loopback aliases with matching protocol and port, so local `127.0.0.1` browser checks work without accepting external origins.
 
 - The 2,048-material scale fixture now reuses the same hex value for every occurrence of one synthetic color identity, so the production fail-closed public-slug collision guard tests valid scale data instead of rejecting internally inconsistent fixture colors.
 - The catalog synchronization integration gate now asserts the canonical route-safe public slug contract instead of the superseded Phase 1B.1 `amigo-category-*` prefix, keeping the test source-neutral after full-catalog slug normalization.

@@ -4,15 +4,27 @@ import { createSupabaseAdminClient } from '../phase2a/supabase';
 import { getAiVisualizerServerConfig } from './config';
 import { getEffectiveAiSettings } from './job-data';
 
-export async function isAiVisualizerAvailable(): Promise<boolean> {
+export type PublicAiAvailability = {
+  enabled: boolean;
+  retentionHours: number;
+};
+
+export async function getAiVisualizerPublicAvailability(): Promise<PublicAiAvailability> {
+  const config = getAiVisualizerServerConfig();
+  const fallback = { enabled: false, retentionHours: config.retentionHours };
   const client = createSupabaseAdminClient();
-  if (!client) return false;
+  if (!client) return fallback;
   try {
-    const config = getAiVisualizerServerConfig();
     const settings = await getEffectiveAiSettings(client, config);
-    return settings.enabled;
+    return {
+      enabled: settings.enabled,
+      retentionHours: settings.retentionHours,
+    };
   } catch {
-    return false;
+    return fallback;
   }
 }
 
+export async function isAiVisualizerAvailable(): Promise<boolean> {
+  return (await getAiVisualizerPublicAvailability()).enabled;
+}

@@ -1,8 +1,8 @@
 # Implementation roadmap PROJECT_NAME
 
-## Phase 2B completion boundary
+## Active transition — Phase 2C
 
-Phase 2B implementation is complete on `phase/2b-gemini-ai-visualization` with Draft PR #7 and status `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`. The remaining work is activation evidence only: apply the additive migration to the selected Supabase project, verify remote private Storage/RLS/cron, provide the server-only Polza key and run the bounded live QA. This status does not authorize merge, production launch or Phase 2C.
+`OWNER-DECISION-024` authorizes final presentation and release polish from target-main baseline `bdaa053eee6491a9286355707008a39cbac1abff`. `OWNER-DECISION-025` narrowly authorizes the AMIGO exact-price replacement implemented through ADR-0015: 1,131 retained materials with complete current card-price/calculator mappings are active, incomplete rows are hidden, and new quotes accept material + width + height without the retired local minimum. One rights-cleared Zebra case passes the complete real Supabase/Polza/private-result/delete path; the Phase 2B family matrix remains open. Phase 2C implementation and Draft PR are complete and stop at owner-reviewed Vercel Preview without merge or production promotion.
 
 ## Active transition — Phase 2A
 
@@ -12,10 +12,10 @@ Phase 2B implementation is complete on `phase/2b-gemini-ai-visualization` with D
 
 | Поле | Значение |
 |---|---|
-| Фаза документа | Phase 1A–1F completed; Phase 2A simplification authorized; Phase 1F.1 superseded as active trajectory; AI/final redesign hold |
-| Статус roadmap | **PASSED_PHASE_2A_CODE_AND_PREVIEW / CLOUD_ACTIVATION_PENDING / PHASE 1G+ HOLD** |
+| Фаза документа | Phase 1A–1F and Phase 2A completed; Phase 2B live Zebra passed/family matrix pending; Phase 2C final experience implementation complete/owner Preview pending |
+| Статус roadmap | **IMPLEMENTATION_COMPLETE_OWNER_PREVIEW_PENDING / PHASE_2B_FAMILY_MATRIX_PENDING / PRODUCTION HOLD** |
 | Scope | [MVP_SCOPE](MVP_SCOPE.md) |
-| Планы / evidence | Phase 1A–1F reports; Phase 2A [plan](active/PHASE_2A_SUPABASE_VERCEL_MIGRATION_PLAN.md), ADR-0013 and QG-481–540 |
+| Планы / evidence | Phase 1A–2B reports; Phase 2C [plan](active/PHASE_2C_FINAL_DESIGN_PLAN.md), `OWNER-DECISION-024/025`, ADR-0015 and QG-601–670 |
 
 - **ROADMAP-001 — MUST:** фазы выполняются по порядку 1A–1H; параллельный research MAY идти, но dependent implementation не обходит entry gate.
 - **ROADMAP-002 — MUST:** каждая возможность включается feature flag только после собственных acceptance/security/data gates; наличие кода не равно production activation.
@@ -179,11 +179,26 @@ Execution contract: [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN](active/PHASE_1B2_FULL_AM
 | Acceptance criteria | Four prompt families, one 1K result, server-only keys/prompt, private Supabase result, idempotency/cost/rate limits, expiry/delete and responsive mobile flow; live or exact pending-live status. |
 | Тесты | Unit/integration/static+cloud RLS/browser/security/recovery/build; material/path/SSRF/MIME/replay/cross-session/cron/key leak; 320–430 mobile; at most three rights-cleared live calls when key exists. |
 | Риски | Private-room transfer, provider contract/model drift, hallucinated scene/material, double spend, temporary URL/SSRF abuse and incomplete cleanup. |
-| Definition of Done | QG-551–600, clean ten commits, report, push and Draft PR; mock/cloud/live evidence are labelled separately and Phase 2C remains unstarted. |
+| Definition of Done | QG-551–600, clean ten commits, report, push and Draft PR; mock/cloud/live evidence are labelled separately and Phase 2C was not implied by completion. |
 | Запрещённые изменения | Direct Google SDK/key, SAM/segmentation/masks/four points, Python/GPU/worker/service, training, account/payment, final redesign, production launch, merge or Phase 2C. |
 | Rollback | Disable environment/database kill switches, deny new upload/generation, expire/delete private objects, retain safe job/audit and keep catalog/calculator/cart/request fully usable. |
 
-`OWNER-DECISION-023` authorizes this phase from merged-main commit `49ce3679de28c612662f78273cd265d73221163d`. Completion with no Polza key is `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`; live pass requires bounded Polza and private Supabase evidence. Neither starts Phase 2C.
+`OWNER-DECISION-023` authorized this phase from merged-main commit `49ce3679de28c612662f78273cd265d73221163d`. Completion with no Polza key is `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`; live pass still requires bounded Polza and private Supabase evidence. Phase 2C begins only through the later, separate `OWNER-DECISION-024` below.
+
+## 8.1. PHASE 2C — FINAL PREMIUM DESIGN AND RELEASE POLISH
+
+| Поле | Содержание |
+|---|---|
+| ID / цель | **ROADMAP-2C-001:** turn the complete guest/staff runtime into one production-grade light-first premium interior-tech experience without changing business or provider authority. |
+| Зависимости | Target-main `bdaa053`; completed Phase 2B implementation; `OWNER-DECISION-024`; existing UX/accessibility/performance/test specs; approved catalog/portfolio assets. |
+| Входные условия | QG-601–610 passed; clean branch/tag; palette/type/motion/route/viewport/visual/commit contracts fixed; brand and live-cloud gaps visible. |
+| Deliverables | Central design system and fonts; bounded starfield; complete landing; redesigned catalog/material/calculator/cart/checkout/request/AI/admin; mobile navigation; states/mappings; accessibility/performance/SEO/analytics controls; automated visual/route QA; final docs. |
+| Acceptance criteria | QG-611–670, scenarios A–G, ten viewports, thirteen visual baselines, exact route audit, clean twelve commits, target-account READY Preview and unmerged Draft PR. |
+| Риски | invented business claims, supplier/portfolio confusion, inaccessible decoration, intro/bundle regressions, hidden feature-off/credential failures, mobile fixed-nav overlap and public technical labels. |
+| Запрещённые изменения | Catalog discovery/import, price/provider/data model expansion not required for settings presentation, direct Google/SAM/Python/GPU/worker, accounts/payment, data deletion, merge, production alias/promotion. |
+| Rollback | Disable intro/AI entry presentation independently, revert reviewable visual commits, keep data migrations additive if any and restore the protected baseline without touching Supabase/catalog/private media. |
+
+Execution contract: [PHASE_2C_FINAL_DESIGN_PLAN](active/PHASE_2C_FINAL_DESIGN_PLAN.md). Missing final brand or live Polza/cloud credentials selects the documented fallback; neither can be represented as production-ready evidence.
 
 ## 9. PHASE 1H — HARDENING AND RELEASE
 
@@ -212,6 +227,7 @@ Execution contract: [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN](active/PHASE_1B2_FULL_AM
 | 1E → 1F | Lead/admin operations and identity/recovery gate |
 | 1F → 1G | Private media/provider/privacy/evaluation/cost gate |
 | 1G → 1H | MVP feature freeze and complete release candidate |
+| 2B → 2C | Complete Phase 2B implementation + separate `OWNER-DECISION-024` + QG-601–610 |
 
 ## 11. История
 
@@ -234,3 +250,4 @@ Execution contract: [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN](active/PHASE_1B2_FULL_AM
 | 2.4.0 | 2026-08-09 | Phase 1F marked passed with staff-only passwordless auth, OWNER/ADMIN/MANAGER lifecycle, unified Russian admin, requests/CustomerContact notes, portfolio, SiteSettings, audit/jobs, preserved guest flow and exact CI-equivalent evidence; Phase 1G remains unauthorized. |
 | 2.5.0 | 2026-08-12 | `OWNER-DECISION-019/020`, ADR-0012 and QG-421–480 authorize only Phase 1F.1 MVP repair, VPS templates and documentation-only next-phase Polza/Gemini boundary; Phase 1G/runtime AI remains prohibited. |
 | 2.6.0 | 2026-08-12 | `OWNER-DECISION-021`, ADR-0013 and QG-481–540 replace the active Phase 1F.1 trajectory with Phase 2A Supabase/Vercel simplification; AI, customer accounts, final redesign and unverified production remain prohibited. |
+| 2.7.0 | 2026-08-12 | Phase 2B implementation is complete/live pending; `OWNER-DECISION-024`, active Phase 2C plan and QG-601–670 authorize final premium presentation, motion, ergonomics and Preview-only release polish while production/runtime-provider scope stays fixed. |

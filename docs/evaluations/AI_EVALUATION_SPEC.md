@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Implementation/mock evaluation complete; live visual QA pending credentials |
-| Версия | 0.4.0 |
-| Дата | 2026-08-12 |
+| Статус | Implementation complete; one live Zebra technical/visual case passed; multi-family matrix pending |
+| Версия | 0.5.0 |
+| Дата | 2026-08-13 |
 | Provider/model | Polza AI / `google/gemini-3.1-flash-image` through Media API |
 | Prompt | `window-blinds-polza-v1` |
 
@@ -34,7 +34,7 @@ Required suites:
 - browser five-state flow and before-after/mobile tests with explicit test-only provider/storage fixtures;
 - lint, typecheck, unit/integration/RLS/browser/security/secret scan, production build and Vercel configuration validation.
 
-Cloud RLS/storage/cron and live Polza tests are `NOT_RUN_NO_CREDENTIALS` when credentials are absent; prepared tests and local mocks may pass but cannot be relabelled live.
+When credentials are absent, cloud RLS/storage/cron and live Polza tests are `NOT_RUN_NO_CREDENTIALS`; prepared tests and local mocks may pass but cannot be relabelled live. The 2026-08-13 execution used the configured cloud Supabase project and paid Polza account for one rights-cleared Zebra case and is recorded separately from the still-incomplete family matrix.
 
 ## 3. Live review record
 

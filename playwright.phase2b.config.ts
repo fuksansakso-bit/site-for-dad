@@ -30,4 +30,3 @@ export default defineConfig({
   },
   projects: [{ name: 'chromium-phase2b', use: { ...devices['Desktop Chrome'] } }],
 });
-

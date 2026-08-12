@@ -59,12 +59,7 @@ export async function DELETE(request: Request, context: Context) {
   const requestCorrelationId = correlationId(request);
   try {
     const { client, guest, publicReference } = await contextValues(request, context);
-    await deleteOwnedAiJob(
-      client,
-      getAiVisualizerServerConfig(),
-      publicReference,
-      guest.hash,
-    );
+    await deleteOwnedAiJob(client, getAiVisualizerServerConfig(), publicReference, guest.hash);
     return new NextResponse(null, {
       headers: { 'Cache-Control': 'no-store', 'X-Correlation-ID': requestCorrelationId },
       status: 204,
@@ -73,4 +68,3 @@ export async function DELETE(request: Request, context: Context) {
     return aiErrorResponse(error, requestCorrelationId);
   }
 }
-

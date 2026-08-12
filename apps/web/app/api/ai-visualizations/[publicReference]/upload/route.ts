@@ -2,10 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { getAiVisualizerServerConfig } from '../../../../../lib/ai-visualization/config';
 import { AiVisualizationError } from '../../../../../lib/ai-visualization/errors';
-import {
-  getOwnedAiJob,
-  requireAiEnabled,
-} from '../../../../../lib/ai-visualization/job-data';
+import { getOwnedAiJob, requireAiEnabled } from '../../../../../lib/ai-visualization/job-data';
 import {
   aiErrorResponse,
   assertTrustedMutation,
@@ -61,14 +58,8 @@ export async function POST(request: Request, context: Context) {
     if (!['CREATED', 'UPLOAD_PENDING'].includes(job.status)) {
       throw new AiVisualizationError('INVALID_IMAGE', { status: 409 });
     }
-    const uploadIdempotencyHash = hashAiIdempotencyKey(
-      guest.hash,
-      parsed.data.idempotencyKey,
-    );
-    if (
-      job.upload_idempotency_hash &&
-      job.upload_idempotency_hash !== uploadIdempotencyHash
-    ) {
+    const uploadIdempotencyHash = hashAiIdempotencyKey(guest.hash, parsed.data.idempotencyKey);
+    if (job.upload_idempotency_hash && job.upload_idempotency_hash !== uploadIdempotencyHash) {
       throw new AiVisualizationError('INVALID_IMAGE', { status: 409 });
     }
     const path = `${job.id}/window.${extensionForMime(parsed.data.mimeType)}`;
@@ -86,7 +77,8 @@ export async function POST(request: Request, context: Context) {
         .eq('id', job.id)
         .eq('guest_session_hash', guest.hash)
         .eq('status', 'CREATED');
-      if (updateError) throw new AiVisualizationError('STORAGE_UNAVAILABLE', { cause: updateError });
+      if (updateError)
+        throw new AiVisualizationError('STORAGE_UNAVAILABLE', { cause: updateError });
     }
     const { data, error } = await client.storage
       .from(config.inputBucket)

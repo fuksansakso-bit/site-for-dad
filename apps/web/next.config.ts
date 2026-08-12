@@ -3,7 +3,7 @@ import type { NextConfig } from 'next';
 const securityHeaders = [
   { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
   { key: 'Cross-Origin-Resource-Policy', value: 'same-origin' },
-  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+  { key: 'Permissions-Policy', value: 'camera=(self), microphone=(), geolocation=()' },
   { key: 'Referrer-Policy', value: 'no-referrer' },
   {
     key: 'Strict-Transport-Security',

@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 /* eslint-disable @next/next/no-img-element -- paths are runtime Supabase Storage objects configured by migration. */
 import { getMaterial, publicImageUrl } from '../../../lib/phase2a/data';
 import { formatMoney } from '../../../lib/phase2a/pricing';
@@ -22,6 +23,9 @@ export default async function MaterialPage({ params }: { params: Promise<{ slug:
               ? 'Стоимость уточнит менеджер'
               : `${formatMoney(material.display_price_kopecks)} ${material.display_price_suffix ?? ''}`}
           </p>
+          <Link className="button visualizer-entry" href={`/visualizer?material=${encodeURIComponent(material.slug)}`}>
+            Примерить на своём окне
+          </Link>
           <AddToCart materialSlug={material.slug} />
         </div>
       </div>

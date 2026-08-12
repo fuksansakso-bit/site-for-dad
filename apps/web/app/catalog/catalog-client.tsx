@@ -46,7 +46,8 @@ export function CatalogClient({ materials }: { materials: PublicMaterial[] }) {
       <p className="muted">Найдено: {filtered.length}</p>
       <div className="grid">
         {filtered.map((m) => (
-          <Link className="card" key={m.slug} href={`/catalog/${m.slug}`}>
+          <article className="card" key={m.slug}>
+            <Link href={`/catalog/${m.slug}`}>
             {publicImageUrl(m.primary_image_path) && (
               <img loading="lazy" src={publicImageUrl(m.primary_image_path)!} alt="" />
             )}
@@ -61,7 +62,16 @@ export function CatalogClient({ materials }: { materials: PublicMaterial[] }) {
                 ? 'Стоимость уточнит менеджер'
                 : `${formatMoney(m.display_price_kopecks)} ${m.display_price_suffix ?? ''}`}
             </p>
-          </Link>
+            </Link>
+            {m.primary_image_path && (
+              <Link
+                className="button secondary catalog-visualizer-button"
+                href={`/visualizer?material=${encodeURIComponent(m.slug)}`}
+              >
+                Примерить на своём окне
+              </Link>
+            )}
+          </article>
         ))}
       </div>
     </>

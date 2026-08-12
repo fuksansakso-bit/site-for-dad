@@ -14,7 +14,7 @@ export function createWhatsAppUrl(
         `${item.name} (${item.article}), ${item.widthMm}×${item.heightMm} мм, ${item.quantity} шт.`,
     ),
     total === null
-      ? 'Стоимость уточнит менеджер.'
+      ? 'Цена не была сохранена.'
       : `Предварительная стоимость: ${formatMoney(total)}.`,
     ...(summaryUrl ? [`Резюме заявки: ${summaryUrl}`] : []),
   ];

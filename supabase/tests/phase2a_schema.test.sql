@@ -1,0 +1,16 @@
+begin;
+select plan(12);
+select has_table('public','materials','materials table exists');
+select has_table('public','orders','orders table exists');
+select has_column('public','materials','legacy_source_id','stable legacy identity exists');
+select has_column('public','materials','fixed_price_kopecks','fixed price is explicit');
+select row_security_is_enabled('public','categories','categories RLS enabled');
+select row_security_is_enabled('public','materials','materials RLS enabled');
+select row_security_is_enabled('public','orders','orders RLS enabled');
+select row_security_is_enabled('public','order_items','order_items RLS enabled');
+select row_security_is_enabled('public','staff_profiles','staff RLS enabled');
+select has_function('public','phase2a_import',array['jsonb','text','text'],'transactional import RPC exists');
+select results_eq($$select count(*)::bigint from storage.buckets where id in ('catalog','portfolio','branding')$$,$$values (3::bigint)$$,'three storage buckets');
+select results_eq($$select count(*)::bigint from pg_policies where schemaname='public' and tablename='orders' and roles @> array['anon']::name[]$$,$$values (0::bigint)$$,'anon has no order policy');
+select * from finish();
+rollback;

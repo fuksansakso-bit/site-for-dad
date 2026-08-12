@@ -1,0 +1,224 @@
+# Cart, checkout and orders specification PROJECT_NAME
+
+## Phase 2B visualization linkage
+
+A cart item MAY carry one opaque `aiVisualizationPublicReference`. Checkout resolves it server-side only when it belongs to the same guest and material, then stores an optional internal job relation; no Base64 or private URL enters cart/order data. AI state never participates in price calculation. Expiry or deletion removes only media access, not material, dimensions, immutable price snapshots or request validity. WhatsApp continues to contain the existing safe request-summary link and never claims that a private image is attached automatically.
+
+## Phase 2A guest request
+
+Guest cart `localStorage` stores only material identity, dimensions and quantity. Checkout re-resolves materials and recalculates server-side, then writes immutable snapshots and an enumeration-resistant `public_reference`. Confirmation presents request number, preliminary total/manual status, free services, 2–7 calendar days, 12-month warranty and WhatsApp link to `79635851036`; it never claims message delivery.
+
+## 0. Метаданные
+
+| Поле | Значение |
+|---|---|
+| Статус | Phase 1E passed; Phase 1F.1 QuoteSnapshot cart repair authorized and in progress |
+| Версия | 0.4.0 |
+| Дата | 2026-08-12 |
+| Pricing | [PRICING_CALCULATOR_SPEC.md](PRICING_CALCULATOR_SPEC.md) |
+| Installment | [INSTALLMENT_SPEC.md](INSTALLMENT_SPEC.md) |
+
+## 1. Назначение и границы
+
+Документ задаёт multi-item cart/project, save/share, WhatsApp/measurement handoff, lead, quote and order lifecycle. PROJECT_NAME is consultation/measurement-driven; public handoff is not automatic purchase or order confirmation.
+
+In scope: guest/customer ownership, item revisions/quantity, totals/statuses, stale price handling, share-safe snapshot, minimal contact data, free measurement request, manager workflow, confirmed quote relationship, order/client-safe statuses, cancellation/warranty linkage.
+
+Out of scope: online payment, unconfirmed scheduling UI, automated installment approval, final manufacturing workflow/stock reservation before business process approval and legal terms not provided.
+
+## 2. Actors and permissions
+
+Guest/customer manages own cart/project and creates handoff. Manager handles assigned lead/measurement/quote/order transitions. Admin/owner reviews exceptions and policies. Sync/AI do not create orders. WhatsApp is a communication channel; it is not the source of truth for order state.
+
+## 3. Aggregate model
+
+| Aggregate/entity | Key fields and relationships |
+|---|---|
+| `Project` | ID/revision, guest/account owner, title optional, status, configuration/preview references |
+| `Cart` | ID/revision, owner scope, status, item IDs, totals/status summary, created/updated/expiry |
+| `CartItem` | guest cart, immutable `QuoteSnapshot`, quantity copied from snapshot, optional preview reference, warnings and replacement history |
+| `CartSnapshot` / `CartItemSnapshot` | immutable checkout-time composition with safe labels, quote bytes, quantity, price status/known amount and catalog/price versions |
+| `HandoffSnapshot` | immutable PII-free share-safe request summary, cryptographic public ref, revocation and optional preview reference |
+| `Request` / `OrderInquiry` | request number, guest session, contact/consent, source/purpose, immutable cart snapshot, pricing summary, lifecycle, correlation and audit context |
+| `MeasurementRequest` | lead/project, region/address scope, requested/scheduled/completed/cancelled states |
+| `Quote` | immutable preliminary/manager-confirmed revisions from pricing spec |
+| `Order` | confirmed quote/customer/measurement refs, state, customer-safe mapping, audit |
+| `WarrantyClaim` | order, issue/evidence refs, state/outcome, statutory safeguard |
+
+## 4. Нормативные требования
+
+- **CART-SPEC-001 — MUST:** cart item references an immutable configuration revision; editing creates a new revision and updates only that item.
+- **CART-SPEC-002 — MUST:** quantity is an explicit positive integer within approved limits; duplicate is a separate item identity with copied revision.
+- **CART-SPEC-003 — MUST:** cart supports multiple windows/items with independent validity, price, preview and warning states.
+- **CART-SPEC-004 — MUST:** cart total is shown only for components with a consistent valid interpretation; unavailable/stale items are explicit and never treated as zero-priced products.
+- **CART-SPEC-005 — MUST:** historical quote amount remains visible as historical, but submission requiring current price must revalidate or flag manager confirmation.
+- **CART-SPEC-006 — MUST:** guest use does not require registration; ownership token is scoped/expiring and claim to account is secure/idempotent.
+- **CART-SPEC-007 — MUST:** handoff snapshot is immutable, minimal and separate from mutable cart so manager sees exactly what was sent.
+- **CART-SPEC-008 — MUST:** WhatsApp message is editable and includes opaque reference plus approved summary, not credentials, internal rules/notes or private storage URLs.
+- **CART-SPEC-009 — MUST:** failed WhatsApp deep link offers a confirmed fallback contact/reference without falsely recording a sent message.
+- **CART-SPEC-010 — MUST:** lead creation/submit is idempotent and distinct from opening an external WhatsApp client.
+- **CART-SPEC-011 — MUST:** handoff/lead/measurement request does not create `CONFIRMED` order or promise slot/price/availability.
+- **CART-SPEC-012 — MUST:** free measurement, delivery and installation statements apply only to confirmed assortment and `BUSINESS-REGION-001` scope.
+- **CART-SPEC-013 — MUST:** preliminary lead summary uses confirmed lead time 2–7 calendar days including weekends only with the product/service scope and disclosure defined in global spec; no exact completion date is inferred.
+- **CART-SPEC-014 — MUST:** warranty statement is 12 months from installation/handover with confirmed coverage/exclusions and statutory-rights safeguard; claim process details stay pending.
+- **CART-SPEC-015 — MUST:** manager transitions require role, assignment, current version/state, reason/evidence and audit.
+- **CART-SPEC-016 — MUST:** customer sees only safe mapped order status and public notes; internal notes, costs and staff data remain private.
+- **CART-SPEC-017 — MUST:** manager-confirmed quote is a new revision and never overwrites preliminary quote.
+- **CART-SPEC-018 — MUST:** cancellation/request does not physically delete financial/audit records; access/retention follows legal/privacy policy.
+- **CART-SPEC-019 — MUST:** warranty issue cannot be automatically rejected because order lookup/evidence is incomplete or exclusion causation is unproven.
+- **CART-SPEC-020 — MUST:** duplicate/retry/out-of-order channel callbacks cannot create multiple leads/orders or regress state.
+- **CART-SPEC-021 — MUST:** account/contact/WhatsApp payload collects only data needed for selected purpose and displays required notice/consent.
+- **CART-SPEC-022 — MUST:** cart/contact flow works without standard/AI preview and without AMIGO runtime.
+- **CART-SPEC-023 — MUST:** guest cart is owned by a server-generated random session secret transported only in HttpOnly/SameSite cookie; production uses Secure and every cart/item/request operation rechecks ownership.
+- **CART-SPEC-024 — MUST:** the browser cannot submit an authoritative amount, subtotal, currency, recipient phone or pricing status; each cart mutation resolves the immutable server `QuoteSnapshot` and rejects unknown/mismatched fields.
+- **CART-SPEC-025 — MUST:** cart pricing summary is `FULLY_PRICED` when every active item has `CALCULATED`, `PARTIALLY_PRICED` when calculated and non-numeric items coexist, and `PRICE_ON_REQUEST` when no active item has a numeric amount.
+- **CART-SPEC-026 — MUST:** non-numeric `PRICE_ON_REQUEST` or `MANUAL_REVIEW_REQUIRED` items contribute no amount and are counted explicitly; they are never displayed or aggregated as free.
+- **CART-SPEC-027 — MUST:** checkout requires a positive non-empty cart, valid name/phone/locality, optional bounded address/comment, explicit consent, current guest ownership, origin/CSRF/rate/body limits and an idempotency key.
+- **CART-SPEC-028 — MUST:** accepted checkout persists an immutable cart/item snapshot, known subtotal, cart pricing status, exact CatalogVersion/PriceVersion set, request number, correlation/source/audit context and selected measurement/installment flags in one transaction.
+- **CART-SPEC-029 — MUST:** public reference uses cryptographically secure randomness, is non-sequential/non-PII, stores only a hash for lookup, is revocable and returns a neutral response for unknown/revoked values.
+- **CART-SPEC-030 — MUST:** public request summary contains no contact phone, exact address, internal IDs, staff notes, audit payload, object keys or storage credentials; preview delivery remains through current same-origin server routes and can degrade unavailable.
+- **CART-SPEC-031 — MUST:** `wa.me` handoff recipient is fixed server-side to `79635851036`; message/url are generated from the immutable request snapshot and allow no client redirect/recipient override.
+- **CART-SPEC-032 — MUST:** communication evidence is limited to `REQUEST_CREATED`, `WHATSAPP_LINK_GENERATED`, `WHATSAPP_LINK_OPENED`, `MESSAGE_COPIED`, `STATUS_CHANGED`; `MESSAGE_SENT`, `MESSAGE_DELIVERED` and `MESSAGE_READ` are prohibited without official API evidence.
+- **CART-SPEC-033 — MUST:** request status transitions use `NEW`, `IN_REVIEW`, `CONTACTED`, `CONFIRMED`, `CANCELLED`, are server-authorized/versioned/audited and never mutate quote or request snapshot price fields.
+- **CART-SPEC-034 — MUST:** OWNER/ADMIN may use all Phase 1E request transitions and add internal notes; MANAGER may read, note and use the allowlisted normal transitions but cannot change pinned quote/price/version fields.
+- **CART-SPEC-035 — MUST:** transactional outbox records `request.created`, `cart.checked_out`, optional `measurement.requested` and optional `installment.interest_recorded` after checkout without automatically sending SMS, email or WhatsApp.
+- **CART-SPEC-036 — MUST:** Phase 1E local/CI acceptance uses synthetic contact data; unresolved legal/controller/retention/subprocessor questions continue to block shared/production PII intake rather than receiving invented values.
+
+## 5. Cart and project flows
+
+### Create/add
+
+Create cart under guest scope. Add one exact immutable `QuoteSnapshot`; configuration labels, quantity, status and amount are copied only from that snapshot. Server validates the guest session and quote reference. Same idempotency key returns the prior result.
+
+### Edit/duplicate/remove
+
+Edit returns to the source configuration and, after an explicit new server calculation, creates a new immutable quote snapshot; the cart item then swaps only its quote reference with optimistic concurrency. Duplicate creates a new item identity against the same immutable quote. Remove/clear affects only the cart and never deletes quote history.
+
+### Total/status
+
+Each item has configuration `VALID/MANUAL_REVIEW/INVALID`, price `CURRENT/STALE/UNAVAILABLE`, preview optional and orderability status. Totals explicitly state inclusion. A mixed cart can be sent for manager review, but cannot present incomplete sum as full total.
+
+### Save/claim
+
+Guest cart/project can be claimed after authentication and proof of guest token. Claim is one-time/idempotent; histories, quotes and photo privacy remain. Token rotation/revocation follows account policy.
+
+## 6. Share-safe WhatsApp handoff
+
+Allowed summary:
+
+- safe request number and revocable PII-free public-summary URL;
+- requested purpose: consultation, free measurement or installment inquiry;
+- item count/quantity and safe product/system/material article/name summaries;
+- preliminary total/status/version freshness only where valid;
+- confirmation that preview exists via opaque app reference, not object URL;
+- locality and explicit requested-purpose flags; contact data remains in the private request record and is not placed in the public summary URL;
+- approved local service/lead-time/warranty/neutral installment text.
+
+Prohibited payload:
+
+- photo, mask, private CDN/object/signed URL, auth/guest token;
+- source credentials, full internal pricing formula/margin/override notes;
+- admin comments, other customer's data, raw analytics IDs;
+- unconfirmed exact availability/date/installment terms.
+
+Flow records only `REQUEST_CREATED`, `WHATSAPP_LINK_GENERATED`, `WHATSAPP_LINK_OPENED`, `MESSAGE_COPIED` and `STATUS_CHANGED`. Opening `wa.me` is not evidence that a message was sent, delivered or read.
+
+## 7. Proposed lead/order state machines
+
+### Phase 1E Request / OrderInquiry
+
+`NEW → IN_REVIEW → CONTACTED → CONFIRMED` with `CANCELLED` from `NEW`, `IN_REVIEW` or `CONTACTED`. OWNER/ADMIN may reopen `CANCELLED → IN_REVIEW` only through an audited reasoned command; MANAGER cannot reopen a cancelled request. `CONFIRMED` means the manager confirmed handling/context, not that an `Order` exists. Manufacturing/order transitions remain blocked by `TBD-BIZ-004`.
+
+### Measurement
+
+`REQUESTED → SCHEDULED → COMPLETED` or `CANCELLED`. `SCHEDULED` requires confirmed process/slot; no UI reserves times before `TBD-INSTALL-003`.
+
+### Order
+
+`DRAFT → CONFIRMED → IN_FULFILLMENT → READY/INSTALLATION_SCHEDULED → COMPLETED` with `CANCELLED` only by approved transition. This is a target model, not current operational fact; detailed manufacturing/payment/installation statuses remain TBD.
+
+### Warranty claim
+
+`RECEIVED → REVIEWING → INSPECTION_REQUIRED/DECISION_PENDING → RESOLVED/CLOSED`; exact SLA/evidence/remedies stay `TBD-WARRANTY-001`.
+
+## 8. Transition contract
+
+Each transition has `transitionId`, aggregate ID/revision, from/to state, command ID/idempotency key, actor/capability/assignment, timestamp, reason code/text, evidence refs, public note optional, policy version, correlation and outcome. State cannot be set directly.
+
+Invalid transition returns current safe state/version and allowed next actions without applying partial side effects. External messages/notifications are outbox effects after commit and retry idempotently.
+
+## 9. Validation and invariants
+
+- cart owner and all referenced project/configuration/quote/preview resources match scope;
+- active item quantity positive, item identity unique and references readable;
+- no private URL/token/internal note in handoff snapshot;
+- contact data format/purpose/notice/consent validated;
+- exactly one lead per accepted idempotency command/purpose as policy;
+- preliminary vs confirmed quote types cannot be conflated;
+- order requires allowed lead/customer/quote/measurement prerequisites;
+- state transition is allowed from current version and actor assignment;
+- client-safe state mapping exists before exposure;
+- service/lead/warranty/installment claims use approved content version;
+- cancellation/deletion preserves mandatory audit and removes/restricts private media per policy.
+
+## 10. Errors, edge cases and recovery
+
+| Case | Safe behavior |
+|---|---|
+| Cart item catalog/price retired | Keep historical snapshot; mark stale/manual and prevent false current claim |
+| One item invalid in multi-item cart | Identify it; other items preserved; no misleading full total |
+| Duplicate submit/callback | Same lead/transition result via idempotency |
+| WhatsApp not installed/deep link blocked | Copy contact/reference; no false sent event |
+| Guest token expired | Explain recovery/claim policy without resource leak |
+| Account claim conflict | Deny neutrally, no ownership transfer |
+| Manager concurrent edits | Optimistic state/version conflict |
+| Notification failure after commit | Outbox retry; state remains committed |
+| Customer requests cancel during fulfilment | Record request and route approved policy, not immediate arbitrary state |
+| Warranty order unavailable | Manual verification path, not auto rejection |
+| Photo deleted after handoff | Snapshot shows preview unavailable; order/config data remains |
+
+Source/pricing/AI/WhatsApp outage leaves cart/project and manual contact path. Audit/outbox failures for critical transitions fail closed or use approved durable transactional pattern.
+
+## 11. Security and privacy
+
+Server-side ownership/RBAC, CSRF protection, input/output encoding, contact rate limiting, anti-spam, opaque random refs, expiry/revocation and no account enumeration are required. Public/shared references reveal only allowed snapshot. Contact/address/order/warranty data has purpose, access, retention/delete policy; client photos remain separate private graph. WhatsApp is an external recipient and notice must describe what leaves the system.
+
+## 12. Performance, analytics and accessibility
+
+Cart operations are deterministic/lightweight and usable without renderer. Large preview data never embeds in cart payload. Analytics: item add/edit/remove, price status, handoff purpose, snapshot/lead accepted, manager transition and time-in-state; contact/media/free text excluded or minimized. Forms have semantic labels, error summary/focus, keyboard operation, non-color statuses and no timer pressure.
+
+## 13. Acceptance criteria and tests
+
+Primary: `AC-CART-001`, `AC-WHATSAPP-001`, `AC-MANAGER-CONTEXT-001`, `AC-ORDER-001`, `AC-MEASURE-001`, `AC-ORDER-STATUS-001`, `AC-QUOTE-HISTORY-001`, `AC-QUOTE-CONFIRM-001`, `AC-WARRANTY-001`, `AC-INSTALLMENT-001`.
+
+Tests: multi-item mixed status/total; edit/duplicate/remove; stale/retired/history; guest claim/cross-owner; WhatsApp content allow/deny; idempotent submit/callback; transition table and concurrent updates; notification outage; safe customer mapping; cancel/warranty alternatives; contact validation/rate limit/CSRF; keyboard/screen reader/responsive; AMIGO/price/AI/WhatsApp outage.
+
+## 14. Phase 1E implementation record
+
+`/cart` is backed by `GuestCartSession`, `GuestCart`, quote-referencing `CartItem` and append-only `CartItemRevision`. Browser mutations carry no authoritative money. The server reconstructs product/options/version labels and exact integer totals from immutable `QuoteSnapshot`, preserves null unknown amounts, and returns `FULLY_PRICED`, `PARTIALLY_PRICED` or `PRICE_ON_REQUEST` with separate free-service rows. Edit creates a new quote and records the replacement; it never rewrites the old quote.
+
+`/checkout` atomically creates one idempotent `OrderInquiry`, immutable cart/item snapshots, `REQUEST_CREATED`, audit rows and required outbox events. The same transaction stores consent, normalized contact, locality, free-measurement and neutral installment flags. Public summary uses only a revocable random reference hash and a same-origin preview proxy. WhatsApp always targets `79635851036` and records generation/open/copy facts without a delivery claim. `/admin/requests` reuses current OWNER/ADMIN/MANAGER dev sessions and cannot alter captured quote/price/amount fields.
+
+## 15. Dependencies, risks and open questions
+
+### 15.1. Phase 1F.1 cart repair profile
+
+- **P1F1-CART-001 — MUST:** `/configure` and `/preview` add only a server-created immutable `QuoteSnapshot`; client amount, pricing status, catalog/price version or configuration bytes are ignored/rejected.
+- **P1F1-CART-002 — MUST:** `CALCULATED`, `PRICE_ON_REQUEST` and `MANUAL_REVIEW_REQUIRED` quote states are cart-eligible with Russian disclosures; `CONFIGURATION_INVALID` is not eligible.
+- **P1F1-CART-003 — MUST:** the same guest/cart, quote and idempotency key returns the original add result without an accidental duplicate; a different payload under the same key conflicts.
+- **P1F1-CART-004 — MUST:** successful add preserves the current configuration/preview, announces success and current cart item count, and provides a visible `/cart` action.
+- **P1F1-CART-005 — MUST:** `/preview` provides «Добавить в корзину» and «Вернуться к параметрам» using the same quote authority and eligibility policy as `/configure`.
+- **P1F1-CART-006 — MUST:** removed/hidden material, inactive PriceVersion, stale mapping or duplicate request is recovered without silent repricing, lost cart or technical-detail leakage.
+
+Dependencies: configurator/pricing/preview/AI/installment/auth/admin/data/API/security/observability. Open: `TBD-BIZ-003/004/005`, `TBD-INSTALL-*`, `TBD-DELIVERY-*`, `TBD-WARRANTY-001`, `TBD-ACCOUNT-*`, `TBD-PRIV-*`, `TBD-INSTALLMENT-*`, contact confirmation/SLA and cart/share TTL. Risks: handoff treated as order, private URL leak, stale price promise, duplicate lead, broad staff access, invented slot/status and legal content drift.
+
+## 16. Связанные требования и история
+
+Links: `FR-CART-*`, `FR-REQUEST-*`, `FR-ORDER-*`, `FR-MEASURE-*`, `BUSINESS-*`, `NFR-PRIV-*`, `NFR-SEC-*`, `CART-SPEC-001`–`036`.
+
+| Версия | Дата | Изменение |
+|---|---|---|
+| 0.4.0 | 2026-08-12 | Authorized configuration/preview QuoteSnapshot add repair, stable idempotency and safe calculated/manual cart eligibility. |
+| 0.1.0 | 2026-08-02 | Определены cart/project, safe handoff, lead/measurement/order/warranty target states, transitions, failures and tests. |
+| 0.2.0 | 2026-08-09 | `OWNER-DECISION-016` authorizes the Phase 1E guest-cart/request scope, immutable checkout snapshots, exact mixed-price semantics, fixed-recipient `wa.me`, PII-free revocable summary, five request statuses/communication events, minimal staff administration and transactional outbox while full order workflow and production PII remain gated. |
+| 0.3.0 | 2026-08-09 | Recorded the completed quote-backed guest cart, edit-by-new-snapshot, immutable idempotent request intake, fixed-recipient handoff, PII-free summary, minimal role-scoped administration and passed DB/browser/security/recovery evidence. |

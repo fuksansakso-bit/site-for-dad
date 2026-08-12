@@ -1,0 +1,71 @@
+name: project-name-local-storage
+
+services:
+  catalog-storage:
+    image: versity/versitygw:v1.4.1@sha256:0400cb59f59da0f1cf9f7fd49505191abc348dfadf54509bf1988caaff4eb96f
+    environment:
+      ROOT_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:?S3_ACCESS_KEY_ID is required}
+      ROOT_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:?S3_SECRET_ACCESS_KEY is required}
+      VGW_ADMIN_PORT: ':7080'
+      VGW_BACKEND: posix
+      VGW_BACKEND_ARG: /data
+      VGW_DEBUG: 'false'
+      VGW_HEALTH: /health
+      VGW_IAM_DEBUG: 'false'
+      VGW_IAM_DIR: /iam
+      VGW_PORT: ':7070'
+      VGW_QUIET: 'true'
+      VGW_REGION: ${S3_REGION:?S3_REGION is required}
+      VGW_VERSIONING_DIR: /versioning
+    ports:
+      - '127.0.0.1:${CATALOG_S3_PORT:-4569}:7070'
+      - '127.0.0.1:${CATALOG_S3_ADMIN_PORT:-4570}:7080'
+    volumes:
+      - catalog_s3_data:/data
+      - catalog_s3_versioning:/versioning
+      - catalog_s3_iam:/iam
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -q -O - http://127.0.0.1:7070/health | grep -qx OK']
+      interval: 2s
+      timeout: 2s
+      retries: 30
+      start_period: 5s
+    init: true
+    restart: always
+    stop_grace_period: 30s
+    security_opt:
+      - no-new-privileges:true
+
+  mailpit:
+    image: axllent/mailpit:v1.30.0@sha256:0059ef81e492a7192af3816281eed6859eb078bd7bdc58b76757c13e10e53a7d
+    environment:
+      MP_DATABASE: /data/mailpit.db
+      MP_MAX_MESSAGES: '500'
+      MP_SMTP_AUTH_ACCEPT_ANY: '0'
+      MP_SMTP_AUTH_ALLOW_INSECURE: '0'
+    ports:
+      - '127.0.0.1:${MAILPIT_SMTP_PORT:-1025}:1025'
+      - '127.0.0.1:${MAILPIT_HTTP_PORT:-8025}:8025'
+    volumes:
+      - mailpit_data:/data
+    healthcheck:
+      test: ['CMD', '/mailpit', 'readyz']
+      interval: 2s
+      timeout: 2s
+      retries: 30
+      start_period: 3s
+    init: true
+    restart: always
+    stop_grace_period: 15s
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  catalog_s3_data:
+    name: ${CATALOG_S3_VOLUME_PREFIX:-project_name}_catalog_s3_data
+  catalog_s3_versioning:
+    name: ${CATALOG_S3_VOLUME_PREFIX:-project_name}_catalog_s3_versioning
+  catalog_s3_iam:
+    name: ${CATALOG_S3_VOLUME_PREFIX:-project_name}_catalog_s3_iam
+  mailpit_data:
+    name: ${CATALOG_S3_VOLUME_PREFIX:-project_name}_mailpit_data

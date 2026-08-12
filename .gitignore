@@ -1,0 +1,73 @@
+# Операционная система и редакторы
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
+*.swp
+*~
+
+# Локальные секреты и окружение
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Логи, временные файлы и локальные кэши
+*.log
+logs/
+tmp/
+temp/
+*.tmp
+*.cache
+.cache/
+
+# Зависимости, сборки и отчёты покрытия
+node_modules/
+.next/
+.nuxt/
+.svelte-kit/
+.turbo/
+.vercel/
+dist/
+build/
+out/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+packages/db/src/generated/
+
+# Python-кэши и виртуальные окружения
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Локальные базы и runtime-данные
+*.sqlite
+*.sqlite3
+*.db
+.local/
+runtime/
+.local/phase-2a-backups/
+
+# Приватные пользовательские загрузки и производные медиа
+uploads/
+data/private/
+data/uploads/
+media/private/
+storage/private/
+
+# Резервные копии редакторов и конфликтов слияния
+*.bak
+*.orig
+
+.vercel
+.env*

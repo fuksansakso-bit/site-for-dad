@@ -1,0 +1,37 @@
+# AI VISUALIZATION LIVE QA
+
+## Execution evidence
+
+- Live Polza Media calls executed: **0**.
+- Reason: `POLZA_AI_API_KEY` is absent; Supabase cloud/service-role and `CRON_SECRET` credentials are also absent locally.
+- Mock/browser evidence: one deterministic full-flow Playwright scenario passed across 320/360/375/390/430 px; it is not reported as provider quality evidence.
+- Provider contract evidence: create/status mapping, 429 bounded retry, 5xx/error normalization and result-import security are covered locally.
+- Required next run: apply the migration, verify private buckets/RLS/cron, then perform at most `AI_LIVE_TEST_LIMIT` rights-cleared calls and record create ID, polling, configured model, import, idempotency and visual review.
+
+**Статус:** `Live visual QA pending`  
+**Фаза:** Phase 2B  
+**Дата проверки доступности:** 2026-08-12  
+**Провайдер:** Polza AI Media API  
+**Модель:** `google/gemini-3.1-flash-image`
+
+## Текущий результат
+
+`POLZA_AI_API_KEY` в среде выполнения отсутствует. Реальные платные запросы не выполнялись, mock-результаты не считаются подтверждением Polza AI. Допустимый итог реализации до появления ключа и cloud credentials — `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`.
+
+## Ограниченный сценарий после выдачи ключа
+
+Владелец выполняет не более `AI_LIVE_TEST_LIMIT` и не более трёх генераций: рулонные жалюзи, «Зебра» / «День-Ночь» и горизонтальные либо вертикальные жалюзи. Используются только разрешённые неперсональные фотографии окон и одобренные изображения материалов из сохранённого каталога.
+
+Для каждого вызова фиксируются без секретов и фотографий: время, семейство, ориентация, internal job reference, наличие provider job ID, конечный статус, импорт результата в private Supabase Storage, результат повторного idempotency-запроса и визуальная оценка по `AI_EVALUATION_SPEC.md`.
+
+## Критерии live-прохода
+
+- Polza job создаётся и опрашивается через официальный Media API;
+- используется настроенная модель, а клиент не получает provider response или key;
+- результат является декодируемым изображением и копируется в `ai-results`;
+- браузер использует только краткоживущий Supabase signed URL;
+- комната и окно остаются узнаваемыми, а семейство и материал визуально соответствуют референсу без обещания абсолютной точности;
+- повтор с тем же idempotency key не создаёт второй платный provider job;
+- после импорта временный Polza URL не нужен.
+
+Live-проход не разрешает production launch: он остаётся зависимым от `TBD-AI-002`, `TBD-PRIV-003`, `TBD-PRIV-005` и `TBD-INFRA-004`.

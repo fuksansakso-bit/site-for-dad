@@ -1,0 +1,47 @@
+{
+  "name": "@project-name/jobs",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "jobs:migrate": "tsx src/migrate.ts",
+    "lint": "eslint . --max-warnings=0",
+    "test": "vitest run --config vitest.config.ts",
+    "test:coverage": "vitest run --coverage --config vitest.config.ts",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@project-name/catalog": "workspace:*",
+    "@project-name/config": "workspace:*",
+    "@project-name/contracts": "workspace:*",
+    "@project-name/db": "workspace:*",
+    "@project-name/notifications": "workspace:*",
+    "@project-name/observability": "workspace:*",
+    "graphile-worker": "catalog:",
+    "pg": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@project-name/tooling": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/pg": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "projectName": {
+    "layer": "jobs",
+    "responsibility": "Versioned durable Graphile Worker contracts for catalog plus Phase 1F delivery/migration/cleanup/media work, with idempotency, cancellation, retry, timeout, and permanent-failure inspection.",
+    "publicInterface": [
+      "."
+    ]
+  }
+}

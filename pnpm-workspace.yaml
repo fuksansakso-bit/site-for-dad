@@ -1,0 +1,40 @@
+packages:
+  - apps/web
+
+allowBuilds:
+  esbuild: true
+  sharp: true
+  unrs-resolver: true
+
+catalog:
+  '@eslint/js': 9.39.5
+  '@playwright/test': 1.62.1
+  '@types/node': 24.13.3
+  '@types/pg': 8.20.3
+  '@types/react': 19.2.18
+  '@types/react-dom': 19.2.4
+  '@vitest/coverage-v8': 4.1.10
+  eslint: 9.39.5
+  eslint-config-next: 16.2.12
+  globals: 17.8.0
+  next: 16.2.12
+  pg: 8.22.0
+  prettier: 3.9.6
+  react: 19.2.8
+  react-dom: 19.2.8
+  sharp: 0.35.0
+  tsx: 4.23.4
+  typescript: 6.0.3
+  typescript-eslint: 8.65.0
+  vitest: 4.1.10
+  zod: 4.4.3
+
+linkWorkspacePackages: true
+minimumReleaseAgeExclude:
+  - tsx@4.23.4
+overrides:
+  nanoid: 3.3.17
+  postcss: 8.5.25
+  sharp: 0.35.0
+preferWorkspacePackages: true
+sharedWorkspaceLockfile: true

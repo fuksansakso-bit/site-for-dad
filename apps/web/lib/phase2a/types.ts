@@ -56,6 +56,7 @@ export type PricedItem = CartItem & {
 export type SiteSettings = {
   site_name: string;
   logo_path: string | null;
+  partner_badge_path: string | null;
   whatsapp_phone: string;
   phone: string;
   region: string;
@@ -65,4 +66,5 @@ export type SiteSettings = {
   free_delivery: boolean;
   free_installation: boolean;
   installment_text: string;
+  social_links: Record<string, string>;
 };

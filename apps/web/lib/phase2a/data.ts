@@ -55,7 +55,7 @@ export async function getSiteSettings(): Promise<SiteSettings | null> {
   const { data } = await client
     .from('public_site_settings')
     .select(
-      'site_name,logo_path,whatsapp_phone,phone,region,lead_time_text,warranty_text,free_measurement,free_delivery,free_installation,installment_text',
+      'site_name,logo_path,partner_badge_path,whatsapp_phone,phone,region,lead_time_text,warranty_text,free_measurement,free_delivery,free_installation,installment_text,social_links',
     )
     .maybeSingle();
   return data as SiteSettings | null;

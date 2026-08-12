@@ -7,6 +7,8 @@
 
 ### Added
 
+- Established the Phase 2C visual foundation: approved semantic palette/spacing/radius/shadow/motion tokens, `next/font` Manrope + Cormorant Garamond Cyrillic typography, reusable UI primitives, centralized Russian presentation helpers, neutral public brand fallback, responsive site chrome/footer and safe-area mobile navigation.
+
 - `OWNER-DECISION-024`, QG-601–670 and the active Phase 2C plan authorize final light-first premium interior-tech presentation from target-main `bdaa053`: central tokens/local typography, bounded first-visit starfield, complete public/admin route redesign, responsive/accessibility/performance/visual evidence and target-account Vercel Preview. Existing Supabase/Polza/catalog/price/privacy boundaries remain fixed; final brand/logo, merge and production stay gated.
 
 - Completed Phase 2B implementation in Draft PR #7: private direct upload, asynchronous Polza Media lifecycle and result import, hidden versioned family prompt, guest ownership, idempotency/cost controls, 24-hour cleanup, responsive before/after, cart/request linkage and safe administration. Local unit/browser/security/build gates pass; zero live Polza calls and unexecuted cloud RLS/Storage/cron are explicitly recorded as `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`.

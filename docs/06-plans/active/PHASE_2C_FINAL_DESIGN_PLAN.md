@@ -23,8 +23,8 @@
 ## Work plan
 
 1. **COMPLETED — Authorization and preflight:** recorded `OWNER-DECISION-024`, baseline/tag/branch, active plan, QG-601–670, visible blockers and exact Preview/repository boundary; docs validation and baseline lint/typecheck/49 tests/build pass.
-2. **IN PROGRESS — Design foundation:** implement central color/type/space/radius/shadow/motion tokens, local `next/font`, semantic primitives and public/admin shells.
-3. **PENDING — Intro and landing:** add the bounded first-visit starfield, premium hero/interior composition and source-backed landing sections with no invented claims.
+2. **COMPLETED — Design foundation:** implemented central color/type/space/radius/shadow/motion tokens, local `next/font`, semantic primitives, presentation mappings and responsive public/admin foundations; lint/typecheck/build and desktop/mobile visual checks pass.
+3. **IN PROGRESS — Intro and landing:** add the bounded first-visit starfield, premium hero/interior composition and source-backed landing sections with no invented claims.
 4. **PENDING — Catalog experience:** redesign listing, filters, cards, breadcrumbs and material detail while preserving published Supabase data and honest price/availability states.
 5. **PENDING — Conversion flow:** redesign calculator, local cart, checkout, request result and WhatsApp handoff without changing server price or immutable request contracts.
 6. **PENDING — AI experience:** polish the five visualizer states, before/after interaction, errors, disabled state and private-data notices without altering the Polza adapter.

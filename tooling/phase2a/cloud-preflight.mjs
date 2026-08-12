@@ -4,6 +4,8 @@ import { loadEnvFile } from 'node:process';
 
 import pg from 'pg';
 
+import { resolveSupabaseDatabaseUrl } from './supabase-db.mjs';
+
 const ENV_PATH = new URL('../../apps/web/.env.local', import.meta.url);
 const REQUIRED = [
   'NEXT_PUBLIC_SUPABASE_URL',
@@ -65,17 +67,15 @@ async function checkDatabase(connectionString) {
   });
   try {
     await client.connect();
-    const [identity, tables, migrations] = await Promise.all([
-      client.query(
-        "select current_database() as database, current_user as username, current_setting('server_version_num') as version",
-      ),
-      client.query(
-        "select count(*)::integer as count from information_schema.tables where table_schema = 'public' and table_type = 'BASE TABLE'",
-      ),
-      client.query(
-        "select to_regclass('supabase_migrations.schema_migrations') is not null as present",
-      ),
-    ]);
+    const identity = await client.query(
+      "select current_database() as database, current_user as username, current_setting('server_version_num') as version",
+    );
+    const tables = await client.query(
+      "select count(*)::integer as count from information_schema.tables where table_schema = 'public' and table_type = 'BASE TABLE'",
+    );
+    const migrations = await client.query(
+      "select to_regclass('supabase_migrations.schema_migrations') is not null as present",
+    );
     return {
       connected: true,
       database: identity.rows[0].database,
@@ -99,7 +99,7 @@ try {
   const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const databaseUrl = process.env.MIGRATION_DATABASE_URL || process.env.SUPABASE_DB_URL;
+  const { connectionString: databaseUrl } = resolveSupabaseDatabaseUrl();
   const [
     publicCatalog,
     serviceCatalog,

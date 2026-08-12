@@ -11,9 +11,18 @@ import { buildCategoryExclusions } from '../legacy-export.mjs';
 import {
   explicitAreaRate,
   mapAvailability,
+  normalizePublicSlug,
   transformMaterial,
   transformOrder,
 } from '../transform.mjs';
+
+test('public slugs collapse repeated separators before Supabase import', () => {
+  assert.equal(
+    normalizePublicSlug('amigo-category-rulonnye-shtory--rulonnye-tkani'),
+    'amigo-category-rulonnye-shtory-rulonnye-tkani',
+  );
+  assert.throws(() => normalizePublicSlug('Р¶Р°Р»СЋР·Рё'), /Invalid public slug/u);
+});
 
 test('canonical JSON and checksum are independent of object key insertion order', () => {
   const left = { beta: 2, alpha: { zeta: 3, eta: 1 } };

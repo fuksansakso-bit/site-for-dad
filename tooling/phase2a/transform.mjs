@@ -32,6 +32,19 @@ export function mapAvailability(value) {
   return 'INQUIRY_ONLY';
 }
 
+export function normalizePublicSlug(value) {
+  if (typeof value !== 'string') throw new Error('Public slug must be a string');
+  const normalized = value
+    .trim()
+    .toLowerCase()
+    .replace(/-+/gu, '-')
+    .replace(/^-+|-+$/gu, '');
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(normalized)) {
+    throw new Error(`Invalid public slug after normalization: ${value}`);
+  }
+  return normalized;
+}
+
 export function explicitAreaRate(pricingRuleFact) {
   if (
     pricingRuleFact?.kind !== 'AREA_MINIMUM' ||
@@ -74,7 +87,7 @@ export function transformMaterial(record, categoryLegacySourceId) {
       sourceLastVerifiedAt: record.sourceLastVerifiedAt,
       sourcePriceFact: record.sourcePriceFact,
     },
-    slug: record.slug,
+    slug: normalizePublicSlug(record.slug),
     sortOrder: record.sortOrder,
     sourceName: record.sourceName,
     sourceUrl: record.sourceUrl,
@@ -259,7 +272,7 @@ export async function transformExport() {
       category.parentLegacyId === null
         ? null
         : (categorySourceIdByLegacyId.get(category.parentLegacyId) ?? null),
-    slug: category.slug,
+    slug: normalizePublicSlug(category.slug),
     sortOrder: category.sortOrder,
     sourceId: category.sourceId,
     sourceUrl: category.sourceUrl,
@@ -271,7 +284,9 @@ export async function transformExport() {
     transformMaterial(material, categorySourceIdByLegacyId.get(material.categoryLegacyId)),
   );
   assertUnique(categories, 'legacySourceId', 'transformed categories');
+  assertUnique(categories, 'slug', 'transformed categories');
   assertUnique(materials, 'legacySourceId', 'transformed materials');
+  assertUnique(materials, 'slug', 'transformed materials');
   const materialByLegacyId = new Map(materials.map((material) => [material.legacyId, material]));
   const skippedOrders = [];
   const orders = [];

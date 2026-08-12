@@ -76,7 +76,7 @@ Phase 1E завершена со статусом `PASSED_PHASE_1E_CART_WHATSAPP
 
 ## Локальная разработка Phase 2A/2B
 
-Требуются Git, Node.js `24.18.1` и pnpm `11.18.0`. Создайте ignored `.env.local` по `.env.example`, затем:
+Требуются Git, Node.js `24.18.1` и pnpm `11.18.0`. Создайте ignored `apps/web/.env.local` по корневому `.env.example`, затем:
 
 ```powershell
 pnpm.cmd install --frozen-lockfile

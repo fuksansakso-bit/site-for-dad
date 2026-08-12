@@ -7,6 +7,10 @@
 
 ### Added
 
+- Redesigned the complete guest conversion path from source-backed calculator through reactive local cart, checkout and request summary: server-authoritative repricing, explicit manual-price totals, resilient loading/error/empty states, quantity editing, optional AI linkage, privacy-safe contact form, WhatsApp handoff and a real copyable request URL now share the final premium interface.
+
+- Activated the retained Phase 2A catalog against the configured Supabase project after the owner applied migrations: 19 published categories, 1,428 published materials, one settings row and 1,371 checksum-addressed WebP objects passed idempotent import, public/service REST count checks and browser rendering with no invented orders or portfolio work. Local Next.js and cloud operator commands now use ignored `apps/web/.env.local` as the single canonical environment file.
+
 - Redesigned the source-backed catalog and material detail: category tabs, deferred search, availability/type filters, stable sorting, incremental 24-card rendering, responsive optimized images, honest empty/manual-price states, semantic breadcrumbs, material facts/order panel, settings-backed service facts, related materials and AI entry points that disappear when the feature is unavailable.
 
 - Added the bounded first-visit starfield intro with skip, reduced-motion bypass, DPR/frame caps, visibility pause and CSS fallback; rebuilt the landing as a source-backed interior-tech journey with exact owner-approved hero copy, real published categories/materials/portfolio, conditional AI and WhatsApp entry points, calculator/trust/AMIGO/FAQ sections and honest empty states without invented business facts.
@@ -157,6 +161,8 @@
 - `TBD-LEAD-001`, `TBD-SYSTEM-001`, `TBD-HORIZONTAL-001`, `TBD-VERTICAL-001` и `TBD-SERVICE-001`–`003` сохранены как решённые записи с датой и нормативными ссылками.
 
 ### Fixed
+
+- Phase 2A transform now deterministically collapses repeated slug separators before Supabase import and rejects post-normalization collisions, fixing nine retained AMIGO category slugs that correctly preserved source identity but violated the target public-slug CHECK constraint. Same-origin protection also recognizes only equivalent loopback aliases with matching protocol and port, so local `127.0.0.1` browser checks work without accepting external origins.
 
 - The 2,048-material scale fixture now reuses the same hex value for every occurrence of one synthetic color identity, so the production fail-closed public-slug collision guard tests valid scale data instead of rejecting internally inconsistent fixture colors.
 - The catalog synchronization integration gate now asserts the canonical route-safe public slug contract instead of the superseded Phase 1B.1 `amigo-category-*` prefix, keeping the test source-neutral after full-catalog slug normalization.

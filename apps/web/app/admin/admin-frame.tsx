@@ -13,6 +13,7 @@ export function AdminFrame({ children, staff }: { children: React.ReactNode; sta
         <Link href="/admin">Обзор</Link>
         {canManageBusiness && <Link href="/admin/materials">Материалы</Link>}
         <Link href="/admin/orders">Заявки</Link>
+        <Link href="/admin/ai-visualizations">AI-визуализации</Link>
         {canManageBusiness && <Link href="/admin/portfolio">Портфолио</Link>}
         {canManageBusiness && <Link href="/admin/settings">Настройки</Link>}
         {staff.role === 'OWNER' && <Link href="/admin/staff">Сотрудники</Link>}

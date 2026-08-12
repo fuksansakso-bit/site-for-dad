@@ -538,6 +538,41 @@ button:disabled,
   grid-template-columns: repeat(2, minmax(130px, 220px));
   justify-content: start;
 }
+.ai-admin-enabled {
+  border-color: var(--accent);
+  background: #e7f5ef;
+}
+.ai-admin-stats {
+  grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+}
+.ai-admin-stats h2 {
+  margin: 0;
+}
+.ai-admin-filters input,
+.ai-admin-filters select {
+  min-height: 44px;
+  padding: 0.55rem;
+  border: 1px solid #b7c5bf;
+  border-radius: 0.6rem;
+  background: white;
+  font: inherit;
+}
+.admin-table-scroll {
+  max-width: 100%;
+  overflow: auto;
+  margin-bottom: 2rem;
+}
+.admin-image-action {
+  display: grid;
+  gap: 0.25rem;
+}
+.admin-image-action small {
+  max-width: 220px;
+}
+.admin-block {
+  display: block;
+  margin-top: 0.35rem;
+}
 
 @media (max-width: 700px) {
   .site-header {

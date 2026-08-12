@@ -143,6 +143,7 @@ create table public.ai_visualization_rate_events (
   event_type text not null check (event_type in ('CREATE_JOB', 'SIGNED_UPLOAD', 'START_GENERATION', 'RESULT_READ')),
   guest_session_hash text not null check (guest_session_hash ~ '^[0-9a-f]{64}$'),
   ip_hash text not null check (ip_hash ~ '^[0-9a-f]{64}$'),
+  is_allowed boolean not null default true,
   created_at timestamptz not null default now(),
   expires_at timestamptz not null check (expires_at > created_at)
 );
@@ -225,18 +226,32 @@ begin
   from public.ai_visualization_rate_events
   where event_type = p_event_type
     and guest_session_hash = p_guest_session_hash
+    and is_allowed
     and created_at > pg_catalog.now() - pg_catalog.make_interval(secs => p_window_seconds);
 
   select count(*) into v_ip_count
   from public.ai_visualization_rate_events
   where event_type = p_event_type
     and ip_hash = p_ip_hash
+    and is_allowed
     and created_at > pg_catalog.now() - pg_catalog.make_interval(secs => p_window_seconds);
 
   if v_guest_count >= p_guest_limit then
+    insert into public.ai_visualization_rate_events(
+      event_type, guest_session_hash, ip_hash, is_allowed, expires_at
+    ) values (
+      p_event_type, p_guest_session_hash, p_ip_hash, false,
+      pg_catalog.now() + pg_catalog.make_interval(secs => p_window_seconds)
+    );
     return pg_catalog.jsonb_build_object('allowed', false, 'reason', 'GUEST_RATE_LIMIT');
   end if;
   if v_ip_count >= p_ip_limit then
+    insert into public.ai_visualization_rate_events(
+      event_type, guest_session_hash, ip_hash, is_allowed, expires_at
+    ) values (
+      p_event_type, p_guest_session_hash, p_ip_hash, false,
+      pg_catalog.now() + pg_catalog.make_interval(secs => p_window_seconds)
+    );
     return pg_catalog.jsonb_build_object('allowed', false, 'reason', 'IP_RATE_LIMIT');
   end if;
 
@@ -609,6 +624,58 @@ begin
 end $$;
 revoke all on function public.claim_expired_ai_visualization_jobs(integer) from public, anon, authenticated;
 grant execute on function public.claim_expired_ai_visualization_jobs(integer) to service_role;
+
+create or replace function public.get_ai_visualization_admin_stats()
+returns jsonb language sql stable security definer set search_path = '' as $$
+  select pg_catalog.jsonb_build_object(
+    'totalJobs', count(*),
+    'jobsToday', count(*) filter (
+      where j.created_at >= pg_catalog.date_trunc('day', pg_catalog.now() at time zone 'UTC') at time zone 'UTC'
+    ),
+    'successfulToday', count(*) filter (
+      where j.status = 'SUCCEEDED'
+        and j.created_at >= pg_catalog.date_trunc('day', pg_catalog.now() at time zone 'UTC') at time zone 'UTC'
+    ),
+    'failedToday', count(*) filter (
+      where j.status = 'FAILED'
+        and j.created_at >= pg_catalog.date_trunc('day', pg_catalog.now() at time zone 'UTC') at time zone 'UTC'
+    ),
+    'rejectedToday', count(*) filter (
+      where j.status = 'REJECTED'
+        and j.created_at >= pg_catalog.date_trunc('day', pg_catalog.now() at time zone 'UTC') at time zone 'UTC'
+    ),
+    'active', count(*) filter (where j.status = 'PROCESSING'),
+    'expired', count(*) filter (
+      where j.expires_at <= pg_catalog.now() and j.status not in ('EXPIRED', 'DELETED', 'PROCESSING')
+    ),
+    'estimatedStorageBytes', coalesce(sum(
+      case when j.status not in ('EXPIRED', 'DELETED') then coalesce(j.input_byte_size, 0) + coalesce(j.result_byte_size, 0) else 0 end
+    ), 0),
+    'averageDurationSeconds', coalesce(round(avg(
+      extract(epoch from (j.completed_at - j.started_at))
+    ) filter (where j.completed_at is not null and j.started_at is not null)), 0),
+    'retryAttempts', coalesce(sum(greatest(j.attempt_number - 1, 0)), 0),
+    'nextCleanupAt', min(j.expires_at) filter (
+      where j.status not in ('EXPIRED', 'DELETED', 'PROCESSING')
+    ),
+    'providerErrorsToday', count(*) filter (
+      where j.provider_error_code is not null
+        and j.created_at >= pg_catalog.date_trunc('day', pg_catalog.now() at time zone 'UTC') at time zone 'UTC'
+    ),
+    'modelUnavailableToday', count(*) filter (
+      where j.provider_error_code = 'POLZA_MODEL_UNAVAILABLE'
+        and j.created_at >= pg_catalog.date_trunc('day', pg_catalog.now() at time zone 'UTC') at time zone 'UTC'
+    ),
+    'rateLimitedToday', (
+      select count(*) from public.ai_visualization_rate_events e
+      where not e.is_allowed
+        and e.created_at >= pg_catalog.date_trunc('day', pg_catalog.now() at time zone 'UTC') at time zone 'UTC'
+    )
+  )
+  from public.ai_visualization_jobs j
+$$;
+revoke all on function public.get_ai_visualization_admin_stats() from public, anon, authenticated;
+grant execute on function public.get_ai_visualization_admin_stats() to service_role;
 
 create or replace function public.create_order_from_server(p_payload jsonb)
 returns jsonb language plpgsql security definer set search_path = pg_catalog, public as $$

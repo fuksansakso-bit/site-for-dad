@@ -1,4 +1,4 @@
-export type PricingMode = 'AREA' | 'FIXED' | 'MANUAL';
+export type PricingMode = 'AREA' | 'FIXED' | 'MANUAL' | 'AMIGO_EXACT';
 export type Availability = 'AVAILABLE' | 'OUT_OF_STOCK' | 'INQUIRY_ONLY';
 export type StaffRole = 'OWNER' | 'ADMIN' | 'MANAGER';
 export type Category = {
@@ -23,6 +23,10 @@ export type Material = {
   pricing_mode: PricingMode;
   availability: Availability;
   primary_image_path: string | null;
+  amigo_price_version?: string | null;
+  amigo_calculator_origin?: string | null;
+  amigo_calculator_model_id?: number | null;
+  amigo_calculator_material_id?: number | null;
   categories?: { name: string; slug: string } | null;
 };
 export type PublicMaterial = {
@@ -32,11 +36,11 @@ export type PublicMaterial = {
   description: string | null;
   color_name: string | null;
   material_type: string | null;
-  primary_image_path: string | null;
+  primary_image_path: string;
   category_name: string;
   category_slug: string;
   availability_label: string;
-  display_price_kopecks: number | null;
+  display_price_kopecks: number;
   display_price_suffix: string | null;
 };
 export type CartItem = {

@@ -172,7 +172,7 @@ export default async function RequestPage({
                         <dt>Стоимость</dt>
                         <dd>
                           {item.totalPriceKopecks === null
-                            ? 'Уточнит менеджер'
+                            ? 'Цена не была сохранена'
                             : formatMoney(item.totalPriceKopecks)}
                         </dd>
                       </div>
@@ -194,7 +194,7 @@ export default async function RequestPage({
             <p className="eyebrow">Предварительный итог</p>
             <strong>
               {order.known_total_kopecks === null
-                ? 'Стоимость уточнит менеджер'
+                ? 'Цена не была сохранена'
                 : formatMoney(order.known_total_kopecks)}
             </strong>
             {order.pricing_status !== 'KNOWN' && (

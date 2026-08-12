@@ -9,6 +9,7 @@ import {
 import { checkoutSchema } from '../../../../lib/phase2a/schemas';
 import { createSupabaseAdminClient } from '../../../../lib/phase2a/supabase';
 import { getAiGuestSession } from '../../../../lib/ai-visualization/session';
+import { priceExactCart, type ExactMaterial } from '../../../../lib/phase2a/amigo-pricing';
 
 export async function POST(request: Request) {
   if (!isTrustedSameOrigin(request)) {
@@ -47,17 +48,52 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ message: 'Введите российский номер телефона.' }, { status: 400 });
   }
+  const { data: activeVersion, error: versionError } = await client
+    .from('amigo_price_versions')
+    .select('source_version')
+    .eq('is_active', true)
+    .maybeSingle();
+  if (versionError || !activeVersion) {
+    return NextResponse.json(
+      { message: 'Активная версия цен AMIGO временно недоступна.' },
+      { status: 503 },
+    );
+  }
   const slugs = [...new Set(parsed.data.items.map((item) => item.materialSlug))];
   const { data: materials, error: materialError } = await client
     .from('materials')
-    .select('id,slug,categories!inner(is_published)')
+    .select(
+      'id,category_id,name,slug,article,description,color_name,normalized_color,material_type,price_per_m2_kopecks,fixed_price_kopecks,minimum_price_kopecks,pricing_mode,availability,primary_image_path,amigo_price_version,amigo_calculator_origin,amigo_calculator_model_id,amigo_calculator_material_id,categories!inner(is_published)',
+    )
     .in('slug', slugs)
     .eq('is_published', true)
-    .eq('categories.is_published', true);
+    .eq('categories.is_published', true)
+    .eq('amigo_price_version', activeVersion.source_version)
+    .eq('amigo_mapping_status', 'READY');
   if (materialError || !materials || materials.length !== slugs.length) {
     return NextResponse.json(
       { message: 'Один из материалов больше не доступен.' },
       { status: 409 },
+    );
+  }
+  const exactMaterials = materials as unknown as ExactMaterial[];
+  if (exactMaterials.some((material) => material.pricing_mode !== 'AMIGO_EXACT')) {
+    return NextResponse.json(
+      { message: 'Для выбранного материала нет точной цены AMIGO.' },
+      { status: 409 },
+    );
+  }
+  let pricedItems;
+  try {
+    pricedItems = await priceExactCart(
+      client,
+      parsed.data.items,
+      new Map(exactMaterials.map((material) => [material.slug, material])),
+    );
+  } catch {
+    return NextResponse.json(
+      { message: 'Не удалось подтвердить точную цену AMIGO. Повторите попытку позже.' },
+      { status: 503 },
     );
   }
   const guest = await getAiGuestSession();
@@ -94,18 +130,23 @@ export async function POST(request: Request) {
     ...parsed.data,
     customerPhone: phone,
     aiGuestSessionHash: guest?.hash,
-    items: parsed.data.items.map((item) => {
+    items: parsed.data.items.map((item, index) => {
       const reference = item.aiVisualizationPublicReference;
       const visualization = reference ? visualizationByReference.get(reference) : undefined;
       const validVisualization =
         visualization && visualization.material_id === materialBySlug.get(item.materialSlug)
           ? visualization.id
           : undefined;
+      const priced = pricedItems[index]!;
       return {
         heightMm: item.heightMm,
         materialSlug: item.materialSlug,
         quantity: item.quantity,
         widthMm: item.widthMm,
+        unitPriceKopecks: priced.unitPriceKopecks,
+        priceSourceVersion: priced.priceSourceVersion,
+        calculatorModelId: priced.calculatorModelId,
+        calculatorMaterialId: priced.calculatorMaterialId,
         ...(validVisualization ? { aiVisualizationJobId: validVisualization } : {}),
       };
     }),

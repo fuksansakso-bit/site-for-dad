@@ -131,7 +131,7 @@ export function CartExperience() {
                   <dt>Стоимость</dt>
                   <dd>
                     {item.totalPriceKopecks === null
-                      ? 'Уточнит менеджер'
+                      ? 'Цена недоступна — пересчитайте позицию'
                       : formatMoney(item.totalPriceKopecks)}
                   </dd>
                 </div>
@@ -177,7 +177,7 @@ export function CartExperience() {
         </dl>
         {manualItems > 0 && (
           <Notice tone="warning">
-            <p>Для части позиций стоимость уточнит менеджер. Числовая сумма не включает их.</p>
+            <p>Некоторые сохранённые позиции устарели. Пересчитайте их перед оформлением.</p>
           </Notice>
         )}
         <Link className="button" href="/checkout">

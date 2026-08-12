@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { priceItem } from '../../../../lib/phase2a/pricing';
+import { priceExactCart, type ExactMaterial } from '../../../../lib/phase2a/amigo-pricing';
 import {
   allowRequest,
   isTrustedSameOrigin,
@@ -8,7 +8,6 @@ import {
 } from '../../../../lib/phase2a/request-security';
 import { cartSchema } from '../../../../lib/phase2a/schemas';
 import { createSupabaseAdminClient } from '../../../../lib/phase2a/supabase';
-import type { Material } from '../../../../lib/phase2a/types';
 
 export async function POST(request: Request) {
   if (!isTrustedSameOrigin(request)) {
@@ -41,35 +40,57 @@ export async function POST(request: Request) {
       { status: 503 },
     );
   }
+  const { data: activeVersion, error: versionError } = await client
+    .from('amigo_price_versions')
+    .select('source_version')
+    .eq('is_active', true)
+    .maybeSingle();
+  if (versionError || !activeVersion) {
+    return NextResponse.json(
+      { message: 'Активная версия цен AMIGO временно недоступна.' },
+      { status: 503 },
+    );
+  }
   const slugs = [...new Set(parsed.data.map((item) => item.materialSlug))];
   const { data, error } = await client
     .from('materials')
     .select(
-      'id,category_id,name,slug,article,description,color_name,normalized_color,material_type,price_per_m2_kopecks,fixed_price_kopecks,minimum_price_kopecks,pricing_mode,availability,primary_image_path,categories!inner(is_published)',
+      'id,category_id,name,slug,article,description,color_name,normalized_color,material_type,price_per_m2_kopecks,fixed_price_kopecks,minimum_price_kopecks,pricing_mode,availability,primary_image_path,amigo_price_version,amigo_calculator_origin,amigo_calculator_model_id,amigo_calculator_material_id,categories!inner(is_published)',
     )
     .in('slug', slugs)
     .eq('is_published', true)
-    .eq('categories.is_published', true);
+    .eq('categories.is_published', true)
+    .eq('amigo_price_version', activeVersion.source_version)
+    .eq('amigo_mapping_status', 'READY');
   if (error || !data || data.length !== slugs.length) {
     return NextResponse.json(
       { message: 'Один из материалов больше не доступен.' },
       { status: 409 },
     );
   }
-  const bySlug = new Map(
-    (data as unknown as Material[]).map((material) => [material.slug, material]),
+  const exact = (data as unknown as ExactMaterial[]).filter(
+    (material) => material.pricing_mode === 'AMIGO_EXACT',
   );
-  const items = parsed.data.map((item) => priceItem(item, bySlug.get(item.materialSlug)!));
-  const knownTotalKopecks = items
-    .filter((item) => item.totalPriceKopecks !== null)
-    .reduce((sum, item) => sum + item.totalPriceKopecks!, 0);
+  if (exact.length !== slugs.length) {
+    return NextResponse.json(
+      { message: 'Для выбранного материала нет точной цены AMIGO.' },
+      { status: 409 },
+    );
+  }
+  const bySlug = new Map(exact.map((material) => [material.slug, material]));
+  let items;
+  try {
+    items = await priceExactCart(client, parsed.data, bySlug);
+  } catch {
+    return NextResponse.json(
+      { message: 'Точная цена AMIGO временно недоступна. Повторите расчёт немного позже.' },
+      { status: 503 },
+    );
+  }
+  const knownTotalKopecks = items.reduce((sum, item) => sum + item.totalPriceKopecks, 0);
   return NextResponse.json({
     items,
     knownTotalKopecks,
-    pricingStatus: items.every((item) => item.pricingStatus === 'KNOWN')
-      ? 'KNOWN'
-      : knownTotalKopecks > 0
-        ? 'PARTIAL'
-        : 'MANUAL',
+    pricingStatus: 'KNOWN',
   });
 }

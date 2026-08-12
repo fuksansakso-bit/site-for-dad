@@ -13,7 +13,7 @@ import type { PricedItem, PublicMaterial } from '../../lib/phase2a/types';
 type Calculation = {
   items: PricedItem[];
   knownTotalKopecks: number;
-  pricingStatus: 'KNOWN' | 'MANUAL' | 'PARTIAL';
+  pricingStatus: 'KNOWN';
 };
 
 function initialDimension(value: string | undefined, fallback: number): number {
@@ -59,14 +59,22 @@ export function CalculatorClient({
       materials.find((material) => material.category_slug === (categories[0]?.[0] ?? ''))?.slug ??
       '',
   );
+  const [query, setQuery] = useState('');
   const [width, setWidth] = useState(initialDimension(initialWidth, 1000));
   const [height, setHeight] = useState(initialDimension(initialHeight, 1500));
-  const [quantity, setQuantity] = useState(1);
   const [calculation, setCalculation] = useState<Calculation | null>(null);
   const [status, setStatus] = useState<'idle' | 'loading' | 'error' | 'ready'>('idle');
   const [message, setMessage] = useState('');
   const [cartMessage, setCartMessage] = useState('');
-  const options = materials.filter((material) => material.category_slug === categorySlug);
+  const normalizedQuery = query.trim().toLocaleLowerCase('ru-RU');
+  const options = materials.filter(
+    (material) =>
+      material.category_slug === categorySlug &&
+      (!normalizedQuery ||
+        `${material.name} ${material.article} ${material.color_name ?? ''}`
+          .toLocaleLowerCase('ru-RU')
+          .includes(normalizedQuery)),
+  );
   const selectedMaterial = materials.find((material) => material.slug === materialSlug);
   const selectedImage = publicImageUrl(selectedMaterial?.primary_image_path ?? null);
   const result = calculation?.items[0];
@@ -78,20 +86,29 @@ export function CalculatorClient({
     setCartMessage('');
   }
 
+  function chooseCategory(nextCategory: string) {
+    setCategorySlug(nextCategory);
+    setMaterialSlug(
+      materials.find((material) => material.category_slug === nextCategory)?.slug ?? '',
+    );
+    setQuery('');
+    resetResult();
+  }
+
   async function calculate() {
     const item = cartItemSchema.safeParse({
       heightMm: height,
       materialSlug,
-      quantity,
+      quantity: 1,
       widthMm: width,
     });
     if (!item.success) {
       setStatus('error');
-      setMessage('Проверьте размеры и количество. Допустимы размеры от 100 до 10 000 мм.');
+      setMessage('Проверьте размеры. Допустимы целые значения от 100 до 10 000 мм.');
       return;
     }
     setStatus('loading');
-    setMessage('Проверяем материал и актуальную цену…');
+    setMessage('Получаем точную цену из калькулятора AMIGO…');
     setCalculation(null);
     setCartMessage('');
     try {
@@ -117,11 +134,11 @@ export function CalculatorClient({
     const item = cartItemSchema.safeParse({
       heightMm: height,
       materialSlug,
-      quantity,
+      quantity: 1,
       widthMm: width,
     });
     if (!item.success || !calculation) {
-      setCartMessage('Сначала выполните расчёт с корректными размерами.');
+      setCartMessage('Сначала рассчитайте стоимость с корректными размерами.');
       return;
     }
     const stored = writeCart([...readCart(), item.data]);
@@ -131,59 +148,85 @@ export function CalculatorClient({
   }
 
   return (
-    <div className="calculator-layout">
+    <div className="calculator-layout premium-calculator">
       <div className="calculator-form-panel">
         <div className="calculator-step">
           <span>01</span>
           <div>
-            <h2>Выберите материал</h2>
-            <p>Цена и наличие ещё раз проверяются на сервере при каждом расчёте.</p>
+            <h2>Выберите категорию и материал</h2>
+            <p>
+              На карточке указана текущая минимальная цена AMIGO. Точный итог зависит от размеров.
+            </p>
           </div>
         </div>
-        <div className="calculator-controls calculator-material-controls">
-          <label>
-            Категория
-            <select
-              value={categorySlug}
-              onChange={(event) => {
-                const nextCategory = event.target.value;
-                setCategorySlug(nextCategory);
-                setMaterialSlug(
-                  materials.find((material) => material.category_slug === nextCategory)?.slug ?? '',
-                );
-                resetResult();
-              }}
+
+        <div className="premium-category-tabs" role="tablist" aria-label="Категории материалов">
+          {categories.map(([value, label]) => (
+            <button
+              aria-selected={categorySlug === value}
+              className={categorySlug === value ? 'is-active' : ''}
+              key={value}
+              onClick={() => chooseCategory(value)}
+              role="tab"
+              type="button"
             >
-              {categories.map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Материал
-            <select
-              value={materialSlug}
-              onChange={(event) => {
-                setMaterialSlug(event.target.value);
-                resetResult();
-              }}
-            >
-              {options.map((material) => (
-                <option key={material.slug} value={material.slug}>
-                  {material.name} — {material.article}
-                </option>
-              ))}
-            </select>
-          </label>
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <label className="premium-material-search">
+          <span>Найти ткань, цвет или артикул</span>
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Например, Лина 2259"
+          />
+        </label>
+
+        <div className="premium-material-grid" role="listbox" aria-label="Материалы">
+          {options.map((material) => {
+            const image = publicImageUrl(material.primary_image_path);
+            const selected = material.slug === materialSlug;
+            return (
+              <button
+                aria-selected={selected}
+                className={
+                  selected ? 'premium-material-option is-selected' : 'premium-material-option'
+                }
+                key={material.slug}
+                onClick={() => {
+                  setMaterialSlug(material.slug);
+                  resetResult();
+                }}
+                role="option"
+                type="button"
+              >
+                <span className="premium-material-swatch">
+                  {image && <Image alt="" fill sizes="92px" src={image} />}
+                </span>
+                <span className="premium-material-copy">
+                  <strong>{material.name}</strong>
+                  <small>Арт. {material.article}</small>
+                  <b>от {formatMoney(material.display_price_kopecks)}</b>
+                </span>
+                <span className="premium-material-check" aria-hidden="true">
+                  ✓
+                </span>
+              </button>
+            );
+          })}
+          {options.length === 0 && (
+            <p className="premium-material-empty">По вашему запросу ничего не найдено.</p>
+          )}
         </div>
 
         <div className="calculator-step">
           <span>02</span>
           <div>
-            <h2>Укажите размеры</h2>
-            <p>Введите размеры одного изделия в миллиметрах и количество одинаковых изделий.</p>
+            <h2>Укажите размеры изделия</h2>
+            <p>Введите ширину и высоту в миллиметрах. Расчёт выполняется для одного изделия.</p>
           </div>
         </div>
         <div className="calculator-controls calculator-dimension-controls">
@@ -216,22 +259,12 @@ export function CalculatorClient({
               }}
             />
           </label>
-          <label>
-            Количество
-            <input
-              inputMode="numeric"
-              max="100"
-              min="1"
-              type="number"
-              value={quantity}
-              onChange={(event) => {
-                setQuantity(Number(event.target.value));
-                resetResult();
-              }}
-            />
-          </label>
         </div>
-        <button disabled={!materialSlug || status === 'loading'} onClick={() => void calculate()}>
+        <button
+          className="premium-calculate-button"
+          disabled={!materialSlug || status === 'loading'}
+          onClick={() => void calculate()}
+        >
           {status === 'loading' ? 'Рассчитываем…' : 'Рассчитать стоимость'}
         </button>
         {status === 'error' && (
@@ -270,29 +303,26 @@ export function CalculatorClient({
             </dd>
           </div>
           <div>
-            <dt>Количество</dt>
-            <dd>{quantity} шт.</dd>
+            <dt>Цена материала</dt>
+            <dd>
+              {selectedMaterial
+                ? `от ${formatMoney(selectedMaterial.display_price_kopecks)}`
+                : 'Выберите материал'}
+            </dd>
           </div>
         </dl>
-
         {status === 'loading' && (
           <div className="calculator-status-line">
             <span className="visualizer-spinner" aria-hidden="true" />
             <p>{message}</p>
           </div>
         )}
-        {status === 'ready' && result && (
+        {status === 'ready' && result && result.totalPriceKopecks !== null && (
           <div className="calculator-result">
-            <span>Предварительная стоимость</span>
-            <strong>
-              {result.totalPriceKopecks === null
-                ? 'Уточнит менеджер'
-                : formatMoney(result.totalPriceKopecks)}
-            </strong>
+            <span>Точная стоимость одного изделия</span>
+            <strong>{formatMoney(result.totalPriceKopecks)}</strong>
             <small>
-              {result.totalPriceKopecks === null
-                ? 'Материал или конфигурация требуют ручной проверки.'
-                : 'Итог проверяется мастером после замера и уточнения комплектации.'}
+              Цена получена из текущего калькулятора AMIGO для выбранного материала и размеров.
             </small>
             <button onClick={addToCart}>Добавить в корзину</button>
             {aiEnabled && selectedImage && (
@@ -307,7 +337,9 @@ export function CalculatorClient({
           </div>
         )}
         {status === 'idle' && (
-          <p className="calculator-idle">Заполните параметры и нажмите «Рассчитать стоимость».</p>
+          <p className="calculator-idle">
+            Выберите материал, введите ширину и высоту, затем нажмите «Рассчитать стоимость».
+          </p>
         )}
         {freeServices.length > 0 && (
           <p className="calculator-services">{freeServices.join(', ')}.</p>

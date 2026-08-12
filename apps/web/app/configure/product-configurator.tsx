@@ -3,15 +3,18 @@
 import type {
   CartItemEditSourceResponse,
   ConfiguratorBootstrapResponse,
+  ConfiguratorMaterialSearchResponse,
   GuestCartResponse,
   PricingCalculationResponse,
   PricingSelectionContract,
   QuoteSnapshotResponse,
 } from '@project-name/contracts';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 
 type Result = PricingCalculationResponse['result'];
+type MaterialResult = ConfiguratorMaterialSearchResponse['items'][number];
 
 interface PersistedConfiguratorSelection {
   readonly additionalOptionIds: readonly string[];
@@ -133,6 +136,12 @@ export function ProductConfigurator({
   const [widthMm, setWidthMm] = useState(700);
   const [heightMm, setHeightMm] = useState(1100);
   const [materialVariantId, setMaterialVariantId] = useState('');
+  const [materialQuery, setMaterialQuery] = useState('');
+  const [materialResults, setMaterialResults] = useState<MaterialResult[]>([]);
+  const [materialCursor, setMaterialCursor] = useState<string | null>(null);
+  const [materialTotal, setMaterialTotal] = useState(0);
+  const [materialPending, setMaterialPending] = useState(false);
+  const [selectedMaterial, setSelectedMaterial] = useState<MaterialResult | null>(null);
   const [hardwareOptionId, setHardwareOptionId] = useState('');
   const [controlTypeId, setControlTypeId] = useState('');
   const [additionalOptionIds, setAdditionalOptionIds] = useState<string[]>([]);
@@ -142,6 +151,7 @@ export function ProductConfigurator({
   const [quote, setQuote] = useState<QuoteSnapshotResponse | null>(null);
   const [editItemRevision, setEditItemRevision] = useState<number | null>(null);
   const [cartAdded, setCartAdded] = useState(false);
+  const [cartCount, setCartCount] = useState<number | null>(null);
   const [pending, setPending] = useState(false);
   const [previewPending, setPreviewPending] = useState(false);
   const [selectionRestored, setSelectionRestored] = useState(false);
@@ -261,20 +271,72 @@ export function ProductConfigurator({
     widthMm,
   ]);
 
+  useEffect(() => {
+    if (bootstrap === null || step < 6 || familyId === '' || categoryId === '' || systemId === '') {
+      return;
+    }
+    const controller = new AbortController();
+    const timeout = globalThis.setTimeout(() => {
+      void (async () => {
+        setMaterialPending(true);
+        try {
+          const parameters = new URLSearchParams({
+            category: categoryId,
+            family: familyId,
+            limit: '24',
+            q: materialQuery,
+            system: systemId,
+          });
+          if (materialVariantId !== '' && selectedMaterial === null && materialQuery === '') {
+            parameters.set('selected', materialVariantId);
+          }
+          const page = await jsonRequest<ConfiguratorMaterialSearchResponse>(
+            `/api/v1/configurator/materials?${parameters.toString()}`,
+            { signal: controller.signal },
+          );
+          setMaterialResults([...page.items]);
+          setMaterialCursor(page.nextCursor);
+          setMaterialTotal(page.total);
+          if (materialVariantId !== '' && selectedMaterial === null) {
+            setSelectedMaterial(page.items.find((item) => item.id === materialVariantId) ?? null);
+          }
+        } catch (loadError) {
+          if (!controller.signal.aborted) {
+            setError('Не удалось загрузить материалы. Повторите поиск.');
+          }
+        } finally {
+          if (!controller.signal.aborted) setMaterialPending(false);
+        }
+      })();
+    }, 200);
+    return () => {
+      globalThis.clearTimeout(timeout);
+      controller.abort();
+    };
+  }, [
+    bootstrap,
+    categoryId,
+    familyId,
+    materialQuery,
+    materialVariantId,
+    selectedMaterial,
+    step,
+    systemId,
+  ]);
+
   const family = bootstrap?.families.find((item) => item.id === familyId);
-  const familyProfiles = useMemo(
-    () => bootstrap?.profiles.filter((profile) => profile.productFamilyId === familyId) ?? [],
+  const familySystems = useMemo(
+    () => bootstrap?.systems.filter((system) => system.familyId === familyId) ?? [],
     [bootstrap, familyId],
   );
-  const categoryProfiles = familyProfiles.filter(
-    (profile) => profile.optionData.categoryId === categoryId,
-  );
-  const systemProfiles = categoryProfiles.filter((profile) => profile.productSystemId === systemId);
+  const categorySystems = familySystems.filter((system) => system.categoryId === categoryId);
+  const systemProfiles =
+    bootstrap?.profiles.filter((profile) => profile.productSystemId === systemId) ?? [];
   const modelProfiles = systemProfiles.filter((profile) => profile.configuratorModelId === modelId);
-  const profile =
-    modelProfiles.find((item) => item.materialVariantId === materialVariantId) ??
-    modelProfiles[0] ??
-    null;
+  const automaticProfile = bootstrap?.profiles.find(
+    (item) => item.productSystemId === systemId && item.materialVariantId === materialVariantId,
+  );
+  const profile = automaticProfile ?? modelProfiles[0] ?? systemProfiles[0] ?? null;
 
   const resetAfterFamily = (id: string) => {
     setFamilyId(id);
@@ -283,6 +345,11 @@ export function ProductConfigurator({
     setModelId('');
     setMountingTypeId('');
     setMaterialVariantId('');
+    setSelectedMaterial(null);
+    setMaterialQuery('');
+    setMaterialResults([]);
+    setMaterialCursor(null);
+    setMaterialTotal(0);
     setHardwareOptionId('');
     setControlTypeId('');
     setAdditionalOptionIds([]);
@@ -295,11 +362,69 @@ export function ProductConfigurator({
 
   const advance = () => {
     setError(null);
-    if (step === 0 && family?.automaticPricing === false) {
-      setStep(9);
-      return;
-    }
     setStep((current) => Math.min(10, current + 1));
+  };
+
+  const selectCategory = (id: string) => {
+    setCategoryId(id);
+    setSystemId('');
+    setModelId('');
+    setMaterialVariantId('');
+    setSelectedMaterial(null);
+    setMaterialResults([]);
+    setMaterialCursor(null);
+  };
+
+  const selectSystem = (id: string) => {
+    setSystemId(id);
+    const firstProfile = bootstrap?.profiles.find((item) => item.productSystemId === id);
+    setModelId(firstProfile?.configuratorModelId ?? '');
+    setMaterialVariantId('');
+    setSelectedMaterial(null);
+    setMaterialResults([]);
+    setMaterialCursor(null);
+  };
+
+  const selectMaterial = (item: MaterialResult) => {
+    if (!item.selectable) return;
+    setMaterialVariantId(item.id);
+    setSelectedMaterial(item);
+    const exactProfile = bootstrap?.profiles.find(
+      (candidate) =>
+        candidate.productSystemId === systemId && candidate.materialVariantId === item.id,
+    );
+    if (exactProfile !== undefined) setModelId(exactProfile.configuratorModelId);
+    setResult(null);
+    setCalculationToken(null);
+    setQuote(null);
+    setCartAdded(false);
+    setCartCount(null);
+  };
+
+  const loadMoreMaterials = async () => {
+    if (materialCursor === null || bootstrap === null) return;
+    setMaterialPending(true);
+    setError(null);
+    try {
+      const parameters = new URLSearchParams({
+        category: categoryId,
+        cursor: materialCursor,
+        family: familyId,
+        limit: '24',
+        q: materialQuery,
+        system: systemId,
+      });
+      const page = await jsonRequest<ConfiguratorMaterialSearchResponse>(
+        `/api/v1/configurator/materials?${parameters.toString()}`,
+      );
+      setMaterialResults((current) => [...current, ...page.items]);
+      setMaterialCursor(page.nextCursor);
+      setMaterialTotal(page.total);
+    } catch {
+      setError('Не удалось загрузить следующую страницу материалов. Повторите попытку.');
+    } finally {
+      setMaterialPending(false);
+    }
   };
 
   const selection = (): PricingSelectionContract | null => {
@@ -323,12 +448,18 @@ export function ProductConfigurator({
   const calculate = async () => {
     const input = selection();
     if (bootstrap === null) return;
+    if (selectedMaterial === null || materialVariantId === '') {
+      setError('Выберите доступный материал перед расчётом.');
+      setStep(6);
+      return;
+    }
     setPending(true);
     setError(null);
     setQuote(null);
     setCartAdded(false);
     try {
-      const requestOnly = family?.automaticPricing === false;
+      const requestOnly =
+        selectedMaterial?.pricing !== 'AUTOMATIC' || automaticProfile === undefined;
       if (!requestOnly && input === null) return;
       const response = await jsonRequest<PricingCalculationResponse>(
         requestOnly ? '/api/v1/pricing/request-price' : '/api/v1/pricing/calculate',
@@ -337,8 +468,13 @@ export function ProductConfigurator({
             requestOnly
               ? {
                   catalogVersionId: bootstrap.catalogVersionId,
+                  categoryId,
+                  heightMm,
+                  materialVariantId,
                   productFamilyId: familyId,
+                  productSystemId: systemId,
                   quantity,
+                  widthMm,
                 }
               : input,
           ),
@@ -367,7 +503,7 @@ export function ProductConfigurator({
       body: JSON.stringify({ calculationToken }),
       headers: {
         'Content-Type': 'application/json',
-        'Idempotency-Key': requestId('quote'),
+        'Idempotency-Key': `quote-${calculationToken}`,
         'X-CSRF-Token': bootstrap.csrfToken,
       },
       method: 'POST',
@@ -394,7 +530,7 @@ export function ProductConfigurator({
     setError(null);
     try {
       const saved = await ensureQuote();
-      await jsonRequest<GuestCartResponse>(
+      const cart = await jsonRequest<GuestCartResponse>(
         editReference === null ? '/api/v1/cart/items' : `/api/v1/cart/items/${editReference}`,
         {
           body: JSON.stringify({
@@ -403,13 +539,17 @@ export function ProductConfigurator({
           }),
           headers: {
             'Content-Type': 'application/json',
-            'Idempotency-Key': requestId(editReference === null ? 'cart-add' : 'cart-replace'),
+            'Idempotency-Key':
+              editReference === null
+                ? `cart-add-${saved.quoteToken}`
+                : `cart-replace-${editReference}-${saved.quoteToken}`,
             'X-CSRF-Token': bootstrap.csrfToken,
           },
           method: editReference === null ? 'POST' : 'PATCH',
         },
       );
       setCartAdded(true);
+      setCartCount(cart.summary.totalItemCount);
     } catch {
       setError('Не удалось добавить изделие в корзину. Обновите страницу и повторите попытку.');
     } finally {
@@ -427,7 +567,7 @@ export function ProductConfigurator({
         body: JSON.stringify({ quoteToken: saved.quoteToken }),
         headers: {
           'Content-Type': 'application/json',
-          'Idempotency-Key': requestId('preview'),
+          'Idempotency-Key': `preview-${saved.quoteToken}`,
           'X-CSRF-Token': bootstrap.csrfToken,
         },
         method: 'POST',
@@ -450,24 +590,23 @@ export function ProductConfigurator({
     );
   }
 
-  const categories = unique(familyProfiles, (item) => item.optionData.categoryId);
-  const systems = unique(categoryProfiles, (item) => item.productSystemId);
+  const categories = unique(familySystems, (item) => item.categoryId);
+  const systems = unique(categorySystems, (item) => item.id);
   const models = unique(systemProfiles, (item) => item.configuratorModelId);
-  const materials = unique(modelProfiles, (item) => item.materialVariantId);
   const canContinue =
     [
       familyId !== '',
       categoryId !== '',
       systemId !== '',
-      modelId !== '',
-      mountingTypeId !== '',
+      models.length === 0 || modelId !== '',
+      profile === null || mountingTypeId !== '',
       Number.isSafeInteger(widthMm) &&
         widthMm > 0 &&
         Number.isSafeInteger(heightMm) &&
         heightMm > 0,
-      materialVariantId !== '',
-      hardwareOptionId !== '',
-      controlTypeId !== '',
+      materialVariantId !== '' && selectedMaterial?.selectable === true,
+      profile === null || selectedMaterial?.pricing === 'MANUAL' || hardwareOptionId !== '',
+      profile === null || selectedMaterial?.pricing === 'MANUAL' || controlTypeId !== '',
       Number.isSafeInteger(quantity) && quantity > 0 && quantity <= 1000,
       true,
     ][step] ?? false;
@@ -515,45 +654,62 @@ export function ProductConfigurator({
         {step === 1 ? (
           <ChoiceGrid
             items={categories.map((item) => ({
-              id: item.optionData.categoryId,
-              label: item.optionData.categoryName,
+              id: item.categoryId,
+              label: item.categoryName,
             }))}
-            onChange={setCategoryId}
+            onChange={selectCategory}
             value={categoryId}
           />
         ) : null}
         {step === 2 ? (
           <ChoiceGrid
             items={systems.map((item) => ({
-              id: item.productSystemId,
-              label: item.optionData.systemName,
+              id: item.id,
+              label: item.name,
             }))}
-            onChange={setSystemId}
+            onChange={selectSystem}
             value={systemId}
           />
         ) : null}
         {step === 3 ? (
-          <ChoiceGrid
-            items={models.map((item) => ({
-              id: item.configuratorModelId,
-              label: item.productModelName,
-              meta: item.productModelCode,
-            }))}
-            onChange={setModelId}
-            value={modelId}
-          />
+          models.length === 0 ? (
+            <div className="configurator-manual-note">
+              <strong>Модель подтвердит менеджер</strong>
+              <p>
+                Для этой системы нет проверенной автоматической модели. Материал всё равно можно
+                выбрать для ручного расчёта.
+              </p>
+            </div>
+          ) : (
+            <ChoiceGrid
+              items={models.map((item) => ({
+                id: item.configuratorModelId,
+                label: item.productModelName,
+                meta: item.productModelCode,
+              }))}
+              onChange={setModelId}
+              value={modelId}
+            />
+          )
         ) : null}
-        {step === 4 && profile !== null ? (
-          <ChoiceGrid
-            items={profile.optionData.mountingTypes.map((item) => ({
-              id: item.id,
-              label: item.name,
-            }))}
-            onChange={setMountingTypeId}
-            value={mountingTypeId}
-          />
+        {step === 4 ? (
+          profile === null ? (
+            <div className="configurator-manual-note">
+              <strong>Способ монтажа уточнит мастер</strong>
+              <p>Мы не подставляем неподтверждённую комплектацию.</p>
+            </div>
+          ) : (
+            <ChoiceGrid
+              items={profile.optionData.mountingTypes.map((item) => ({
+                id: item.id,
+                label: item.name,
+              }))}
+              onChange={setMountingTypeId}
+              value={mountingTypeId}
+            />
+          )
         ) : null}
-        {step === 5 && profile !== null ? (
+        {step === 5 ? (
           <div className="dimension-grid">
             <label>
               Ширина, мм
@@ -566,7 +722,9 @@ export function ProductConfigurator({
                 value={widthMm}
               />
               <small>
-                Проверенный диапазон: {profile.minimumWidthMm}–{profile.maximumWidthMm} мм
+                {profile === null
+                  ? 'Размер проверит мастер перед подтверждением.'
+                  : `Проверенный диапазон: ${profile.minimumWidthMm}–${profile.maximumWidthMm} мм`}
               </small>
             </label>
             <label>
@@ -580,34 +738,45 @@ export function ProductConfigurator({
                 value={heightMm}
               />
               <small>
-                Проверенный диапазон: {profile.minimumHeightMm}–{profile.maximumHeightMm} мм
+                {profile === null
+                  ? 'Размер проверит мастер перед подтверждением.'
+                  : `Проверенный диапазон: ${profile.minimumHeightMm}–${profile.maximumHeightMm} мм`}
               </small>
             </label>
           </div>
         ) : null}
         {step === 6 ? (
-          <ChoiceGrid
-            items={materials.map((item) => ({
-              id: item.materialVariantId,
-              label: item.optionData.materialName,
-              meta: `${item.optionData.materialColor} · арт. ${item.optionData.materialArticle}`,
-            }))}
-            onChange={setMaterialVariantId}
-            value={materialVariantId}
+          <MaterialSearch
+            cursor={materialCursor}
+            items={materialResults}
+            loadMore={loadMoreMaterials}
+            onQueryChange={setMaterialQuery}
+            onSelect={selectMaterial}
+            pending={materialPending}
+            query={materialQuery}
+            selected={selectedMaterial}
+            total={materialTotal}
           />
         ) : null}
-        {step === 7 && profile !== null ? (
-          <ChoiceGrid
-            items={profile.optionData.hardwareOptions.map((item) => ({
-              id: item.id,
-              label: item.name,
-              meta: item.amountMinor === 0 ? 'Включено' : `+ ${money(item.amountMinor)}`,
-            }))}
-            onChange={setHardwareOptionId}
-            value={hardwareOptionId}
-          />
+        {step === 7 ? (
+          profile === null || selectedMaterial?.pricing === 'MANUAL' ? (
+            <div className="configurator-manual-note">
+              <strong>Фурнитуру подберёт менеджер</strong>
+              <p>Стоимость и совместимость комплектации будут подтверждены вручную.</p>
+            </div>
+          ) : (
+            <ChoiceGrid
+              items={profile.optionData.hardwareOptions.map((item) => ({
+                id: item.id,
+                label: item.name,
+                meta: item.amountMinor === 0 ? 'Включено' : `+ ${money(item.amountMinor)}`,
+              }))}
+              onChange={setHardwareOptionId}
+              value={hardwareOptionId}
+            />
+          )
         ) : null}
-        {step === 8 && profile !== null ? (
+        {step === 8 && profile !== null && selectedMaterial?.pricing !== 'MANUAL' ? (
           <div className="option-stack">
             <ChoiceGrid
               items={profile.optionData.controlTypes.map((item) => ({
@@ -641,6 +810,11 @@ export function ProductConfigurator({
               )}
             </fieldset>
           </div>
+        ) : step === 8 ? (
+          <div className="configurator-manual-note">
+            <strong>Управление и опции проверит менеджер</strong>
+            <p>Неподтверждённые опции не влияют на предварительный результат.</p>
+          </div>
         ) : null}
         {step === 9 ? (
           <label className="quantity-field">
@@ -660,11 +834,28 @@ export function ProductConfigurator({
           <ResultPanel
             addToCart={addToCart}
             cartAdded={cartAdded}
+            cartCount={cartCount}
+            changeParameters={() => {
+              setStep(5);
+              setResult(null);
+              setCalculationToken(null);
+              setQuote(null);
+              setCartAdded(false);
+              setCartCount(null);
+            }}
             openPreview={openPreview}
             pending={pending}
-            previewAvailable={calculationToken !== null && family?.automaticPricing !== false}
+            previewAvailable={
+              calculationToken !== null &&
+              automaticProfile !== undefined &&
+              (result.status === 'CALCULATED' || result.status === 'SOURCE_DATA_STALE')
+            }
             previewPending={previewPending}
             quote={quote}
+            restart={() => {
+              globalThis.sessionStorage.removeItem(configuratorSessionKey);
+              globalThis.location.assign('/configure');
+            }}
             result={result}
             saveQuote={saveQuote}
           />
@@ -715,11 +906,13 @@ export function ProductConfigurator({
           <dt>Система</dt>
           <dd>
             {profile?.optionData.systemName ??
-              systems.find((item) => item.productSystemId === systemId)?.optionData.systemName ??
+              systems.find((item) => item.id === systemId)?.name ??
               '—'}
           </dd>
           <dt>Модель</dt>
-          <dd>{profile?.productModelName ?? '—'}</dd>
+          <dd>{profile?.productModelName ?? 'Уточнит менеджер'}</dd>
+          <dt>Материал</dt>
+          <dd>{selectedMaterial?.name ?? '—'}</dd>
           <dt>Размер</dt>
           <dd>
             {widthMm} × {heightMm} мм
@@ -763,24 +956,127 @@ function ChoiceGrid({
   );
 }
 
+function MaterialSearch({
+  cursor,
+  items,
+  loadMore,
+  onQueryChange,
+  onSelect,
+  pending,
+  query,
+  selected,
+  total,
+}: {
+  readonly cursor: string | null;
+  readonly items: readonly MaterialResult[];
+  readonly loadMore: () => Promise<void>;
+  readonly onQueryChange: (value: string) => void;
+  readonly onSelect: (item: MaterialResult) => void;
+  readonly pending: boolean;
+  readonly query: string;
+  readonly selected: MaterialResult | null;
+  readonly total: number;
+}): React.JSX.Element {
+  return (
+    <div className="configurator-material-search">
+      <label className="material-search-field">
+        Найти по названию, артикулу или цвету
+        <input
+          autoComplete="off"
+          onChange={(event) => onQueryChange(event.currentTarget.value)}
+          placeholder="Например, 5992 или серый"
+          type="search"
+          value={query}
+        />
+      </label>
+      {selected === null ? null : (
+        <p className="material-selected" role="status">
+          Выбрано: <strong>{selected.name}</strong>, арт. {selected.article}
+        </p>
+      )}
+      <p className="material-search-count" aria-live="polite">
+        {pending && items.length === 0 ? 'Ищем материалы…' : `Найдено материалов: ${total}`}
+      </p>
+      {!pending && items.length === 0 ? (
+        <div className="configurator-empty-state">
+          <strong>Материалы не найдены</strong>
+          <p>Измените запрос или вернитесь к выбору системы.</p>
+        </div>
+      ) : (
+        <div className="configurator-material-grid">
+          {items.map((item) => (
+            <button
+              aria-pressed={selected?.id === item.id}
+              className={selected?.id === item.id ? 'is-selected' : ''}
+              disabled={!item.selectable}
+              key={item.id}
+              onClick={() => onSelect(item)}
+              type="button"
+            >
+              <span className="configurator-material-image">
+                {item.image === null ? (
+                  <span aria-hidden="true" className="material-image-placeholder">
+                    Фото уточняется
+                  </span>
+                ) : (
+                  <Image
+                    alt=""
+                    height={item.image.height}
+                    sizes="(max-width: 560px) 42vw, 180px"
+                    src={item.image.url}
+                    width={item.image.width}
+                  />
+                )}
+              </span>
+              <strong>{item.name}</strong>
+              <span>Арт. {item.article}</span>
+              <span>{item.color}</span>
+              <span>{item.category}</span>
+              <span>{item.system}</span>
+              <span>{item.availabilityLabel}</span>
+              <span>{item.calculationLabel}</span>
+            </button>
+          ))}
+        </div>
+      )}
+      {cursor === null ? null : (
+        <button
+          className="material-load-more"
+          disabled={pending}
+          onClick={() => void loadMore()}
+          type="button"
+        >
+          {pending ? 'Загружаем…' : 'Показать ещё'}
+        </button>
+      )}
+    </div>
+  );
+}
+
 function ResultPanel({
   addToCart,
   cartAdded,
+  cartCount,
+  changeParameters,
   openPreview,
   pending,
   previewAvailable,
   previewPending,
   quote,
+  restart,
   result,
   saveQuote,
 }: {
   readonly addToCart: () => Promise<void>;
   readonly cartAdded: boolean;
+  readonly cartCount: number | null;
+  readonly changeParameters: () => void;
   readonly openPreview: () => Promise<void>;
   readonly pending: boolean;
   readonly previewAvailable: boolean;
   readonly previewPending: boolean;
   readonly quote: QuoteSnapshotResponse | null;
+  readonly restart: () => void;
   readonly result: Result;
   readonly saveQuote: () => Promise<void>;
 }): React.JSX.Element {
@@ -878,14 +1174,23 @@ function ResultPanel({
           </button>
           {cartAdded ? (
             <p className="cart-add-confirmation" role="status">
-              Изделие сохранено по этому расчёту. <Link href="/cart">Открыть корзину →</Link>{' '}
-              <Link href="/catalog">Продолжить выбор</Link>
+              Изделие сохранено по этому расчёту
+              {cartCount === null ? '.' : `. В корзине: ${cartCount}.`}{' '}
+              <Link href="/cart">Открыть корзину →</Link>
             </p>
           ) : null}
         </div>
       ) : (
         <p className="configurator-error">Эту конфигурацию нельзя добавить в корзину.</p>
       )}
+      <div className="configurator-result-actions">
+        <button onClick={changeParameters} type="button">
+          Изменить параметры
+        </button>
+        <button onClick={restart} type="button">
+          Рассчитать ещё одно окно
+        </button>
+      </div>
     </div>
   );
 }

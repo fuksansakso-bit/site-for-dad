@@ -1,4 +1,11 @@
 export { calculatePrice, minimumUnitPriceKopecks, multiplyDivideRoundHalfUp } from './engine.js';
+export {
+  classifyConfiguratorCoverage,
+  configuratorCoverageSelectable,
+  configuratorCoverageStatuses,
+  type ConfiguratorCoverageEvidence,
+  type ConfiguratorCoverageStatus,
+} from './coverage.js';
 export { verifyPricingParity } from './parity.js';
 export { filterCompatibleProfiles, validatePricingSelection } from './validation.js';
 export {
@@ -21,6 +28,10 @@ export {
   type PricingVerificationStatus,
   type PublicPricingProfile,
   type ConfiguratorFamilyOption,
+  type ConfiguratorMaterialSearchItem,
+  type ConfiguratorMaterialSearchPage,
+  type ConfiguratorMaterialSearchQuery,
+  type ConfiguratorSystemOption,
   type ConfiguratorBootstrap,
   type StoredPricingCalculation,
   type QuoteSnapshotView,

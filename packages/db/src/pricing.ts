@@ -3,9 +3,13 @@ import { createHash, randomBytes } from 'node:crypto';
 import type { DatabaseEnvironment } from '@project-name/config/server';
 import {
   calculatePrice,
+  classifyConfiguratorCoverage,
   validatePricingSelection,
   verifyPricingParity,
   type ConfiguratorBootstrap,
+  type ConfiguratorMaterialSearchItem,
+  type ConfiguratorMaterialSearchPage,
+  type ConfiguratorMaterialSearchQuery,
   type PricingAdminOverview,
   type PricingResult,
   type PricingRuleProfile,
@@ -101,6 +105,23 @@ interface QuoteRow {
   readonly status: PricingResult['status'];
 }
 
+interface ConfiguratorMaterialRow {
+  readonly article: string;
+  readonly automatic_pricing: boolean;
+  readonly availability_status: string;
+  readonly category_name: string;
+  readonly color_name: string | null;
+  readonly compatible_selected: boolean;
+  readonly has_compatibility: boolean;
+  readonly image_height: number | null;
+  readonly image_id: string | null;
+  readonly image_width: number | null;
+  readonly name: string;
+  readonly system_name: string;
+  readonly total_count: string;
+  readonly variant_id: string;
+}
+
 export interface PricingAdapter {
   readonly activateVersion: (input: PricingAdminCommand) => Promise<void>;
   readonly calculate: (input: PricingCalculateCommand) => Promise<StoredPricingCalculation>;
@@ -108,6 +129,9 @@ export interface PricingAdapter {
   readonly getAdminOverview: () => Promise<PricingAdminOverview>;
   readonly getBootstrap: () => Promise<ConfiguratorBootstrap>;
   readonly getQuote: (token: string) => Promise<QuoteSnapshotView>;
+  readonly searchMaterials: (
+    query: ConfiguratorMaterialSearchQuery,
+  ) => Promise<ConfiguratorMaterialSearchPage>;
   readonly rejectVersion: (input: PricingAdminCommand) => Promise<void>;
   readonly removeLocalOverride: (input: PricingOverrideRemoveCommand) => Promise<void>;
   readonly requestPrice: (input: PricingRequestPriceCommand) => Promise<StoredPricingCalculation>;
@@ -125,10 +149,15 @@ export interface PricingCalculateCommand {
 
 export interface PricingRequestPriceCommand {
   readonly catalogVersionId: string;
+  readonly categoryId?: string | undefined;
   readonly correlationId: string;
+  readonly heightMm?: number | undefined;
   readonly idempotencyKey: string;
+  readonly materialVariantId?: string | undefined;
   readonly productFamilyId: string;
+  readonly productSystemId?: string | undefined;
   readonly quantity: number;
+  readonly widthMm?: number | undefined;
 }
 
 export interface PricingQuoteSaveCommand {
@@ -386,6 +415,135 @@ async function publishedSelection(
   return result.rows[0]?.valid === true;
 }
 
+function materialAvailability(value: string): ConfiguratorMaterialSearchItem['availability'] {
+  if (value === 'AVAILABLE') return 'IN_STOCK';
+  if (value === 'OUT_OF_STOCK') return 'OUT_OF_STOCK';
+  return 'INQUIRY_ONLY';
+}
+
+async function searchConfiguratorMaterials(
+  client: Pool | PoolClient,
+  state: ActiveStateRow,
+  query: ConfiguratorMaterialSearchQuery,
+): Promise<ConfiguratorMaterialSearchPage> {
+  const search = `%${query.query.replaceAll('\\', '\\\\').replaceAll('%', '\\%').replaceAll('_', '\\_')}%`;
+  const result = await client.query<ConfiguratorMaterialRow>(
+    `
+    WITH selected_system AS (
+      SELECT system_row.id, system_row.name
+      FROM product_system system_row
+      WHERE system_row.id = $4::uuid
+        AND system_row.family_id = $2::uuid
+    ), candidates AS (
+      SELECT variant.id::text AS variant_id, variant.name, variant.article,
+             color.name AS color_name, category.name AS category_name,
+             selected_system.name AS system_name,
+             availability.status::text AS availability_status,
+             EXISTS (
+               SELECT 1 FROM compatibility_rule compatible
+               WHERE compatible.material_variant_id = variant.id
+             ) AS has_compatibility,
+             EXISTS (
+               SELECT 1 FROM compatibility_rule compatible
+               WHERE compatible.material_variant_id = variant.id
+                 AND compatible.system_id = selected_system.id
+             ) AS compatible_selected,
+             EXISTS (
+               SELECT 1 FROM pricing_rule rule
+               JOIN price_version price ON price.id = rule.price_version_id
+               WHERE rule.catalog_version_id = $1::uuid
+                 AND rule.price_version_id = $8::uuid
+                 AND rule.product_system_id = selected_system.id
+                 AND rule.material_variant_id = variant.id
+                 AND rule.verification_status = 'VERIFIED'
+                 AND rule.parity_status = 'PASSED'
+                 AND price.status = 'ACTIVE' AND price.activation_key = 'PUBLIC'
+             ) AS automatic_pricing,
+             CASE WHEN media.publication_status = 'PUBLICATION_APPROVED'
+                        AND media.rights_status IN ('PARTNER_LICENSE', 'OWNER_CREATED')
+                  THEN media.id::text END AS image_id,
+             CASE WHEN media.publication_status = 'PUBLICATION_APPROVED'
+                        AND media.rights_status IN ('PARTNER_LICENSE', 'OWNER_CREATED')
+                  THEN media.width END AS image_width,
+             CASE WHEN media.publication_status = 'PUBLICATION_APPROVED'
+                        AND media.rights_status IN ('PARTNER_LICENSE', 'OWNER_CREATED')
+                  THEN media.height END AS image_height
+      FROM material_variant variant
+      JOIN material ON material.id = variant.material_id
+      JOIN product_category category ON category.id = material.category_id
+      JOIN business_catalog_entry business ON business.material_variant_id = variant.id
+      JOIN catalog_version_entry member
+        ON member.business_catalog_entry_id = business.id
+       AND member.catalog_version_id = $1::uuid
+      JOIN publication_record publication ON publication.id = member.publication_record_id
+      JOIN availability_record availability ON availability.id = member.availability_record_id
+      CROSS JOIN selected_system
+      LEFT JOIN color ON color.id = variant.color_id
+      LEFT JOIN media_asset media ON media.id = member.primary_media_asset_id
+      WHERE material.family_id = $2::uuid
+        AND material.category_id = $3::uuid
+        AND business.visibility = 'VISIBLE'
+        AND publication.status = 'PUBLISHED'
+        AND availability.status IN ('AVAILABLE', 'OUT_OF_STOCK', 'INQUIRY_ONLY')
+        AND ($9::uuid IS NULL OR variant.id = $9::uuid)
+        AND ($5 = '%%' OR variant.name ILIKE $5 ESCAPE '\\'
+             OR variant.article ILIKE $5 ESCAPE '\\'
+             OR material.name ILIKE $5 ESCAPE '\\'
+             OR COALESCE(color.name, '') ILIKE $5 ESCAPE '\\')
+    )
+    SELECT *, count(*) OVER ()::text AS total_count
+    FROM candidates
+    ORDER BY CASE
+               WHEN compatible_selected AND automatic_pricing THEN 0
+               WHEN compatible_selected THEN 1
+               WHEN has_compatibility THEN 2
+               ELSE 3
+             END,
+             lower(name), lower(article), variant_id
+    LIMIT $6 OFFSET $7
+  `,
+    [
+      state.catalog_version_id,
+      query.familyId,
+      query.categoryId,
+      query.systemId,
+      search,
+      query.limit,
+      query.offset,
+      state.price_version_id,
+      query.selectedMaterialId ?? null,
+    ],
+  );
+  const items = result.rows.map((row): ConfiguratorMaterialSearchItem => {
+    const coverageStatus = classifyConfiguratorCoverage({
+      automaticPricing: row.automatic_pricing,
+      compatibleWithSelectedSystem: row.compatible_selected,
+      hasAnyCompatibleSystem: row.has_compatibility,
+      hidden: false,
+      published: true,
+    });
+    return {
+      article: row.article,
+      availability: materialAvailability(row.availability_status),
+      categoryName: row.category_name,
+      color: row.color_name ?? 'Цвет не указан',
+      coverageStatus,
+      id: row.variant_id,
+      image:
+        row.image_id === null || row.image_width === null || row.image_height === null
+          ? null
+          : { height: row.image_height, id: row.image_id, width: row.image_width },
+      name: row.name,
+      systemName: row.system_name,
+    };
+  });
+  return {
+    catalogVersionId: state.catalog_version_id,
+    items,
+    total: Number(result.rows[0]?.total_count ?? 0),
+  };
+}
+
 async function localOverride(
   client: Pool | PoolClient,
   materialVariantId: string,
@@ -563,7 +721,7 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
         if (state.price_version_id === null || state.price_version_number === null) {
           throw new PricingStoreError('PRICING_NOT_FOUND');
         }
-        const [profiles, familyRows] = await Promise.all([
+        const [profiles, familyRows, systemRows] = await Promise.all([
           eligibleProfiles(pool, state),
           pool.query<{ automatic_pricing: boolean; code: string; id: string; name: string }>(
             `
@@ -588,6 +746,36 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
           `,
             [state.catalog_version_id, state.price_version_id],
           ),
+          pool.query<{
+            category_id: string;
+            category_name: string;
+            family_id: string;
+            id: string;
+            name: string;
+          }>(
+            `
+            SELECT DISTINCT system_row.id::text, system_row.name,
+                   material.family_id::text, category.id::text AS category_id,
+                   category.name AS category_name,
+                   category.sort_order AS category_sort_order,
+                   system_row.sort_order AS system_sort_order
+            FROM product_system system_row
+            JOIN compatibility_rule compatible ON compatible.system_id = system_row.id
+            JOIN material_variant variant ON variant.id = compatible.material_variant_id
+            JOIN material ON material.id = variant.material_id
+            JOIN product_category category ON category.id = material.category_id
+            JOIN business_catalog_entry business ON business.material_variant_id = variant.id
+            JOIN catalog_version_entry member
+              ON member.business_catalog_entry_id = business.id
+             AND member.catalog_version_id = $1::uuid
+            JOIN publication_record publication ON publication.id = member.publication_record_id
+            WHERE material.family_id = system_row.family_id
+              AND business.visibility = 'VISIBLE'
+              AND publication.status = 'PUBLISHED'
+            ORDER BY family_id, category_sort_order, system_sort_order, system_row.name
+          `,
+            [state.catalog_version_id],
+          ),
         ]);
         return {
           catalogVersionId: state.catalog_version_id,
@@ -601,7 +789,25 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
           priceVersionId: state.price_version_id,
           priceVersionNumber: state.price_version_number,
           profiles: profiles.map(publicProfile),
+          systems: systemRows.rows.map((row) => ({
+            categoryId: row.category_id,
+            categoryName: row.category_name,
+            familyId: row.family_id,
+            id: row.id,
+            name: row.name,
+          })),
         };
+      } catch (error) {
+        throw mapError(error);
+      }
+    },
+
+    async searchMaterials(query) {
+      try {
+        if (query.limit < 1 || query.limit > 48 || query.offset < 0 || query.query.length > 120) {
+          throw new PricingStoreError('PRICING_INVALID_INPUT');
+        }
+        return await searchConfiguratorMaterials(pool, await activeState(pool), query);
       } catch (error) {
         throw mapError(error);
       }
@@ -779,8 +985,13 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
       assertOpaque(input.correlationId, 128);
       const requestDigest = digest({
         catalogVersionId: input.catalogVersionId,
+        categoryId: input.categoryId,
+        heightMm: input.heightMm,
+        materialVariantId: input.materialVariantId,
         productFamilyId: input.productFamilyId,
+        productSystemId: input.productSystemId,
         quantity: input.quantity,
+        widthMm: input.widthMm,
       });
       try {
         const previous = await pool.query<CalculationRow>(
@@ -806,30 +1017,89 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
         if (input.catalogVersionId !== state.catalog_version_id) {
           throw new PricingStoreError('PRICING_INVALID_INPUT');
         }
-        const familyResult = await pool.query<{ readonly name: string }>(
-          `
-          SELECT family.name
-          FROM product_family family
-          WHERE family.id = $1::uuid
-            AND EXISTS (
-              SELECT 1
-              FROM material
-              JOIN material_variant variant ON variant.material_id = material.id
+        const detailed =
+          input.categoryId !== undefined &&
+          input.heightMm !== undefined &&
+          input.materialVariantId !== undefined &&
+          input.productSystemId !== undefined &&
+          input.widthMm !== undefined;
+        const selectionResult = detailed
+          ? await pool.query<{
+              readonly article: string;
+              readonly color_name: string | null;
+              readonly family_name: string;
+              readonly material_name: string;
+              readonly system_name: string;
+            }>(
+              `
+              SELECT family.name AS family_name, system_row.name AS system_name,
+                     variant.name AS material_name, variant.article,
+                     color.name AS color_name
+              FROM material_variant variant
+              JOIN material ON material.id = variant.material_id
+              JOIN product_family family ON family.id = material.family_id
+              JOIN product_system system_row ON system_row.id = $5::uuid
               JOIN business_catalog_entry business ON business.material_variant_id = variant.id
               JOIN catalog_version_entry member
                 ON member.business_catalog_entry_id = business.id
                AND member.catalog_version_id = $2::uuid
               JOIN publication_record publication ON publication.id = member.publication_record_id
-              WHERE material.family_id = family.id
+              JOIN availability_record availability ON availability.id = member.availability_record_id
+              LEFT JOIN color ON color.id = variant.color_id
+              WHERE family.id = $1::uuid
+                AND material.category_id = $3::uuid
+                AND variant.id = $4::uuid
+                AND system_row.family_id = family.id
                 AND business.visibility = 'VISIBLE'
                 AND publication.status = 'PUBLISHED'
+                AND availability.status IN ('AVAILABLE', 'INQUIRY_ONLY')
+                AND EXISTS (
+                  SELECT 1 FROM compatibility_rule compatible
+                  WHERE compatible.material_variant_id = variant.id
+                    AND compatible.system_id = system_row.id
+                )
+              LIMIT 1
+            `,
+              [
+                input.productFamilyId,
+                state.catalog_version_id,
+                input.categoryId,
+                input.materialVariantId,
+                input.productSystemId,
+              ],
             )
-          LIMIT 1
-        `,
-          [input.productFamilyId, state.catalog_version_id],
-        );
-        const family = familyResult.rows[0];
-        if (family === undefined) throw new PricingStoreError('PRICING_INVALID_INPUT');
+          : await pool.query<{
+              readonly article: string;
+              readonly color_name: string | null;
+              readonly family_name: string;
+              readonly material_name: string;
+              readonly system_name: string;
+            }>(
+              `
+              SELECT family.name AS family_name, 'Уточнит менеджер' AS system_name,
+                     'Уточнит менеджер' AS material_name, 'Уточнит менеджер' AS article,
+                     NULL::text AS color_name
+              FROM product_family family
+              WHERE family.id = $1::uuid
+                AND EXISTS (
+                  SELECT 1
+                  FROM material
+                  JOIN material_variant variant ON variant.material_id = material.id
+                  JOIN business_catalog_entry business ON business.material_variant_id = variant.id
+                  JOIN catalog_version_entry member
+                    ON member.business_catalog_entry_id = business.id
+                   AND member.catalog_version_id = $2::uuid
+                  JOIN publication_record publication ON publication.id = member.publication_record_id
+                  WHERE material.family_id = family.id
+                    AND business.visibility = 'VISIBLE'
+                    AND publication.status = 'PUBLISHED'
+                )
+              LIMIT 1
+            `,
+              [input.productFamilyId, state.catalog_version_id],
+            );
+        const selectionNames = selectionResult.rows[0];
+        if (selectionNames === undefined) throw new PricingStoreError('PRICING_INVALID_INPUT');
         const result: PricingResult = {
           appliedOverrides: [],
           appliedRules: [],
@@ -845,7 +1115,9 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
           priceVersionId: state.price_version_id,
           productsSubtotalKopecks: null,
           quantity: input.quantity,
-          safeExplanation: 'Стоимость этого семейства уточнит менеджер после проверки параметров.',
+          safeExplanation: detailed
+            ? 'Стоимость этого материала уточнит менеджер.'
+            : 'Стоимость этого семейства уточнит менеджер после проверки параметров.',
           sourceVersion: null,
           status: 'PRICE_ON_REQUEST',
           unitBasePriceKopecks: null,
@@ -857,6 +1129,15 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
         const configuration = {
           ids: {
             catalogVersionId: state.catalog_version_id,
+            ...(detailed
+              ? {
+                  categoryId: input.categoryId,
+                  heightMm: input.heightMm,
+                  materialVariantId: input.materialVariantId,
+                  productSystemId: input.productSystemId,
+                  widthMm: input.widthMm,
+                }
+              : {}),
             productFamilyId: input.productFamilyId,
             quantity: input.quantity,
             requestOnly: true,
@@ -864,15 +1145,15 @@ export function createPricingAdapter(environment: DatabaseEnvironment): PricingA
           names: {
             additionalOptions: [],
             control: 'Уточнит менеджер',
-            family: family.name,
+            family: selectionNames.family_name,
             hardware: 'Уточнит менеджер',
-            material: 'Уточнит менеджер',
-            materialArticle: 'Уточнит менеджер',
-            materialColor: 'Уточнит менеджер',
+            material: selectionNames.material_name,
+            materialArticle: selectionNames.article,
+            materialColor: selectionNames.color_name ?? 'Цвет не указан',
             model: 'Уточнит менеджер',
             modelCode: 'Уточнит менеджер',
             mounting: 'Уточнит менеджер',
-            system: 'Уточнит менеджер',
+            system: selectionNames.system_name,
           },
         };
         const calculationToken = token();

@@ -82,6 +82,8 @@ export {
 } from './health.js';
 export {
   configuratorBootstrapResponseSchema,
+  configuratorMaterialSearchQuerySchema,
+  configuratorMaterialSearchResponseSchema,
   configuratorOptionSchema,
   pricingAdminCommandSchema,
   pricingAdminMutationResponseSchema,
@@ -98,6 +100,8 @@ export {
   quoteSaveRequestSchema,
   quoteSnapshotResponseSchema,
   type ConfiguratorBootstrapResponse,
+  type ConfiguratorMaterialSearchQueryContract,
+  type ConfiguratorMaterialSearchResponse,
   type PricingCalculationResponse,
   type PriceRequestCalculation,
   type PricingSelectionContract,

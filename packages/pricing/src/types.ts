@@ -1,3 +1,5 @@
+import type { ConfiguratorCoverageStatus } from './coverage.js';
+
 export const calculationStatuses = [
   'CALCULATED',
   'PRICE_ON_REQUEST',
@@ -185,6 +187,46 @@ export interface ConfiguratorFamilyOption {
   readonly name: string;
 }
 
+export interface ConfiguratorSystemOption {
+  readonly categoryId: string;
+  readonly categoryName: string;
+  readonly familyId: string;
+  readonly id: string;
+  readonly name: string;
+}
+
+export interface ConfiguratorMaterialSearchQuery {
+  readonly categoryId: string;
+  readonly familyId: string;
+  readonly limit: number;
+  readonly offset: number;
+  readonly query: string;
+  readonly selectedMaterialId?: string;
+  readonly systemId: string;
+}
+
+export interface ConfiguratorMaterialSearchItem {
+  readonly article: string;
+  readonly availability: 'INQUIRY_ONLY' | 'IN_STOCK' | 'OUT_OF_STOCK';
+  readonly categoryName: string;
+  readonly color: string;
+  readonly coverageStatus: ConfiguratorCoverageStatus;
+  readonly id: string;
+  readonly image: {
+    readonly height: number;
+    readonly id: string;
+    readonly width: number;
+  } | null;
+  readonly name: string;
+  readonly systemName: string;
+}
+
+export interface ConfiguratorMaterialSearchPage {
+  readonly catalogVersionId: string;
+  readonly items: readonly ConfiguratorMaterialSearchItem[];
+  readonly total: number;
+}
+
 export interface ConfiguratorBootstrap {
   readonly catalogVersionId: string;
   readonly catalogVersionNumber: number;
@@ -192,6 +234,7 @@ export interface ConfiguratorBootstrap {
   readonly priceVersionId: string;
   readonly priceVersionNumber: number;
   readonly profiles: readonly PublicPricingProfile[];
+  readonly systems: readonly ConfiguratorSystemOption[];
 }
 
 export interface StoredPricingCalculation {

@@ -645,6 +645,115 @@ h1 {
   font-size: 0.75rem;
   opacity: 0.7;
 }
+.configurator-manual-note,
+.configurator-empty-state {
+  border: 1px solid var(--line);
+  padding: 20px;
+  background: rgb(255 253 247 / 48%);
+}
+.configurator-manual-note p,
+.configurator-empty-state p {
+  margin-bottom: 0;
+  color: rgb(29 29 27 / 66%);
+  line-height: 1.55;
+}
+.configurator-material-search {
+  display: grid;
+  gap: 18px;
+}
+.material-search-field {
+  display: grid;
+  gap: 8px;
+  font-weight: 800;
+}
+.material-search-field input {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid var(--line);
+  padding: 10px 14px;
+  font: inherit;
+}
+.material-search-count,
+.material-selected {
+  margin: 0;
+}
+.material-search-count {
+  color: rgb(29 29 27 / 64%);
+}
+.material-selected {
+  border-left: 4px solid var(--sage);
+  padding: 10px 14px;
+  background: rgb(80 104 91 / 8%);
+}
+.configurator-material-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.configurator-material-grid > button {
+  display: grid;
+  min-width: 0;
+  min-height: 44px;
+  gap: 5px;
+  border: 1px solid var(--line);
+  padding: 10px;
+  background: rgb(255 253 247 / 58%);
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+}
+.configurator-material-grid > button.is-selected {
+  border: 2px solid var(--sage);
+  box-shadow: 0 0 0 2px rgb(80 104 91 / 16%);
+}
+.configurator-material-grid > button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+.configurator-material-grid > button span {
+  overflow-wrap: anywhere;
+  color: rgb(29 29 27 / 66%);
+  font-size: 0.75rem;
+}
+.configurator-material-image {
+  display: grid;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  place-items: center;
+  overflow: hidden;
+  background: #e8e1d4;
+}
+.configurator-material-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.material-image-placeholder {
+  padding: 10px;
+  text-align: center;
+}
+.material-load-more {
+  min-height: 48px;
+  border: 1px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  font-weight: 800;
+}
+.configurator-result-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+.configurator-result-actions button {
+  min-height: 48px;
+  border: 1px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  font-weight: 800;
+}
 .dimension-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -897,6 +1006,9 @@ h1 {
   .pricing-rule-table .pricing-admin-commands {
     grid-column: 1 / -1;
   }
+  .configurator-material-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 700px) {
@@ -915,6 +1027,9 @@ h1 {
   .configurator-choices,
   .dimension-grid {
     grid-template-columns: 1fr;
+  }
+  .configurator-material-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .configurator-summary {
     border-top: 1px solid var(--line);

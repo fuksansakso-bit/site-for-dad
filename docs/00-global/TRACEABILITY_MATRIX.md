@@ -1,14 +1,24 @@
 # Матрица трассируемости PROJECT_NAME
 
+## Phase 2A trace
+
+| Decision/scope | Implementation evidence | Verification/report |
+|---|---|---|
+| `OWNER-DECISION-021`, ADR-0013 | `supabase/migrations`, `apps/web`, `.env.example` | SQL/RLS/unit/browser/build suites; Phase 2A report |
+| `OWNER-DECISION-022`, `CATALOG-P2A-001`–`004` | `tooling/phase2a`, exclusion manifest | `migration:verify`, `DATA_MIGRATION_REPORT.md` |
+| `P2A-SCOPE-008` | WebP SHA-256 media pipeline | `migration:verify-media`, Free Tier audit |
+| staff-only Auth/RLS | server clients/admin guards | Auth/RLS/security tests; setup procedure |
+| no mandatory legacy runtime | web-only root `dev`/`build`, `LEGACY_FEATURES.md` | build and client artifact scan |
+
 ## 0. Статус
 
 | Поле | Значение |
 |---|---|
-| Фаза | Phase 1A–1F passed; Phase 1G+ hold |
-| Версия | 1.16.0 |
-| Дата | 2026-08-09, Europe/Moscow |
+| Фаза | Phase 1A–1F passed; Phase 1F.1 authorized; Phase 1G+ hold |
+| Версия | 1.17.0 |
+| Дата | 2026-08-12, Europe/Moscow |
 | Состояние покрытия | `COVERED_WITH_VISIBLE_TBD` |
-| Главный источник требований | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.24.0 |
+| Главный источник требований | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.25.0 |
 | Feature contract | [FEATURE_SPEC.md](../specs/01-product/FEATURE_SPEC.md) |
 | Stories | [USER_STORIES.md](../specs/01-product/USER_STORIES.md) |
 | Acceptance | [ACCEPTANCE_CRITERIA.md](../specs/01-product/ACCEPTANCE_CRITERIA.md) |
@@ -171,8 +181,8 @@ Post-MVP IDs `POST-MVP-001`–`015` have no Phase 1 delivery commitment and MUST
 
 | Acceptance | Реализация | Проверка / результат |
 |---|---|---|
-| `PLAN-1A-AC-001` | [Windows lifecycle](../../tooling/scripts/foundation-environment.ps1), [local contract](../../infrastructure/local/README.md) | Clean bootstrap, healthy status, stop, restart with no pending migrations, reset passed |
-| `PLAN-1A-AC-002` | [CI contract](../../infrastructure/ci/pipeline.json), [verification runner](../../tooling/scripts/verify-foundation.ps1) | 9 / 9 stages passed in worktree and clean clone; browser 20 / 20 |
+| `PLAN-1A-AC-001` | [Windows lifecycle](../../tooling/scripts/foundation-environment.ps1), [legacy local contract](../../legacy/infrastructure/local/README.md) | Historical Phase 1 clean bootstrap/restart evidence; not an active prerequisite |
+| `PLAN-1A-AC-002` | [Legacy CI contract](../../legacy/infrastructure/ci/pipeline.json), [verification runner](../../tooling/scripts/verify-foundation.ps1) | Historical Phase 1 evidence; active Phase 2A uses web-only commands |
 | `PLAN-1A-AC-003` | Workspace package manifests and public `src/index.ts` interfaces | [Boundary checker](../../tooling/scripts/check-boundaries.mjs) passed for 11 workspaces |
 | `PLAN-1A-AC-004` | [Typed config](../../packages/config/src/server.ts), redaction and artifact scanner | Config negative tests, repository/build scans and generated secret canaries passed |
 | `PLAN-1A-AC-005` | [Prisma schema](../../packages/db/prisma/schema.prisma), three versioned migrations | Empty/repeat/upgrade/drift/failed recovery/forward compensation passed on PostgreSQL 18.4 |
@@ -188,7 +198,7 @@ Detailed runtime versions, commit list, skipped production-only checks and accep
 
 | Requirement / decision | Implementation | Verification / result |
 |---|---|---|
-| `OWNER-DECISION-011`, `ARCH-SPEC-029/030`, `DEPLOY-SPEC-022/023` | [VersityGW Compose](../../infrastructure/local/compose.storage.yml), [Windows lifecycle](../../tooling/scripts/foundation-environment.ps1) | Exact v1.4.1 digest, loopback S3/Admin, POSIX data/versioning/IAM named volumes, graceful shutdown and Docker Desktop auto-recovery passed |
+| `OWNER-DECISION-011`, `ARCH-SPEC-029/030`, `DEPLOY-SPEC-022/023` | [Legacy VersityGW Compose](../../legacy/infrastructure/local/compose.storage.yml), [Windows lifecycle](../../tooling/scripts/foundation-environment.ps1) | Historical Phase 1 evidence retained outside active runtime |
 | `STORAGE-SPEC-022`–`027`, `TEST-SPEC-019`–`021` | [S3 adapter](../../packages/storage/src/s3-object-storage.ts), [contract suite](../../packages/storage/test/integration/storage-contract.integration.test.ts), [gate runner](../../tooling/scripts/storage-integration.ps1) | 15/15; all nine sizes byte/SHA-equal; signed read/write, multipart complete/abort, private buckets, failures/concurrency/idempotence and restart persistence passed |
 | `MEDIA-PIPE-024` | Real allowlisted AMIGO JPEG gate and media importer | 515,180 bytes, SHA-256 `ac86fc976afc2063cc97e1528611c978a348f357d26c8fe3c59b7c23f113d0cd`; 59/59 allowlisted assets imported and reverified after restart |
 
@@ -238,6 +248,15 @@ Detailed runtime versions, commit list, skipped production-only checks and accep
 | `QG-398`–`409`, contracts/migrations/browser/security/recovery | Strict BFF schemas, 25 additive migrations, scope/artifact/secret scanners and five-profile Playwright gates | Empty/repeat/upgrade/drift/recovery passed; browser smoke 25/25 and active catalog 5/5; exact Node 24.18.1 CI-equivalent stages passed with isolated data-plane skips recorded |
 | `QG-410`–`420`, docs/history/scope/delivery | Canonical specs, plan/report, twelve commits and Draft PR [#5](https://github.com/bataevabdullah2009-pixel/site-for-dad/pull/5) | `PASSED_PHASE_1F_BUSINESS_ADMINISTRATION`; `/account` 404, customer auth absent, guest/publicReference flow preserved and Phase 1G not started |
 
+### 8.7. Phase 1F.1 authorization and pending evidence
+
+| Gate / behavior | Canonical source | Verification / status |
+|---|---|---|
+| `QG-421`–`430`, scope/spec/pre-flight | `OWNER-DECISION-019/020`, [ADR-0012](../adr/ADR-0012-staff-password-authentication.md), [active plan](../06-plans/active/PHASE_1F1_MVP_FUNCTIONAL_COMPLETION_PLAN.md) and unique profile specs under `docs/specs` | `AUTHORIZED_PHASE_1F1_IN_PROGRESS`; merged Phase 1F baseline, critical routes and local database/worker/storage verified |
+| `QG-431`–`450`, coverage/cart/labels | `P1F1-CONFIG-*`, `P1F1-ADMIN-*`, `P1F1-CART-*`, `P1F1-API-*`, `P1F1-SEC-*` | Runtime, database and browser evidence pending completion |
+| `QG-451`–`468`, mobile/staff/VPS | `P1F1-RESP-*`, `P1F1-AUTH-*`, `P1F1-RBAC-*`, `P1F1-DEPLOY-*`, ADR-0012 | Runtime, security, recovery and artifact evidence pending completion |
+| `QG-469`–`480`, tests/docs/delivery | `P1F1-TEST-*`, active plan and canonical specs/code audit | Completion report, clean commits/push and Draft PR pending |
+
 ## 9. Coverage metrics
 
 | Метрика | Значение |
@@ -261,12 +280,13 @@ Detailed runtime versions, commit list, skipped production-only checks and accep
 | Phase 1D acceptance | `PASSED_PHASE_1D_STANDARD_PREVIEW`; QG-271–310 passed |
 | Phase 1E acceptance | `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`; QG-311–360 passed |
 | Phase 1F acceptance | `PASSED_PHASE_1F_BUSINESS_ADMINISTRATION`; QG-361–420 passed |
+| Phase 1F.1 entry | `AUTHORIZED_PHASE_1F1_IN_PROGRESS`; QG-421–430 passed, QG-431–480 open |
 
 ## 10. Completion conditions
 
 Покрытие считается валидным, если автоматическая проверка подтверждает существование всех linked files и каждого ID, stories сохраняют полный шаблон, acceptance содержит позитивное и негативное проверяемое поведение, test strategy содержит level/preconditions/input/expected result/status, а открытые TBD не обозначены как выполненные tests.
 
-Матрица отражает завершённые Phase 1A–1F. Phase 1E evidence находится в [plan](../06-plans/active/PHASE_1E_CART_WHATSAPP_ORDERS_PLAN.md) и [report](../06-plans/completed/PHASE_1E_CART_WHATSAPP_ORDERS_REPORT.md), а revised Phase 1F — в [plan](../06-plans/active/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_PLAN.md) и [report](../06-plans/completed/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_REPORT.md). Customer accounts, Phase 1G+ и production deployment не разрешены.
+Матрица отражает завершённые Phase 1A–1F и активную Phase 1F.1 по [плану](../06-plans/active/PHASE_1F1_MVP_FUNCTIONAL_COMPLETION_PLAN.md). Customer accounts, AI runtime/photo upload, final design, production deployment и Phase 1G+ не разрешены.
 
 ## 11. История изменений
 
@@ -290,3 +310,4 @@ Detailed runtime versions, commit list, skipped production-only checks and accep
 | 1.14.0 | 2026-08-09 | Linked `OWNER-DECISION-016`, immutable quote-backed cart/request snapshot, fixed-recipient handoff, safe public summary, minimal staff administration, active plan and QG-311–360; production PII and Phase 1F+ stay prohibited. |
 | 1.15.0 | 2026-08-09 | Closed Phase 1E traceability with cart/request/domain/DB/BFF/UI, fixed WhatsApp recipient, public/admin projections, real DB/Chromium/security/recovery evidence, completion report and QG-311–360; Phase 1F remains prohibited. |
 | 1.16.0 | 2026-08-09 | Linked and closed revised Phase 1F staff auth/RBAC/admin/request-contact/portfolio/settings/audit/jobs, preserved guest/publicReference flow, exact CI-equivalent evidence, report and QG-361–420; customer accounts and Phase 1G remain prohibited. |
+| 1.17.0 | 2026-08-12 | Linked `OWNER-DECISION-019/020`, ADR-0012, unique canonical Phase 1F.1 profile requirements, active plan and QG-421–480; implementation evidence remains explicitly open. |

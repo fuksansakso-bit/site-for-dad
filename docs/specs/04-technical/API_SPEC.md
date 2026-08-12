@@ -1,12 +1,16 @@
 # API and integration contract specification PROJECT_NAME
 
+## Phase 2A HTTP surface
+
+The active surface is public/catalog/calculator/cart/checkout/request pages, a server-authoritative quote/order endpoint, `/api/health`, and staff-authenticated admin mutations. The browser cannot insert orders with the anon key. Zod validation, generic Russian errors, opaque references, origin/CSRF controls and fresh server price calculation are mandatory; UUIDs, enum internals, SQL/RLS errors and service-role details are never public DTO fields.
+
 ## 0. Метаданные
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A–1F contracts implemented; customer account APIs absent |
-| Версия | 0.14.0 |
-| Дата | 2026-08-09 |
+| Статус | Phase 1F.1 search/coverage/cart/staff-security contracts authorized and in progress |
+| Версия | 0.15.0 |
+| Дата | 2026-08-12 |
 | Architecture/data | [ARCHITECTURE.md](ARCHITECTURE.md), [DATA_MODEL.md](DATA_MODEL.md) |
 | Security | [SECURITY_PRIVACY.md](SECURITY_PRIVACY.md) |
 
@@ -236,12 +240,23 @@ Phase 1E cart/request routes use strict shared Zod schemas, 32 KiB mutation limi
 
 ## 16. Dependencies, risks and open questions
 
+### 16.1. Phase 1F.1 API profile
+
+- **P1F1-API-001 — MUST:** configurator material search is `GET`, active-version bound and accepts family/system/model/query/filter/cursor/limit; response includes only public display fields, compatibility/pricing classification and next cursor.
+- **P1F1-API-002 — MUST:** complete cursor traversal is deterministic, capped and rejects invalid/stale/context-mismatched cursors without exposing signature or query internals.
+- **P1F1-API-003 — MUST:** coverage summary/list and mutation endpoints are staff-authorized, no-store, runtime-validated, revision/idempotency/audit aware and return safe reason codes plus optional authorized diagnostic projection.
+- **P1F1-API-004 — MUST:** cart add from configuration/preview accepts a quote token only; server resolves guest ownership and cart eligibility and returns cart item count plus stable item reference.
+- **P1F1-API-005 — MUST:** staff password login accepts `identifier` and `password` only, returns generic success/failure DTO, rotates cookie server-side and never returns actor existence, password/hash or raw session token.
+- **P1F1-API-006 — MUST:** password change, logout-all, individual revoke and staff lifecycle endpoints require current session, CSRF/origin, expected revision/idempotency where mutating and return no secret material.
+- **P1F1-API-007 — MUST:** public error payload has Russian explanation, action/retry path and optional correlation ID; raw exception/debug/internal IDs are forbidden.
+
 Dependencies: all domain/technical specs, auth/provider/hosting ADRs. Next.js same-origin BFF and Foundation error status mapping are accepted; open: public API exposure, browser upload flow, future webhook transport, concrete rate limits, API lifecycle/support window and WhatsApp mode. Risks: CRUD bypass of invariants, IDOR, non-idempotent retry, private URL leak, mixed version, error data exposure and contract overcoupling to vendor.
 
 ## 17. History
 
 | Версия | Дата | Изменение |
 |---|---|---|
+| 0.15.0 | 2026-08-12 | Authorized bounded configurator coverage, quote-only cart and password/session/staff API profiles. |
 | 0.1.0 | 2026-08-02 | Defined versioned resource/command/query, public/admin/visualization contracts, errors, events, idempotency and privacy boundaries. |
 | 0.2.0 | 2026-08-02 | Fixed the eight Phase 1A safe error codes, HTTP mapping, correlation/validation envelope and prohibited disclosures. |
 | 0.3.0 | 2026-08-02 | Recorded the two implemented health routes and verified that no business API or mutation route entered Phase 1A. |

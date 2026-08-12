@@ -1,12 +1,16 @@
 # Security and privacy specification PROJECT_NAME
 
+## Phase 2A Supabase boundary
+
+RLS is enabled on every exposed table. Guests read only published catalog/portfolio/public settings and cannot write orders through anon credentials. Active staff role comes from `staff_profiles`, never client metadata. `SUPABASE_SERVICE_ROLE_KEY` is server-only and forbidden in `NEXT_PUBLIC_*`, browser bundles, logs and errors. Admin/order routes validate origin, body, IDs and prices. Production PII remains blocked until existing legal/privacy questions close.
+
 ## 0. Метаданные
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A–1F verified; customer auth absent; production PII/provider gates retained |
-| Версия | 0.10.0 |
-| Дата | 2026-08-09 |
+| Статус | Phase 1F.1 staff password and public-data controls authorized; customer/AI runtime absent |
+| Версия | 0.11.0 |
+| Дата | 2026-08-12 |
 | Data model | [DATA_MODEL.md](DATA_MODEL.md) |
 | Roles | [ROLES_PERMISSIONS.md](../01-product/ROLES_PERMISSIONS.md) |
 
@@ -163,12 +167,24 @@ Phase 1E local/CI checkout uses synthetic contact data only. A 256-bit guest tok
 
 ## 20. Dependencies, risks and open questions
 
+### 20.1. Phase 1F.1 password and public-data controls
+
+- **P1F1-SEC-001 — MUST:** staff passwords are derived with server-only Argon2id per ADR-0012; plaintext, encoded hash, salt, session token and reset material are excluded from URL, API DTO, client bundle, logs, audit metadata, analytics, environment and command output.
+- **P1F1-SEC-002 — MUST:** login/change/logout/revoke/staff/coverage/cart mutations enforce exact origin, CSRF, content type/body bounds and rate/idempotency where applicable; authorization is rechecked inside the data command.
+- **P1F1-SEC-003 — MUST:** login throttling resists distributed identifier guessing using keyed normalized identity plus coarse client bucket, generic timing/message and temporary lock without storing raw password/IP.
+- **P1F1-SEC-004 — MUST:** successful login/password change rotates or revokes sessions to prevent fixation/replay; disable/demotion/reset and logout-all invalidate affected sessions immediately.
+- **P1F1-SEC-005 — MUST:** production startup rejects synthetic/development login, default signing keys, missing critical secrets and non-Secure staff cookie configuration.
+- **P1F1-SEC-006 — MUST:** public/configurator/cart/preview/request HTML, DTO and errors exclude raw technical statuses, UUIDs, source IDs, CatalogVersion/PriceVersion/internal rule IDs, parser/debug/provider messages and stack traces; correlation ID is shown only for support recovery.
+- **P1F1-SEC-007 — MUST:** price/status/version tampering cannot create or alter cart value; the server resolves the immutable QuoteSnapshot under guest ownership.
+- **P1F1-SEC-008 — MUST:** AI/photo provider credentials, requests and uploads do not exist in Phase 1F.1 runtime; documentation-only provider fields cannot be public environment variables.
+
 Dependencies: all specs, legal review, provider/hosting/storage/auth/AI ADR/evaluation. Open: `TBD-PRIV-*`, `TBD-ACCOUNT-*`, `TBD-INFRA-*`, controller/legal docs, exact retention/RPO/RTO, providers/regions/subprocessors, incident owners/timings, vulnerability SLAs and support access. Risks: legal incompleteness, public storage, IDOR, provider training/retention, secret/log leakage, incomplete deletion and security controls deferred after launch.
 
 ## 21. History
 
 | Версия | Дата | Изменение |
 |---|---|---|
+| 0.11.0 | 2026-08-12 | Authorized Argon2id/login/session controls, public technical-data redaction and quote-only price authority. |
 | 0.1.0 | 2026-08-02 | Defined threat model, mandatory controls, data inventory, provider/media/privacy/retention/incident and test contracts without invented policy values. |
 | 0.2.0 | 2026-08-02 | Recorded verified synthetic Foundation controls while retaining all PII/media/legal/provider production gates. |
 | 0.3.0 | 2026-08-02 | Added Phase 1B.1 non-PII catalog/media security boundary without enabling user media or production providers. |

@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Revised Phase 1F — staff-only passwordless identity; customer accounts deferred post-MVP |
-| Версия | 0.2.0 |
-| Дата | 2026-08-09 |
+| Статус | Phase 1F.1 staff password authentication authorized; customer accounts remain absent |
+| Версия | 0.4.0 |
+| Дата | 2026-08-12 |
 | Permissions | [ROLES_PERMISSIONS.md](../01-product/ROLES_PERMISSIONS.md) |
 | Security | [SECURITY_PRIVACY.md](../04-technical/SECURITY_PRIVACY.md) |
 
@@ -159,6 +159,18 @@ Tests: guest full funnel; optional account; valid/invalid/expired/replayed ident
 
 ## 13. Dependencies, risks and open questions
 
+### 13.1. Phase 1F.1 staff password profile
+
+- **P1F1-AUTH-001 — MUST:** `/admin/login` authenticates active OWNER/ADMIN/MANAGER by normalized login or e-mail plus password; customer signup/login/account remains absent.
+- **P1F1-AUTH-002 — MUST:** only Argon2id v19 encoded password records are stored, with unique random 16-byte salt, 32-byte tag and recorded parameters; plaintext password is never persisted, logged, returned, placed in URL or environment.
+- **P1F1-AUTH-003 — MUST:** login is enumeration-neutral, protected by normalized-identifier/coarse-client rate limits, failed-attempt audit and temporary lock; a successful login clears the applicable failure window.
+- **P1F1-AUTH-004 — MUST:** login rotates a presented session and issues only a random hash-at-rest staff session in an HttpOnly, Path `/`, SameSite=Strict, production-Secure cookie with absolute 12-hour expiry.
+- **P1F1-AUTH-005 — MUST:** first/bootstrap or reset password requires change before other admin work. Password change rechecks the current password where applicable, writes a new hash revision and revokes other sessions.
+- **P1F1-AUTH-006 — MUST:** `/admin/change-password` and `/admin/security` support password change, logout, logout all sessions and individual session revocation with CSRF/origin, audit and safe no-store responses.
+- **P1F1-AUTH-007 — MUST:** interactive CLI owner create/reset hides password input and confirmation, stores only Argon2id, is idempotent by normalized login/e-mail, never replaces an existing OWNER silently and never prints a hash/token.
+- **P1F1-AUTH-008 — MUST:** legacy e-mail-code/development-key authentication is allowed only in local/test. Production config fails closed if enabled or if a development session signing key is used.
+- **P1F1-AUTH-009 — MUST:** password recovery in MVP is an audited authorized CLI reset with forced change; no unapproved e-mail/SMS provider or security questions are invented.
+
 Dependencies: RBAC, cart/orders, admin, security/privacy, API/data, observability/deployment. Customer account questions are post-MVP; open Phase 1F risks are staff identity/MFA, recovery/support, production provider/region and notification channel. Risks: token leakage, enumeration, weak staff recovery, shared staff accounts and role/session revocation races.
 
 ## 14. Связанные требования and history
@@ -167,6 +179,7 @@ Links: `FR-AUTH-*`, `NFR-SEC-*`, `NFR-PRIV-*`, `RBAC-*`, `ACCOUNT-SPEC-001`–`0
 
 | Версия | Дата | Изменение |
 |---|---|---|
+| 0.4.0 | 2026-08-12 | ADR-0012 authorized Argon2id staff password login, rotation, lockout, password/security routes and safe CLI administration without customer identity. |
 | 0.1.0 | 2026-08-02 | Определены guest-first ownership, account/session/workload models, claim/recovery/delete boundaries and safe provider outage behavior. |
 | 0.2.0 | 2026-08-09 | `OWNER-DECISION-017` selected hash-only passwordless e-mail codes, provider-neutral delivery/local Mailpit, rotating customer/staff sessions, same-browser migration and account workspace while production delivery and deletion remain gated. |
 | 0.3.0 | 2026-08-09 | `OWNER-DECISION-018` withdraws customer auth/accounts from MVP before implementation acceptance; retained e-mail-code/session controls apply only to invited OWNER/ADMIN/MANAGER staff and the guest/publicReference journey remains unchanged. |

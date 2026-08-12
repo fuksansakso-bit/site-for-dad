@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Draft 0B — adaptive behavior and validation viewports defined |
-| Версия | 0.1.0 |
-| Дата | 2026-08-02 |
+| Статус | Phase 1F.1 critical public/admin mobile baseline authorized and in progress |
+| Версия | 0.2.0 |
+| Дата | 2026-08-12 |
 | Screen behavior | [SCREEN_SPECS.md](SCREEN_SPECS.md) |
 | Accessibility | [ACCESSIBILITY_SPEC.md](ACCESSIBILITY_SPEC.md) |
 
@@ -96,8 +96,18 @@ Tests: listed widths/orientations/zoom/text; no page overflow; touch targets/saf
 
 ## 11. Dependencies, risks, TBD and history
 
+### 11.1. Phase 1F.1 critical mobile baseline
+
+- **P1F1-RESP-001 — MUST:** `/`, `/catalog`, material detail, `/configure`, `/preview`, `/cart`, `/checkout`, public request summary, `/admin/login` and core admin routes pass at 320, 375, 390 and 430 CSS px without document-level horizontal overflow.
+- **P1F1-RESP-002 — MUST:** public cards/images preserve declared aspect ratio and width bounds; configurator steps are touch-operable, selected state does not rely on hover and current result/primary CTA remains reachable.
+- **P1F1-RESP-003 — MUST:** catalog/configurator filters use an accessible sheet/dialog on compact layouts with explicit open/apply/clear/close, focus management and no covered content.
+- **P1F1-RESP-004 — MUST:** sticky actions account for safe-area and dynamic keyboard viewport, do not cover validation/result/last content and retain at least 44×44 px touch targets.
+- **P1F1-RESP-005 — MUST:** admin data tables become meaningful cards or use one controlled labelled overflow container; whole-page horizontal scrolling is forbidden.
+- **P1F1-RESP-006 — MUST:** loading, empty, no-result, error, retry and unauthorized states retain layout, readable action and keyboard/screen-reader semantics at compact width.
+
 Dependencies: IA/design/motion/screens/accessibility/performance and all visual domain modules. Open: browser support/min width, exact container/breakpoint tokens after prototype, installable/PWA/offline scope, responsive image sizes and print/export. Risks: desktop compression, hidden critical info, sticky overlap, inaccessible horizontal table, tiny material/geometry controls and large media cost.
 
 | Версия | Дата | Изменение |
 |---|---|---|
+| 0.2.0 | 2026-08-12 | Authorized the 320–430 px critical route baseline, touch/filter/sticky/form/table and state requirements. |
 | 0.1.0 | 2026-08-02 | Определены content-driven bands, 320–1440/zoom validation, per-surface adaptive behavior, safe areas and admin alternatives. |

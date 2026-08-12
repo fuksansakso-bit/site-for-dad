@@ -58,7 +58,13 @@ for (const repositoryPath of files) {
     continue;
   }
   const absolutePath = resolve(repositoryRoot, repositoryPath);
-  const content = await readFile(absolutePath);
+  let content;
+  try {
+    content = await readFile(absolutePath);
+  } catch (error) {
+    if (error?.code === 'ENOENT') continue;
+    throw error;
+  }
   if (content.byteLength > maximumScannedBytes || content.includes(0)) {
     continue;
   }

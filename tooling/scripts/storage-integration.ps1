@@ -252,7 +252,7 @@ if ($DockerExecutable -eq '' -or -not (Test-Path -LiteralPath $DockerExecutable 
 Invoke-Checked -Executable $DockerExecutable -Arguments @('info') -FailureMessage 'Docker runtime is unavailable'
 
 $resolvedRepository = (Resolve-Path -LiteralPath $RepositoryRoot).Path
-$composeFile = Join-Path $resolvedRepository 'infrastructure\local\compose.storage.yml'
+$composeFile = Join-Path $resolvedRepository 'legacy\infrastructure\local\compose.storage.yml'
 if (-not (Test-Path -LiteralPath $composeFile -PathType Leaf)) {
     throw "VersityGW Compose file is missing: $composeFile"
 }

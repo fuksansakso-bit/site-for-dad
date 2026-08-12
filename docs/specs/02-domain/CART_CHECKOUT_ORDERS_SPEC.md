@@ -1,12 +1,16 @@
 # Cart, checkout and orders specification PROJECT_NAME
 
+## Phase 2A guest request
+
+Guest cart `localStorage` stores only material identity, dimensions and quantity. Checkout re-resolves materials and recalculates server-side, then writes immutable snapshots and an enumeration-resistant `public_reference`. Confirmation presents request number, preliminary total/manual status, free services, 2–7 calendar days, 12-month warranty and WhatsApp link to `79635851036`; it never claims message delivery.
+
 ## 0. Метаданные
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1E `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`; full order workflow still `BLOCKED_BY_TBD-BIZ-004` |
-| Версия | 0.3.0 |
-| Дата | 2026-08-09 |
+| Статус | Phase 1E passed; Phase 1F.1 QuoteSnapshot cart repair authorized and in progress |
+| Версия | 0.4.0 |
+| Дата | 2026-08-12 |
 | Pricing | [PRICING_CALCULATOR_SPEC.md](PRICING_CALCULATOR_SPEC.md) |
 | Installment | [INSTALLMENT_SPEC.md](INSTALLMENT_SPEC.md) |
 
@@ -193,6 +197,15 @@ Tests: multi-item mixed status/total; edit/duplicate/remove; stale/retired/histo
 
 ## 15. Dependencies, risks and open questions
 
+### 15.1. Phase 1F.1 cart repair profile
+
+- **P1F1-CART-001 — MUST:** `/configure` and `/preview` add only a server-created immutable `QuoteSnapshot`; client amount, pricing status, catalog/price version or configuration bytes are ignored/rejected.
+- **P1F1-CART-002 — MUST:** `CALCULATED`, `PRICE_ON_REQUEST` and `MANUAL_REVIEW_REQUIRED` quote states are cart-eligible with Russian disclosures; `CONFIGURATION_INVALID` is not eligible.
+- **P1F1-CART-003 — MUST:** the same guest/cart, quote and idempotency key returns the original add result without an accidental duplicate; a different payload under the same key conflicts.
+- **P1F1-CART-004 — MUST:** successful add preserves the current configuration/preview, announces success and current cart item count, and provides a visible `/cart` action.
+- **P1F1-CART-005 — MUST:** `/preview` provides «Добавить в корзину» and «Вернуться к параметрам» using the same quote authority and eligibility policy as `/configure`.
+- **P1F1-CART-006 — MUST:** removed/hidden material, inactive PriceVersion, stale mapping or duplicate request is recovered without silent repricing, lost cart or technical-detail leakage.
+
 Dependencies: configurator/pricing/preview/AI/installment/auth/admin/data/API/security/observability. Open: `TBD-BIZ-003/004/005`, `TBD-INSTALL-*`, `TBD-DELIVERY-*`, `TBD-WARRANTY-001`, `TBD-ACCOUNT-*`, `TBD-PRIV-*`, `TBD-INSTALLMENT-*`, contact confirmation/SLA and cart/share TTL. Risks: handoff treated as order, private URL leak, stale price promise, duplicate lead, broad staff access, invented slot/status and legal content drift.
 
 ## 16. Связанные требования и история
@@ -201,6 +214,7 @@ Links: `FR-CART-*`, `FR-REQUEST-*`, `FR-ORDER-*`, `FR-MEASURE-*`, `BUSINESS-*`, 
 
 | Версия | Дата | Изменение |
 |---|---|---|
+| 0.4.0 | 2026-08-12 | Authorized configuration/preview QuoteSnapshot add repair, stable idempotency and safe calculated/manual cart eligibility. |
 | 0.1.0 | 2026-08-02 | Определены cart/project, safe handoff, lead/measurement/order/warranty target states, transitions, failures and tests. |
 | 0.2.0 | 2026-08-09 | `OWNER-DECISION-016` authorizes the Phase 1E guest-cart/request scope, immutable checkout snapshots, exact mixed-price semantics, fixed-recipient `wa.me`, PII-free revocable summary, five request statuses/communication events, minimal staff administration and transactional outbox while full order workflow and production PII remain gated. |
 | 0.3.0 | 2026-08-09 | Recorded the completed quote-backed guest cart, edit-by-new-snapshot, immutable idempotent request intake, fixed-recipient handoff, PII-free summary, minimal role-scoped administration and passed DB/browser/security/recovery evidence. |

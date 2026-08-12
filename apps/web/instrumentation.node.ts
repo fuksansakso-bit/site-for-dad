@@ -1,16 +1,3 @@
-import {
-  parseDatabaseEnvironment,
-  parseObservabilityEnvironment,
-  parseStorageEnvironment,
-  parseWebServerEnvironment,
-} from '@project-name/config/server';
-
-import { initializeWebObservability } from './lib/observability';
-
 export function registerNodeInstrumentation(): void {
-  parseWebServerEnvironment(process.env);
-  parseDatabaseEnvironment(process.env);
-  parseStorageEnvironment(process.env);
-  parseObservabilityEnvironment(process.env);
-  initializeWebObservability();
+  // Phase 2A has no mandatory long-running worker or local infrastructure.
 }

@@ -125,9 +125,74 @@ export const configuratorBootstrapResponseSchema = z
     priceVersionId: z.uuid(),
     priceVersionNumber: z.number().int().positive(),
     profiles: z.array(publicPricingProfileSchema).max(64),
+    systems: z
+      .array(
+        z
+          .object({
+            categoryId: z.uuid(),
+            categoryName: z.string().min(1).max(255),
+            familyId: z.uuid(),
+            id: z.uuid(),
+            name: z.string().min(1).max(255),
+          })
+          .strict(),
+      )
+      .max(256),
   })
   .strict();
 export type ConfiguratorBootstrapResponse = z.infer<typeof configuratorBootstrapResponseSchema>;
+
+export const configuratorMaterialSearchQuerySchema = z
+  .object({
+    category: z.uuid(),
+    cursor: z.string().min(16).max(1_024).optional(),
+    family: z.uuid(),
+    limit: z.coerce.number().int().min(1).max(48).default(24),
+    q: z.string().trim().max(120).default(''),
+    selected: z.uuid().optional(),
+    system: z.uuid(),
+  })
+  .strict();
+export type ConfiguratorMaterialSearchQueryContract = z.infer<
+  typeof configuratorMaterialSearchQuerySchema
+>;
+
+export const configuratorMaterialSearchResponseSchema = z
+  .object({
+    correlationId: z.string().min(8).max(128),
+    items: z
+      .array(
+        z
+          .object({
+            article: z.string().min(1).max(128),
+            availabilityLabel: z.string().min(1).max(160),
+            calculationLabel: z.string().min(1).max(255),
+            category: z.string().min(1).max(255),
+            color: z.string().min(1).max(255),
+            id: z.uuid(),
+            image: z
+              .object({
+                height: z.number().int().positive(),
+                url: z.string().min(1).max(512),
+                width: z.number().int().positive(),
+              })
+              .strict()
+              .nullable(),
+            name: z.string().min(1).max(255),
+            pricing: z.enum(['AUTOMATIC', 'MANUAL', 'UNAVAILABLE']),
+            selectable: z.boolean(),
+            system: z.string().min(1).max(255),
+          })
+          .strict(),
+      )
+      .max(48),
+    nextCursor: z.string().min(16).max(1_024).nullable(),
+    total: z.number().int().nonnegative(),
+  })
+  .strict();
+export type ConfiguratorMaterialSearchResponse = z.infer<
+  typeof configuratorMaterialSearchResponseSchema
+>;
 
 const appliedRuleSchema = z
   .object({
@@ -215,10 +280,31 @@ export type PricingCalculationResponse = z.infer<typeof pricingCalculationRespon
 export const priceRequestCalculationSchema = z
   .object({
     catalogVersionId: z.uuid(),
+    categoryId: z.uuid().optional(),
+    heightMm: z.number().int().positive().max(1_000_000).optional(),
+    materialVariantId: z.uuid().optional(),
     productFamilyId: z.uuid(),
+    productSystemId: z.uuid().optional(),
     quantity: z.number().int().positive().max(1_000),
+    widthMm: z.number().int().positive().max(1_000_000).optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((value, context) => {
+    const details = [
+      value.categoryId,
+      value.heightMm,
+      value.materialVariantId,
+      value.productSystemId,
+      value.widthMm,
+    ];
+    const supplied = details.filter((item) => item !== undefined).length;
+    if (supplied !== 0 && supplied !== details.length) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Detailed material selection must be complete.',
+      });
+    }
+  });
 export type PriceRequestCalculation = z.infer<typeof priceRequestCalculationSchema>;
 
 export const quoteSaveRequestSchema = z

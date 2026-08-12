@@ -4,10 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 const repositoryRoot = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const requiredArtifactRoots = [join(repositoryRoot, 'apps', 'web', '.next')];
-const optionalArtifactRoots = [
-  join(repositoryRoot, 'apps', 'worker', 'dist'),
-  join(repositoryRoot, 'packages'),
-];
+const optionalArtifactRoots = [];
 const secretKeys = [
   'ARTIFACT_SECRET_CANARY',
   'DATABASE_URL',
@@ -16,6 +13,7 @@ const secretKeys = [
   'S3_ACCESS_KEY_ID',
   'S3_SECRET_ACCESS_KEY',
   'SESSION_SIGNING_KEY',
+  'SUPABASE_SERVICE_ROLE_KEY',
 ];
 const maximumFileBytes = 32 * 1024 * 1024;
 
@@ -65,7 +63,6 @@ for (const optionalRoot of optionalArtifactRoots) {
 const files = [];
 for (const root of roots) {
   for (const file of await collectFiles(root)) {
-    if (root.endsWith('packages') && !file.includes(`${join('', 'dist')}`)) continue;
     files.push(file);
   }
 }

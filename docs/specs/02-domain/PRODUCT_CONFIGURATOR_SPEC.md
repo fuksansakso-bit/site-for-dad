@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1C configurator, Phase 1D preview and Phase 1E cart handoffs implemented; other active catalog combinations degrade safely |
-| Версия | 0.4.0 |
-| Дата | 2026-08-09 |
+| Статус | Phase 1F.1 complete material coverage authorized and in progress |
+| Версия | 0.5.0 |
+| Дата | 2026-08-12 |
 | Catalog model | [CATALOG_INVENTORY_SPEC.md](CATALOG_INVENTORY_SPEC.md) |
 | Pricing | [PRICING_CALCULATOR_SPEC.md](PRICING_CALCULATOR_SPEC.md) |
 
@@ -177,10 +177,23 @@ A successful server calculation exposes «Посмотреть на окне». 
 
 The result step saves the authoritative server result as an immutable `QuoteSnapshot` before exposing «Добавить в корзину». Calculated, request-price and manual-review quotes may be added with honest labels; invalid configurations cannot. `/configure?edit={cartItemReference}` loads a server-owned edit source, and the next authoritative calculation creates a new quote before atomically replacing only that cart item. Browser code never recalculates or submits price/status/version as authority.
 
+### 15.4. Phase 1F.1 complete material coverage profile
+
+- **P1F1-CONFIG-001 — MUST:** every published visible `MaterialVariant` in the active `CatalogVersion` is reachable by bounded server-side search and cursor pagination in the configurator; bootstrap MUST NOT contain the complete material list or a hardcoded pricing-rule subset.
+- **P1F1-CONFIG-002 — MUST:** material results include public image, name, article, color, category, selected-system context, availability and a Russian pricing label without internal IDs/version/source/rule fields.
+- **P1F1-CONFIG-003 — MUST:** classification precedence is `INCOMPATIBLE` when an explicit deny exists; `UNMAPPED` when exact system/model/compatibility evidence is missing; otherwise `AUTO_CALCULATED` only for active verified parity-passed pricing scope and `MANUAL_PRICING` for an exact compatible pair without such pricing.
+- **P1F1-CONFIG-004 — MUST:** only `AUTO_CALCULATED` and `MANUAL_PRICING` are selectable. `UNMAPPED` appears only in authorized coverage diagnostics and `INCOMPATIBLE` cannot be selected for the system.
+- **P1F1-CONFIG-005 — MUST:** manual compatible selection creates a validated configuration and server calculation/quote with `PRICE_ON_REQUEST` or `MANUAL_REVIEW_REQUIRED` and the text «Стоимость этого материала уточнит менеджер»; no formula, dimensions or compatibility is inferred.
+- **P1F1-CONFIG-006 — MUST:** cursor integrity binds active catalog version, family/system/model, normalized search/filter and deterministic sort; traversal cannot omit or duplicate a matching row and stale cursor fails safely.
+- **P1F1-CONFIG-007 — MUST:** missing ProductSystem/ProductModel/CompatibilityRule/image/pricing evidence has a deterministic diagnostic reason and cannot be assigned to a random system.
+- **P1F1-CONFIG-008 — MUST:** upstream selection changes invalidate dependent material cursor/selection, calculation and quote but retain unrelated user input where safe.
+- **P1F1-CONFIG-009 — MUST:** configuration completion exposes «Добавить в корзину», «Посмотреть на окне», «Изменить параметры» and «Рассчитать ещё одно окно»; invalid configuration cannot create a cart item.
+
 ## 16. История изменений
 
 | Версия | Дата | Изменение |
 |---|---|---|
+| 0.5.0 | 2026-08-12 | Authorized bounded complete material search, deterministic coverage classification, manual-price fallback and repaired result actions for Phase 1F.1. |
 | 0.1.0 | 2026-08-02 | Созданы data-driven step schema, configuration aggregate, validation precedence, state machine, fallbacks and test coverage. |
 | 0.2.0 | 2026-08-08 | Recorded the PostgreSQL-only guest flow, dynamic server validation, four verified scopes, safe non-numeric fallbacks, responsive state preservation and immutable quote handoff delivered in Phase 1C. |
 | 0.3.0 | 2026-08-08 | Recorded the opaque calculation-to-preview handoff, preserved return state and strict separation of non-price preview controls delivered in Phase 1D. |

@@ -1,12 +1,16 @@
 # Test strategy PROJECT_NAME
 
+## Phase 2A verification profile
+
+Suites cover pricing/minimum/quantity/MANUAL, phone/WhatsApp, roles; migrations and RLS matrices; server-authoritative immutable orders; Storage permissions; idempotent ETL/count/article/price/media checks; public/admin/mobile browser flows; and service-role leak, anon write, IDOR, CSRF, upload and price-tampering negatives. Remote-only cases are explicitly skipped without credentials and MUST run before cloud activation.
+
 ## 0. Метаданные
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A–1F gates passed; Phase 1G+/production tests gated |
-| Версия | 1.3.0 |
-| Дата | 2026-08-09 |
+| Статус | Phase 1F.1 unit/integration/browser/security/recovery gate authorized and in progress |
+| Версия | 1.4.0 |
+| Дата | 2026-08-12 |
 | Requirements | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) and profile specs |
 | Acceptance | [ACCEPTANCE_CRITERIA.md](../specs/01-product/ACCEPTANCE_CRITERIA.md) |
 | Traceability | [TRACEABILITY_MATRIX.md](../00-global/TRACEABILITY_MATRIX.md) |
@@ -213,12 +217,23 @@ The final pinned-Node-24 `pnpm ci:verify` passed 9/9 stages in 349.4 seconds. It
 
 ## 14. Dependencies, risks and open questions
 
+### 14.1. Phase 1F.1 MVP functional completion acceptance
+
+- **P1F1-TEST-001 — MUST:** unit tests cover coverage classification/precedence/manual fallback, Russian label mapping, cart eligibility/idempotency, Argon2id encode/verify, throttle/lock, rotation, staff permissions and final OWNER.
+- **P1F1-TEST-002 — MUST:** real PostgreSQL tests traverse every published material cursor without loss/duplicate, classify gaps, persist/audit local overrides, create automatic/manual QuoteSnapshot cart items and cover password/session/staff mutation transactions.
+- **P1F1-TEST-003 — MUST:** Chromium finds materials from the beginning/middle/end of catalog, completes automatic/manual configuration, adds from configure/preview, refreshes cart, opens checkout and authenticates OWNER/ADMIN with MANAGER denials.
+- **P1F1-TEST-004 — MUST:** 320/375/390/430 browser matrix covers public/admin critical routes for overflow, image ratio, touch targets, sticky/keyboard collision, filter/dialog semantics and loading/empty/error/retry.
+- **P1F1-TEST-005 — MUST:** security cases reject price/status tamper, brute-force, CSRF/origin, fixation, production development key, privilege escalation, final-OWNER removal, password/hash/session leakage and public technical data leakage.
+- **P1F1-TEST-006 — MUST:** recovery covers PostgreSQL/storage unavailable, stale/missing mapping, removed material, inactive PriceVersion, duplicate cart request and revoked/expired/locked staff state.
+- **P1F1-TEST-007 — MUST:** final gate runs documentation/spec uniqueness, format, scope/boundary, lint/type, unit/coverage, migration, build/artifact/secret and targeted browser tests once; duplicated full CI reruns are avoided unless a failed stage changed.
+
 Dependencies: all specs/ADRs/evaluations, implementation stack/environments, approved fixtures/business data/support matrix. Open: numeric budgets/thresholds, dimensional pricing/parity fixtures, browser/AT matrix, provider sandboxes, test tooling/owners, UAT roles, security test scope and retention of artifacts. Risks: fake fixtures mistaken production truth, flaky E2E, unlicensed media, provider dependence, automated a11y/AI false confidence and unsafe production testing.
 
 ## 15. History
 
 | Версия | Дата | Изменение |
 |---|---|---|
+| 1.4.0 | 2026-08-12 | Authorized complete catalog traversal, coverage/cart/auth/RBAC/mobile/security/recovery and one-pass CI-equivalent evidence for Phase 1F.1. |
 | 0.1.0 | 2026-08-02 | Defined risk-based multi-layer strategy and 40 critical scenarios mapped one-to-one to current acceptance criteria. |
 | 0.2.0 | 2026-08-02 | Updated parity tolerance/input contract and regional production matrix from `OWNER-DECISION-006/007`; Foundation execution evidence will be added at Phase 1A completion. |
 | 0.3.0 | 2026-08-02 | Added executed Phase 1A counts and clean-clone CI evidence without claiming any gated business/production scenario passed. |

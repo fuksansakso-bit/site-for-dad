@@ -99,3 +99,59 @@ export const INPUT_IMAGE_LIMITS = {
   maximumPixels: 40_000_000,
   minimumSide: 320,
 } as const;
+
+const MATERIAL_IMAGE_LIMITS = {
+  maximumBytes: 8 * 1024 * 1024,
+  maximumLongSide: 8192,
+  maximumPixels: 40_000_000,
+  minimumSide: 16,
+} as const;
+
+const PROVIDER_RESULT_LIMITS = {
+  maximumBytes: 10 * 1024 * 1024,
+  maximumLongSide: 8192,
+  maximumPixels: 40_000_000,
+  minimumSide: 320,
+} as const;
+
+export async function validateMaterialImage(
+  source: ArrayBuffer | Uint8Array,
+  declaredMime: string | null,
+): Promise<ValidatedImage> {
+  return validateImageBytes(source, declaredMime, MATERIAL_IMAGE_LIMITS);
+}
+
+export async function normalizeProviderResult(
+  source: ArrayBuffer | Uint8Array,
+  declaredMime: string | null,
+  expectedAspectRatio: number,
+): Promise<ValidatedImage> {
+  const sourceImage = await validateImageBytes(source, declaredMime, PROVIDER_RESULT_LIMITS);
+  if (Math.abs(Math.log(sourceImage.width / sourceImage.height / expectedAspectRatio)) > 0.3) {
+    throw new AiVisualizationError('OUTPUT_INVALID');
+  }
+  try {
+    // @ts-expect-error sharp 0.35.0 ships declarations but omits the `types` export condition.
+    const { default: sharp } = await import('sharp');
+    const normalized = await sharp(sourceImage.bytes, {
+      failOn: 'error',
+      limitInputPixels: PROVIDER_RESULT_LIMITS.maximumPixels,
+    })
+      .rotate()
+      .resize({
+        fit: 'inside',
+        height: 2048,
+        width: 2048,
+        withoutEnlargement: true,
+      })
+      .jpeg({ chromaSubsampling: '4:4:4', quality: 90 })
+      .toBuffer();
+    return validateImageBytes(normalized, 'image/jpeg', {
+      ...PROVIDER_RESULT_LIMITS,
+      maximumLongSide: 2048,
+    });
+  } catch (error) {
+    if (error instanceof AiVisualizationError) throw error;
+    throw new AiVisualizationError('OUTPUT_INVALID', { cause: error });
+  }
+}

@@ -66,6 +66,14 @@ export type AiVisualizationJobRow = {
   guest_session_hash: string;
   ip_hash: string | null;
   material_id: string;
+  material_slug_snapshot: string;
+  material_name_snapshot: string;
+  article_snapshot: string;
+  color_snapshot: string | null;
+  category_snapshot: string;
+  product_family: BlindFamily;
+  availability_snapshot: 'AVAILABLE' | 'OUT_OF_STOCK' | 'INQUIRY_ONLY';
+  material_image_path_snapshot: string;
   input_storage_path: string;
   result_storage_path: string | null;
   input_sha256: string | null;
@@ -96,6 +104,7 @@ export type AiVisualizationJobRow = {
   consent_version: string | null;
   product_metadata: { widthMm?: number; heightMm?: number };
   last_provider_poll_at: string | null;
+  provider_poll_failures: number;
   created_at: string;
   started_at: string | null;
   completed_at: string | null;

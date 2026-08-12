@@ -4,6 +4,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { publicImageUrl } from '../phase2a/data';
 import { AiVisualizationError } from './errors';
+import { validateMaterialImage, type ValidatedImage } from './image-validation';
 import type { BlindFamily, SafeMaterialReference } from './types';
 
 type MaterialRecord = {
@@ -107,3 +108,20 @@ export async function resolveAiMaterial(
   };
 }
 
+export async function downloadValidatedMaterialImage(
+  client: SupabaseClient,
+  material: ResolvedAiMaterial,
+): Promise<ValidatedImage> {
+  const { data, error } = await client.storage.from('catalog').download(material.storagePath);
+  if (error || !data) {
+    throw new AiVisualizationError('MATERIAL_IMAGE_UNAVAILABLE', { cause: error });
+  }
+  try {
+    return await validateMaterialImage(
+      await data.arrayBuffer(),
+      data.type ? data.type.split(';')[0] ?? null : null,
+    );
+  } catch (error) {
+    throw new AiVisualizationError('MATERIAL_IMAGE_UNAVAILABLE', { cause: error });
+  }
+}

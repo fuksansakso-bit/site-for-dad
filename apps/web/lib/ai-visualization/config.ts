@@ -33,6 +33,13 @@ function safeBaseUrl(value: string | undefined): string {
   }
 }
 
+function safeModelName(value: string | undefined): string {
+  const normalized = value?.trim();
+  return normalized?.match(/^[A-Za-z0-9][A-Za-z0-9._/-]{2,199}$/u)
+    ? normalized
+    : DEFAULT_POLZA_MODEL;
+}
+
 export type AiVisualizerServerConfig = {
   polzaApiKey: string | null;
   polzaBaseUrl: string;
@@ -52,8 +59,7 @@ export type AiVisualizerServerConfig = {
 
 export function getAiVisualizerServerConfig(): AiVisualizerServerConfig {
   const polzaApiKey = process.env['POLZA_AI_API_KEY']?.trim() || null;
-  const modelName =
-    process.env['POLZA_AI_IMAGE_MODEL']?.trim() || DEFAULT_POLZA_MODEL;
+  const modelName = safeModelName(process.env['POLZA_AI_IMAGE_MODEL']);
   const environmentEnabled = process.env['AI_VISUALIZER_ENABLED'] === 'true';
   const mockProviderEnabled =
     process.env['NODE_ENV'] !== 'production' &&
@@ -87,4 +93,3 @@ export function getAiVisualizerServerConfig(): AiVisualizerServerConfig {
     resultBucket: bucketName(process.env['SUPABASE_AI_RESULTS_BUCKET'], 'ai-results'),
   };
 }
-

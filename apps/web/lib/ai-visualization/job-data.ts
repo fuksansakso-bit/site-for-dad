@@ -76,6 +76,8 @@ export async function getOwnedAiJob(
   if (job.deleted_at || job.status === 'DELETED' || job.status === 'EXPIRED') {
     throw new AiVisualizationError('JOB_EXPIRED');
   }
+  if (job.status !== 'PROCESSING' && new Date(job.expires_at).getTime() <= Date.now()) {
+    throw new AiVisualizationError('JOB_EXPIRED');
+  }
   return job;
 }
-

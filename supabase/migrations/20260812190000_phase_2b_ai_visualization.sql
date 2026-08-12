@@ -29,6 +29,17 @@ create table public.ai_visualization_jobs (
   guest_session_hash text not null check (guest_session_hash ~ '^[0-9a-f]{64}$'),
   ip_hash text check (ip_hash is null or ip_hash ~ '^[0-9a-f]{64}$'),
   material_id uuid not null references public.materials(id) on delete restrict,
+  material_slug_snapshot text not null check (material_slug_snapshot ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'),
+  material_name_snapshot text not null check (char_length(material_name_snapshot) between 1 and 255),
+  article_snapshot text not null check (char_length(article_snapshot) between 1 and 128),
+  color_snapshot text check (color_snapshot is null or char_length(color_snapshot) <= 255),
+  category_snapshot text not null check (char_length(category_snapshot) between 1 and 255),
+  product_family text not null check (product_family in ('ROLLER', 'ZEBRA', 'HORIZONTAL', 'VERTICAL')),
+  availability_snapshot public.material_availability not null,
+  material_image_path_snapshot text not null check (
+    char_length(material_image_path_snapshot) between 1 and 512
+    and material_image_path_snapshot !~ '(^/|\.\.)'
+  ),
   input_storage_path text not null unique,
   result_storage_path text unique,
   input_sha256 text check (input_sha256 is null or input_sha256 ~ '^[0-9a-f]{64}$'),
@@ -59,6 +70,7 @@ create table public.ai_visualization_jobs (
   consent_version text check (consent_version is null or consent_version ~ '^[a-z0-9][a-z0-9-]{2,79}$'),
   product_metadata jsonb not null default '{}'::jsonb check (jsonb_typeof(product_metadata) = 'object'),
   last_provider_poll_at timestamptz,
+  provider_poll_failures integer not null default 0 check (provider_poll_failures between 0 and 10),
   cleanup_claimed_at timestamptz,
   created_at timestamptz not null default now(),
   started_at timestamptz,
@@ -377,6 +389,7 @@ begin
     provider_status = null,
     provider_error_code = null,
     last_provider_poll_at = null,
+    provider_poll_failures = 0,
     expires_at = pg_catalog.now() + pg_catalog.make_interval(hours => p_retention_hours)
   where id = p_job_id;
 
@@ -390,6 +403,177 @@ end $$;
 revoke all on function public.reserve_ai_visualization_attempt(uuid, text, text, text, text, text, text, integer, integer, integer, integer, integer)
   from public, anon, authenticated;
 grant execute on function public.reserve_ai_visualization_attempt(uuid, text, text, text, text, text, text, integer, integer, integer, integer, integer)
+  to service_role;
+
+create or replace function public.claim_ai_visualization_provider_poll(
+  p_job_id uuid,
+  p_guest_session_hash text,
+  p_minimum_interval_seconds integer default 3
+) returns jsonb
+language plpgsql security definer set search_path = '' as $$
+declare
+  v_job public.ai_visualization_jobs%rowtype;
+begin
+  if p_guest_session_hash !~ '^[0-9a-f]{64}$'
+    or p_minimum_interval_seconds not between 1 and 60
+  then
+    raise exception using errcode = '22023', message = 'INVALID_POLL_ARGUMENT';
+  end if;
+  select * into v_job
+  from public.ai_visualization_jobs
+  where id = p_job_id and guest_session_hash = p_guest_session_hash
+  for update;
+  if not found or v_job.status <> 'PROCESSING' or v_job.provider_request_id is null then
+    return pg_catalog.jsonb_build_object('claimed', false, 'reason', 'NOT_PROCESSING');
+  end if;
+  if v_job.last_provider_poll_at is not null
+    and v_job.last_provider_poll_at > pg_catalog.now() - pg_catalog.make_interval(secs => p_minimum_interval_seconds)
+  then
+    return pg_catalog.jsonb_build_object('claimed', false, 'reason', 'TOO_SOON');
+  end if;
+  update public.ai_visualization_jobs
+    set last_provider_poll_at = pg_catalog.now()
+    where id = p_job_id;
+  return pg_catalog.jsonb_build_object(
+    'claimed', true,
+    'providerJobId', v_job.provider_request_id,
+    'attemptNumber', v_job.attempt_number
+  );
+end $$;
+revoke all on function public.claim_ai_visualization_provider_poll(uuid, text, integer)
+  from public, anon, authenticated;
+grant execute on function public.claim_ai_visualization_provider_poll(uuid, text, integer)
+  to service_role;
+
+create or replace function public.record_ai_visualization_provider_job(
+  p_job_id uuid,
+  p_guest_session_hash text,
+  p_attempt_number integer,
+  p_provider_job_id text,
+  p_provider_status text,
+  p_model_name text
+) returns boolean
+language plpgsql security definer set search_path = '' as $$
+begin
+  if p_guest_session_hash !~ '^[0-9a-f]{64}$'
+    or p_attempt_number not between 1 and 20
+    or char_length(p_provider_job_id) not between 3 and 200
+    or char_length(p_provider_status) not between 1 and 80
+    or char_length(p_model_name) not between 3 and 200
+  then
+    raise exception using errcode = '22023', message = 'INVALID_PROVIDER_JOB_ARGUMENT';
+  end if;
+  update public.ai_visualization_jobs set
+    provider_request_id = p_provider_job_id,
+    provider_status = p_provider_status,
+    model_name = p_model_name
+  where id = p_job_id
+    and guest_session_hash = p_guest_session_hash
+    and attempt_number = p_attempt_number
+    and status = 'PROCESSING';
+  if not found then return false; end if;
+  update public.ai_visualization_attempts set
+    status = 'PROVIDER_CREATED',
+    provider_request_id = p_provider_job_id,
+    provider_created_at = coalesce(provider_created_at, pg_catalog.now())
+  where job_id = p_job_id and attempt_number = p_attempt_number;
+  return found;
+end $$;
+revoke all on function public.record_ai_visualization_provider_job(uuid, text, integer, text, text, text)
+  from public, anon, authenticated;
+grant execute on function public.record_ai_visualization_provider_job(uuid, text, integer, text, text, text)
+  to service_role;
+
+create or replace function public.fail_ai_visualization_attempt(
+  p_job_id uuid,
+  p_attempt_number integer,
+  p_rejected boolean,
+  p_client_error_code text,
+  p_safe_error_message text,
+  p_provider_error_code text,
+  p_safe_diagnostic text,
+  p_provider_status text default null
+) returns boolean
+language plpgsql security definer set search_path = '' as $$
+begin
+  if p_attempt_number not between 1 and 20
+    or p_client_error_code !~ '^[A-Z0-9_]{2,80}$'
+    or char_length(p_safe_error_message) > 500
+    or p_provider_error_code !~ '^[A-Z0-9_]{2,80}$'
+    or char_length(p_safe_diagnostic) > 500
+    or (p_provider_status is not null and char_length(p_provider_status) > 80)
+  then
+    raise exception using errcode = '22023', message = 'INVALID_AI_FAILURE_ARGUMENT';
+  end if;
+  update public.ai_visualization_jobs set
+    status = case when p_rejected then 'REJECTED'::public.ai_visualization_status else 'FAILED'::public.ai_visualization_status end,
+    error_code = p_client_error_code,
+    safe_error_message = p_safe_error_message,
+    provider_error_code = p_provider_error_code,
+    provider_status = coalesce(p_provider_status, provider_status),
+    completed_at = pg_catalog.now()
+  where id = p_job_id and attempt_number = p_attempt_number and status = 'PROCESSING';
+  if not found then return false; end if;
+  update public.ai_visualization_attempts set
+    status = case when p_rejected then 'REJECTED'::public.ai_visualization_attempt_status else 'FAILED'::public.ai_visualization_attempt_status end,
+    provider_error_code = p_provider_error_code,
+    safe_diagnostic = p_safe_diagnostic,
+    finished_at = pg_catalog.now()
+  where job_id = p_job_id and attempt_number = p_attempt_number;
+  return found;
+end $$;
+revoke all on function public.fail_ai_visualization_attempt(uuid, integer, boolean, text, text, text, text, text)
+  from public, anon, authenticated;
+grant execute on function public.fail_ai_visualization_attempt(uuid, integer, boolean, text, text, text, text, text)
+  to service_role;
+
+create or replace function public.complete_ai_visualization_attempt(
+  p_job_id uuid,
+  p_attempt_number integer,
+  p_result_storage_path text,
+  p_result_sha256 text,
+  p_result_mime_type text,
+  p_result_byte_size integer,
+  p_provider_status text,
+  p_retention_hours integer
+) returns boolean
+language plpgsql security definer set search_path = '' as $$
+begin
+  if p_attempt_number not between 1 and 20
+    or p_result_storage_path !~ ('^' || p_job_id::text || '/result\.(jpg|png|webp)$')
+    or p_result_sha256 !~ '^[0-9a-f]{64}$'
+    or p_result_mime_type not in ('image/jpeg', 'image/png', 'image/webp')
+    or p_result_byte_size not between 1 and 10485760
+    or char_length(p_provider_status) not between 1 and 80
+    or p_retention_hours not between 1 and 168
+  then
+    raise exception using errcode = '22023', message = 'INVALID_AI_COMPLETION_ARGUMENT';
+  end if;
+  update public.ai_visualization_jobs set
+    status = 'SUCCEEDED',
+    result_storage_path = p_result_storage_path,
+    result_sha256 = p_result_sha256,
+    result_mime_type = p_result_mime_type,
+    result_byte_size = p_result_byte_size,
+    provider_status = p_provider_status,
+    provider_error_code = null,
+    error_code = null,
+    safe_error_message = null,
+    completed_at = pg_catalog.now(),
+    expires_at = pg_catalog.now() + pg_catalog.make_interval(hours => p_retention_hours)
+  where id = p_job_id and attempt_number = p_attempt_number and status = 'PROCESSING';
+  if not found then return false; end if;
+  update public.ai_visualization_attempts set
+    status = 'SUCCEEDED',
+    provider_error_code = null,
+    safe_diagnostic = null,
+    finished_at = pg_catalog.now()
+  where job_id = p_job_id and attempt_number = p_attempt_number;
+  return found;
+end $$;
+revoke all on function public.complete_ai_visualization_attempt(uuid, integer, text, text, text, integer, text, integer)
+  from public, anon, authenticated;
+grant execute on function public.complete_ai_visualization_attempt(uuid, integer, text, text, text, integer, text, integer)
   to service_role;
 
 create or replace function public.claim_expired_ai_visualization_jobs(p_batch_size integer default 50)

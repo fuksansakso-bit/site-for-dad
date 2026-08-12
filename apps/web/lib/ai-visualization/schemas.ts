@@ -35,4 +35,12 @@ export const signedUploadSchema = z
 
 export const confirmUploadSchema = signedUploadSchema;
 
+export const generateAiVisualizationSchema = z
+  .object({
+    consent: z.literal(true),
+    idempotencyKey,
+    website: z.string().max(0).optional().default(''),
+  })
+  .strict();
+
 export const publicReferenceSchema = z.string().regex(/^[0-9a-f]{48}$/u);

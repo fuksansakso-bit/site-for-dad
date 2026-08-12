@@ -7,13 +7,17 @@
 
 ### Added
 
+- `OWNER-DECISION-025` authorizes the narrow Phase 2C catalog/pricing repair requested by the Product Owner: new quotes remove the 1,500-ruble local minimum and every manager-price placeholder; each public material requires an active versioned AMIGO `FROM` amount plus exact material/model calculator mapping, the customer supplies only material/width/height, incomplete rows fail publication, and historical quote/order snapshots remain immutable.
+
+- Activated exact version `amigo-67c782a10449cdb7`: 1,131 of 1,428 retained materials are public across seven parent groups, including 137 Zebra fabrics; 297 incomplete rows are hidden, exact cache/order rollback and OWNER login were verified against the connected Supabase project.
+
 - Rebuilt AI visualization as the same premium interior-tech system rather than a separate utility shell: a connected five-step track now fills completed segments and runs a reduced-motion-safe light pulse through the active segment; material, photo, consent, generation, before/after, disabled, error and deletion states share private-data guidance and real configured retention. One bounded partner-scene live attempt verified private direct upload, ownership, safe provider-error fallback and complete bucket cleanup; Polza returned no provider job, so live output quality remains explicitly pending.
 
-- Redesigned the complete guest conversion path from source-backed calculator through reactive local cart, checkout and request summary: server-authoritative repricing, explicit manual-price totals, resilient loading/error/empty states, quantity editing, optional AI linkage, privacy-safe contact form, WhatsApp handoff and a real copyable request URL now share the final premium interface.
+- Redesigned the complete guest conversion path from source-backed calculator through reactive local cart, checkout and request summary: active-version exact AMIGO repricing, resilient loading/error/empty states, quantity editing, optional AI linkage, privacy-safe contact form, WhatsApp handoff and a real copyable request URL now share the final premium interface.
 
 - Activated the retained Phase 2A catalog against the configured Supabase project after the owner applied migrations: 19 published categories, 1,428 published materials, one settings row and 1,371 checksum-addressed WebP objects passed idempotent import, public/service REST count checks and browser rendering with no invented orders or portfolio work. Local Next.js and cloud operator commands now use ignored `apps/web/.env.local` as the single canonical environment file.
 
-- Redesigned the source-backed catalog and material detail: category tabs, deferred search, availability/type filters, stable sorting, incremental 24-card rendering, responsive optimized images, honest empty/manual-price states, semantic breadcrumbs, material facts/order panel, settings-backed service facts, related materials and AI entry points that disappear when the feature is unavailable.
+- Redesigned the source-backed catalog and material detail: category tabs, deferred search, premium availability/type filters, stable sorting, incremental 24-card rendering, responsive optimized images, honest empty/unavailable states, current AMIGO `FROM` amount on every public card, semantic breadcrumbs, material facts/order panel, settings-backed service facts, related materials and conditional AI entry points.
 
 - Added the bounded first-visit starfield intro with skip, reduced-motion bypass, DPR/frame caps, visibility pause and CSS fallback; rebuilt the landing as a source-backed interior-tech journey with exact owner-approved hero copy, real published categories/materials/portfolio, conditional AI and WhatsApp entry points, calculator/trust/AMIGO/FAQ sections and honest empty states without invented business facts.
 

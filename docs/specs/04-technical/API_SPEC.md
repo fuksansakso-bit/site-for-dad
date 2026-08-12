@@ -256,10 +256,20 @@ Phase 1E cart/request routes use strict shared Zod schemas, 32 KiB mutation limi
 
 Dependencies: all domain/technical specs, auth/provider/hosting ADRs. Next.js same-origin BFF and Foundation error status mapping are accepted; open: public API exposure, browser upload flow, future webhook transport, concrete rate limits, API lifecycle/support window and WhatsApp mode. Risks: CRUD bypass of invariants, IDOR, non-idempotent retry, private URL leak, mixed version, error data exposure and contract overcoupling to vendor.
 
-## 17. History
+## 17. Phase 2C AMIGO exact-price API profile
+
+- **P2C-API-001 — MUST:** `POST /api/phase2a/price` accepts only strict cart items with published material slug, integer width/height and bounded quantity; it resolves active source/model/material IDs server-side.
+- **P2C-API-002 — MUST:** a successful response contains only `KNOWN` items, integer unit/total kopecks and the pinned source version; partial/manual/zero successful price responses are prohibited.
+- **P2C-API-003 — MUST:** the browser never receives or chooses the external origin, model defaults/options or source credentials and never calls AMIGO directly.
+- **P2C-API-004 — MUST:** `POST /api/phase2a/orders` recalculates every item server-side immediately before the service-role command; browser amounts and mapping IDs are discarded.
+- **P2C-API-005 — MUST:** `create_order_from_server` accepts an amount only when an exact cache row matches active source version, model/material IDs and dimensions, then snapshots all of them immutably.
+- **P2C-API-006 — MUST:** unavailable provider, invalid schema/currency/body, incomplete mapping, stale version and unavailable material return safe Russian retry/unavailable errors without source payload, URL, ID or stack disclosure.
+
+## 18. History
 
 | Версия | Дата | Изменение |
 |---|---|---|
+| 0.16.0 | 2026-08-13 | Added the strict Phase 2C AMIGO exact-price and cache-verified order API profile under `OWNER-DECISION-025`/ADR-0015. |
 | 0.15.0 | 2026-08-12 | Authorized bounded configurator coverage, quote-only cart and password/session/staff API profiles. |
 | 0.1.0 | 2026-08-02 | Defined versioned resource/command/query, public/admin/visualization contracts, errors, events, idempotency and privacy boundaries. |
 | 0.2.0 | 2026-08-02 | Fixed the eight Phase 1A safe error codes, HTTP mapping, correlation/validation envelope and prohibited disclosures. |

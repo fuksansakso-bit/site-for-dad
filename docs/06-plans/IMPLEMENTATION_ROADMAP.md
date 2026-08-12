@@ -2,7 +2,7 @@
 
 ## Active transition — Phase 2C
 
-`OWNER-DECISION-024` authorizes final presentation and release polish from target-main baseline `bdaa053eee6491a9286355707008a39cbac1abff`. Phase 2B implementation is complete with status `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`; its cloud/live activation remains a separate credential-dependent track. Phase 2C MUST preserve the active Next.js/Supabase/Polza contracts and stop at a verified Vercel Preview plus unmerged Draft PR without production promotion.
+`OWNER-DECISION-024` authorizes final presentation and release polish from target-main baseline `bdaa053eee6491a9286355707008a39cbac1abff`. `OWNER-DECISION-025` narrowly authorizes the AMIGO exact-price replacement implemented through ADR-0015: 1,131 retained materials with complete current card-price/calculator mappings are active, incomplete rows are hidden, and new quotes accept material + width + height without the retired local minimum. Phase 2B remains `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`; Phase 2C stops at a verified Vercel Preview plus unmerged Draft PR.
 
 ## Active transition — Phase 2A
 
@@ -15,7 +15,7 @@
 | Фаза документа | Phase 1A–1F and Phase 2A completed; Phase 2B implementation complete/live pending; Phase 2C final experience active |
 | Статус roadmap | **AUTHORIZED_PHASE_2C_IN_PROGRESS / PHASE_2B_LIVE_PENDING / PRODUCTION HOLD** |
 | Scope | [MVP_SCOPE](MVP_SCOPE.md) |
-| Планы / evidence | Phase 1A–2B reports; Phase 2C [plan](active/PHASE_2C_FINAL_DESIGN_PLAN.md), `OWNER-DECISION-024` and QG-601–670 |
+| Планы / evidence | Phase 1A–2B reports; Phase 2C [plan](active/PHASE_2C_FINAL_DESIGN_PLAN.md), `OWNER-DECISION-024/025`, ADR-0015 and QG-601–670 |
 
 - **ROADMAP-001 — MUST:** фазы выполняются по порядку 1A–1H; параллельный research MAY идти, но dependent implementation не обходит entry gate.
 - **ROADMAP-002 — MUST:** каждая возможность включается feature flag только после собственных acceptance/security/data gates; наличие кода не равно production activation.

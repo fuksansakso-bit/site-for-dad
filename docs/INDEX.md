@@ -3,8 +3,9 @@
 ## Phase 2C final experience
 
 - [Active Phase 2C plan](06-plans/active/PHASE_2C_FINAL_DESIGN_PLAN.md), [canonical contract](specs/GLOBAL_SPEC.md#611-phase-2c-final-experience-contract), [quality gate](00-global/SPEC_QUALITY_GATE.md#17-phase-2c-final-premium-design-gates) and [implementation roadmap](06-plans/IMPLEMENTATION_ROADMAP.md).
-- Final design system, typography, motion, component inventory, route UX audit, release QA and completion report are Phase 2C deliverables and MUST contain actual implementation evidence rather than placeholders.
+- Implemented UX companions: [final design system](specs/03-ux/FINAL_DESIGN_SYSTEM.md), [typography](specs/03-ux/FINAL_TYPOGRAPHY_SPEC.md), [motion](specs/03-ux/FINAL_MOTION_SPEC.md) and [component inventory](specs/03-ux/FINAL_COMPONENT_INVENTORY.md). Release evidence: [route UX audit](06-plans/FINAL_ROUTE_UX_AUDIT.md), [release QA](06-plans/FINAL_RELEASE_QA.md) and [exact AMIGO mapping](06-plans/AMIGO_EXACT_PRICING_MAPPING_2026-08-13.md). The completion report is created only after the real Preview and Draft PR exist.
 - Target delivery is a directly verified Vercel Preview and unmerged Draft PR in `fuksansakso-bit/site-for-dad`; production promotion is excluded.
+- `OWNER-DECISION-025` exact-price evidence: [ADR-0015](adr/ADR-0015-amigo-exact-price-adapter.md), [pricing source policy](00-global/PRICING_SOURCE_POLICY.md), generated `amigo-67c782a10449cdb7` mapping artifact and live Supabase verification. Public scope is 1,131 mapped materials/seven groups, including 137 Zebra materials; 297 incomplete rows are hidden.
 
 ## Phase 2B operations
 
@@ -14,7 +15,7 @@
 
 ## 0. Статус
 
-Phase 1A–1F и Phase 2A завершены. Phase 2B implementation завершена со статусом `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`: live Polza и remote Supabase RLS/Storage/cron ожидают credentials. `OWNER-DECISION-024` разрешает только Phase 2C presentation/interaction work from `bdaa053`; direct Google API/SDK, SAM/masks/segmentation, Python/GPU/worker service, customer accounts, payment, destructive source retirement, merge и production launch не разрешены.
+Phase 1A–1F и Phase 2A завершены. Phase 2B implementation завершена со статусом `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`. `OWNER-DECISION-024/025` разрешают Phase 2C premium presentation и узкий AMIGO exact-price repair from `bdaa053`; direct Google API/SDK, SAM/masks/segmentation, Python/GPU/worker service, customer accounts, payment, uncontrolled source expansion, destructive source retirement, merge и production launch не разрешены.
 
 ## 1. Порядок обязательного чтения
 

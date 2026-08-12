@@ -57,6 +57,7 @@ create table public.ai_visualization_jobs (
   result_mime_type text check (result_mime_type is null or result_mime_type in ('image/jpeg', 'image/png', 'image/webp')),
   result_byte_size integer check (result_byte_size is null or result_byte_size between 1 and 10485760),
   consent_version text check (consent_version is null or consent_version ~ '^[a-z0-9][a-z0-9-]{2,79}$'),
+  product_metadata jsonb not null default '{}'::jsonb check (jsonb_typeof(product_metadata) = 'object'),
   last_provider_poll_at timestamptz,
   cleanup_claimed_at timestamptz,
   created_at timestamptz not null default now(),

@@ -102,6 +102,7 @@ export async function POST(request: Request) {
         material_id: material.id,
         model_name: config.modelName,
         output_size: config.outputSize,
+        product_metadata: parsed.data.productMetadata ?? {},
         prompt_version: AI_VISUALIZATION_PROMPT_VERSION,
         status: 'CREATED',
       })

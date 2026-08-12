@@ -94,6 +94,7 @@ export type AiVisualizationJobRow = {
   result_mime_type: SupportedImageMime | null;
   result_byte_size: number | null;
   consent_version: string | null;
+  product_metadata: { widthMm?: number; heightMm?: number };
   last_provider_poll_at: string | null;
   created_at: string;
   started_at: string | null;

@@ -10,6 +10,13 @@ export const createAiJobSchema = z
     idempotencyKey,
     materialId: z.uuid().optional(),
     materialSlug: materialSlug.optional(),
+    productMetadata: z
+      .object({
+        heightMm: z.number().int().min(100).max(10_000),
+        widthMm: z.number().int().min(100).max(10_000),
+      })
+      .strict()
+      .optional(),
   })
   .strict()
   .refine((value) => Number(Boolean(value.materialId)) + Number(Boolean(value.materialSlug)) === 1);

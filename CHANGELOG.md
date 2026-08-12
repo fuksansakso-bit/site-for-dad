@@ -7,6 +7,8 @@
 
 ### Added
 
+- Redesigned the source-backed catalog and material detail: category tabs, deferred search, availability/type filters, stable sorting, incremental 24-card rendering, responsive optimized images, honest empty/manual-price states, semantic breadcrumbs, material facts/order panel, settings-backed service facts, related materials and AI entry points that disappear when the feature is unavailable.
+
 - Added the bounded first-visit starfield intro with skip, reduced-motion bypass, DPR/frame caps, visibility pause and CSS fallback; rebuilt the landing as a source-backed interior-tech journey with exact owner-approved hero copy, real published categories/materials/portfolio, conditional AI and WhatsApp entry points, calculator/trust/AMIGO/FAQ sections and honest empty states without invented business facts.
 
 - Established the Phase 2C visual foundation: approved semantic palette/spacing/radius/shadow/motion tokens, `next/font` Manrope + Cormorant Garamond Cyrillic typography, reusable UI primitives, centralized Russian presentation helpers, neutral public brand fallback, responsive site chrome/footer and safe-area mobile navigation.

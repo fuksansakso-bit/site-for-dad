@@ -2,7 +2,7 @@
 
 ## Status and verifiable outcome
 
-- **Status:** IN PROGRESS — catalog experience
+- **Status:** IN PROGRESS — conversion flow
 - **Branch:** `phase/2c-final-premium-design`
 - **Baseline:** `bdaa053eee6491a9286355707008a39cbac1abff` (`second-github/main`)
 - **Safety tag:** `pre-final-design-phase`
@@ -25,8 +25,8 @@
 1. **COMPLETED — Authorization and preflight:** recorded `OWNER-DECISION-024`, baseline/tag/branch, active plan, QG-601–670, visible blockers and exact Preview/repository boundary; docs validation and baseline lint/typecheck/49 tests/build pass.
 2. **COMPLETED — Design foundation:** implemented central color/type/space/radius/shadow/motion tokens, local `next/font`, semantic primitives, presentation mappings and responsive public/admin foundations; lint/typecheck/build and desktop/mobile visual checks pass.
 3. **COMPLETED — Intro and landing:** added the bounded first-visit starfield with skip/reduced-motion/weak-device fallbacks, source-backed premium landing, exact approved hero copy, conditional AI/WhatsApp, real published catalog/portfolio content and honest empty states; lint, typecheck, build and 1440/mobile visual review pass.
-4. **IN PROGRESS — Catalog experience:** redesign listing, filters, cards, breadcrumbs and material detail while preserving published Supabase data and honest price/availability states.
-5. **PENDING — Conversion flow:** redesign calculator, local cart, checkout, request result and WhatsApp handoff without changing server price or immutable request contracts.
+4. **COMPLETED — Catalog experience:** redesigned listing, deferred search, filters, stable sorting, incremental rendering, responsive cards, breadcrumbs and material detail while preserving published Supabase price/availability authority, conditional AI entry and honest unavailable/manual states; lint and strict typecheck pass, and the unreachable local hosted project is recorded without claiming live-data evidence.
+5. **IN PROGRESS — Conversion flow:** redesign calculator, local cart, checkout, request result and WhatsApp handoff without changing server price or immutable request contracts.
 6. **PENDING — AI experience:** polish the five visualizer states, before/after interaction, errors, disabled state and private-data notices without altering the Polza adapter.
 7. **PENDING — Business administration:** unify Russian login, dashboard, materials, orders, portfolio, settings, staff and AI administration with role-safe actions.
 8. **PENDING — Responsive and states:** complete desktop/tablet/mobile navigation, 320–1920 px ergonomics, loading/empty/error/success/disabled/offline states and internal-label mappings.

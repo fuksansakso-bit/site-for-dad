@@ -1,5 +1,6 @@
 import type { StaffRole } from './types';
-export type Capability = 'ORDERS' | 'CATALOG' | 'PORTFOLIO' | 'SETTINGS' | 'STAFF' | 'AI_VISUALIZATIONS';
+export type Capability =
+  'ORDERS' | 'CATALOG' | 'PORTFOLIO' | 'SETTINGS' | 'STAFF' | 'AI_VISUALIZATIONS';
 const matrix: Record<StaffRole, Capability[]> = {
   OWNER: ['ORDERS', 'CATALOG', 'PORTFOLIO', 'SETTINGS', 'STAFF', 'AI_VISUALIZATIONS'],
   ADMIN: ['ORDERS', 'CATALOG', 'PORTFOLIO', 'SETTINGS', 'AI_VISUALIZATIONS'],

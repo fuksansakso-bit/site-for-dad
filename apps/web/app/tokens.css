@@ -21,8 +21,7 @@
   --color-overlay: rgb(17 19 16 / 72%);
 
   --font-ui: var(--font-manrope), Manrope, Inter, system-ui, -apple-system, sans-serif;
-  --font-display:
-    var(--font-cormorant), 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --font-display: var(--font-cormorant), 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
 
   --text-xs: clamp(0.73rem, 0.7rem + 0.08vw, 0.78rem);
   --text-sm: clamp(0.84rem, 0.8rem + 0.12vw, 0.92rem);

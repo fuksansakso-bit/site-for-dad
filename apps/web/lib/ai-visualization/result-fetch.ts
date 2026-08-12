@@ -128,4 +128,3 @@ export async function downloadPolzaResult(value: string): Promise<{
   }
   throw new AiVisualizationError('OUTPUT_INVALID');
 }
-

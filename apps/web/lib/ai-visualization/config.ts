@@ -13,9 +13,7 @@ function boundedInteger(
   maximum: number,
 ): number {
   const parsed = Number.parseInt(value ?? '', 10);
-  return Number.isSafeInteger(parsed) && parsed >= minimum && parsed <= maximum
-    ? parsed
-    : fallback;
+  return Number.isSafeInteger(parsed) && parsed >= minimum && parsed <= maximum ? parsed : fallback;
 }
 
 function bucketName(value: string | undefined, fallback: string): string {
@@ -71,20 +69,14 @@ export function getAiVisualizerServerConfig(): AiVisualizerServerConfig {
     modelName,
     environmentEnabled,
     mockProviderEnabled,
-    effectiveProviderAvailable:
-      environmentEnabled && (polzaApiKey !== null || mockProviderEnabled),
+    effectiveProviderAvailable: environmentEnabled && (polzaApiKey !== null || mockProviderEnabled),
     maxAttemptsPerGuestPerDay: boundedInteger(
       process.env['AI_MAX_ATTEMPTS_PER_GUEST_PER_DAY'],
       2,
       1,
       20,
     ),
-    globalDailyJobLimit: boundedInteger(
-      process.env['AI_GLOBAL_DAILY_JOB_LIMIT'],
-      20,
-      1,
-      1_000,
-    ),
+    globalDailyJobLimit: boundedInteger(process.env['AI_GLOBAL_DAILY_JOB_LIMIT'], 20, 1, 1_000),
     maxConcurrentJobs: boundedInteger(process.env['AI_MAX_CONCURRENT_JOBS'], 1, 1, 20),
     outputSize: '1K',
     retentionHours: boundedInteger(process.env['AI_RETENTION_HOURS'], 24, 1, 168),

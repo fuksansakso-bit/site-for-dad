@@ -41,12 +41,13 @@ describe('Phase 2B safe validation and errors', () => {
     expect(signedUploadSchema.safeParse({ ...valid, mimeType: 'image/svg+xml' }).success).toBe(
       false,
     );
-    expect(signedUploadSchema.safeParse({ ...valid, storagePath: '../foreign/window.jpg' }).success).toBe(
-      false,
-    );
-    expect(signedUploadSchema.safeParse({ ...valid, materialImageUrl: 'https://evil.example/x' }).success).toBe(
-      false,
-    );
+    expect(
+      signedUploadSchema.safeParse({ ...valid, storagePath: '../foreign/window.jpg' }).success,
+    ).toBe(false);
+    expect(
+      signedUploadSchema.safeParse({ ...valid, materialImageUrl: 'https://evil.example/x' })
+        .success,
+    ).toBe(false);
   });
 
   it('requires explicit consent and rejects honeypot content', () => {
@@ -116,4 +117,3 @@ describe('Phase 2B safe validation and errors', () => {
     expect(safe.message).not.toMatch(/Bearer|SQL|super-secret/u);
   });
 });
-

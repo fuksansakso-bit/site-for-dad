@@ -2,10 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { getAiVisualizerServerConfig } from '../../../../../lib/ai-visualization/config';
 import { AiVisualizationError } from '../../../../../lib/ai-visualization/errors';
-import {
-  getOwnedAiJob,
-  requireAiEnabled,
-} from '../../../../../lib/ai-visualization/job-data';
+import { getOwnedAiJob, requireAiEnabled } from '../../../../../lib/ai-visualization/job-data';
 import {
   safeJobPayload,
   startAiVisualization,

@@ -72,10 +72,7 @@ export async function validateImageBytes(
     if (Math.min(width, height) < limits.minimumSide) {
       throw new AiVisualizationError('IMAGE_TOO_SMALL');
     }
-    if (
-      Math.max(width, height) > limits.maximumLongSide ||
-      width * height > limits.maximumPixels
-    ) {
+    if (Math.max(width, height) > limits.maximumLongSide || width * height > limits.maximumPixels) {
       throw new AiVisualizationError('IMAGE_TOO_LARGE');
     }
     await image.stats();

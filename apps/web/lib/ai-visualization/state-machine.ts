@@ -18,4 +18,3 @@ export function canTransitionAiVisualization(
 ): boolean {
   return ALLOWED_TRANSITIONS[from].includes(to);
 }
-

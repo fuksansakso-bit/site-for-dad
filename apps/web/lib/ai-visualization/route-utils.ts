@@ -27,7 +27,10 @@ export async function readAiJson(request: Request): Promise<unknown> {
   }
 }
 
-export function aiErrorResponse(error: unknown, requestCorrelationId: string): NextResponse<ApiErrorPayload> {
+export function aiErrorResponse(
+  error: unknown,
+  requestCorrelationId: string,
+): NextResponse<ApiErrorPayload> {
   const safe = safeAiError(error);
   return NextResponse.json(
     {
@@ -72,4 +75,3 @@ export async function consumeAiRateLimit(
   if (error) throw new AiVisualizationError('STORAGE_UNAVAILABLE', { cause: error });
   if (result?.allowed !== true) throw new AiVisualizationError('RATE_LIMITED');
 }
-

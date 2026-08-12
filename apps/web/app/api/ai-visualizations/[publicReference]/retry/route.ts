@@ -2,10 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { getAiVisualizerServerConfig } from '../../../../../lib/ai-visualization/config';
 import { AiVisualizationError } from '../../../../../lib/ai-visualization/errors';
-import {
-  getOwnedAiJob,
-  requireAiEnabled,
-} from '../../../../../lib/ai-visualization/job-data';
+import { getOwnedAiJob, requireAiEnabled } from '../../../../../lib/ai-visualization/job-data';
 import {
   cloneSucceededJobForVariant,
   safeJobPayload,
@@ -59,7 +56,8 @@ export async function POST(request: Request, context: Context) {
       .eq('guest_session_hash', guest.hash)
       .eq('idempotency_hash', idempotencyHash)
       .maybeSingle();
-    if (attemptError) throw new AiVisualizationError('STORAGE_UNAVAILABLE', { cause: attemptError });
+    if (attemptError)
+      throw new AiVisualizationError('STORAGE_UNAVAILABLE', { cause: attemptError });
     if (existingAttempt) {
       const { data: existingJob, error: existingJobError } = await client
         .from('ai_visualization_jobs')
@@ -115,4 +113,3 @@ export async function POST(request: Request, context: Context) {
     return aiErrorResponse(error, requestCorrelationId);
   }
 }
-

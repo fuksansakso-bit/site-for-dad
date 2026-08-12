@@ -172,7 +172,11 @@ export class PolzaImageVisualizationProvider implements ImageVisualizationProvid
     this.#modelName = input.modelName;
   }
 
-  async #request(path: string, init: RequestInit, retryStatusRead = false): Promise<{
+  async #request(
+    path: string,
+    init: RequestInit,
+    retryStatusRead = false,
+  ): Promise<{
     body: JsonRecord;
     requestId: string | null;
   }> {
@@ -211,9 +215,7 @@ export class PolzaImageVisualizationProvider implements ImageVisualizationProvid
         lastError = normalized;
         if (
           attempt + 1 < attempts &&
-          ['POLZA_RATE_LIMITED', 'POLZA_PROVIDER_ERROR', 'POLZA_TIMEOUT'].includes(
-            normalized.code,
-          )
+          ['POLZA_RATE_LIMITED', 'POLZA_PROVIDER_ERROR', 'POLZA_TIMEOUT'].includes(normalized.code)
         ) {
           await delay(250);
           continue;

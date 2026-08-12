@@ -106,11 +106,8 @@ describe('Phase 2B prompt and domain', () => {
 
   it('detects magic bytes and rejects SVG/HTML masquerading as an image', () => {
     expect(detectImageMime(Uint8Array.from([0xff, 0xd8, 0xff, 0xdb]))).toBe('image/jpeg');
-    expect(
-      detectImageMime(Uint8Array.from([137, 80, 78, 71, 13, 10, 26, 10])),
-    ).toBe('image/png');
+    expect(detectImageMime(Uint8Array.from([137, 80, 78, 71, 13, 10, 26, 10]))).toBe('image/png');
     expect(detectImageMime(new TextEncoder().encode('<svg><script/></svg>'))).toBeNull();
     expect(detectImageMime(new TextEncoder().encode('<html>image/jpeg</html>'))).toBeNull();
   });
 });
-

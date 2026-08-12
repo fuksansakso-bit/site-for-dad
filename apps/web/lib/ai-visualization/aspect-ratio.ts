@@ -9,8 +9,7 @@ const SUPPORTED: ReadonlyArray<{ label: SupportedAspectRatio; ratio: number }> =
 export function nearestSupportedAspectRatio(width: number, height: number): SupportedAspectRatio {
   const ratio = width / height;
   return SUPPORTED.reduce((nearest, candidate) =>
-    Math.abs(Math.log(ratio / candidate.ratio)) <
-    Math.abs(Math.log(ratio / nearest.ratio))
+    Math.abs(Math.log(ratio / candidate.ratio)) < Math.abs(Math.log(ratio / nearest.ratio))
       ? candidate
       : nearest,
   ).label;
@@ -19,4 +18,3 @@ export function nearestSupportedAspectRatio(width: number, height: number): Supp
 export function numericAspectRatio(value: SupportedAspectRatio): number {
   return value === '1:1' ? 1 : value === '9:16' ? 9 / 16 : 16 / 9;
 }
-

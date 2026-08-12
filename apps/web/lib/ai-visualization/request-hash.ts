@@ -31,4 +31,3 @@ export function combinedRequestHash(input: CombinedRequestHashInput): string {
   });
   return createHash('sha256').update(canonical).digest('hex');
 }
-

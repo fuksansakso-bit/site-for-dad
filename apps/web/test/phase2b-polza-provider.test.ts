@@ -13,8 +13,14 @@ function provider() {
 const createInput = {
   aspectRatio: '16:9' as const,
   images: [
-    { mimeType: 'image/jpeg' as const, signedUrl: 'https://project.supabase.co/window.jpg?token=x' },
-    { mimeType: 'image/webp' as const, signedUrl: 'https://project.supabase.co/material.webp?token=y' },
+    {
+      mimeType: 'image/jpeg' as const,
+      signedUrl: 'https://project.supabase.co/window.jpg?token=x',
+    },
+    {
+      mimeType: 'image/webp' as const,
+      signedUrl: 'https://project.supabase.co/material.webp?token=y',
+    },
   ] as const,
   modelName: 'google/gemini-3.1-flash-image',
   prompt: 'A'.repeat(100),
@@ -112,7 +118,9 @@ describe('Polza Media API adapter', () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({ message: 'provider detail must stay private' }), { status }),
+        new Response(JSON.stringify({ message: 'provider detail must stay private' }), {
+          status,
+        }),
       ),
     );
     await expect(provider().createJob(createInput)).rejects.toMatchObject({

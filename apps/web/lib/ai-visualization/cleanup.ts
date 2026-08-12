@@ -42,7 +42,9 @@ export async function cleanupExpiredAiVisualizations(
     summary.claimed += claims.length;
 
     for (const claim of claims) {
-      const input = await client.storage.from(config.inputBucket).remove([claim.input_storage_path]);
+      const input = await client.storage
+        .from(config.inputBucket)
+        .remove([claim.input_storage_path]);
       const result = claim.result_storage_path
         ? await client.storage.from(config.resultBucket).remove([claim.result_storage_path])
         : { error: null };
@@ -85,4 +87,3 @@ export async function cleanupExpiredAiVisualizations(
   });
   return summary;
 }
-

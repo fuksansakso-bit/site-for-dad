@@ -6,10 +6,7 @@ import {
   INPUT_IMAGE_LIMITS,
   validateImageBytes,
 } from '../../../../../../lib/ai-visualization/image-validation';
-import {
-  getOwnedAiJob,
-  requireAiEnabled,
-} from '../../../../../../lib/ai-visualization/job-data';
+import { getOwnedAiJob, requireAiEnabled } from '../../../../../../lib/ai-visualization/job-data';
 import {
   aiErrorResponse,
   assertTrustedMutation,
@@ -61,8 +58,7 @@ export async function POST(request: Request, context: Context) {
       throw new AiVisualizationError('INVALID_IMAGE', { status: 409 });
     }
     if (
-      job.upload_idempotency_hash !==
-      hashAiIdempotencyKey(guest.hash, parsed.data.idempotencyKey)
+      job.upload_idempotency_hash !== hashAiIdempotencyKey(guest.hash, parsed.data.idempotencyKey)
     ) {
       throw new AiVisualizationError('INVALID_IMAGE', { status: 409 });
     }

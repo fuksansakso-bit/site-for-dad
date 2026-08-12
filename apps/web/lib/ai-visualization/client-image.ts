@@ -54,7 +54,9 @@ function detectedMime(bytes: Uint8Array): SupportedImageMime | null {
 
 function jpegDimensions(bytes: Uint8Array): { width: number; height: number } | null {
   let offset = 2;
-  const startOfFrame = new Set([0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc7, 0xc9, 0xca, 0xcb, 0xcd, 0xce, 0xcf]);
+  const startOfFrame = new Set([
+    0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc7, 0xc9, 0xca, 0xcb, 0xcd, 0xce, 0xcf,
+  ]);
   while (offset + 8 < bytes.length) {
     if (bytes[offset] !== 0xff) {
       offset += 1;
@@ -129,14 +131,17 @@ function validateDimensions(dimensions: { width: number; height: number } | null
     Math.max(dimensions.width, dimensions.height) > 20_000 ||
     dimensions.width * dimensions.height > MAX_PIXELS
   ) {
-    throw new ClientImageError('Фотография имеет слишком большое разрешение. Выберите другое фото.');
+    throw new ClientImageError(
+      'Фотография имеет слишком большое разрешение. Выберите другое фото.',
+    );
   }
 }
 
 function canvasBlob(canvas: HTMLCanvasElement, quality: number): Promise<Blob> {
   return new Promise((resolve, reject) => {
     canvas.toBlob(
-      (blob) => (blob ? resolve(blob) : reject(new ClientImageError('Не удалось подготовить фото.'))),
+      (blob) =>
+        blob ? resolve(blob) : reject(new ClientImageError('Не удалось подготовить фото.')),
       'image/jpeg',
       quality,
     );
@@ -264,16 +269,12 @@ export async function uploadWindowImageDirectly(
       upsert: false,
     });
   if (error) throw new ClientImageError('Не удалось загрузить фотографию. Попробуйте снова.');
-  const confirmResponse = await fetch(
-    `/api/ai-visualizations/${publicReference}/upload/confirm`,
-    {
-      body: JSON.stringify(metadata),
-      credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json' },
-      method: 'POST',
-    },
-  );
+  const confirmResponse = await fetch(`/api/ai-visualizations/${publicReference}/upload/confirm`, {
+    body: JSON.stringify(metadata),
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
+    method: 'POST',
+  });
   const confirmPayload = await safeJson(confirmResponse);
   if (!confirmResponse.ok) throw new ClientImageError(apiMessage(confirmPayload));
 }
-

@@ -22,4 +22,3 @@ export function createImageVisualizationProvider(
     modelName: config.modelName,
   });
 }
-

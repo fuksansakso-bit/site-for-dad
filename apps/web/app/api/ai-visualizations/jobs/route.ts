@@ -51,8 +51,10 @@ export async function POST(request: Request) {
       if (existing.deleted_at || ['DELETED', 'EXPIRED'].includes(existing.status)) {
         throw new AiVisualizationError('JOB_EXPIRED');
       }
-      const { storagePath: _existingStoragePath, ...existingMaterial } =
-        await resolveAiMaterial(client, { materialId: existing.material_id });
+      const { storagePath: _existingStoragePath, ...existingMaterial } = await resolveAiMaterial(
+        client,
+        { materialId: existing.material_id },
+      );
       return NextResponse.json(
         {
           attemptNumber: existing.attempt_number,
@@ -75,10 +77,7 @@ export async function POST(request: Request) {
       ipLimit: 20,
       windowSeconds: 600,
     });
-    const { storagePath: _storagePath, ...material } = await resolveAiMaterial(
-      client,
-      parsed.data,
-    );
+    const { storagePath: _storagePath, ...material } = await resolveAiMaterial(client, parsed.data);
     const { data: active, error: activeError } = await client
       .from('ai_visualization_jobs')
       .select('id')

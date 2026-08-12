@@ -5,24 +5,15 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { publicImageUrl } from '../phase2a/data';
 import { nearestSupportedAspectRatio, numericAspectRatio } from './aspect-ratio';
-import {
-  AI_VISUALIZATION_CONSENT_VERSION,
-  type AiVisualizerServerConfig,
-} from './config';
+import { AI_VISUALIZATION_CONSENT_VERSION, type AiVisualizerServerConfig } from './config';
 import { AiVisualizationError, safeAiMessage } from './errors';
 import {
   INPUT_IMAGE_LIMITS,
   normalizeProviderResult,
   validateImageBytes,
 } from './image-validation';
-import {
-  getEffectiveAiSettings,
-  type EffectiveAiSettings,
-} from './job-data';
-import {
-  downloadValidatedMaterialImage,
-  resolveAiMaterial,
-} from './material';
+import { getEffectiveAiSettings, type EffectiveAiSettings } from './job-data';
+import { downloadValidatedMaterialImage, resolveAiMaterial } from './material';
 import { normalizedProviderFailure, type NormalizedProviderFailure } from './provider-error-map';
 import { createImageVisualizationProvider } from './provider-factory';
 import { buildVisualizationPrompt } from './prompt';
@@ -249,7 +240,8 @@ export async function startAiVisualization(
     })
     .eq('id', input.job.id)
     .eq('guest_session_hash', input.guestHash);
-  if (metadataError) throw new AiVisualizationError('STORAGE_UNAVAILABLE', { cause: metadataError });
+  if (metadataError)
+    throw new AiVisualizationError('STORAGE_UNAVAILABLE', { cause: metadataError });
 
   const reserved = await reservation(client, {
     combinedHash: requestHash,
@@ -264,10 +256,7 @@ export async function startAiVisualization(
     if (reserved.outcome === 'REUSED') {
       await client.storage.from(input.config.inputBucket).remove([input.job.input_storage_path]);
     }
-    return safeJobPayload(
-      await ownedJobById(client, reserved.jobId, input.guestHash),
-      true,
-    );
+    return safeJobPayload(await ownedJobById(client, reserved.jobId, input.guestHash), true);
   }
   if (reserved.outcome !== 'RESERVED' || !reserved.attemptNumber) {
     throw reservationError(reserved.outcome);
@@ -276,7 +265,9 @@ export async function startAiVisualization(
   const processingJob = await ownedJobById(client, input.job.id, input.guestHash);
   try {
     const [windowUrl, materialUrl] = await Promise.all([
-      client.storage.from(input.config.inputBucket).createSignedUrl(input.job.input_storage_path, 300),
+      client.storage
+        .from(input.config.inputBucket)
+        .createSignedUrl(input.job.input_storage_path, 300),
       client.storage.from('catalog').createSignedUrl(material.storagePath, 300),
     ]);
     if (windowUrl.error || !windowUrl.data || materialUrl.error || !materialUrl.data) {
@@ -302,10 +293,7 @@ export async function startAiVisualization(
       providerJobId: created.providerJobId,
       providerStatus: created.providerStatus,
     });
-    return safeJobPayload(
-      await ownedJobById(client, input.job.id, input.guestHash),
-      false,
-    );
+    return safeJobPayload(await ownedJobById(client, input.job.id, input.guestHash), false);
   } catch (error) {
     const failure = normalizedProviderFailure(error);
     await finishFailure(client, processingJob, reserved.attemptNumber, failure);
@@ -354,11 +342,13 @@ async function persistCompletedResult(
     numericAspectRatio(aspectRatio),
   );
   const path = `${input.job.id}/result.jpg`;
-  const upload = await client.storage.from(input.config.resultBucket).upload(path, normalized.bytes, {
-    cacheControl: '300',
-    contentType: normalized.mimeType,
-    upsert: false,
-  });
+  const upload = await client.storage
+    .from(input.config.resultBucket)
+    .upload(path, normalized.bytes, {
+      cacheControl: '300',
+      contentType: normalized.mimeType,
+      upsert: false,
+    });
   if (upload.error) {
     const existing = await client.storage.from(input.config.resultBucket).download(path);
     if (existing.error || !existing.data) {
@@ -534,10 +524,7 @@ export async function cloneSucceededJobForVariant(
   retentionHours: number,
 ): Promise<AiVisualizationJobRow> {
   if (source.status !== 'SUCCEEDED') throw new AiVisualizationError('OUTPUT_INVALID');
-  if (
-    source.completed_at &&
-    Date.now() - new Date(source.completed_at).getTime() <= 30 * 60_000
-  ) {
+  if (source.completed_at && Date.now() - new Date(source.completed_at).getTime() <= 30 * 60_000) {
     return source;
   }
   const extension = source.input_storage_path.split('.').at(-1);

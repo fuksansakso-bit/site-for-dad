@@ -1,5 +1,9 @@
 # Test strategy PROJECT_NAME
 
+## Phase 2A verification profile
+
+Suites cover pricing/minimum/quantity/MANUAL, phone/WhatsApp, roles; migrations and RLS matrices; server-authoritative immutable orders; Storage permissions; idempotent ETL/count/article/price/media checks; public/admin/mobile browser flows; and service-role leak, anon write, IDOR, CSRF, upload and price-tampering negatives. Remote-only cases are explicitly skipped without credentials and MUST run before cloud activation.
+
 ## 0. Метаданные
 
 | Поле | Значение |

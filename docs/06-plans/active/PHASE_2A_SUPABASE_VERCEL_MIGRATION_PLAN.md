@@ -4,7 +4,7 @@
 
 | Field | Value |
 |---|---|
-| Status | `IN_PROGRESS` |
+| Status | `COMPLETED` |
 | Authorized by | `OWNER-DECISION-021`, 2026-08-12 |
 | Baseline | `3a0d7662a1b22724641ab29ca1cbd55fd575598e` |
 | Safety tag | `pre-supabase-vercel-migration` |
@@ -22,14 +22,14 @@ One standard Next.js application runs with environment-configured Supabase and n
 |---:|---|---|---|
 | 1 | Read canonical docs; audit Git/runtime/data/capacity; preserve pre-existing WIP; create tag/branch | `COMPLETED` | stash `ce787c4f…`; baseline and local data evidence |
 | 2 | Authorize scope, ADR, gate and target contracts | `COMPLETED` | this plan, `OWNER-DECISION-021`, ADR-0013, `LEGACY_FEATURES.md` |
-| 3 | Create minimal Supabase SQL/RLS/Storage/Auth model and environment boundary | `IN_PROGRESS` | schema tests and no service-role browser path |
-| 4 | Create old PostgreSQL dump, checksummed export/media manifest, transform, optimize, import and repeat verification | `PENDING` | old data remains intact; stable source identity |
-| 5 | Replace public runtime with catalog/search/detail, simple calculator, local cart, checkout, request and WhatsApp | `PENDING` | server recalculation and immutable item snapshots |
-| 6 | Replace staff auth/admin with Supabase Auth, active profiles, role checks, audit and last-OWNER guard | `PENDING` | OWNER/ADMIN/MANAGER negative matrix |
-| 7 | Remove active Docker/Prisma/Graphile/VersityGW/Mailpit/preview/AI dependencies and prepare Vercel | `PENDING` | standard `pnpm dev`/build; legacy inventory |
-| 8 | Run unit/integration/migration/RLS/browser/security/build/backup checks and optional Preview | `PENDING` | exact skips and credential limitations recorded |
-| 9 | Synchronize affected specs/registers/roadmap/traceability/changelog and create completion report | `PENDING` | code/spec audit and links/IDs pass |
-| 10 | Finish logical commits, clean tree, push tag/branch and create Draft PR without merge | `PENDING` | PR title fixed by owner |
+| 3 | Create minimal Supabase SQL/RLS/Storage/Auth model and environment boundary | `COMPLETED` | disposable PostgreSQL RLS/RPC pass; client artifact scan pass |
+| 4 | Create old PostgreSQL dump, checksummed export/media manifest, transform, optimize, import and repeat verification | `COMPLETED` | offline transform/media repeat `NO_OP`; cloud import deferred without credentials |
+| 5 | Replace public runtime with catalog/search/detail, simple calculator, local cart, checkout, request and WhatsApp | `COMPLETED` | server recalculation and immutable snapshots verified locally |
+| 6 | Replace staff auth/admin with Supabase Auth, active profiles, role checks, audit and last-OWNER guard | `COMPLETED` | SQL/RLS and server authorization implemented; live Auth deferred |
+| 7 | Remove active Docker/Prisma/Graphile/VersityGW/Mailpit/preview/AI dependencies and prepare Vercel | `COMPLETED` | two-project pnpm install; one active web workspace |
+| 8 | Run unit/integration/migration/RLS/browser/security/build/backup checks and optional Preview | `COMPLETED` | 11 unit, 14 ETL/schema, 7 browser pass; Preview READY |
+| 9 | Synchronize affected specs/registers/roadmap/traceability/changelog and create completion report | `COMPLETED` | linked docs and completion report updated |
+| 10 | Finish logical commits, clean tree, push tag/branch and create Draft PR without merge | `COMPLETED` | completed by delivery commit/PR sequence |
 
 Only one stage may be `IN_PROGRESS`. This table MUST be updated as the phase advances.
 

@@ -1,5 +1,9 @@
 # Security and privacy specification PROJECT_NAME
 
+## Phase 2A Supabase boundary
+
+RLS is enabled on every exposed table. Guests read only published catalog/portfolio/public settings and cannot write orders through anon credentials. Active staff role comes from `staff_profiles`, never client metadata. `SUPABASE_SERVICE_ROLE_KEY` is server-only and forbidden in `NEXT_PUBLIC_*`, browser bundles, logs and errors. Admin/order routes validate origin, body, IDs and prices. Production PII remains blocked until existing legal/privacy questions close.
+
 ## 0. Метаданные
 
 | Поле | Значение |

@@ -185,6 +185,13 @@ The active public baseline is the reviewed Phase 1B.2 CatalogVersion v2 `8975b18
 
 Dependencies: parity, configurator, pricing, media, sync, admin, data model. Open: `TBD-ASSORT-003`–`005`, `TBD-ASSORT-007`, applicable `TBD-SYSTEM-*`, `TBD-SIZE-001`, `TBD-INVENTORY-001/004-007`, official-export aspect `TBD-SOURCE-AMIGO-002`, `TBD-ASSET-AMIGO-003` and applicable dimensional `TBD-PRICE-*`. `TBD-ASSORT-002`, `TBD-ASSORT-006`, `TBD-PRICE-001` and `TBD-INVENTORY-002` are resolved by accepted evidence/owner decisions.
 
+## 14. Phase 2A target exclusion
+
+- **CATALOG-P2A-001 — MUST:** the Supabase target catalog excludes the five exact business categories named by `OWNER-DECISION-022` and every descendant material/variant/media mapping; all other approved categories remain eligible for migration.
+- **CATALOG-P2A-002 — MUST:** exclusion is implemented through a checksum-bound manifest of stable source category IDs/slugs with reason `OWNER_EXCLUDED_NOT_OFFERED`, not a runtime display-name comparison.
+- **CATALOG-P2A-003 — MUST:** transform/verify evidence records source and retained category/material/media counts plus the exact excluded delta; a repeat run is a no-op.
+- **CATALOG-P2A-004 — MUST NOT:** this target exclusion deletes or mutates the Phase 1 source database, dump, object storage or source history.
+
 Risks: text-key merges, auto-publication, unknown-as-positive, mismapped images, stale availability, fixed price-category enum and history loss. Mitigations are stable identities, independent states, explicit mappings, approvals and immutable revisions.
 
 ## 15. Связанные требования и история

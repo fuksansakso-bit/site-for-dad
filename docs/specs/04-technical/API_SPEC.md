@@ -1,5 +1,9 @@
 # API and integration contract specification PROJECT_NAME
 
+## Phase 2A HTTP surface
+
+The active surface is public/catalog/calculator/cart/checkout/request pages, a server-authoritative quote/order endpoint, `/api/health`, and staff-authenticated admin mutations. The browser cannot insert orders with the anon key. Zod validation, generic Russian errors, opaque references, origin/CSRF controls and fresh server price calculation are mandatory; UUIDs, enum internals, SQL/RLS errors and service-role details are never public DTO fields.
+
 ## 0. Метаданные
 
 | Поле | Значение |

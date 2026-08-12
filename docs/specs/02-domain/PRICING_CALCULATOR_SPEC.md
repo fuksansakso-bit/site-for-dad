@@ -1,5 +1,9 @@
 # Pricing calculator specification PROJECT_NAME
 
+## Phase 2A simple calculation
+
+The client supplies only material ID, width/height in millimetres and quantity. `AREA` computes `widthMm * heightMm / 1_000_000 * pricePerM2`, then applies 150,000 kopecks minimum to each unit before multiplying by quantity. `FIXED` uses configured fixed unit price; `MANUAL` shows «Стоимость уточнит менеджер» and never `0 ₽`. Server recalculation is the only order price authority; unproven legacy “from” prices remain `MANUAL`.
+
 ## 0. Метаданные
 
 | Поле | Значение |

@@ -1,5 +1,15 @@
 # Матрица трассируемости PROJECT_NAME
 
+## Phase 2A trace
+
+| Decision/scope | Implementation evidence | Verification/report |
+|---|---|---|
+| `OWNER-DECISION-021`, ADR-0013 | `supabase/migrations`, `apps/web`, `.env.example` | SQL/RLS/unit/browser/build suites; Phase 2A report |
+| `OWNER-DECISION-022`, `CATALOG-P2A-001`–`004` | `tooling/phase2a`, exclusion manifest | `migration:verify`, `DATA_MIGRATION_REPORT.md` |
+| `P2A-SCOPE-008` | WebP SHA-256 media pipeline | `migration:verify-media`, Free Tier audit |
+| staff-only Auth/RLS | server clients/admin guards | Auth/RLS/security tests; setup procedure |
+| no mandatory legacy runtime | web-only root `dev`/`build`, `LEGACY_FEATURES.md` | build and client artifact scan |
+
 ## 0. Статус
 
 | Поле | Значение |
@@ -171,8 +181,8 @@ Post-MVP IDs `POST-MVP-001`–`015` have no Phase 1 delivery commitment and MUST
 
 | Acceptance | Реализация | Проверка / результат |
 |---|---|---|
-| `PLAN-1A-AC-001` | [Windows lifecycle](../../tooling/scripts/foundation-environment.ps1), [local contract](../../infrastructure/local/README.md) | Clean bootstrap, healthy status, stop, restart with no pending migrations, reset passed |
-| `PLAN-1A-AC-002` | [CI contract](../../infrastructure/ci/pipeline.json), [verification runner](../../tooling/scripts/verify-foundation.ps1) | 9 / 9 stages passed in worktree and clean clone; browser 20 / 20 |
+| `PLAN-1A-AC-001` | [Windows lifecycle](../../tooling/scripts/foundation-environment.ps1), [legacy local contract](../../legacy/infrastructure/local/README.md) | Historical Phase 1 clean bootstrap/restart evidence; not an active prerequisite |
+| `PLAN-1A-AC-002` | [Legacy CI contract](../../legacy/infrastructure/ci/pipeline.json), [verification runner](../../tooling/scripts/verify-foundation.ps1) | Historical Phase 1 evidence; active Phase 2A uses web-only commands |
 | `PLAN-1A-AC-003` | Workspace package manifests and public `src/index.ts` interfaces | [Boundary checker](../../tooling/scripts/check-boundaries.mjs) passed for 11 workspaces |
 | `PLAN-1A-AC-004` | [Typed config](../../packages/config/src/server.ts), redaction and artifact scanner | Config negative tests, repository/build scans and generated secret canaries passed |
 | `PLAN-1A-AC-005` | [Prisma schema](../../packages/db/prisma/schema.prisma), three versioned migrations | Empty/repeat/upgrade/drift/failed recovery/forward compensation passed on PostgreSQL 18.4 |
@@ -188,7 +198,7 @@ Detailed runtime versions, commit list, skipped production-only checks and accep
 
 | Requirement / decision | Implementation | Verification / result |
 |---|---|---|
-| `OWNER-DECISION-011`, `ARCH-SPEC-029/030`, `DEPLOY-SPEC-022/023` | [VersityGW Compose](../../infrastructure/local/compose.storage.yml), [Windows lifecycle](../../tooling/scripts/foundation-environment.ps1) | Exact v1.4.1 digest, loopback S3/Admin, POSIX data/versioning/IAM named volumes, graceful shutdown and Docker Desktop auto-recovery passed |
+| `OWNER-DECISION-011`, `ARCH-SPEC-029/030`, `DEPLOY-SPEC-022/023` | [Legacy VersityGW Compose](../../legacy/infrastructure/local/compose.storage.yml), [Windows lifecycle](../../tooling/scripts/foundation-environment.ps1) | Historical Phase 1 evidence retained outside active runtime |
 | `STORAGE-SPEC-022`–`027`, `TEST-SPEC-019`–`021` | [S3 adapter](../../packages/storage/src/s3-object-storage.ts), [contract suite](../../packages/storage/test/integration/storage-contract.integration.test.ts), [gate runner](../../tooling/scripts/storage-integration.ps1) | 15/15; all nine sizes byte/SHA-equal; signed read/write, multipart complete/abort, private buckets, failures/concurrency/idempotence and restart persistence passed |
 | `MEDIA-PIPE-024` | Real allowlisted AMIGO JPEG gate and media importer | 515,180 bytes, SHA-256 `ac86fc976afc2063cc97e1528611c978a348f357d26c8fe3c59b7c23f113d0cd`; 59/59 allowlisted assets imported and reverified after restart |
 

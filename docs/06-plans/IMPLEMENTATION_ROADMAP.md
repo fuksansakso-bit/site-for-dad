@@ -1,11 +1,15 @@
 # Implementation roadmap PROJECT_NAME
 
+## Active transition — Phase 2A
+
+`OWNER-DECISION-021/022` and ADR-0013 replace Phase 1F.1 runtime with bounded Supabase/Vercel simplification. Completion requires retained-catalog ETL (19 categories/1,428 materials/1,371 images), simple server pricing/cart/request/WhatsApp, staff-only admin/RLS, no mandatory Docker/worker/AI, backup instructions and Vercel-ready build. Production activation, final redesign, AI and Phase 1G+ require later decisions.
+
 ## 0. Статус и правила
 
 | Поле | Значение |
 |---|---|
 | Фаза документа | Phase 1A–1F completed; Phase 2A simplification authorized; Phase 1F.1 superseded as active trajectory; AI/final redesign hold |
-| Статус roadmap | **AUTHORIZED_PHASE_1F1_IN_PROGRESS / PHASE 1G+ HOLD** |
+| Статус roadmap | **PASSED_PHASE_2A_CODE_AND_PREVIEW / CLOUD_ACTIVATION_PENDING / PHASE 1G+ HOLD** |
 | Scope | [MVP_SCOPE](MVP_SCOPE.md) |
 | Планы / evidence | Phase 1A–1F reports; Phase 2A [plan](active/PHASE_2A_SUPABASE_VERCEL_MIGRATION_PLAN.md), ADR-0013 and QG-481–540 |
 

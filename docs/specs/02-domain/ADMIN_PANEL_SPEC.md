@@ -1,5 +1,9 @@
 # Admin panel specification PROJECT_NAME
 
+## Phase 2A staff administration
+
+The Russian admin uses Supabase email/password Auth only for active `OWNER`, `ADMIN`, `MANAGER` profiles. OWNER has full access and protected last-owner lifecycle; ADMIN manages catalog, prices, requests, portfolio and settings; MANAGER handles requests and explicitly allowed changes. Every mutation rechecks database role server-side and records a minimized audit diff. There is no customer account or complex CRM.
+
 ## 0. Метаданные
 
 | Поле | Значение |

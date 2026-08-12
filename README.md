@@ -1,5 +1,7 @@
 # PROJECT_NAME
 
+> Phase 2A runtime: один Next.js App Router + Supabase PostgreSQL/Storage/staff-only Auth/RLS. Обычный запуск — `pnpm install` и `pnpm dev`; Docker, Prisma, Graphile Worker, VersityGW, Mailpit, preview/configurator и AI больше не active prerequisites. Cloud activation: [Supabase](SUPABASE_SETUP.md), [Vercel](VERCEL_DEPLOYMENT.md). Финальный дизайн не начат.
+
 `PROJECT_NAME` — рабочее обозначение веб-приложения локального бизнеса по изготовлению и установке рулонных жалюзи, систем «Зебра»/«День-Ночь», горизонтальных алюминиевых и вертикальных жалюзи.
 
 Продукт помогает клиенту изучить реальный ассортимент и наличие, получить простой предварительный расчёт, собрать гостевую корзину и передать заявку владельцу бизнеса через WhatsApp. Владельцу приложение даёт лёгкий управляемый контур каталога, цен, наличия, заявок, портфолио и настроек без клиентских аккаунтов и сложной CRM.
@@ -20,9 +22,9 @@
 
 Phase 1E завершена со статусом `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`. Суженная `OWNER-DECISION-018` **Phase 1F — BUSINESS ADMINISTRATION, REQUEST MANAGEMENT, PORTFOLIO AND SETTINGS** завершена со статусом `PASSED_PHASE_1F_BUSINESS_ADMINISTRATION`: staff-only passwordless authentication, OWNER/ADMIN/MANAGER lifecycle, русская admin shell, request-derived CustomerContact/notes, portfolio, SiteSettings и audit работают; customer accounts отсутствуют.
 
-`OWNER-DECISION-019` разрешает только **Phase 1F.1 — MVP FUNCTIONAL COMPLETION** из merged-main commit `289b1baef0b53ac7da457098353ee5e7c1e1953f`. В работе: полный server-side configurator material coverage, диагностика mapping, QuoteSnapshot cart repair, русские client labels, mobile baseline, Argon2id staff login/security administration и шаблоны российского VPS без deployment. `OWNER-DECISION-020` документирует будущую простую Polza/Gemini AI-визуализацию; загрузка фото и AI API в этой фазе отсутствуют. Активный [план](docs/06-plans/active/PHASE_1F1_MVP_FUNCTIONAL_COMPLETION_PLAN.md).
+`OWNER-DECISION-021/022` и ADR-0013 завершили **Phase 2A — Supabase + Vercel simplification**: один Next.js App Router, Supabase PostgreSQL/Storage/staff Auth/RLS, простой калькулятор, localStorage-корзина, гостевая заявка/WhatsApp и русская админка. Docker/Prisma/Graphile/VersityGW/Mailpit/AI/сложный preview не входят в активный runtime. Облачная Supabase activation остаётся ручным шагом без credentials; Preview Vercel создан только для тестирования. [План](docs/06-plans/active/PHASE_2A_SUPABASE_VERCEL_MIGRATION_PLAN.md) и [отчёт](docs/06-plans/completed/PHASE_2A_SUPABASE_VERCEL_MIGRATION_REPORT.md).
 
-`OWNER-DECISION-021` заменяет эту активную траекторию и разрешает **Phase 2A — SUPABASE + VERCEL SIMPLIFICATION MIGRATION** из commit `3a0d7662a1b22724641ab29ca1cbd55fd575598e`, защищённого тегом `pre-supabase-vercel-migration`. Цель — один стандартный Next.js App Router runtime с Supabase PostgreSQL/Storage/staff-only Auth/RLS, простым калькулятором, localStorage-корзиной, гостевой заявкой/WhatsApp и русской админкой. Prisma, Graphile Worker, VersityGW, Mailpit, обязательный Docker, сложный конфигуратор/preview и AI выводятся из active runtime; история сохраняется в Git и [LEGACY_FEATURES.md](LEGACY_FEATURES.md). Активный [план Phase 2A](docs/06-plans/active/PHASE_2A_SUPABASE_VERCEL_MIGRATION_PLAN.md).
+`OWNER-DECISION-021` заменил прежнюю траекторию и разрешил **Phase 2A — SUPABASE + VERCEL SIMPLIFICATION MIGRATION** из commit `3a0d7662a1b22724641ab29ca1cbd55fd575598e`, защищённого тегом `pre-supabase-vercel-migration`. Phase 2A завершена на границе code/Preview; Prisma, Graphile Worker, VersityGW, Mailpit, обязательный Docker, сложный конфигуратор/preview и AI исключены из active runtime, а история сохранена в Git и [LEGACY_FEATURES.md](LEGACY_FEATURES.md). [План Phase 2A](docs/06-plans/active/PHASE_2A_SUPABASE_VERCEL_MIGRATION_PLAN.md).
 
 ## С чего начать
 
@@ -66,7 +68,20 @@ Phase 1E завершена со статусом `PASSED_PHASE_1E_CART_WHATSAPP
 - Изображения AMIGO разрешены в партнёрском scope; hotlink, снятие водяных знаков, смена авторства и training use запрещены, а локальная публикация требует asset-level `PUBLICATION_APPROVED`.
 - Окончательный бренд, хостинг и AI-провайдер не выбраны.
 
-## Локальная разработка на Windows 11
+## Локальная разработка Phase 2A
+
+Требуются Git, Node.js `24.18.1` и pnpm `11.18.0`. Создайте ignored `.env.local` по `.env.example`, затем:
+
+```powershell
+pnpm.cmd install --frozen-lockfile
+pnpm.cmd dev
+pnpm.cmd check
+pnpm.cmd build
+```
+
+`pnpm dev` запускает только Next.js и подключается к development Supabase по environment variables. Docker, локальный PostgreSQL, VersityGW, Mailpit и worker не запускаются. Для миграции и cloud activation используйте `SUPABASE_SETUP.md`; прежняя инфраструктура сохранена только в `legacy/infrastructure` и через `legacy:dev`.
+
+## Исторический локальный workflow Phase 1 (legacy)
 
 Требуются Git, Node.js `24.18.1`, pnpm `11.18.0`, PostgreSQL `18.4`, Docker Desktop 4.84.0 или совместимый Linux-container runtime, а также Playwright Chromium/Firefox/WebKit. PostgreSQL по умолчанию ищется в `%USERPROFILE%\.cache\project-name`; нестандартный каталог задаётся через `PROJECT_NAME_POSTGRES_ROOT`. Local/CI object storage запускается из PowerShell как VersityGW `v1.4.1` с зафиксированным image digest; RustFS больше не является active prerequisite.
 

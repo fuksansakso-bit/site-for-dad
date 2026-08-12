@@ -1,5 +1,9 @@
 # Cart, checkout and orders specification PROJECT_NAME
 
+## Phase 2A guest request
+
+Guest cart `localStorage` stores only material identity, dimensions and quantity. Checkout re-resolves materials and recalculates server-side, then writes immutable snapshots and an enumeration-resistant `public_reference`. Confirmation presents request number, preliminary total/manual status, free services, 2–7 calendar days, 12-month warranty and WhatsApp link to `79635851036`; it never claims message delivery.
+
 ## 0. Метаданные
 
 | Поле | Значение |

@@ -1,5 +1,10 @@
 # Карта документации PROJECT_NAME
 
+## Phase 2A operations
+
+- [Active plan](06-plans/active/PHASE_2A_SUPABASE_VERCEL_MIGRATION_PLAN.md) и [Free Tier audit](06-plans/SUPABASE_FREE_TIER_AUDIT.md).
+- [Supabase setup](../SUPABASE_SETUP.md), [Vercel deployment](../VERCEL_DEPLOYMENT.md), [migration report](../DATA_MIGRATION_REPORT.md), [backup/restore](../BACKUP_RESTORE.md), [legacy inventory](../LEGACY_FEATURES.md).
+
 ## 0. Статус
 
 Phase 1A–1F завершены. `OWNER-DECISION-021` авторизует Phase 2A Supabase + Vercel simplification из tagged baseline `3a0d7662a1b22724641ab29ca1cbd55fd575598e`; QG-481–490 закрывают entry, QG-491–540 выполняются. Customer accounts, AI/photo upload, payment, final premium redesign, destructive source retirement, unverified production launch и Phase 1G+ не разрешены.
@@ -35,7 +40,7 @@ Phase 1A–1F завершены. `OWNER-DECISION-021` авторизует Phas
 | [OPEN_QUESTIONS.md](00-global/OPEN_QUESTIONS.md) | Канонический реестр `TBD-*`, владельцев, влияния и критериев закрытия |
 | [SPEC_ROADMAP.md](00-global/SPEC_ROADMAP.md) | Фактический комплект 0B/0C, accepted Foundation ADR, gates и последовательность 1A–1H |
 | [TRACEABILITY_MATRIX.md](00-global/TRACEABILITY_MATRIX.md) | 18 critical chains и полная 40-story связь со спеками, AC и tests |
-| [SPEC_QUALITY_GATE.md](00-global/SPEC_QUALITY_GATE.md) | Passed gates through Phase 1F; Phase 1F.1 entry QG-421–430 closed and completion QG-431–480 active |
+| [SPEC_QUALITY_GATE.md](00-global/SPEC_QUALITY_GATE.md) | Phase 2A QG-481–540 accepted for code/Preview; cloud activation evidence remains manual |
 
 ## 3. Product specifications
 
@@ -118,6 +123,9 @@ Phase 1A–1F завершены. `OWNER-DECISION-021` авторизует Phas
 | [PHASE_1E_CART_WHATSAPP_ORDERS_PLAN.md](06-plans/active/PHASE_1E_CART_WHATSAPP_ORDERS_PLAN.md) | Authorized guest cart/request/WhatsApp scope, immutable snapshots, security boundary, exact commits and Phase 1F hold |
 | [PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_PLAN.md](06-plans/active/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_PLAN.md) | Completed staff auth/admin, requests/CRM contacts, portfolio/settings/audit execution record; customer accounts are post-MVP |
 | [PHASE_1F1_MVP_FUNCTIONAL_COMPLETION_PLAN.md](06-plans/active/PHASE_1F1_MVP_FUNCTIONAL_COMPLETION_PLAN.md) | Active complete-material/configurator/cart/mobile/staff-password/VPS-readiness plan and strict AI/design hold |
+| [PHASE_2A_SUPABASE_VERCEL_MIGRATION_PLAN.md](06-plans/active/PHASE_2A_SUPABASE_VERCEL_MIGRATION_PLAN.md) | Completed simplification execution plan, safety boundary and cloud activation hold |
+| [PHASE_2A_SUPABASE_VERCEL_MIGRATION_REPORT.md](06-plans/completed/PHASE_2A_SUPABASE_VERCEL_MIGRATION_REPORT.md) | Catalog/media counts, Supabase preparation, tests, Preview and exact manual activation steps |
+| [SUPABASE_FREE_TIER_AUDIT.md](06-plans/SUPABASE_FREE_TIER_AUDIT.md) | Measured database/media/build capacity and conservative egress forecast |
 | [PHASE_1E_CART_WHATSAPP_ORDERS_REPORT.md](06-plans/completed/PHASE_1E_CART_WHATSAPP_ORDERS_REPORT.md) | Phase 1E routes/models, fixed WhatsApp recipient, real DB/browser/security/recovery evidence and acceptance result |
 | [PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_REPORT.md](06-plans/completed/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_REPORT.md) | Staff auth/RBAC/admin/CRM-contact/portfolio/settings/audit/runtime/recovery/CI/PR evidence and passed acceptance without customer accounts |
 | [PREVIEW_AND_CONFIGURATOR_MAPPING_GAPS.md](06-plans/PREVIEW_AND_CONFIGURATOR_MAPPING_GAPS.md) | Exact active family/system/model/variant/source gaps without expanding Phase 1C catalog or pricing |
@@ -172,7 +180,7 @@ Research snapshot не является вечным catalog/price fact. Нор�
 - Кто может выполнить действие — `ROLES_PERMISSIONS` и relevant domain spec.
 - Каких данных не хватает — `OPEN_QUESTIONS` по уникальному `TBD-*`.
 - Как требование проверяется — `TRACEABILITY_MATRIX`, AC и `TEST_STRATEGY`.
-- Можно ли начинать следующий код — только Phase 1F.1 по активному плану; customer accounts, photo/AI runtime, payment, final design, production deployment и Phase 1G остаются запрещены.
+- Можно ли начинать следующий код — Phase 2A завершена на границе code/Preview; cloud activation требует Supabase credentials, а customer accounts, photo/AI runtime, payment, final design и Phase 1G остаются запрещены.
 
 ## 13. Правило навигации
 

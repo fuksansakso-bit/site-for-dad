@@ -1,5 +1,9 @@
 # Logical data model specification PROJECT_NAME
 
+## Phase 2A simplified projection
+
+The active Supabase schema contains `staff_profiles`, `categories`, `materials`, optional `pricing_rules`, `orders`, immutable `order_items`, `portfolio_items`, `site_settings` and append-only `admin_audit_log`. Integer kopecks and millimetres are canonical. Stable legacy source identity makes ETL idempotent; raw snapshots, worker metadata, sessions, AI jobs and technical noise are not target entities.
+
 ## 0. Метаданные
 
 | Поле | Значение |

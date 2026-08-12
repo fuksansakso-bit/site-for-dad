@@ -1,5 +1,9 @@
 # Application architecture specification PROJECT_NAME
 
+## Phase 2A active architecture
+
+ADR-0013 replaces the active runtime with one portable Next.js App Router application and Supabase PostgreSQL, Storage and staff-only Auth. Browser code receives only publishable configuration; trusted order creation, price recalculation and staff authorization run server-side. Prisma, Graphile Worker, separate worker, local S3 server, mandatory Docker, AI and complex preview/configurator are legacy, not deployment dependencies.
+
 ## 0. Метаданные
 
 | Поле | Значение |

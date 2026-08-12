@@ -1,5 +1,9 @@
 # Deployment and release specification PROJECT_NAME
 
+## Phase 2A delivery profile
+
+Normal startup is `pnpm install` then `pnpm dev` against an environment-selected development Supabase project; Docker is optional only for Supabase Local tests. `pnpm build` produces portable Next.js. Preview and Production isolate projects/secrets. Vercel Hobby is not approved for commercial production; missing credentials mean prepared-but-not-deployed. Manual DB/media backup and restore evidence is required before production activation.
+
 ## 0. Метаданные
 
 | Поле | Значение |

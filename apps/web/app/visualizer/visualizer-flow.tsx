@@ -133,6 +133,7 @@ export function VisualizerFlow({
   const consentId = useId();
   const previewObjectUrl = useRef<string | null>(null);
   const activePoll = useRef<AbortController | null>(null);
+  const generationLock = useRef(false);
   const [stage, setStage] = useState<Stage>(() => initialStage(initialJob));
   const [preparedImage, setPreparedImage] = useState<PreparedWindowImage | null>(null);
   const [inputUrl, setInputUrl] = useState<string | null>(null);
@@ -285,6 +286,8 @@ export function VisualizerFlow({
       setStage('photo');
       return;
     }
+    if (generationLock.current) return;
+    generationLock.current = true;
     setBusy(true);
     setStage('generating');
     setLoadingText('Подготавливаем фотографию');
@@ -337,11 +340,14 @@ export function VisualizerFlow({
       setMessage(error instanceof Error ? error.message : 'Не удалось запустить визуализацию.');
       setStage('error');
       setBusy(false);
+    } finally {
+      generationLock.current = false;
     }
   }
 
   async function createAnotherVariant() {
-    if (!publicReference || busy) return;
+    if (!publicReference || busy || generationLock.current) return;
+    generationLock.current = true;
     setBusy(true);
     setStage('generating');
     setLoadingText('Создаём визуализацию');
@@ -372,6 +378,8 @@ export function VisualizerFlow({
       setMessage(error instanceof Error ? error.message : 'Не удалось создать ещё один вариант.');
       setStage('error');
       setBusy(false);
+    } finally {
+      generationLock.current = false;
     }
   }
 

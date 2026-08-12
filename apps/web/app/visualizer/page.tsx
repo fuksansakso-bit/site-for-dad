@@ -35,8 +35,26 @@ export default async function VisualizerPage({
       </section>
     );
   }
-  const material = await getMaterial(query.material);
-  const imageUrl = material ? publicImageUrl('catalog', material.primary_image_path) : null;
+  const e2eFixture =
+    process.env['NODE_ENV'] !== 'production' &&
+    process.env['AI_E2E_FIXTURE_ENABLED'] === 'true' &&
+    query.material === 'phase2b-e2e';
+  const material = e2eFixture
+    ? {
+        article: 'E2E-001',
+        availability_label: 'В наличии',
+        category_name: 'Рулонные жалюзи',
+        color_name: 'Песочный',
+        name: 'Тестовый лён',
+        primary_image_path: null,
+        slug: 'phase2b-e2e',
+      }
+    : await getMaterial(query.material);
+  const imageUrl = e2eFixture
+    ? 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='
+    : material
+      ? publicImageUrl('catalog', material.primary_image_path)
+      : null;
   if (!material || !imageUrl) {
     return (
       <section className="shell visualizer-shell">
@@ -51,7 +69,7 @@ export default async function VisualizerPage({
   }
   return (
     <VisualizerFlow
-      aiEnabled={await isAiVisualizerAvailable()}
+      aiEnabled={e2eFixture || (await isAiVisualizerAvailable())}
       initialDimensions={{
         heightMm: dimension(query.height),
         widthMm: dimension(query.width),
@@ -68,4 +86,3 @@ export default async function VisualizerPage({
     />
   );
 }
-

@@ -50,6 +50,7 @@
     "test:catalog-scale": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tooling/scripts/catalog-scale-acceptance.ps1",
     "test:coverage": "pnpm --filter @project-name/web test:coverage",
     "test:phase1e": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tooling/scripts/phase-1e-acceptance.ps1",
+    "test:phase2b-browser": "playwright test --config=playwright.phase2b.config.ts",
     "test:storage": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tooling/scripts/storage-integration.ps1",
     "typecheck": "pnpm --filter @project-name/web typecheck"
   },

@@ -26,6 +26,16 @@ const forbiddenImports = [
   '@project-name/storage',
   '@prisma/client',
   'graphile-worker',
+  '@google/genai',
+  'opencv',
+  'pytorch',
+];
+
+const phase2bForbiddenRuntimePatterns = [
+  ['direct Google API key', /GEMINI_API_KEY/u],
+  ['direct Google generative endpoint', /generativelanguage\.googleapis\.com/u],
+  ['SAM runtime', /\bsegment[-_ ]?anything\b|\bSAM2?\b/u],
+  ['Python subprocess', /(?:spawn|execFile)\([^\n]*(?:python|\.py)/iu],
 ];
 
 for (const file of await filesIn(webRoot)) {
@@ -37,6 +47,11 @@ for (const file of await filesIn(webRoot)) {
     const source = await readFile(file, 'utf8');
     for (const dependency of forbiddenImports) {
       if (source.includes(dependency)) errors.push(`apps/web/${path}: imports ${dependency}`);
+    }
+    if (!path.startsWith('test/')) {
+      for (const [label, pattern] of phase2bForbiddenRuntimePatterns) {
+        if (pattern.test(source)) errors.push(`apps/web/${path}: contains ${label}`);
+      }
     }
   }
 }
@@ -56,11 +71,11 @@ for (const dependency of Object.keys(webPackage.dependencies ?? {})) {
 
 if (errors.length) {
   process.stderr.write(
-    `Phase 2A scope validation failed:\n${errors.map((x) => `- ${x}`).join('\n')}\n`,
+    `Phase 2B scope validation failed:\n${errors.map((x) => `- ${x}`).join('\n')}\n`,
   );
   process.exitCode = 1;
 } else {
   process.stdout.write(
-    'Phase 2A scope validation passed: only the Next.js + Supabase web runtime is active; AI, preview, worker, Prisma and Docker services are excluded.\n',
+    'Phase 2B scope validation passed: Polza AI stays inside the existing Next.js + Supabase runtime; direct Google SDK/API, SAM, Python/GPU AI service, worker, Prisma and Docker services are excluded.\n',
   );
 }

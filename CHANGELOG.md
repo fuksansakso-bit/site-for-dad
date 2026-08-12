@@ -5,6 +5,7 @@
 
 ## [Unreleased]
 
+- Recorded the Phase 2C delivery boundary: 113-document validation, 6 Node + 55 Vitest + 6 Chromium checks, 13 visual baselines, final 32-item report, Ready target-account Vercel branch Preview and unmerged Draft PR #1. Direct Product Owner Preview inspection, the complete AI family-quality matrix, merge and production promotion remain explicitly open.
 - Verified the real paid AI path after owner-authorized balance top-up: one Zebra case completed through private Supabase upload, Polza/Gemini create/poll, 142,600-byte private result import, 1,500×937 before/after rendering and zero-object owned cleanup. Two paid diagnostic jobs cost 15.70932384 ₽ in total; the remaining multi-family quality matrix and production gates stay explicit.
 - Fixed the real AI visualizer signed-upload race found in local Supabase/Polza QA: a successful direct private upload is now confirmed through bounded idempotent browser retries and bounded server-side Storage visibility retries instead of failing immediately with a false storage outage. Deleting an interrupted upload now also preserves the database lifecycle invariant instead of inventing a generation completion timestamp.
 - Updated the Polza Media adapter from paid live evidence to accept both the documented single result object and Polza's observed single-item result array while continuing to reject empty, multiple or malformed result payloads.

@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Версия gate | 1.23.0 |
+| Версия gate | 1.24.0 |
 | Проверяемая входная база | Phase 0B baseline `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`; Phase 0C baseline `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; Phase 1A completion `943d4a2efa5e05f0d05493633cf5eb549e072a22`; Phase 1B.1 completion baseline `af8411d2b854e572b6b61b214d3e99a88b96cafc`; Phase 1D merged-main / Phase 1E baseline `65780067537418a3230bb3d32ef3fb8e0af06917`; Phase 1F merged-main / Phase 1F.1 baseline `289b1baef0b53ac7da457098353ee5e7c1e1953f`; Phase 2A merged-main / Phase 2B baseline `49ce3679de28c612662f78273cd265d73221163d`; Phase 2C target-main baseline `bdaa053eee6491a9286355707008a39cbac1abff`; `GLOBAL_SPEC.md` 0.30.0 |
-| Дата последнего self-audit | 2026-08-12, Europe/Moscow |
+| Дата последнего self-audit | 2026-08-13, Europe/Moscow |
 | Решение по входу в 0B | **PASSED** |
 | Основание письменного решения | Приложенное владельцем задание «AUTHORIZED AMIGO FUNCTIONAL PARITY AND SPECIALIZED SPECS» и повторное указание «так приступай к работе» |
 | Утверждающие роли | Product Owner — владелец проекта; Business Owner — отец владельца проекта (`OWNER-DECISION-001`) |
@@ -32,9 +32,9 @@
 | Phase 2A Entry Gate | **PASSED** — QG-481–490 закрыты |
 | Phase 2A Completion Gate | **PASSED_PHASE_2A_CODE_AND_PREVIEW** — merged completion report records evidence and credential-dependent activation skips |
 | Phase 2B Entry Gate | **AUTHORIZED_PHASE_2B_IN_PROGRESS** — QG-541–550 закрыты 2026-08-12 |
-| Phase 2B Completion Gate | **IN PROGRESS** — QG-551–600 require implementation/security/mock/build and optional live evidence |
+| Phase 2B Completion Gate | **IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING** — provider connectivity, private Zebra result import and delete pass; the `AIEVAL-019` multi-family quality matrix remains open |
 | Phase 2C Entry Gate | **AUTHORIZED_PHASE_2C_IN_PROGRESS** — QG-601–610 closed 2026-08-12 |
-| Phase 2C Completion Gate | **IN PROGRESS** — QG-611–670 require final route/visual/accessibility/performance/Preview evidence |
+| Phase 2C Completion Gate | **IMPLEMENTATION_COMPLETE_OWNER_PREVIEW_PENDING** — QG-656, QG-666 and QG-670 remain open for the full A–G browser matrix and Product Owner direct Preview inspection/final stop |
 | Разрешённая реализация | Phase 2C presentation/interaction/quality scope по `OWNER-DECISION-024` плюс узкий exact AMIGO pricing repair по `OWNER-DECISION-025`/ADR-0015; direct Google API/SDK, SAM/masks/segmentation, Python/GPU/worker service, accounts, payment, uncontrolled provider/data expansion, production launch and destructive source removal запрещены |
 
 Entry gate подтверждает, что исправления 0A.1 внесены и письменное решение начать документную фазу 0B получено. Он не означает готовность ценовой формулы, импорта, приложения или запуска. Открытые TBD блокируют утверждение зависимой спецификации или функции, но не отменяют разрешение создавать документацию 0B с безопасным поведением.
@@ -843,71 +843,74 @@ Entry result: **AUTHORIZED_PHASE_2C_IN_PROGRESS**.
 
 ### 17.2. Completion gate
 
-- [ ] **QG-611 — MUST:** central semantic tokens implement the approved palette, typography, spacing, radii, shadows, layout, focus and motion without route-local competing systems.
-- [ ] **QG-612 — MUST:** Manrope and Cormorant Garamond load through `next/font` with Cyrillic and safe fallbacks; no runtime font CDN or Arial-only primary typography remains.
-- [ ] **QG-613 — MUST:** reusable button, link, card, badge, field, notice, skeleton, empty-state, breadcrumb, image-frame and shell patterns cover public/admin states consistently.
-- [ ] **QG-614 — MUST:** root metadata and visible public chrome contain no `PROJECT_NAME`; SiteSettings controls brand content and a neutral Preview fallback is truthful when unset.
-- [ ] **QG-615 — MUST:** staff settings show the exact pre-production brand warning while no invented logo, address, hours, rating or legal identity appears.
-- [ ] **QG-616 — MUST:** the starfield is first-visit only, 1.8–2.6 seconds, skippable, non-blocking, paused/cleaned when hidden, weak-device safe and immediately bypassed for reduced motion.
-- [ ] **QG-617 — MUST:** the intro uses no Three.js/GSAP/Lenis/Lottie, continuous heavy WebGL or persistent render loop after completion.
-- [ ] **QG-618 — MUST:** the landing header/hero/category/process/material/calculator/AI/portfolio/trust/partner/FAQ/final-CTA/footer composition is complete and source-backed.
-- [ ] **QG-619 — MUST:** the landing omits unavailable SiteSettings, catalog, portfolio or AI blocks gracefully and never substitutes fabricated business copy or supplier media as owner work.
-- [ ] **QG-620 — MUST:** the hero/interior treatment uses only approved local/catalog assets or CSS composition with bounded load and stable aspect dimensions.
-- [ ] **QG-621 — MUST:** desktop public navigation, responsive header and mobile bottom navigation expose correct active states, safe areas and unobstructed 44×44 targets.
-- [ ] **QG-622 — MUST:** `/catalog` provides final search/filter/sort/category/availability experience with shareable state, readable result count and loading/empty/error recovery.
-- [ ] **QG-623 — MUST:** catalog cards preserve approved image ratios, current AMIGO «от … ₽», availability and direct actions without zero/manual placeholder, raw IDs, source terms or layout shift.
-- [ ] **QG-624 — MUST:** `/catalog/[slug]` provides breadcrumbs, image/facts/availability/current `FROM` price and calculate/AI actions only for a complete active mapping.
-- [ ] **QG-625 — MUST:** `/calculator` exposes premium accessible category/material search and exactly width/height after selection; initial quantity is one and server millimetre/kopeck authority is preserved.
-- [ ] **QG-626 — MUST:** exact AMIGO result, source-backed disclosure and validation/provider errors are accurate; new public quotes never apply a local minimum or render manual/manager/zero price.
-- [ ] **QG-627 — MUST:** `/cart` supports review/edit/remove/clear and server-recalculates each quantity/dimension against the active exact version while trusting no browser amount.
-- [ ] **QG-628 — MUST:** `/checkout` provides clear guest fields, consent/services/installment language, validation/pending/error/success states and no payment/order-confirmation implication.
-- [ ] **QG-629 — MUST:** `/request/[publicReference]` presents immutable safe summary, status, totals/services and WhatsApp open/copy truthfully without IDs/PII leakage or sent-message claims.
-- [ ] **QG-630 — MUST:** `/visualizer` implements select/upload/consent/processing/result states plus safe feature-off, offline, invalid, limit, provider, retry and expiry states.
-- [ ] **QG-631 — MUST:** AI entry CTAs/landing block are hidden when disabled; direct route remains explanatory and no client code exposes keys, prompt, provider body, storage path or private URL.
-- [ ] **QG-632 — MUST:** `/visualizer/[publicReference]` before/after remains keyboard/touch usable, orientation-safe and integrated with cart/calculator/delete without affecting price.
-- [ ] **QG-633 — MUST:** `/admin/login` is a final Russian staff-only sign-in surface with accessible errors, pending state and no public marketing decoration.
-- [ ] **QG-634 — MUST:** `/admin` uses a distinct restrained Russian business shell, dashboard hierarchy, responsive navigation and role-safe sign-out.
-- [ ] **QG-635 — MUST:** `/admin/materials` presents AMIGO source version/mapping readiness plus availability/visibility controls with Russian labels and cannot edit source price, local formula or minimum.
-- [ ] **QG-636 — MUST:** `/admin/orders` presents requests and state actions in Russian while preserving immutable request evidence and authorization.
-- [ ] **QG-637 — MUST:** `/admin/portfolio` distinguishes owner work from catalog media and provides rights-aware upload/publication states without fake seeded work.
-- [ ] **QG-638 — MUST:** `/admin/settings` presents editable real business content, partner/social controls available in the data model and the brand production warning.
-- [ ] **QG-639 — MUST:** `/admin/staff` presents Russian roles/statuses and capability-safe actions with final-OWNER and inactive-user protections unchanged.
-- [ ] **QG-640 — MUST:** `/admin/ai-visualizations` presents safe Russian metadata/settings/limits/cleanup states, hides raw provider errors and does not become a customer-photo gallery.
-- [ ] **QG-641 — MUST:** centralized presentation mappings cover category, `AMIGO_EXACT`, availability, request, role and AI statuses on every normal route without Android/native legacy controls.
-- [ ] **QG-642 — MUST:** route-level loading skeleton, empty, validation, unavailable/offline, permission, failure, success and disabled states exist where applicable and offer valid recovery.
-- [ ] **QG-643 — MUST:** global not-found/error boundaries and route failures use final design, safe messages, focus handling and navigation recovery without stack/internal details.
-- [ ] **QG-644 — MUST:** semantic landmarks, one logical page heading, heading order, labels/instructions/described errors/status and meaningful image alternatives pass automated/manual review.
-- [ ] **QG-645 — MUST:** every flow is keyboard completable with visible focus, sensible order, skip link, no trap and keyboard-operable menus/dialogs/before-after controls.
-- [ ] **QG-646 — MUST:** normal text, large text, controls, focus, states and overlaid text meet WCAG 2.2 AA contrast; state is never conveyed by color alone.
-- [ ] **QG-647 — MUST:** 200% zoom/reflow, text spacing, 44×44 primary targets, viewport safe areas and no horizontal scroll pass across required public/admin routes.
-- [ ] **QG-648 — MUST:** reduced motion disables intro flight and nonessential transforms/spinners; no essential state or content depends on animation.
-- [ ] **QG-649 — MUST:** all ten required viewports pass route-specific overflow, clipping, sticky/fixed navigation and reachable-action checks.
-- [ ] **QG-650 — MUST:** approved images use bounded dimensions, responsive `sizes`, lazy/priority policy and no avoidable original-size transfer or cumulative layout shift.
-- [ ] **QG-651 — MUST:** client components are limited to interaction boundaries; intro and heavy AI comparison/flow are dynamically isolated where beneficial and server data remains server-rendered.
-- [ ] **QG-652 — MUST:** production build records route inventory, initial/client chunks, intro chunk, image transfer sample and LCP/CLS/INP-compatible lab observations without invented field metrics.
-- [ ] **QG-653 — MUST:** metadata, canonical/robots/open-graph/local-business structured data contain only confirmed service/region/content facts and no fabricated rating/address/hours.
-- [ ] **QG-654 — MUST:** analytics events, if active, are allowlisted and proven free of name/phone/free text/photo/object URL/public reference/source locator/secret payloads.
-- [ ] **QG-655 — MUST:** unit/component tests cover presentation mappings, exact adapter/cache/schema failures, retired minimum absence, brand fallback, feature-off visibility, intro/reduced-motion/session behavior and interaction states.
+- [x] **QG-611 — MUST:** central semantic tokens implement the approved palette, typography, spacing, radii, shadows, layout, focus and motion without route-local competing systems.
+- [x] **QG-612 — MUST:** Manrope and Cormorant Garamond load through `next/font` with Cyrillic and safe fallbacks; no runtime font CDN or Arial-only primary typography remains.
+- [x] **QG-613 — MUST:** reusable button, link, card, badge, field, notice, skeleton, empty-state, breadcrumb, image-frame and shell patterns cover public/admin states consistently.
+- [x] **QG-614 — MUST:** root metadata and visible public chrome contain no `PROJECT_NAME`; SiteSettings controls brand content and a neutral Preview fallback is truthful when unset.
+- [x] **QG-615 — MUST:** staff settings show the exact pre-production brand warning while no invented logo, address, hours, rating or legal identity appears.
+- [x] **QG-616 — MUST:** the starfield is first-visit only, 1.8–2.6 seconds, skippable, non-blocking, paused/cleaned when hidden, weak-device safe and immediately bypassed for reduced motion.
+- [x] **QG-617 — MUST:** the intro uses no Three.js/GSAP/Lenis/Lottie, continuous heavy WebGL or persistent render loop after completion.
+- [x] **QG-618 — MUST:** the landing header/hero/category/process/material/calculator/AI/portfolio/trust/partner/FAQ/final-CTA/footer composition is complete and source-backed.
+- [x] **QG-619 — MUST:** the landing omits unavailable SiteSettings, catalog, portfolio or AI blocks gracefully and never substitutes fabricated business copy or supplier media as owner work.
+- [x] **QG-620 — MUST:** the hero/interior treatment uses only approved local/catalog assets or CSS composition with bounded load and stable aspect dimensions.
+- [x] **QG-621 — MUST:** desktop public navigation, responsive header and mobile bottom navigation expose correct active states, safe areas and unobstructed 44×44 targets.
+- [x] **QG-622 — MUST:** `/catalog` provides final search/filter/sort/category/availability experience with shareable state, readable result count and loading/empty/error recovery.
+- [x] **QG-623 — MUST:** catalog cards preserve approved image ratios, current AMIGO «от … ₽», availability and direct actions without zero/manual placeholder, raw IDs, source terms or layout shift.
+- [x] **QG-624 — MUST:** `/catalog/[slug]` provides breadcrumbs, image/facts/availability/current `FROM` price and calculate/AI actions only for a complete active mapping.
+- [x] **QG-625 — MUST:** `/calculator` exposes premium accessible category/material search and exactly width/height after selection; initial quantity is one and server millimetre/kopeck authority is preserved.
+- [x] **QG-626 — MUST:** exact AMIGO result, source-backed disclosure and validation/provider errors are accurate; new public quotes never apply a local minimum or render manual/manager/zero price.
+- [x] **QG-627 — MUST:** `/cart` supports review/edit/remove/clear and server-recalculates each quantity/dimension against the active exact version while trusting no browser amount.
+- [x] **QG-628 — MUST:** `/checkout` provides clear guest fields, consent/services/installment language, validation/pending/error/success states and no payment/order-confirmation implication.
+- [x] **QG-629 — MUST:** `/request/[publicReference]` presents immutable safe summary, status, totals/services and WhatsApp open/copy truthfully without IDs/PII leakage or sent-message claims.
+- [x] **QG-630 — MUST:** `/visualizer` implements select/upload/consent/processing/result states plus safe feature-off, offline, invalid, limit, provider, retry and expiry states.
+- [x] **QG-631 — MUST:** AI entry CTAs/landing block are hidden when disabled; direct route remains explanatory and no client code exposes keys, prompt, provider body, storage path or private URL.
+- [x] **QG-632 — MUST:** `/visualizer/[publicReference]` before/after remains keyboard/touch usable, orientation-safe and integrated with cart/calculator/delete without affecting price.
+- [x] **QG-633 — MUST:** `/admin/login` is a final Russian staff-only sign-in surface with accessible errors, pending state and no public marketing decoration.
+- [x] **QG-634 — MUST:** `/admin` uses a distinct restrained Russian business shell, dashboard hierarchy, responsive navigation and role-safe sign-out.
+- [x] **QG-635 — MUST:** `/admin/materials` presents AMIGO source version/mapping readiness plus availability/visibility controls with Russian labels and cannot edit source price, local formula or minimum.
+- [x] **QG-636 — MUST:** `/admin/orders` presents requests and state actions in Russian while preserving immutable request evidence and authorization.
+- [x] **QG-637 — MUST:** `/admin/portfolio` distinguishes owner work from catalog media and provides rights-aware upload/publication states without fake seeded work.
+- [x] **QG-638 — MUST:** `/admin/settings` presents editable real business content, partner/social controls available in the data model and the brand production warning.
+- [x] **QG-639 — MUST:** `/admin/staff` presents Russian roles/statuses and capability-safe actions with final-OWNER and inactive-user protections unchanged.
+- [x] **QG-640 — MUST:** `/admin/ai-visualizations` presents safe Russian metadata/settings/limits/cleanup states, hides raw provider errors and does not become a customer-photo gallery.
+- [x] **QG-641 — MUST:** centralized presentation mappings cover category, `AMIGO_EXACT`, availability, request, role and AI statuses on every normal route without Android/native legacy controls.
+- [x] **QG-642 — MUST:** route-level loading skeleton, empty, validation, unavailable/offline, permission, failure, success and disabled states exist where applicable and offer valid recovery.
+- [x] **QG-643 — MUST:** global not-found/error boundaries and route failures use final design, safe messages, focus handling and navigation recovery without stack/internal details.
+- [x] **QG-644 — MUST:** semantic landmarks, one logical page heading, heading order, labels/instructions/described errors/status and meaningful image alternatives pass automated/manual review.
+- [x] **QG-645 — MUST:** every flow is keyboard completable with visible focus, sensible order, skip link, no trap and keyboard-operable menus/dialogs/before-after controls.
+- [x] **QG-646 — MUST:** normal text, large text, controls, focus, states and overlaid text meet WCAG 2.2 AA contrast; state is never conveyed by color alone.
+- [x] **QG-647 — MUST:** 200% zoom/reflow, text spacing, 44×44 primary targets, viewport safe areas and no horizontal scroll pass across required public/admin routes.
+- [x] **QG-648 — MUST:** reduced motion disables intro flight and nonessential transforms/spinners; no essential state or content depends on animation.
+- [x] **QG-649 — MUST:** all ten required viewports pass route-specific overflow, clipping, sticky/fixed navigation and reachable-action checks.
+- [x] **QG-650 — MUST:** approved images use bounded dimensions, responsive `sizes`, lazy/priority policy and no avoidable original-size transfer or cumulative layout shift.
+- [x] **QG-651 — MUST:** client components are limited to interaction boundaries; intro and heavy AI comparison/flow are dynamically isolated where beneficial and server data remains server-rendered.
+- [x] **QG-652 — MUST:** production build records route inventory, initial/client chunks, intro chunk, image transfer sample and LCP/CLS/INP-compatible lab observations without invented field metrics.
+- [x] **QG-653 — MUST:** metadata, canonical/robots/open-graph/local-business structured data contain only confirmed service/region/content facts and no fabricated rating/address/hours.
+- [x] **QG-654 — MUST:** analytics events, if active, are allowlisted and proven free of name/phone/free text/photo/object URL/public reference/source locator/secret payloads.
+- [x] **QG-655 — MUST:** unit/component tests cover presentation mappings, exact adapter/cache/schema failures, retired minimum absence, brand fallback, feature-off visibility, intro/reduced-motion/session behavior and interaction states.
 - [ ] **QG-656 — MUST:** browser scenarios A–G cover Zebra descendant selection → width/height → exact amount → cart, absence of incomplete/manual public rows, AI or disabled state, material admin, portfolio admin and 360×800 mobile flow.
-- [ ] **QG-657 — MUST:** route audit covers all required public/staff routes plus authenticated/unauthenticated/error variants without hidden 404, crash, console error or raw technical label.
-- [ ] **QG-658 — MUST:** thirteen named visual baselines are generated at stable fixtures and compared for landing, catalog, material, calculator, cart, visualizer, login and admin screens.
-- [ ] **QG-659 — MUST:** accessibility automation and focused keyboard/reduced-motion checks run in browser tests with documented limits of automated coverage.
-- [ ] **QG-660 — MUST:** format, docs, lint, strict typecheck, unit/component/browser/visual/accessibility, security/secret/artifact and production build gates pass with exact skips.
-- [ ] **QG-661 — MUST:** final design, typography, motion, component inventory, route UX audit and release QA documents match the implemented system and contain no placeholder claims.
-- [ ] **QG-662 — MUST:** GLOBAL/profile specs, ADR-0015, README, index, open questions, pricing/source policy, roadmap, test strategy, deployment, traceability and changelog remain synchronized with actual behavior.
-- [ ] **QG-663 — MUST:** the completion report records exact routes, viewports, tests, baselines, metrics, Preview, commits, skips, blockers and 32 requested final-report items.
-- [ ] **QG-664 — MUST:** all requirement IDs are unique, local links resolve, normative files remain under `docs/specs` and documentation validation passes.
-- [ ] **QG-665 — MUST:** twelve required logical commits are individually reviewable in the prescribed order without force push, reset-hard or history rewrite.
+- [x] **QG-657 — MUST:** route audit covers all required public/staff routes plus authenticated/unauthenticated/error variants without hidden 404, crash, console error or raw technical label.
+- [x] **QG-658 — MUST:** thirteen named visual baselines are generated at stable fixtures and compared for landing, catalog, material, calculator, cart, visualizer, login and admin screens.
+- [x] **QG-659 — MUST:** accessibility automation and focused keyboard/reduced-motion checks run in browser tests with documented limits of automated coverage.
+- [x] **QG-660 — MUST:** format, docs, lint, strict typecheck, unit/component/browser/visual/accessibility, security/secret/artifact and production build gates pass with exact skips.
+- [x] **QG-661 — MUST:** final design, typography, motion, component inventory, route UX audit and release QA documents match the implemented system and contain no placeholder claims.
+- [x] **QG-662 — MUST:** GLOBAL/profile specs, ADR-0015, README, index, open questions, pricing/source policy, roadmap, test strategy, deployment, traceability and changelog remain synchronized with actual behavior.
+- [x] **QG-663 — MUST:** the completion report records exact routes, viewports, tests, baselines, metrics, Preview, commits, skips, blockers and 32 requested final-report items.
+- [x] **QG-664 — MUST:** all requirement IDs are unique, local links resolve, normative files remain under `docs/specs` and documentation validation passes.
+- [x] **QG-665 — MUST:** twelve required logical commits are individually reviewable in the prescribed order without force push, reset-hard or history rewrite.
 - [ ] **QG-666 — MUST:** a Vercel Preview is created in the target account/project, reaches READY and is directly smoke-tested on critical public/admin-disabled routes; no production alias is assigned.
-- [ ] **QG-667 — MUST:** the branch and safety tag are pushed to `https://github.com/fuksansakso-bit/site-for-dad.git` and Draft PR title is exactly `Phase 2C: final premium design, motion and ergonomics`.
-- [ ] **QG-668 — MUST:** the final worktree is clean and the Draft PR remains unmerged; source catalog, legacy data, requests and private media are not deleted.
-- [ ] **QG-669 — MUST:** missing brand/legal/privacy/live Polza/cloud evidence remains explicit and prevents production claims without invalidating honest Preview/code completion.
+- [x] **QG-667 — MUST:** the branch and safety tag are pushed to `https://github.com/fuksansakso-bit/site-for-dad.git` and Draft PR title is exactly `Phase 2C: final premium design, motion and ergonomics`.
+- [x] **QG-668 — MUST:** the final worktree is clean and the Draft PR remains unmerged; source catalog, legacy data, requests and private media are not deleted.
+- [x] **QG-669 — MUST:** remaining brand/legal/privacy/full multi-family Polza/cloud evidence gaps stay explicit and prevent production claims without invalidating honest Preview/code completion.
 - [ ] **QG-670 — MUST:** Phase 2C stops after the completion report, verified Preview and Draft PR; it grants no merge, production launch or provider/product expansion authority.
+
+Completion result: **IMPLEMENTATION_COMPLETE_OWNER_PREVIEW_PENDING**. QG-656 remains open for the intentionally unexecuted side-effect/PII/admin-mutation portions of the full A–G matrix; QG-666 remains open for the Product Owner's direct smoke of the Ready target-account Preview; QG-670 closes only after that review and the final authorized stop. This status is not a merge or production pass.
 
 ## 18. История изменений
 
 | Версия | Дата | Изменение |
 |---|---|---|
+| 1.24.0 | 2026-08-13 | Phase 2C implementation, premium route system, exact Zebra pricing, accessibility/responsive/visual/build gates, live private Zebra Polza/Gemini result, target-account Ready Preview and unmerged Draft PR #1 are recorded. QG-656, QG-666 and QG-670 remain open for the intentionally deferred full A–G side-effect matrix and Product Owner direct Preview smoke/final stop; production remains unauthorized. |
 | 1.0.0 | 2026-08-02 | Completion checks `QG-112`–`130` пройдены на полном комплекте 0B; зафиксированы counts, unique IDs, links/tables/no-code evidence и запрет автоматического старта реализации. |
 | 1.1.0 | 2026-08-02 | Добавлены QG-131–148 для Phase 0C baseline/P0/MVP/audit/roadmap/Foundation safety; результат `READY_FOR_OWNER_AUTHORIZATION`, QG-147/148 намеренно открыты. |
 | 1.2.0 | 2026-08-02 | `OWNER-DECISION-001`–`007` закрыли owner P0; ADR-0007–0010 приняты после десяти проверок, QG-147/148 закрыты и разрешена только Phase 1A Foundation. |

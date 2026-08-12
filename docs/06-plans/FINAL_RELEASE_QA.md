@@ -8,13 +8,13 @@ Local application, configured Supabase runtime and one paid Polza/Gemini Zebra p
 
 | Area | Evidence |
 |---|---|
-| Documentation | 105 files, 34 canonical specs and 2,165 normative IDs passed before the final evidence additions; the final count is re-run before delivery. |
+| Documentation | 113 files, 38 canonical specs and 2,165 normative IDs pass the final validation. |
 | Formatting | Repository Prettier gate passes after mechanical normalization. |
 | Static analysis | ESLint with zero warnings and strict TypeScript pass. |
 | Unit/contract | 6 Node tests plus 55 Vitest tests pass; no skips. |
 | Browser/visual/a11y | 6 Phase 2C Chromium checks pass, including ten viewports, reduced motion, keyboard listbox, 13 visual baselines and exact Zebra/cart. |
 | Production build | Next.js 16.2.12 build passes on Node 24.19.0 / pnpm 11.18.0 with 33 dynamic routes. Pinned Node is 24.18.1, so the +patch runtime drift is recorded rather than hidden. |
-| Secrets/artifacts | Source secret scan passes; production artifact scan passes across 11,923 generated files using configured server-only canaries. |
+| Secrets/artifacts | Source secret scan passes across 615 repository files; production artifact scan passes across 12,079 generated files using a generated server-only canary. |
 | Supabase | 16 public tables reachable; 7 public categories, 1,131 public exact materials, one settings row and Storage pass. Migration-history table is absent, so reviewed idempotent SQL/schema introspection is the current deployment evidence. |
 | Exact price/order | Active `amigo-67c782a10449cdb7`; Zebra count 137; 1,000×1,000 exact result 1,185,000 kopecks; order RPC transaction rollback verified. |
 | Staff auth | Requested OWNER exists, profile is active and live browser login/dashboard/materials pass. |

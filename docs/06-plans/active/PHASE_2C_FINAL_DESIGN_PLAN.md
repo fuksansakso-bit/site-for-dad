@@ -33,7 +33,7 @@
 8. **COMPLETED — Business administration:** Russian login/dashboard/materials/orders/portfolio/settings/staff/AI surfaces use the restrained premium shell, role-safe actions and Russian mappings; requested OWNER login is verified live.
 9. **COMPLETED — Responsive and states:** desktop/mobile navigation and relevant loading/empty/error/success/disabled states pass all ten 320–1920 px profiles without horizontal overflow.
 10. **COMPLETED — Accessibility and performance:** keyboard premium listbox, focus/semantics, reduced motion, 44 px controls, image/font boundaries and local production lab/build budgets are recorded without field-metric claims.
-11. **COMPLETED — Verification:** 6 Node + 51 Vitest tests and six Phase 2C Chromium checks pass, including Zebra exact/cart, ten viewports, route safety, keyboard listbox, 13 visual baselines and local lab observations.
+11. **COMPLETED — Verification:** 6 Node + 55 Vitest tests and six Phase 2C Chromium checks pass, including Zebra exact/cart, upload-confirmation visibility retry, Polza single-result parsing, ten viewports, route safety, keyboard listbox, 13 visual baselines and local lab observations.
 12. **COMPLETED — Documentation:** final design/motion/component evidence, exact-price mapping, route audit, release QA, live AI evidence and the 32-item completion report are synchronized with the implementation and explicit non-claims.
 13. **COMPLETED — Preview and delivery:** branch/tag are pushed to `second-github`; Draft PR #1 has the exact title and remains unmerged; the target-account Vercel Preview is Ready. The Product Owner explicitly reserved direct Preview inspection, so QG-666/QG-670 remain open until that external review.
 

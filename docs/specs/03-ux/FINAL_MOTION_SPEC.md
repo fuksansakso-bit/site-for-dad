@@ -39,4 +39,3 @@ Reduced motion keeps the same completed/current state with no travelling glow.
 nonessential movement, collapses reveal durations and preserves every action.
 Hover is additive only. Keyboard, touch and pointer users receive the same
 state, focus and recovery information.
-

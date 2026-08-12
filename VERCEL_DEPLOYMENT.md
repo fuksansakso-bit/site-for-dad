@@ -3,7 +3,8 @@
 Phase 2C is delivered through the GitHub repository
 `https://github.com/fuksansakso-bit/site-for-dad.git`, branch
 `phase/2c-final-premium-design`, and the unmerged Draft PR titled
-`Phase 2C: final premium design, motion and ergonomics`.
+`Phase 2C: final premium design, motion and ergonomics` at
+`https://github.com/fuksansakso-bit/site-for-dad/pull/1`.
 
 The Vercel project must import that repository under the intended
 `fuksansakso` account/team and use `apps/web` as Root Directory. The directory
@@ -20,11 +21,14 @@ Preview should use the explicitly approved Supabase project; Production values
 remain independently scoped.
 
 The historical deployment under `bataevabdullah2009-9137` is not Phase 2C
-evidence and must not be promoted or used for this review. The Product Owner
-will inspect the Preview produced by the target-account Git integration. Until
-its URL/READY state and smoke result are recorded, QG-666 remains open and the
-delivery is code/PR complete only.
+evidence and must not be promoted or used for this review. The target-account
+Git integration produced a Ready branch Preview at
+`https://site-for-dad-web-git-phase-2c-6ee1fa-fuksansakso-2848s-projects.vercel.app`.
+The Product Owner explicitly reserved direct Preview inspection. Therefore the
+URL/Ready portion is recorded, direct smoke is not claimed, QG-666 remains open
+and each pushed branch update must finish rebuilding before owner review.
 
 No `vercel --prod`, promotion, production alias/domain assignment or merge is
-authorized. Commercial plan, final brand/legal/privacy content, successful live
-Polza output and an isolated restore drill remain production gates.
+authorized. Commercial plan, final brand/legal/privacy content, the remaining
+multi-family Polza quality matrix and an isolated restore drill remain
+production gates.

@@ -22,4 +22,3 @@ requirements remain in `GLOBAL_SPEC.md`.
 The browser suite verifies listbox keyboard operation at 360×800, exact Zebra
 selection/calculation/cart, reduced motion, the ten-viewport matrix and thirteen
 visual baselines.
-

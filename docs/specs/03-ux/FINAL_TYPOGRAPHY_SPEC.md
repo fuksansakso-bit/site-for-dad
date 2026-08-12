@@ -40,4 +40,3 @@ Type never carries availability or error meaning alone. Text/background pairs
 meet the WCAG 2.2 AA release target, visible focus is not suppressed, and zoom
 or reflow does not clip the primary action. User-facing copy is Russian and
 technical identifiers remain internal.
-

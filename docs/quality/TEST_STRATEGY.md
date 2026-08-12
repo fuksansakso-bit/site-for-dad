@@ -2,7 +2,7 @@
 
 ## Phase 2C executed verification profile
 
-The final local gate runs 6 Node artifact/database-URL tests and 51 Vitest unit/contract/security tests with no skips. Six Chromium checks cover exact Zebra pricing/cart, keyboard-only premium listboxes, all ten 320–1920 px viewports, route/error safety, 13 visual baselines and measured local production observations. Configured Supabase verification covers active-version counts, OWNER readiness and an order transaction rollback; ignored database/Storage backups pass manifest verification. Vercel Preview is verified separately before Phase 2C completion.
+The final local gate runs 6 Node artifact/database-URL tests and 55 Vitest unit/contract/security tests with no skips. Six Chromium checks cover exact Zebra pricing/cart, the signed-upload visibility retry, Polza single-result parsing, keyboard-only premium listboxes, all ten 320–1920 px viewports, route/error safety, 13 visual baselines and measured local production observations. Configured Supabase verification covers active-version counts, OWNER readiness and an order transaction rollback; ignored database/Storage backups pass manifest verification. The target-account Vercel Preview is Ready, while direct Product Owner inspection remains separate from implementation completion.
 
 ## Phase 2B executed verification profile
 

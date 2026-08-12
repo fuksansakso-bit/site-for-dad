@@ -7,6 +7,8 @@
 
 ### Added
 
+- Rebuilt AI visualization as the same premium interior-tech system rather than a separate utility shell: a connected five-step track now fills completed segments and runs a reduced-motion-safe light pulse through the active segment; material, photo, consent, generation, before/after, disabled, error and deletion states share private-data guidance and real configured retention. One bounded partner-scene live attempt verified private direct upload, ownership, safe provider-error fallback and complete bucket cleanup; Polza returned no provider job, so live output quality remains explicitly pending.
+
 - Redesigned the complete guest conversion path from source-backed calculator through reactive local cart, checkout and request summary: server-authoritative repricing, explicit manual-price totals, resilient loading/error/empty states, quantity editing, optional AI linkage, privacy-safe contact form, WhatsApp handoff and a real copyable request URL now share the final premium interface.
 
 - Activated the retained Phase 2A catalog against the configured Supabase project after the owner applied migrations: 19 published categories, 1,428 published materials, one settings row and 1,371 checksum-addressed WebP objects passed idempotent import, public/service REST count checks and browser rendering with no invented orders or portfolio work. Local Next.js and cloud operator commands now use ignored `apps/web/.env.local` as the single canonical environment file.

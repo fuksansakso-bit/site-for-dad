@@ -2,11 +2,15 @@
 
 ## Execution evidence
 
-- Live Polza Media calls executed: **0**.
-- Reason: `POLZA_AI_API_KEY` is absent; Supabase cloud/service-role and `CRON_SECRET` credentials are also absent locally.
+- Live Polza Media calls executed: **1** (`LIVE-QA-20260812-01`, 2026-08-12 22:16 MSK).
+- The configured server-only Polza key and model were present; the browser never received either secret or a provider response.
+- Supabase cloud preflight passed before the call: migrations are applied, `ai-inputs` and `ai-results` are private, and the effective limit remains two attempts per guest/day, 20 globally, one concurrent job and 24-hour retention.
+- A registered partner-licensed, non-personal kitchen scene and the exact published catalog material were used. Client preprocessing removed metadata, normalized the source to JPEG and uploaded 122,550 bytes at 1500×937 directly to the private input bucket.
+- The job reached the server-side Polza adapter but failed before a provider job ID/status was returned: client code `PROVIDER_UNAVAILABLE`, normalized provider code `POLZA_PROVIDER_ERROR`. The public UI exposed only «AI-визуализация временно недоступна. Попробуйте позже» and retained calculate/delete recovery actions.
+- The user-visible deletion path then passed: the job became `DELETED`, and both private AI buckets returned zero remaining root objects. No result, quality score or successful provider import is claimed.
 - Mock/browser evidence: one deterministic full-flow Playwright scenario passed across 320/360/375/390/430 px; it is not reported as provider quality evidence.
 - Provider contract evidence: create/status mapping, 429 bounded retry, 5xx/error normalization and result-import security are covered locally.
-- Required next run: apply the migration, verify private buckets/RLS/cron, then perform at most `AI_LIVE_TEST_LIMIT` rights-cleared calls and record create ID, polling, configured model, import, idempotency and visual review.
+- Required next run: retry from the target-account Vercel Preview or after Polza connectivity is available, without exceeding the remaining `AI_LIVE_TEST_LIMIT`; record provider job creation, polling, private result import, idempotency and visual review.
 
 **Статус:** `Live visual QA pending`  
 **Фаза:** Phase 2B  
@@ -16,7 +20,7 @@
 
 ## Текущий результат
 
-`POLZA_AI_API_KEY` в среде выполнения отсутствует. Реальные платные запросы не выполнялись, mock-результаты не считаются подтверждением Polza AI. Допустимый итог реализации до появления ключа и cloud credentials — `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`.
+Ключ, cloud schema, приватные buckets, upload/ownership/delete и безопасная деградация подтверждены, но первый реальный запрос не вернул provider job ID и завершился как `POLZA_PROVIDER_ERROR`. Поэтому результат Gemini и копирование в `ai-results` ещё не подтверждены, mock-результаты не считаются live evidence, а допустимый статус остаётся `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`.
 
 ## Ограниченный сценарий после выдачи ключа
 

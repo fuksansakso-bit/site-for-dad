@@ -16,6 +16,7 @@ import type {
 } from '../../lib/ai-visualization/types';
 import { readCart, writeCart } from '../../lib/phase2a/cart-storage';
 import { cartItemSchema } from '../../lib/phase2a/schemas';
+import { Breadcrumbs } from '../../components/ui/primitives';
 import { BeforeAfter } from './before-after';
 import type { VisualizerInitialJob, VisualizerMaterial } from './visualizer-types';
 
@@ -58,7 +59,9 @@ async function jsonRequest<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, { cache: 'no-store', credentials: 'same-origin', ...init });
   const payload = await responsePayload(response);
   if (!response.ok) {
-    throw new ClientImageError(errorMessage(payload, 'Не удалось выполнить запрос. Попробуйте позже.'));
+    throw new ClientImageError(
+      errorMessage(payload, 'Не удалось выполнить запрос. Попробуйте позже.'),
+    );
   }
   return payload as T;
 }
@@ -122,11 +125,13 @@ export function VisualizerFlow({
   initialDimensions,
   initialJob,
   material,
+  retentionHours,
 }: {
   aiEnabled: boolean;
   initialDimensions: { heightMm: number | null; widthMm: number | null };
   initialJob?: VisualizerInitialJob;
   material: VisualizerMaterial;
+  retentionHours: number;
 }) {
   const cameraInputId = useId();
   const fileInputId = useId();
@@ -189,7 +194,8 @@ export function VisualizerFlow({
           const job = await pollUntilFinal(
             restoredJob.publicReference,
             controller.signal,
-            (attempt) => setLoadingText(attempt < 2 ? 'Создаём визуализацию' : 'Обрабатываем результат'),
+            (attempt) =>
+              setLoadingText(attempt < 2 ? 'Создаём визуализацию' : 'Обрабатываем результат'),
           );
           setJobStatus(job.status);
           if (job.status === 'SUCCEEDED') {
@@ -208,7 +214,9 @@ export function VisualizerFlow({
         }
       } catch (error) {
         if (controller.signal.aborted) return;
-        setMessage(error instanceof Error ? error.message : 'Не удалось восстановить визуализацию.');
+        setMessage(
+          error instanceof Error ? error.message : 'Не удалось восстановить визуализацию.',
+        );
         setStage('error');
         setBusy(false);
       }
@@ -328,7 +336,8 @@ export function VisualizerFlow({
       );
       setPublicReference(started.publicReference);
       setJobStatus(started.status);
-      if (started.reused) setMessage('Использован уже готовый вариант без нового платного запуска.');
+      if (started.reused)
+        setMessage('Использован уже готовый вариант без нового платного запуска.');
       if (started.status === 'SUCCEEDED') {
         const controller = new AbortController();
         activePoll.current = controller;
@@ -407,7 +416,11 @@ export function VisualizerFlow({
       setJobStatus('DELETED');
       setStage('deleted');
       setMessage('Фотография и результат удалены.');
-      window.history.replaceState(null, '', `/visualizer?material=${encodeURIComponent(material.slug)}`);
+      window.history.replaceState(
+        null,
+        '',
+        `/visualizer?material=${encodeURIComponent(material.slug)}`,
+      );
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Не удалось удалить фотографию.');
     } finally {
@@ -438,38 +451,72 @@ export function VisualizerFlow({
       return;
     }
     const stored = writeCart([...readCart(), parsed.data]);
-    setMessage(stored ? 'Материал добавлен в корзину.' : 'В корзине может быть не больше 50 позиций.');
+    setMessage(
+      stored ? 'Материал добавлен в корзину.' : 'В корзине может быть не больше 50 позиций.',
+    );
   }
 
   const selectedDimensions = dimensions(width, height);
   const calculatorHref = selectedDimensions
     ? `/calculator?material=${encodeURIComponent(material.slug)}&width=${selectedDimensions.widthMm}&height=${selectedDimensions.heightMm}`
     : `/calculator?material=${encodeURIComponent(material.slug)}`;
+  const currentStep =
+    stage === 'material'
+      ? 0
+      : stage === 'photo'
+        ? 1
+        : stage === 'consent'
+          ? 2
+          : stage === 'generating'
+            ? 3
+            : 4;
 
   return (
     <section className="shell visualizer-shell">
-      <p className="eyebrow">AI-визуализация</p>
-      <h1>Примерьте жалюзи на своём окне</h1>
-      <p className="visualizer-lead">
-        Загрузите фотографию окна и получите ознакомительный вариант с выбранным материалом.
-      </p>
+      <Breadcrumbs
+        items={[
+          { href: '/', label: 'Главная' },
+          { href: `/catalog/${material.slug}`, label: material.name },
+          { label: 'AI-визуализация' },
+        ]}
+      />
+      <header className="visualizer-hero">
+        <div>
+          <p className="eyebrow">Интерьерная примерка</p>
+          <h1>Посмотрите материал на своём окне</h1>
+          <p className="visualizer-lead">
+            Загрузите фотографию и получите ознакомительный вариант, не выходя из выбранного
+            материала.
+          </p>
+        </div>
+        <div className="visualizer-trust" aria-label="Как мы работаем с фотографией">
+          <span>
+            <strong>Приватно</strong>
+            Закрытое хранилище
+          </span>
+          <span>
+            <strong>Без метаданных</strong>
+            EXIF удаляется до загрузки
+          </span>
+          <span>
+            <strong>Временно</strong>
+            Хранение до {retentionHours} ч
+          </span>
+        </div>
+      </header>
 
       <ol className="visualizer-steps" aria-label="Этапы визуализации">
         {['Материал', 'Фото', 'Согласие', 'Генерация', 'Результат'].map((label, index) => {
-          const current =
-            stage === 'material'
-              ? 0
-              : stage === 'photo'
-                ? 1
-                : stage === 'consent'
-                  ? 2
-                  : stage === 'generating'
-                    ? 3
-                    : 4;
           return (
-            <li className={index <= current ? 'active' : ''} key={label}>
-              <span>{index + 1}</span>
-              {label}
+            <li
+              aria-current={index === currentStep ? 'step' : undefined}
+              className={
+                index === currentStep ? 'current' : index < currentStep ? 'complete' : undefined
+              }
+              key={label}
+            >
+              <span className="visualizer-step-number">{index + 1}</span>
+              <span className="visualizer-step-label">{label}</span>
             </li>
           );
         })}
@@ -478,9 +525,20 @@ export function VisualizerFlow({
       <div className="visualizer-frame">
         {stage === 'material' && (
           <div className="visualizer-panel">
-            <div className="selected-material">
-              <img src={material.imageUrl} alt={material.name} />
+            <div className="visualizer-stage-heading">
+              <span aria-hidden="true">01</span>
               <div>
+                <p className="eyebrow">Выбранный материал</p>
+                <h2>Проверьте выбор перед примеркой</h2>
+                <p>Цвет и фактура берутся из опубликованной карточки каталога.</p>
+              </div>
+            </div>
+            <div className="selected-material">
+              <div className="selected-material-media">
+                <img src={material.imageUrl} alt={material.name} />
+                <span>Материал из каталога</span>
+              </div>
+              <div className="selected-material-copy">
                 <span className="badge">{material.availability}</span>
                 <p className="eyebrow">{material.categoryName}</p>
                 <h2>{material.name}</h2>
@@ -498,8 +556,8 @@ export function VisualizerFlow({
             </div>
             <div className="visualizer-dimensions">
               <p>
-                <strong>Размеры изделия</strong> — необязательно для визуализации, но понадобятся
-                для корзины и расчёта.
+                <strong>Размеры изделия</strong>
+                <span>Необязательно для примерки, но пригодится для корзины и расчёта.</span>
               </p>
               <label>
                 Ширина, мм
@@ -525,14 +583,20 @@ export function VisualizerFlow({
               </label>
             </div>
             {!aiEnabled && (
-              <p className="notice">
-                AI-визуализация сейчас выключена. Материал можно добавить в корзину или рассчитать
-                без AI.
-              </p>
+              <div className="visualizer-disabled" role="status">
+                <span aria-hidden="true">AI</span>
+                <div>
+                  <strong>Примерка временно недоступна</strong>
+                  <p>Материал по-прежнему можно рассчитать и заказать без визуализации.</p>
+                </div>
+                <Link className="button secondary" href={calculatorHref}>
+                  Рассчитать без AI
+                </Link>
+              </div>
             )}
             <div className="visualizer-cta">
               <button disabled={!aiEnabled} onClick={() => setStage('photo')}>
-                Продолжить с этим материалом
+                Загрузить фото окна
               </button>
               <Link className="button secondary" href="/catalog">
                 Выбрать другой материал
@@ -543,11 +607,15 @@ export function VisualizerFlow({
 
         {stage === 'photo' && (
           <div className="visualizer-panel">
-            <div>
-              <h2>Фотография окна</h2>
-              <p>Чем лучше видно окно, тем точнее будет AI-визуализация.</p>
+            <div className="visualizer-stage-heading">
+              <span aria-hidden="true">02</span>
+              <div>
+                <p className="eyebrow">Исходное изображение</p>
+                <h2>Добавьте фотографию окна</h2>
+                <p>Чёткий прямой кадр помогает точнее сохранить перспективу интерьера.</p>
+              </div>
             </div>
-            <ul className="photo-tips">
+            <ul className="photo-tips" aria-label="Советы для хорошего результата">
               <li>Окно должно быть полностью видно, включая раму.</li>
               <li>Снимайте прямо перед окном и включите освещение.</li>
               <li>Не закрывайте окно людьми и уберите лишние предметы, если возможно.</li>
@@ -562,6 +630,13 @@ export function VisualizerFlow({
               </div>
             ) : (
               <div className="photo-picker">
+                <span className="photo-picker-mark" aria-hidden="true">
+                  +
+                </span>
+                <div className="photo-picker-copy">
+                  <strong>Перетащите внимание на окно</strong>
+                  <span>Выберите готовый кадр или сделайте новый</span>
+                </div>
                 <input
                   accept="image/*"
                   capture="environment"
@@ -587,10 +662,20 @@ export function VisualizerFlow({
                 <label className="button secondary" htmlFor={fileInputId}>
                   Выбрать фотографию
                 </label>
-                <p className="muted">JPEG, PNG или WebP. Фото будет очищено от EXIF и уменьшено до 2048 px.</p>
+                <p className="muted">
+                  JPEG, PNG или WebP · до 4 МБ после обработки · максимум 2048 px
+                </p>
               </div>
             )}
-            {message && <p className={preparedImage ? 'notice' : 'error'} aria-live="polite">{message}</p>}
+            <p className="visualizer-inline-privacy">
+              <span aria-hidden="true">✓</span>
+              Метаданные удаляются на устройстве. Фото отправится только после вашего согласия.
+            </p>
+            {message && (
+              <p className={preparedImage ? 'notice' : 'error'} aria-live="polite">
+                {message}
+              </p>
+            )}
             <div className="visualizer-cta">
               <button disabled={!preparedImage || busy} onClick={() => setStage('consent')}>
                 Продолжить
@@ -604,13 +689,34 @@ export function VisualizerFlow({
 
         {stage === 'consent' && (
           <div className="visualizer-panel consent-panel">
-            <h2>Согласие на обработку</h2>
-            <p>
-              Фотография будет временно загружена и передана Gemini через Polza AI для создания
-              AI-визуализации. Файлы автоматически удаляются, обычно в течение 24 часов.
-            </p>
-            <p className="muted">
-              Результат создаётся автоматически и может изменить отдельные детали фотографии.
+            <div className="visualizer-stage-heading">
+              <span aria-hidden="true">03</span>
+              <div>
+                <p className="eyebrow">Контроль данных</p>
+                <h2>Разрешите обработку фотографии</h2>
+                <p>Перед отправкой покажем, куда и зачем передаётся изображение.</p>
+              </div>
+            </div>
+            <div className="consent-facts">
+              <article>
+                <span aria-hidden="true">01</span>
+                <strong>Назначение</strong>
+                <p>Только создание ознакомительной визуализации выбранного материала.</p>
+              </article>
+              <article>
+                <span aria-hidden="true">02</span>
+                <strong>Обработка</strong>
+                <p>Gemini через серверный адаптер Polza AI; ключи не попадают в браузер.</p>
+              </article>
+              <article>
+                <span aria-hidden="true">03</span>
+                <strong>Хранение</strong>
+                <p>Приватные файлы автоматически удаляются в пределах {retentionHours} ч.</p>
+              </article>
+            </div>
+            <p className="visualizer-disclaimer">
+              Результат создаётся автоматически и может изменить отдельные детали, оттенок или
+              пропорции фотографии.
             </p>
             <label className="consent-check" htmlFor={consentId}>
               <input
@@ -622,9 +728,16 @@ export function VisualizerFlow({
                   setMessage('');
                 }}
               />
-              <span>Я согласен на обработку фотографии для создания визуализации.</span>
+              <span>
+                <strong>Я согласен на обработку фотографии</strong>
+                <small>для создания этой визуализации на условиях выше</small>
+              </span>
             </label>
-            {message && <p className="error" aria-live="polite">{message}</p>}
+            {message && (
+              <p className="error" aria-live="polite">
+                {message}
+              </p>
+            )}
             <div className="visualizer-cta">
               <button disabled={!consent || busy} onClick={() => void generate()}>
                 Создать визуализацию
@@ -638,27 +751,45 @@ export function VisualizerFlow({
 
         {stage === 'generating' && (
           <div className="visualizer-loading" aria-live="polite" aria-busy="true">
-            <span className="visualizer-spinner" aria-hidden="true" />
+            <div className="visualizer-orbit" aria-hidden="true">
+              <span className="visualizer-spinner" />
+              <img src={material.imageUrl} alt="" />
+            </div>
+            <p className="eyebrow">Этап 4 из 5</p>
             <h2>{loadingText}</h2>
-            <p>Обычно это занимает несколько минут. Эту страницу можно оставить открытой.</p>
-            <button className="secondary" disabled>
-              Генерация запущена
-            </button>
+            <p>
+              Сохраняем перспективу окна и переносим выбранный материал. Обычно это занимает
+              несколько минут.
+            </p>
+            <div className="visualizer-pulse" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </div>
+            <p className="visualizer-loading-note">Страницу можно оставить открытой.</p>
           </div>
         )}
 
         {stage === 'result' && inputUrl && resultUrl && (
           <div className="visualizer-panel result-panel">
-            <div>
-              <p className="eyebrow">Готово</p>
-              <h2>Ваш вариант с материалом «{material.name}»</h2>
-              <p className="muted">Артикул {material.article}</p>
+            <div className="result-heading">
+              <span className="result-ready-mark" aria-hidden="true">
+                ✓
+              </span>
+              <div>
+                <p className="eyebrow">Визуализация готова</p>
+                <h2>Материал «{material.name}» в вашем интерьере</h2>
+                <p>Артикул {material.article} · двигайте разделитель, чтобы сравнить кадры</p>
+              </div>
             </div>
             <BeforeAfter afterUrl={resultUrl} beforeUrl={inputUrl} />
-            <p className="notice">
-              AI-визуализация носит ознакомительный характер. Оттенок, пропорции и внешний вид
-              могут немного отличаться от реального изделия.
-            </p>
+            <div className="visualizer-disclaimer" role="note">
+              <strong>Ознакомительный результат</strong>
+              <p>
+                Оттенок, пропорции и внешний вид могут отличаться от реального изделия. Для заказа
+                ориентируйтесь на карточку материала и консультацию менеджера.
+              </p>
+            </div>
             <div className="visualizer-dimensions result-dimensions">
               <label>
                 Ширина, мм
@@ -683,15 +814,33 @@ export function VisualizerFlow({
                 />
               </label>
             </div>
-            {message && <p className="notice" aria-live="polite">{message}</p>}
-            <div className="visualizer-actions">
-              <button disabled={busy} onClick={addToCart}>Добавить в корзину</button>
-              <button className="secondary" disabled={busy || !aiEnabled} onClick={() => void createAnotherVariant()}>
+            {message && (
+              <p className="notice" aria-live="polite">
+                {message}
+              </p>
+            )}
+            <div className="visualizer-actions result-actions">
+              <button disabled={busy} onClick={addToCart}>
+                Добавить в корзину
+              </button>
+              <Link className="button secondary" href={calculatorHref}>
+                Рассчитать стоимость
+              </Link>
+              <button
+                className="quiet"
+                disabled={busy || !aiEnabled}
+                onClick={() => void createAnotherVariant()}
+              >
                 Создать ещё вариант
               </button>
-              <Link className="button secondary" href="/catalog">Выбрать другой материал</Link>
-              <Link className="button secondary" href={calculatorHref}>Рассчитать стоимость</Link>
-              <button className="danger" disabled={busy} onClick={() => void deleteVisualization()}>
+              <Link className="button quiet" href="/catalog">
+                Другой материал
+              </Link>
+              <button
+                className="danger quiet"
+                disabled={busy}
+                onClick={() => void deleteVisualization()}
+              >
                 Удалить фотографию
               </button>
             </div>
@@ -700,8 +849,16 @@ export function VisualizerFlow({
 
         {stage === 'error' && (
           <div className="visualizer-panel error-panel">
-            <p className="eyebrow">Попробуйте ещё раз</p>
-            <h2>Визуализацию не удалось завершить</h2>
+            <div className="result-heading">
+              <span className="result-ready-mark result-error-mark" aria-hidden="true">
+                !
+              </span>
+              <div>
+                <p className="eyebrow">Нужна ещё одна попытка</p>
+                <h2>Визуализацию не удалось завершить</h2>
+                <p>Исходная фотография остаётся под вашим контролем.</p>
+              </div>
+            </div>
             <p className="notice" aria-live="assertive">
               {message || 'Возникла временная ошибка.'}
             </p>
@@ -716,12 +873,21 @@ export function VisualizerFlow({
                   Повторить генерацию
                 </button>
               )}
-              <Link className="button secondary" href={`/visualizer?material=${encodeURIComponent(material.slug)}`}>
+              <Link
+                className="button secondary"
+                href={`/visualizer?material=${encodeURIComponent(material.slug)}`}
+              >
                 Выбрать другое фото
               </Link>
-              <Link className="button secondary" href={calculatorHref}>Рассчитать без AI</Link>
+              <Link className="button secondary" href={calculatorHref}>
+                Рассчитать без AI
+              </Link>
               {publicReference && (
-                <button className="danger" disabled={busy} onClick={() => void deleteVisualization()}>
+                <button
+                  className="danger"
+                  disabled={busy}
+                  onClick={() => void deleteVisualization()}
+                >
                   Удалить фотографию
                 </button>
               )}
@@ -730,15 +896,30 @@ export function VisualizerFlow({
         )}
 
         {stage === 'deleted' && (
-          <div className="visualizer-panel">
-            <p className="eyebrow">Удалено</p>
-            <h2>Фотография и результат больше недоступны</h2>
-            <p className="notice">{message}</p>
+          <div className="visualizer-panel deleted-panel">
+            <div className="result-heading">
+              <span className="result-ready-mark" aria-hidden="true">
+                ✓
+              </span>
+              <div>
+                <p className="eyebrow">Данные удалены</p>
+                <h2>Фотография и результат больше недоступны</h2>
+                <p>{message}</p>
+              </div>
+            </div>
             <div className="visualizer-actions">
-              <button onClick={() => { setJobStatus(null); setStage('photo'); }}>
+              <button
+                disabled={!aiEnabled}
+                onClick={() => {
+                  setJobStatus(null);
+                  setStage('photo');
+                }}
+              >
                 Загрузить новое фото
               </button>
-              <Link className="button secondary" href="/catalog">Выбрать другой материал</Link>
+              <Link className="button secondary" href="/catalog">
+                Выбрать другой материал
+              </Link>
             </div>
           </div>
         )}

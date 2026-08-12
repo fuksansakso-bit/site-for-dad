@@ -2,7 +2,7 @@
 
 ## Status and verifiable outcome
 
-- **Status:** IN PROGRESS — conversion flow
+- **Status:** IN PROGRESS — business administration
 - **Branch:** `phase/2c-final-premium-design`
 - **Baseline:** `bdaa053eee6491a9286355707008a39cbac1abff` (`second-github/main`)
 - **Safety tag:** `pre-final-design-phase`
@@ -28,8 +28,8 @@
 3. **COMPLETED — Intro and landing:** added the bounded first-visit starfield with skip/reduced-motion/weak-device fallbacks, source-backed premium landing, exact approved hero copy, conditional AI/WhatsApp, real published catalog/portfolio content and honest empty states; lint, typecheck, build and 1440/mobile visual review pass.
 4. **COMPLETED — Catalog experience:** redesigned listing, deferred search, filters, stable sorting, incremental rendering, responsive cards, breadcrumbs and material detail while preserving published Supabase price/availability authority, conditional AI entry and honest unavailable/manual states; the migrated live project passes 19/1,428 API counts and desktop browser rendering with real Storage images, zero broken images and zero console errors.
 5. **COMPLETED — Conversion flow:** redesigned calculator, reactive local cart, checkout, request result and WhatsApp handoff without changing server price or immutable request contracts; live manual-price calculation → add-to-cart → repriced cart → checkout passes without horizontal overflow or console errors, and no synthetic request/PII was submitted.
-6. **IN PROGRESS — AI experience:** polish the five visualizer states, before/after interaction, errors, disabled state and private-data notices without altering the Polza adapter.
-7. **PENDING — Business administration:** unify Russian login, dashboard, materials, orders, portfolio, settings, staff and AI administration with role-safe actions.
+6. **COMPLETED — AI experience:** rebuilt the five-step visualizer as one premium studio with a connected animated light-flow progress track, source-backed material/photo/consent/generation/result states, dynamic retention notice, pointer/keyboard before-after control, safe disabled/error/deleted recovery and no public codename. A single rights-cleared live attempt passed private upload, ownership and deletion but Polza returned normalized `POLZA_PROVIDER_ERROR` before provider-job creation, so live quality remains pending and no success is claimed.
+7. **IN PROGRESS — Business administration:** unify Russian login, dashboard, materials, orders, portfolio, settings, staff and AI administration with role-safe actions.
 8. **PENDING — Responsive and states:** complete desktop/tablet/mobile navigation, 320–1920 px ergonomics, loading/empty/error/success/disabled/offline states and internal-label mappings.
 9. **PENDING — Accessibility and performance:** verify keyboard, focus, semantics, contrast, zoom, reduced motion, images/fonts, client boundaries and measured build/runtime budgets.
 10. **PENDING — Verification:** add unit/component/browser/route/visual/accessibility coverage and execute scenarios A–G plus the required viewport/baseline matrix.

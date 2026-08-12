@@ -1,13 +1,14 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import { isAiVisualizerAvailable } from '../../lib/ai-visualization/public-availability';
+import { getAiVisualizerPublicAvailability } from '../../lib/ai-visualization/public-availability';
 import { getMaterial, publicImageUrl } from '../../lib/phase2a/data';
+import { Breadcrumbs, EmptyState } from '../../components/ui/primitives';
 import { VisualizerFlow } from './visualizer-flow';
 
 export const metadata: Metadata = {
   description: 'Примерьте выбранные жалюзи на фотографии своего окна с помощью AI.',
-  title: 'AI-визуализация жалюзи — PROJECT_NAME',
+  title: 'AI-визуализация жалюзи',
 };
 
 function dimension(value: string | undefined): number | null {
@@ -24,14 +25,16 @@ export default async function VisualizerPage({
   if (!query.material) {
     return (
       <section className="shell visualizer-shell">
-        <p className="eyebrow">AI-визуализация</p>
-        <h1>Сначала выберите материал</h1>
-        <p className="visualizer-lead">
-          Откройте материал в каталоге и нажмите «Примерить на своём окне».
-        </p>
-        <Link className="button" href="/catalog">
-          Перейти в каталог
-        </Link>
+        <Breadcrumbs items={[{ href: '/', label: 'Главная' }, { label: 'AI-визуализация' }]} />
+        <EmptyState
+          action={
+            <Link className="button" href="/catalog">
+              Перейти в каталог
+            </Link>
+          }
+          description="Откройте материал в каталоге и нажмите «Примерить на своём окне»."
+          title="Сначала выберите материал"
+        />
       </section>
     );
   }
@@ -58,18 +61,25 @@ export default async function VisualizerPage({
   if (!material || !imageUrl) {
     return (
       <section className="shell visualizer-shell">
-        <p className="eyebrow">AI-визуализация</p>
-        <h1>Материал недоступен</h1>
-        <p className="notice">Выберите другой опубликованный материал с изображением.</p>
-        <Link className="button" href="/catalog">
-          Выбрать материал
-        </Link>
+        <Breadcrumbs items={[{ href: '/', label: 'Главная' }, { label: 'AI-визуализация' }]} />
+        <EmptyState
+          action={
+            <Link className="button" href="/catalog">
+              Выбрать материал
+            </Link>
+          }
+          description="Выберите другой опубликованный материал с изображением."
+          title="Материал недоступен"
+        />
       </section>
     );
   }
+  const availability = e2eFixture
+    ? { enabled: true, retentionHours: 24 }
+    : await getAiVisualizerPublicAvailability();
   return (
     <VisualizerFlow
-      aiEnabled={e2eFixture || (await isAiVisualizerAvailable())}
+      aiEnabled={availability.enabled}
       initialDimensions={{
         heightMm: dimension(query.height),
         widthMm: dimension(query.width),
@@ -83,6 +93,7 @@ export default async function VisualizerPage({
         name: material.name,
         slug: material.slug,
       }}
+      retentionHours={availability.retentionHours}
     />
   );
 }

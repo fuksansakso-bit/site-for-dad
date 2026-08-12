@@ -4,6 +4,7 @@ import { connection } from 'next/server';
 
 import { SiteFooter, SiteHeader } from '../components/site/site-chrome';
 import type { ChromeSettings } from '../components/site/site-chrome';
+import { isAiVisualizerAvailable } from '../lib/ai-visualization/public-availability';
 import { getSiteSettings, publicImageUrl } from '../lib/phase2a/data';
 import { resolvePublicSiteName } from '../lib/presentation';
 import './tokens.css';
@@ -23,8 +24,7 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
-  description:
-    'Каталог жалюзи, предварительный расчёт стоимости и заявка на бесплатный замер.',
+  description: 'Каталог жалюзи, предварительный расчёт стоимости и заявка на бесплатный замер.',
   title: {
     default: 'Жалюзи на заказ — каталог и расчёт',
     template: '%s — жалюзи на заказ',
@@ -33,8 +33,9 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   await connection();
-  const settings = await getSiteSettings();
+  const [settings, aiEnabled] = await Promise.all([getSiteSettings(), isAiVisualizerAvailable()]);
   const chromeSettings: ChromeSettings = {
+    aiEnabled,
     brandName: resolvePublicSiteName(settings?.site_name),
     freeDelivery: settings?.free_delivery ?? false,
     freeInstallation: settings?.free_installation ?? false,
@@ -45,6 +46,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     phone: settings?.phone?.trim() || null,
     region: settings?.region?.trim() || null,
     warranty: settings?.warranty_text?.trim() || null,
+    whatsappPhone: settings?.whatsapp_phone?.trim() || null,
   };
 
   return (

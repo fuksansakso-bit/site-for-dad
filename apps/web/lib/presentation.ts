@@ -4,9 +4,12 @@ export const NEUTRAL_SITE_NAME = 'Жалюзи на заказ';
 
 export function resolvePublicSiteName(value: string | null | undefined): string {
   const normalized = value?.trim();
-  return normalized && normalized.toUpperCase() !== 'PROJECT_NAME'
-    ? normalized
-    : NEUTRAL_SITE_NAME;
+  return normalized && normalized.toUpperCase() !== 'PROJECT_NAME' ? normalized : NEUTRAL_SITE_NAME;
+}
+
+export function buildWhatsAppHref(value: string | null | undefined): string | null {
+  const digits = value?.replace(/\D/g, '') ?? '';
+  return digits.length >= 10 && digits.length <= 15 ? `https://wa.me/${digits}` : null;
 }
 
 export const staffRoleLabel: Record<StaffRole, string> = {

@@ -68,3 +68,10 @@ export type SiteSettings = {
   installment_text: string;
   social_links: Record<string, string>;
 };
+
+export type PortfolioItem = {
+  title: string;
+  description: string | null;
+  cover_image_path: string;
+  imageUrl: string | null;
+};

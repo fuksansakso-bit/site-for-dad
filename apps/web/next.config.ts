@@ -25,7 +25,10 @@ function supabaseImagePattern(): URL[] {
     ) {
       return [];
     }
-    return [new URL('/storage/v1/object/public/**', origin)];
+    return [
+      new URL('/storage/v1/object/public/**', origin),
+      new URL('/storage/v1/object/sign/**', origin),
+    ];
   } catch {
     return [];
   }

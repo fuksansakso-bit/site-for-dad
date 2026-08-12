@@ -1,7 +1,7 @@
 import 'server-only';
 
-import { createSupabaseServerClient } from './supabase';
-import type { Category, PublicMaterial, SiteSettings } from './types';
+import { createSupabaseAdminClient, createSupabaseServerClient } from './supabase';
+import type { Category, PortfolioItem, PublicMaterial, SiteSettings } from './types';
 
 export async function listCategories(): Promise<Category[]> {
   const client = await createSupabaseServerClient();
@@ -47,6 +47,41 @@ export async function getMaterial(slug: string): Promise<PublicMaterial | null> 
     .eq('slug', slug)
     .maybeSingle();
   return data as PublicMaterial | null;
+}
+
+export async function listFeaturedMaterials(limit = 6): Promise<PublicMaterial[]> {
+  const client = await createSupabaseServerClient();
+  if (!client) return [];
+  const { data, error } = await client
+    .from('public_materials')
+    .select(
+      'name,slug,article,description,color_name,material_type,primary_image_path,category_name,category_slug,availability_label,display_price_kopecks,display_price_suffix',
+    )
+    .not('primary_image_path', 'is', null)
+    .order('sort_order')
+    .limit(Math.max(1, Math.min(limit, 12)));
+  return error ? [] : ((data ?? []) as PublicMaterial[]);
+}
+
+export async function listPortfolioItems(limit = 12): Promise<PortfolioItem[]> {
+  const publicClient = await createSupabaseServerClient();
+  const admin = createSupabaseAdminClient();
+  if (!publicClient) return [];
+  const { data, error } = await publicClient
+    .from('public_portfolio_items')
+    .select('title,description,cover_image_path')
+    .order('sort_order')
+    .limit(Math.max(1, Math.min(limit, 24)));
+  if (error) return [];
+  return Promise.all(
+    (data ?? []).map(async (item) => {
+      if (!admin) return { ...item, imageUrl: null } as PortfolioItem;
+      const { data: signed } = await admin.storage
+        .from('portfolio')
+        .createSignedUrl(item.cover_image_path, 3600);
+      return { ...item, imageUrl: signed?.signedUrl ?? null } as PortfolioItem;
+    }),
+  );
 }
 
 export async function getSiteSettings(): Promise<SiteSettings | null> {

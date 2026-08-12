@@ -7,6 +7,8 @@
 
 ### Added
 
+- Added the bounded first-visit starfield intro with skip, reduced-motion bypass, DPR/frame caps, visibility pause and CSS fallback; rebuilt the landing as a source-backed interior-tech journey with exact owner-approved hero copy, real published categories/materials/portfolio, conditional AI and WhatsApp entry points, calculator/trust/AMIGO/FAQ sections and honest empty states without invented business facts.
+
 - Established the Phase 2C visual foundation: approved semantic palette/spacing/radius/shadow/motion tokens, `next/font` Manrope + Cormorant Garamond Cyrillic typography, reusable UI primitives, centralized Russian presentation helpers, neutral public brand fallback, responsive site chrome/footer and safe-area mobile navigation.
 
 - `OWNER-DECISION-024`, QG-601–670 and the active Phase 2C plan authorize final light-first premium interior-tech presentation from target-main `bdaa053`: central tokens/local typography, bounded first-visit starfield, complete public/admin route redesign, responsive/accessibility/performance/visual evidence and target-account Vercel Preview. Existing Supabase/Polza/catalog/price/privacy boundaries remain fixed; final brand/logo, merge and production stay gated.

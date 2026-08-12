@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 type ChromeSettings = {
+  aiEnabled: boolean;
   brandName: string;
   logoUrl: string | null;
   phone: string | null;
@@ -15,13 +16,14 @@ type ChromeSettings = {
   freeDelivery: boolean;
   freeInstallation: boolean;
   installment: string | null;
+  whatsappPhone: string | null;
 };
 
 const desktopLinks = [
   { href: '/catalog', label: 'Каталог' },
   { href: '/calculator', label: 'Рассчитать' },
   { href: '/portfolio', label: 'Наши работы' },
-  { href: '/visualizer', label: 'Примерить' },
+  { href: '/#about', label: 'О нас' },
 ];
 
 const mobileLinks = [
@@ -33,6 +35,11 @@ const mobileLinks = [
 
 function isCurrent(pathname: string, href: string): boolean {
   return href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function whatsappHref(value: string | null): string | null {
+  const digits = value?.replace(/\D/g, '') ?? '';
+  return digits.length >= 10 && digits.length <= 15 ? `https://wa.me/${digits}` : null;
 }
 
 function Mark({ name }: { name: string }) {
@@ -100,13 +107,21 @@ function Brand({ settings }: { settings: ChromeSettings }) {
 export function SiteHeader({ settings }: { settings: ChromeSettings }) {
   const pathname = usePathname();
   if (pathname.startsWith('/admin')) return null;
+  const whatsapp = whatsappHref(settings.whatsappPhone);
+  const links = settings.aiEnabled
+    ? [
+        ...desktopLinks.slice(0, 3),
+        { href: '/visualizer', label: 'AI-примерка' },
+        { href: '/#about', label: 'О нас' },
+      ]
+    : desktopLinks;
 
   return (
     <header className="site-header">
       <div className="site-header-inner">
         <Brand settings={settings} />
         <nav className="desktop-nav" aria-label="Основная навигация">
-          {desktopLinks.map((link) => (
+          {links.map((link) => (
             <Link
               aria-current={isCurrent(pathname, link.href) ? 'page' : undefined}
               href={link.href}
@@ -117,11 +132,15 @@ export function SiteHeader({ settings }: { settings: ChromeSettings }) {
           ))}
         </nav>
         <div className="header-actions">
-          {settings.phone && (
+          {whatsapp ? (
+            <a className="header-phone" href={whatsapp} rel="noreferrer" target="_blank">
+              WhatsApp
+            </a>
+          ) : settings.phone ? (
             <a className="header-phone" href={`tel:${settings.phone.replace(/[^+\d]/g, '')}`}>
               {settings.phone}
             </a>
-          )}
+          ) : null}
           <Link className="button button-compact" href="/cart">
             Корзина
           </Link>
@@ -140,6 +159,7 @@ export function SiteFooter({ settings }: { settings: ChromeSettings }) {
     settings.freeDelivery && 'доставка',
     settings.freeInstallation && 'установка',
   ].filter(Boolean);
+  const whatsapp = whatsappHref(settings.whatsappPhone);
 
   return (
     <>
@@ -154,6 +174,7 @@ export function SiteFooter({ settings }: { settings: ChromeSettings }) {
             <Link href="/catalog">Каталог</Link>
             <Link href="/calculator">Расчёт стоимости</Link>
             <Link href="/portfolio">Наши работы</Link>
+            {settings.aiEnabled && <Link href="/visualizer">AI-примерка</Link>}
           </div>
           <div>
             <p className="footer-heading">Условия</p>
@@ -168,6 +189,11 @@ export function SiteFooter({ settings }: { settings: ChromeSettings }) {
               <a href={`tel:${settings.phone.replace(/[^+\d]/g, '')}`}>{settings.phone}</a>
             ) : (
               <span>Контакт будет указан после настройки</span>
+            )}
+            {whatsapp && (
+              <a href={whatsapp} rel="noreferrer" target="_blank">
+                Написать в WhatsApp
+              </a>
             )}
             {settings.region && <span>{settings.region}</span>}
           </div>

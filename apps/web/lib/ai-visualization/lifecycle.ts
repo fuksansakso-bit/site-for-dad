@@ -19,6 +19,7 @@ import { createImageVisualizationProvider } from './provider-factory';
 import { buildVisualizationPrompt } from './prompt';
 import { combinedRequestHash } from './request-hash';
 import { downloadPolzaResult } from './result-fetch';
+import { completionTimestampForDeletion } from './state-machine';
 import { AI_VISUALIZATION_ERROR_CODES } from './types';
 import type {
   AiVisualizationErrorCode,
@@ -501,11 +502,12 @@ export async function deleteOwnedAiJob(
       .eq('id', job.id);
     throw new AiVisualizationError('STORAGE_UNAVAILABLE', { cause: storageError });
   }
+  const deletedAt = new Date().toISOString();
   const { error: updateError } = await client
     .from('ai_visualization_jobs')
     .update({
-      completed_at: job.completed_at ?? new Date().toISOString(),
-      deleted_at: new Date().toISOString(),
+      completed_at: completionTimestampForDeletion(job.started_at, job.completed_at, deletedAt),
+      deleted_at: deletedAt,
       error_code: null,
       safe_error_message: null,
       status: 'DELETED',

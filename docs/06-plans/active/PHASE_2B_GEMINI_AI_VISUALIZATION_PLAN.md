@@ -2,7 +2,7 @@
 
 ## Status and verifiable outcome
 
-- **Status:** COMPLETED — `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`
+- **Status:** COMPLETED — `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`; 2026-08-13 live Zebra technical path passed, remaining `AIEVAL-019` family matrix pending
 - **Branch:** `phase/2b-gemini-ai-visualization`
 - **Baseline:** `49ce3679de28c612662f78273cd265d73221163d`
 - **Authorized by:** `OWNER-DECISION-023`, ADR-0014
@@ -14,7 +14,7 @@
 - Active application is one Next.js runtime; ordinary `dev/build` does not require Docker.
 - Phase 2A schema and completion evidence establish Supabase PostgreSQL/Storage, stable material UUID/slug, catalog images, calculator, browser cart and staff Auth/RLS. Cloud activation is not reproducible in this workspace because Supabase credentials are absent.
 - Official Polza Media create/status/model documentation was captured on 2026-08-12 before transport implementation.
-- `POLZA_AI_API_KEY`, Supabase cloud credentials and `CRON_SECRET` are absent locally; live Polza and cloud RLS/storage tests therefore remain pending unless credentials become available.
+- At the original Phase 2B branch close, `POLZA_AI_API_KEY`, Supabase cloud credentials and `CRON_SECRET` were absent. The current ignored environment now connects to the approved Supabase project and paid Polza account; the dated Zebra live pass is recorded in `AI_VISUALIZATION_LIVE_QA.md` without exposing secrets.
 
 ## Work plan
 

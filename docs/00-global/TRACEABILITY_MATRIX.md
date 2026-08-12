@@ -15,11 +15,11 @@
 |---|---|---|
 | `OWNER-DECISION-023`, ADR-0014, `P2B-AI-001`–`015` | `apps/web/lib/ai-visualization`, `apps/web/app/visualizer`, AI route handlers | Phase 2B unit/integration/browser/security suites and completion report |
 | private input/result, ownership, cleanup | additive Supabase migration, `ai-inputs`, `ai-results`, guest session and cron | RLS/static/cloud tests, cleanup/audit tests |
-| Polza adapter/prompt/result import | `PolzaImageVisualizationProvider`, server-only prompt | contract/error/SSRF/idempotency tests; bounded live QA if key exists |
+| Polza adapter/prompt/result import | `PolzaImageVisualizationProvider`, server-only prompt | contract/error/SSRF/idempotency tests; 2026-08-13 live Zebra create/poll/private-import/delete pass; remaining family matrix pending |
 | cart/request/admin linkage | optional safe references and `/admin/ai-visualizations` | pricing regression, role/audit and expiry tests |
 | no direct Google/SAM/Python/GPU/worker/Phase 2C | dependency/source/client-bundle scans | build/security report |
 
-Implementation evidence is complete in commits `5596278`–`7f54aad`; verification is commit `6e69708` and the Phase 2B completion report. Local evidence is 49 passing tests, one passing full-flow Playwright scenario, mobile profiles, lint/type/scope/secret scans and production build. The committed pgTAP suite, cloud buckets/RLS/cron and live Polza QA remain credential-dependent and are not represented as executed evidence.
+Implementation evidence is complete in commits `5596278`–`7f54aad`; verification is commit `6e69708`, the Phase 2B completion report and the 2026-08-13 Phase 2C live addendum. Current evidence includes 55 passing web tests, one real Zebra Supabase/Polza/private-result/delete flow, deterministic full-flow Playwright coverage, mobile profiles, lint/type/scope/secret scans and production build. The remaining roller plus horizontal-or-vertical visual matrix, isolated restore and production activation are not represented as passed.
 
 ## Phase 2A trace
 
@@ -35,9 +35,9 @@ Implementation evidence is complete in commits `5596278`–`7f54aad`; verificati
 
 | Поле | Значение |
 |---|---|
-| Фаза | Phase 1A–1F and Phase 2A passed; Phase 2B implementation complete/live pending; Phase 2C authorized/in progress |
-| Версия | 1.20.0 |
-| Дата | 2026-08-12, Europe/Moscow |
+| Фаза | Phase 1A–1F and Phase 2A passed; Phase 2B live Zebra path passed / family matrix pending; Phase 2C implementation complete / owner Preview pending |
+| Версия | 1.21.0 |
+| Дата | 2026-08-13, Europe/Moscow |
 | Состояние покрытия | `COVERED_WITH_VISIBLE_TBD` |
 | Главный источник требований | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.30.0 |
 | Feature contract | [FEATURE_SPEC.md](../specs/01-product/FEATURE_SPEC.md) |

@@ -4,16 +4,16 @@
 
 | Поле | Значение |
 |---|---|
-| Состояние | Phase 1A–1F and Phase 2A complete; Phase 2B implementation complete/live pending; Phase 2C authorized/in progress |
-| Версия roadmap | 2.0.0 |
-| Дата | 2026-08-12 |
+| Состояние | Phase 1A–1F and Phase 2A complete; Phase 2B live Zebra path passed / family matrix pending; Phase 2C implementation complete / owner Preview pending |
+| Версия roadmap | 2.1.0 |
+| Дата | 2026-08-13 |
 | Entry gate | `PASSED`, [QG-088–QG-111](SPEC_QUALITY_GATE.md) |
 | Обязательный комплект 0B | `PASSED`, [QG-112–QG-130](SPEC_QUALITY_GATE.md) |
 | Phase 0C readiness | `AUTHORIZED_FOR_PHASE_1A_FOUNDATION`, [QG-131–QG-148](SPEC_QUALITY_GATE.md) |
 | Phase 1A acceptance | `PASSED_PHASE_1A_FOUNDATION`, [QG-149–QG-158](SPEC_QUALITY_GATE.md) |
 | Phase 1B.1 acceptance | `PASSED_PHASE_1B1_AMIGO_CATALOG_PILOT`, [QG-169–QG-194](SPEC_QUALITY_GATE.md) |
 | Phase 1B.2 acceptance | `PASSED_PHASE_1B2_FULL_AMIGO_CATALOG`, [QG-195–QG-230](SPEC_QUALITY_GATE.md) |
-| Phase 2C entry | `AUTHORIZED_PHASE_2C_IN_PROGRESS`, [QG-601–QG-610](SPEC_QUALITY_GATE.md) |
+| Phase 2C entry | `AUTHORIZED_PHASE_2C_IN_PROGRESS`; implementation delivery is `IMPLEMENTATION_COMPLETE_OWNER_PREVIEW_PENDING`, [QG-601–QG-670](SPEC_QUALITY_GATE.md) |
 | Разрешённая implementation | Только Phase 2C presentation/interaction/quality scope по `OWNER-DECISION-024`; merge и production запрещены |
 
 Глобальная база: [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.29.0, [EXTERNAL_SOURCES.md](EXTERNAL_SOURCES.md), [ASSET_RIGHTS_REGISTER.md](ASSET_RIGHTS_REGISTER.md) и [PRICING_SOURCE_POLICY.md](PRICING_SOURCE_POLICY.md). Catalog/price/media provenance остаётся source-backed, активный runtime задают Phase 2A/2B, а `OWNER-DECISION-024` разрешает только финальный presentation/interaction слой по [активному плану](../06-plans/active/PHASE_2C_FINAL_DESIGN_PLAN.md).

@@ -15,7 +15,7 @@
 
 ## 0. Статус
 
-Phase 1A–1F и Phase 2A завершены. Phase 2B implementation завершена со статусом `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`. `OWNER-DECISION-024/025` разрешают Phase 2C premium presentation и узкий AMIGO exact-price repair from `bdaa053`; direct Google API/SDK, SAM/masks/segmentation, Python/GPU/worker service, customer accounts, payment, uncontrolled source expansion, destructive source retirement, merge и production launch не разрешены.
+Phase 1A–1F и Phase 2A завершены. Phase 2B implementation и один полный live Zebra path завершены; формальный multi-family quality gate остаётся pending. Phase 2C implementation и Draft PR готовы, owner Preview review ожидается. `OWNER-DECISION-024/025` разрешают premium presentation и узкий AMIGO exact-price repair from `bdaa053`; direct Google API/SDK, SAM/masks/segmentation, Python/GPU/worker service, customer accounts, payment, uncontrolled source expansion, destructive source retirement, merge и production launch не разрешены.
 
 ## 1. Порядок обязательного чтения
 

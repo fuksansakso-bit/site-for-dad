@@ -2,7 +2,7 @@
 
 ## Active transition — Phase 2C
 
-`OWNER-DECISION-024` authorizes final presentation and release polish from target-main baseline `bdaa053eee6491a9286355707008a39cbac1abff`. `OWNER-DECISION-025` narrowly authorizes the AMIGO exact-price replacement implemented through ADR-0015: 1,131 retained materials with complete current card-price/calculator mappings are active, incomplete rows are hidden, and new quotes accept material + width + height without the retired local minimum. Phase 2B remains `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`; Phase 2C stops at a verified Vercel Preview plus unmerged Draft PR.
+`OWNER-DECISION-024` authorizes final presentation and release polish from target-main baseline `bdaa053eee6491a9286355707008a39cbac1abff`. `OWNER-DECISION-025` narrowly authorizes the AMIGO exact-price replacement implemented through ADR-0015: 1,131 retained materials with complete current card-price/calculator mappings are active, incomplete rows are hidden, and new quotes accept material + width + height without the retired local minimum. One rights-cleared Zebra case passes the complete real Supabase/Polza/private-result/delete path; the Phase 2B family matrix remains open. Phase 2C implementation and Draft PR are complete and stop at owner-reviewed Vercel Preview without merge or production promotion.
 
 ## Active transition — Phase 2A
 
@@ -12,8 +12,8 @@
 
 | Поле | Значение |
 |---|---|
-| Фаза документа | Phase 1A–1F and Phase 2A completed; Phase 2B implementation complete/live pending; Phase 2C final experience active |
-| Статус roadmap | **AUTHORIZED_PHASE_2C_IN_PROGRESS / PHASE_2B_LIVE_PENDING / PRODUCTION HOLD** |
+| Фаза документа | Phase 1A–1F and Phase 2A completed; Phase 2B live Zebra passed/family matrix pending; Phase 2C final experience implementation complete/owner Preview pending |
+| Статус roadmap | **IMPLEMENTATION_COMPLETE_OWNER_PREVIEW_PENDING / PHASE_2B_FAMILY_MATRIX_PENDING / PRODUCTION HOLD** |
 | Scope | [MVP_SCOPE](MVP_SCOPE.md) |
 | Планы / evidence | Phase 1A–2B reports; Phase 2C [plan](active/PHASE_2C_FINAL_DESIGN_PLAN.md), `OWNER-DECISION-024/025`, ADR-0015 and QG-601–670 |
 

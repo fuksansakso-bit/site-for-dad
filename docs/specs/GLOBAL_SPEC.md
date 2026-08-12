@@ -2,13 +2,13 @@
 
 ## Phase 2C authorization
 
-`OWNER-DECISION-024` authorizes **PHASE 2C — PREMIUM INTERIOR TECH DESIGN, TYPOGRAPHY, MOTION, ERGONOMICS AND RELEASE POLISH** from target-main baseline `bdaa053eee6491a9286355707008a39cbac1abff`. `OWNER-DECISION-025` additionally authorizes the narrow catalog/pricing repair requested by the Product Owner on 2026-08-12: remove the local 1,500-ruble minimum for new quotes, show a versioned AMIGO `FROM` price on every public material, calculate a selected material from width and height without a manager-price placeholder, and fail publication for any material whose price or calculator mapping is incomplete. Phase 2B remains `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`; merge and production promotion remain prohibited.
+`OWNER-DECISION-024` authorizes **PHASE 2C — PREMIUM INTERIOR TECH DESIGN, TYPOGRAPHY, MOTION, ERGONOMICS AND RELEASE POLISH** from target-main baseline `bdaa053eee6491a9286355707008a39cbac1abff`. `OWNER-DECISION-025` additionally authorizes the narrow catalog/pricing repair requested by the Product Owner on 2026-08-12: remove the local 1,500-ruble minimum for new quotes, show a versioned AMIGO `FROM` price on every public material, calculate a selected material from width and height without a manager-price placeholder, and fail publication for any material whose price or calculator mapping is incomplete. One rights-cleared Zebra case passed the full live Supabase/Polza/private-result/delete path on 2026-08-13; Phase 2B retains `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING` only until the remaining `AIEVAL-019` family matrix is complete. Merge and production promotion remain prohibited.
 
 ## 0. Метаданные документа
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 2C final premium design authorized/in progress; Phase 2B Polza live/cloud activation pending; commercial production hold |
+| Статус | Phase 2C implementation complete / owner Preview review pending; Phase 2B live Zebra path passed / multi-family quality matrix pending; commercial production hold |
 | Версия | 0.30.0 |
 | Дата | 2026-08-12, Europe/Moscow |
 | Владелец документа | Product Owner — владелец проекта; Business Owner — отец владельца проекта (`OWNER-DECISION-001`) |

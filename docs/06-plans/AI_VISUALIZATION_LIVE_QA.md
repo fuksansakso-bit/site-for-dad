@@ -1,41 +1,47 @@
-# AI VISUALIZATION LIVE QA
+# AI visualization live QA
 
-## Execution evidence
+## Current result — 2026-08-13
 
-- Live Polza Media calls executed: **1** (`LIVE-QA-20260812-01`, 2026-08-12 22:16 MSK).
-- The configured server-only Polza key and model were present; the browser never received either secret or a provider response.
-- Supabase cloud preflight passed before the call: migrations are applied, `ai-inputs` and `ai-results` are private, and the effective limit remains two attempts per guest/day, 20 globally, one concurrent job and 24-hour retention.
-- A registered partner-licensed, non-personal kitchen scene and the exact published catalog material were used. Client preprocessing removed metadata, normalized the source to JPEG and uploaded 122,550 bytes at 1500×937 directly to the private input bucket.
-- The job reached the server-side Polza adapter but failed before a provider job ID/status was returned: client code `PROVIDER_UNAVAILABLE`, normalized provider code `POLZA_PROVIDER_ERROR`. The public UI exposed only «AI-визуализация временно недоступна. Попробуйте позже» and retained calculate/delete recovery actions.
-- The user-visible deletion path then passed: the job became `DELETED`, and both private AI buckets returned zero remaining root objects. No result, quality score or successful provider import is claimed.
-- Mock/browser evidence: one deterministic full-flow Playwright scenario passed across 320/360/375/390/430 px; it is not reported as provider quality evidence.
-- Provider contract evidence: create/status mapping, 429 bounded retry, 5xx/error normalization and result-import security are covered locally.
-- Required next run: retry from the target-account Vercel Preview or after Polza connectivity is available, without exceeding the remaining `AI_LIVE_TEST_LIMIT`; record provider job creation, polling, private result import, idempotency and visual review.
+- **Technical live path:** `PASSED` for one rights-cleared Zebra / Day-Night case.
+- **Provider/model:** Polza AI Media API / `google/gemini-3.1-flash-image`.
+- **Prompt version:** `window-blinds-polza-v1`.
+- **Formal Phase 2B status:** `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING` remains until the multi-family live quality matrix in `AIEVAL-019` is complete. This label no longer means that provider connectivity or result import is untested.
+- **Production:** not authorized. Provider/legal/privacy/region, restore and complete family-quality gates remain open.
 
-**Статус:** `Live visual QA pending`  
-**Фаза:** Phase 2B  
-**Дата проверки доступности:** 2026-08-12  
-**Провайдер:** Polza AI Media API  
-**Модель:** `google/gemini-3.1-flash-image`
+## Successful live case
 
-## Текущий результат
+`LIVE-QA-20260813-02` used the registered partner-licensed, non-personal kitchen window scene and the published Zebra material `amigo-material-12114`. The owner explicitly authorized paid requests after topping up the Polza account.
 
-Ключ, cloud schema, приватные buckets, upload/ownership/delete и безопасная деградация подтверждены, но первый реальный запрос не вернул provider job ID и завершился как `POLZA_PROVIDER_ERROR`. Поэтому результат Gemini и копирование в `ai-results` ещё не подтверждены, mock-результаты не считаются live evidence, а допустимый статус остаётся `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`.
+The complete real path passed:
 
-## Ограниченный сценарий после выдачи ключа
+1. The browser normalized the source to a 1,500×937 JPEG, removed metadata and sent the bytes directly to the private Supabase `ai-inputs` bucket through an exact non-upsert signed upload.
+2. Server confirmation downloaded and validated the private object; Vercel/Next.js received metadata only.
+3. The server reserved one attempt, generated the closed family prompt and sent the window plus exact material reference to Polza.
+4. Polza created an asynchronous job, returned the configured Gemini model and reached `completed` through bounded polling.
+5. The server accepted exactly one HTTPS result, downloaded and normalized it, and copied a 142,600-byte JPEG into private `ai-results`.
+6. The owned result endpoint issued short-lived Supabase URLs and the browser rendered a complete 1,500×937 before/after comparison.
+7. Visual review found the original room and window recognizable, the white Zebra family visible on the window, the comparison control usable and the approximate-result disclosure visible. No claim of dimensional, color or installation accuracy is made.
+8. Owned deletion returned `204`; both job folders then contained zero private input/result objects.
 
-Владелец выполняет не более `AI_LIVE_TEST_LIMIT` и не более трёх генераций: рулонные жалюзи, «Зебра» / «День-Ночь» и горизонтальные либо вертикальные жалюзи. Используются только разрешённые неперсональные фотографии окон и одобренные изображения материалов из сохранённого каталога.
+## Defects found and corrected by live QA
 
-Для каждого вызова фиксируются без секретов и фотографий: время, семейство, ориентация, internal job reference, наличие provider job ID, конечный статус, импорт результата в private Supabase Storage, результат повторного idempotency-запроса и визуальная оценка по `AI_EVALUATION_SPEC.md`.
+- A successful signed upload could be briefly unreadable during immediate confirmation. The browser now retries only the idempotent confirmation request and the server performs a bounded Storage-visibility retry before returning a safe outage.
+- Deleting an interrupted `UPLOAD_PENDING` job no longer invents `completed_at`, preserving the database time-order constraint.
+- Polza's actual completed response used a single-item `data[0].url` array while the documented example also permits `data.url`. The adapter now accepts either exact single-result shape and continues to reject empty, multiple or malformed results.
 
-## Критерии live-прохода
+## Paid execution and safe diagnostics
 
-- Polza job создаётся и опрашивается через официальный Media API;
-- используется настроенная модель, а клиент не получает provider response или key;
-- результат является декодируемым изображением и копируется в `ai-results`;
-- браузер использует только краткоживущий Supabase signed URL;
-- комната и окно остаются узнаваемыми, а семейство и материал визуально соответствуют референсу без обещания абсолютной точности;
-- повтор с тем же idempotency key не создаёт второй платный provider job;
-- после импорта временный Polza URL не нужен.
+- Two paid Polza jobs were created after the owner's authorization. The first completed at Polza but exposed the result-array compatibility defect; the second completed and passed private import/UI/delete.
+- Costs reported by Polza were 7.84402510 ₽ and 7.86529874 ₽, total **15.70932384 ₽**. The post-run balance endpoint reported 84.97122006 ₽.
+- Earlier non-result checks exposed one provider network error, one upload-confirmation visibility race and one pre-top-up `HTTP 402`; none is represented as successful output.
+- No API key, prompt, signed URL, object path, full provider job ID, private media byte or raw provider response is recorded in repository evidence.
 
-Live-проход не разрешает production launch: он остаётся зависимым от `TBD-AI-002`, `TBD-PRIV-003`, `TBD-PRIV-005` и `TBD-INFRA-004`.
+## Automated and local evidence
+
+- Polza object and single-item-array result contracts, signed-upload visibility retry and interrupted-upload deletion are covered by unit tests.
+- The post-fix suite passes 55/55 Vitest tests, ESLint, strict TypeScript and the Next.js 16.2.12 production build on Node 24.19.0 / pnpm 11.18.0; the pinned Node version remains 24.18.1.
+- The existing mock browser suite remains useful for deterministic responsive, retry, cart and delete coverage, but it is not counted as live provider evidence.
+
+## Remaining live-quality work
+
+The successful Zebra case proves that the public feature is a real Supabase → Polza/Gemini → private-result implementation rather than a placeholder. A formal `PASSED_PHASE_2B_POLZA_GEMINI_VISUALIZATION` claim still requires the remaining roller and horizontal-or-vertical rights-cleared quality cases under the bounded evaluation policy. That additional benchmark is not required to ship the present Draft Preview, and it does not authorize production by itself.

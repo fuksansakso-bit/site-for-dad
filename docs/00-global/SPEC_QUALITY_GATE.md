@@ -822,7 +822,7 @@ Entry result: **AUTHORIZED_PHASE_2B_IN_PROGRESS**.
 - [x] **QG-599 — MUST:** final worktree is clean after push/PR and no Phase 2C file/branch/runtime work exists.
 - [x] **QG-600 — MUST:** Phase 2B stops after the report/Draft PR and grants no merge, launch or Phase 2C authority.
 
-Completion result: **`IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`**. For QG-578, QG-581, QG-582, QG-584, QG-585, QG-595 and QG-598, the checked condition is the required implementation plus explicit credential-dependent skip record; it is not a claim that remote Supabase, cron or live Polza visual QA ran. Live calls: zero. Draft PR: #7. Production remains on hold; Phase 2C was authorized later and separately by `OWNER-DECISION-024` without changing this live-evidence status.
+Completion result at the original Phase 2B branch close: **`IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`**. The 2026-08-13 addendum now proves one rights-cleared Zebra create/ID/poll/configured-model/private-result/import/before-after/delete path against the approved Supabase project and paid Polza account. Formal status remains unchanged only because `AIEVAL-019` still requires roller and horizontal-or-vertical visual cases; provider connectivity and result import are no longer unverified. Draft PR: #7. Production remains on hold; Phase 2C was authorized later and separately by `OWNER-DECISION-024`.
 
 ## 17. Phase 2C final premium design gates
 

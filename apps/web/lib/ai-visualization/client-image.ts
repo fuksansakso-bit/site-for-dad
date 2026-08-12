@@ -224,6 +224,26 @@ async function safeJson(response: Response): Promise<Record<string, unknown>> {
   }
 }
 
+async function confirmUploadedImage(
+  publicReference: string,
+  metadata: Record<string, unknown>,
+): Promise<void> {
+  let lastPayload: Record<string, unknown> = {};
+  for (const delayMs of [0, 300, 900]) {
+    if (delayMs > 0) await new Promise((resolve) => globalThis.setTimeout(resolve, delayMs));
+    const response = await fetch(`/api/ai-visualizations/${publicReference}/upload/confirm`, {
+      body: JSON.stringify(metadata),
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      method: 'POST',
+    });
+    lastPayload = await safeJson(response);
+    if (response.ok) return;
+    if (response.status < 500) break;
+  }
+  throw new ClientImageError(apiMessage(lastPayload));
+}
+
 function apiMessage(payload: Record<string, unknown>): string {
   const error = payload['error'];
   return typeof error === 'object' && error !== null && 'message' in error
@@ -269,12 +289,5 @@ export async function uploadWindowImageDirectly(
       upsert: false,
     });
   if (error) throw new ClientImageError('Не удалось загрузить фотографию. Попробуйте снова.');
-  const confirmResponse = await fetch(`/api/ai-visualizations/${publicReference}/upload/confirm`, {
-    body: JSON.stringify(metadata),
-    credentials: 'same-origin',
-    headers: { 'Content-Type': 'application/json' },
-    method: 'POST',
-  });
-  const confirmPayload = await safeJson(confirmResponse);
-  if (!confirmResponse.ok) throw new ClientImageError(apiMessage(confirmPayload));
+  await confirmUploadedImage(publicReference, metadata);
 }

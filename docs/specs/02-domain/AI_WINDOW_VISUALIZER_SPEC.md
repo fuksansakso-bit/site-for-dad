@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 2B implementation complete; live Polza/remote Supabase evidence pending credentials |
-| Версия | 0.3.0 |
-| Дата | 2026-08-12 |
+| Статус | Phase 2B implementation and live Zebra path complete; multi-family quality matrix pending |
+| Версия | 0.4.0 |
+| Дата | 2026-08-13 |
 | Prompt version | `window-blinds-polza-v1` |
 | Provider | Polza AI Media API; Gemini model through Polza |
 | Technical pipeline | [AI_PIPELINE.md](../04-technical/AI_PIPELINE.md) |

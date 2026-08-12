@@ -21,6 +21,7 @@ import {
   getAiGuestSession,
   hashAiIdempotencyKey,
 } from '../../../../../../lib/ai-visualization/session';
+import { downloadConfirmedUpload } from '../../../../../../lib/ai-visualization/storage-retry';
 import { createSupabaseAdminClient } from '../../../../../../lib/phase2a/supabase';
 
 export const dynamic = 'force-dynamic';
@@ -62,9 +63,9 @@ export async function POST(request: Request, context: Context) {
     ) {
       throw new AiVisualizationError('INVALID_IMAGE', { status: 409 });
     }
-    const { data, error } = await client.storage
-      .from(config.inputBucket)
-      .download(job.input_storage_path);
+    const { data, error } = await downloadConfirmedUpload(() =>
+      client.storage.from(config.inputBucket).download(job.input_storage_path),
+    );
     if (error || !data) throw new AiVisualizationError('STORAGE_UNAVAILABLE', { cause: error });
     const validated = await validateImageBytes(
       await data.arrayBuffer(),

@@ -1,10 +1,14 @@
 # PROJECT_NAME — глобальная спецификация продукта
 
+## Phase 2B implementation result
+
+`OWNER-DECISION-023` and ADR-0014 are implemented in Draft PR #7 from baseline `49ce3679de28c612662f78273cd265d73221163d`. The current acceptance status is `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`: application code, additive migration, local mock/security/browser/build evidence and documentation are complete; no `POLZA_AI_API_KEY` or remote Supabase credentials were available, so real provider calls, remote RLS/private-bucket/cron evidence and visual quality acceptance remain pending. This status does not authorize production launch, merge or Phase 2C.
+
 ## 0. Метаданные документа
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 2A merged; Phase 2B Polza AI window visualization authorized and in progress; commercial production and final redesign hold |
+| Статус | Phase 2A merged; Phase 2B implementation complete with Polza live/cloud activation pending; commercial production and final redesign hold |
 | Версия | 0.28.0 |
 | Дата | 2026-08-12, Europe/Moscow |
 | Владелец документа | Product Owner — владелец проекта; Business Owner — отец владельца проекта (`OWNER-DECISION-001`) |

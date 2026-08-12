@@ -4,7 +4,7 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 2B authorized by `OWNER-DECISION-023`; live Polza/Supabase evidence pending credentials |
+| Статус | Phase 2B implementation complete; live Polza/remote Supabase evidence pending credentials |
 | Версия | 0.3.0 |
 | Дата | 2026-08-12 |
 | Prompt version | `window-blinds-polza-v1` |

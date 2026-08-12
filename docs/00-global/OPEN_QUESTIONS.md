@@ -1,5 +1,9 @@
 # Открытые вопросы PROJECT_NAME
 
+## Phase 2B completion note
+
+Implementation does not close `TBD-AI-002`, `TBD-PRIV-003`, `TBD-PRIV-005` or `TBD-INFRA-004`. They remain activation gates for bounded live Polza visual QA, provider/privacy/legal verification and remote Supabase deployment evidence. Missing credentials produced zero live calls and the exact status `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`; no unknown value was invented.
+
 ## Как использовать реестр
 
 Каждый пробел имеет уникальный идентификатор и не должен скрываться в тексте другой спецификации. Приоритеты: `P0` блокирует утверждение соответствующей специализированной спеки или запуск; `P1` нужен до реализации функции; `P2` допускает позднее уточнение без потери базовой архитектуры.

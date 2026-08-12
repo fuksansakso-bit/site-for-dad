@@ -2,7 +2,7 @@
   "name": "project-name",
   "version": "0.0.0",
   "private": true,
-  "description": "PROJECT_NAME Phase 2A Next.js + Supabase application",
+  "description": "PROJECT_NAME Phase 2B Next.js + Supabase + Polza AI visualization application",
   "license": "UNLICENSED",
   "type": "module",
   "packageManager": "pnpm@11.18.0",

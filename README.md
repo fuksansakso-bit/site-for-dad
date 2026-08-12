@@ -1,5 +1,7 @@
 # PROJECT_NAME
 
+> Phase 2B implementation is complete in Draft PR [#7](https://github.com/bataevabdullah2009-pixel/site-for-dad/pull/7) with status `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`. Real Polza calls: 0; cloud RLS/Storage/cron activation remains manual. Phase 2C has not started.
+
 > Phase 2B runtime: существующий Next.js App Router + Supabase PostgreSQL/Storage/staff-only Auth/RLS получает простую guest-only AI-визуализацию через Polza AI Media API. Обычный запуск не требует Docker/Python/GPU/worker; прямой Google API/SDK не используется. Cloud/live activation требует собственных Supabase/Polza credentials. Финальный дизайн и Phase 2C не начаты.
 
 `PROJECT_NAME` — рабочее обозначение веб-приложения локального бизнеса по изготовлению и установке рулонных жалюзи, систем «Зебра»/«День-Ночь», горизонтальных алюминиевых и вертикальных жалюзи.
@@ -109,4 +111,4 @@ pnpm.cmd --filter @project-name/db pricing:bootstrap
 
 ## Текущая граница работы
 
-Phase 1A–1F и Phase 2A завершены; выполняется только Phase 2B по `OWNER-DECISION-023`. Customer accounts, payment, direct Google AI, SAM/Python/GPU/worker service, финальный премиальный редизайн, удаление исходных данных, неподтверждённый production launch и Phase 2C остаются на hold.
+Phase 1A–1F и Phase 2A завершены; Phase 2B implementation завершена со статусом `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`. Customer accounts, payment, direct Google AI, SAM/Python/GPU/worker service, финальный премиальный редизайн, удаление исходных данных, неподтверждённый production launch и Phase 2C остаются на hold.

@@ -1,5 +1,9 @@
 # Deployment and release specification PROJECT_NAME
 
+## Phase 2B deployment profile
+
+Apply the additive Phase 2B migration before enabling the feature, verify both buckets remain private, then inject `POLZA_AI_API_KEY`, optional Polza base/model settings, AI limits, bucket names and `CRON_SECRET` only into server environments. `AI_VISUALIZER_ENABLED=false` is the default and a missing Polza key or service-role configuration fails closed; production never selects the mock provider implicitly. `apps/web/vercel.json` schedules protected `/api/internal/ai-cleanup` daily. Current local evidence is implementation-complete only: live Polza, remote RLS/Storage and cron execution remain required before activation.
+
 ## Phase 2A delivery profile
 
 Normal startup is `pnpm install` then `pnpm dev` against an environment-selected development Supabase project; Docker is optional only for Supabase Local tests. `pnpm build` produces portable Next.js. Preview and Production isolate projects/secrets. Vercel Hobby is not approved for commercial production; missing credentials mean prepared-but-not-deployed. Manual DB/media backup and restore evidence is required before production activation.

@@ -1,5 +1,9 @@
 # Storage and media delivery specification PROJECT_NAME
 
+## Phase 2B private AI objects
+
+Supabase buckets `ai-inputs` and `ai-results` are private and have no guest list/read/delete policy. Object keys are server-generated and exact: `ai-inputs/<job-id>/window.<ext>` and `ai-results/<job-id>/result.<ext>`. The browser uploads prepared input bytes directly with a short-lived non-upsert signed token; Vercel receives metadata only. Result bytes arrive server-to-server from Polza, pass bounded image validation and are copied to `ai-results`; clients use owned short-lived Supabase signed reads, never a Polza URL. Both objects default to 24-hour retention and idempotent batch cleanup.
+
 ## 0. Метаданные
 
 | Поле | Значение |

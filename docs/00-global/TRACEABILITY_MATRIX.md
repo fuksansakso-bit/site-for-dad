@@ -10,6 +10,8 @@
 | cart/request/admin linkage | optional safe references and `/admin/ai-visualizations` | pricing regression, role/audit and expiry tests |
 | no direct Google/SAM/Python/GPU/worker/Phase 2C | dependency/source/client-bundle scans | build/security report |
 
+Implementation evidence is complete in commits `5596278`–`7f54aad`; verification is commit `6e69708` and the Phase 2B completion report. Local evidence is 49 passing tests, one passing full-flow Playwright scenario, mobile profiles, lint/type/scope/secret scans and production build. The committed pgTAP suite, cloud buckets/RLS/cron and live Polza QA remain credential-dependent and are not represented as executed evidence.
+
 ## Phase 2A trace
 
 | Decision/scope | Implementation evidence | Verification/report |
@@ -24,7 +26,7 @@
 
 | Поле | Значение |
 |---|---|
-| Фаза | Phase 1A–1F and Phase 2A passed; Phase 2B authorized; Phase 2C hold |
+| Фаза | Phase 1A–1F and Phase 2A passed; Phase 2B implementation complete/live pending; Phase 2C hold |
 | Версия | 1.18.0 |
 | Дата | 2026-08-12, Europe/Moscow |
 | Состояние покрытия | `COVERED_WITH_VISIBLE_TBD` |

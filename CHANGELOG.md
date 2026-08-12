@@ -7,6 +7,8 @@
 
 ### Added
 
+- Completed Phase 2B implementation in Draft PR #7: private direct upload, asynchronous Polza Media lifecycle and result import, hidden versioned family prompt, guest ownership, idempotency/cost controls, 24-hour cleanup, responsive before/after, cart/request linkage and safe administration. Local unit/browser/security/build gates pass; zero live Polza calls and unexecuted cloud RLS/Storage/cron are explicitly recorded as `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`.
+
 - `OWNER-DECISION-023`, ADR-0014 and the active Phase 2B plan authorize a simple guest-only Polza AI Media API window visualization from merged Phase 2A commit `49ce3679de28c612662f78273cd265d73221163d`: direct private Supabase upload, server-only Polza key/prompt, asynchronous job/result import, ownership, consent, limits, 24-hour cleanup and approximate before/after. Direct Google API/SDK, SAM/segmentation/masks, Python/GPU/worker service, accounts, final redesign, production launch and Phase 2C remain excluded.
 
 - `OWNER-DECISION-021`, ADR-0013, QG-481–540 and the active Phase 2A plan authorize the Supabase + Vercel simplification from protected baseline `3a0d7662a1b22724641ab29ca1cbd55fd575598e`; the target is one standard Next.js application with Supabase PostgreSQL/Storage/staff-only Auth/RLS and no customer accounts, AI, final redesign or mandatory Docker runtime.

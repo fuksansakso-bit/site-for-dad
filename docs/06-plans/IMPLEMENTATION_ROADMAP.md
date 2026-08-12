@@ -1,5 +1,9 @@
 # Implementation roadmap PROJECT_NAME
 
+## Phase 2B completion boundary
+
+Phase 2B implementation is complete on `phase/2b-gemini-ai-visualization` with Draft PR #7 and status `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`. The remaining work is activation evidence only: apply the additive migration to the selected Supabase project, verify remote private Storage/RLS/cron, provide the server-only Polza key and run the bounded live QA. This status does not authorize merge, production launch or Phase 2C.
+
 ## Active transition — Phase 2A
 
 `OWNER-DECISION-021/022` and ADR-0013 replace Phase 1F.1 runtime with bounded Supabase/Vercel simplification. Completion requires retained-catalog ETL (19 categories/1,428 materials/1,371 images), simple server pricing/cart/request/WhatsApp, staff-only admin/RLS, no mandatory Docker/worker/AI, backup instructions and Vercel-ready build. Production activation, final redesign, AI and Phase 1G+ require later decisions.

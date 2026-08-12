@@ -2,7 +2,7 @@
 
 ## Status and verifiable outcome
 
-- **Status:** ACTIVE
+- **Status:** COMPLETED — `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`
 - **Branch:** `phase/2b-gemini-ai-visualization`
 - **Baseline:** `49ce3679de28c612662f78273cd265d73221163d`
 - **Authorized by:** `OWNER-DECISION-023`, ADR-0014
@@ -18,14 +18,14 @@
 
 ## Work plan
 
-1. **IN PROGRESS — Authorization and contracts:** record the owner decision/ADR, supersede conflicting geometry-first requirements, update the active plan, external-source/privacy/rights boundaries and Phase 2B quality gate.
-2. **PENDING — Data/storage:** additive Supabase migration for jobs, attempts, settings, rate events, optional order linkage, private buckets, indexes, RLS and cleanup functions.
-3. **PENDING — Upload/API:** HttpOnly guest ownership, safe image preprocessing/validation, exact-path signed direct upload and public/admin contracts with origin, rate, idempotency and safe errors.
-4. **PENDING — Provider/lifecycle:** closed prompt, Polza adapter, async state mapping, provider result import, limits, retry, status and cleanup.
-5. **PENDING — Product surfaces:** responsive five-state `/visualizer`, owned result route, catalog/detail/calculator/cart/request entry points, before/after and deletion.
-6. **PENDING — Administration:** safe statistics, filters, kill switch/limits, audited image access, manual cleanup and OWNER/ADMIN/MANAGER boundaries.
-7. **PENDING — Verification:** unit/integration/static RLS/security/browser/mobile/recovery gates, production/Vercel build, secret/client-bundle scans and bounded live QA only if credentials exist.
-8. **PENDING — Completion:** synchronize only related specifications, traceability, open questions, live QA, completion report and changelog; clean tree, push and Draft PR without merge or Phase 2C.
+1. **COMPLETED — Authorization and contracts:** owner decision, ADR, superseded boundaries, source/privacy/rights controls and Phase 2B quality gate are recorded.
+2. **COMPLETED — Data/storage:** additive jobs/attempts/settings/rate/order schema, private buckets, indexes, RLS and cleanup functions are committed.
+3. **COMPLETED — Upload/API:** guest ownership, safe image preparation/validation and exact-path direct signed upload use metadata-only Vercel contracts.
+4. **COMPLETED — Provider/lifecycle:** closed prompt, Polza adapter, asynchronous status/result import, limits, retries and safe errors are implemented.
+5. **COMPLETED — Product surfaces:** responsive five-state visualizer, before/after, entry points, cart/request linkage and owned deletion are implemented.
+6. **COMPLETED — Administration:** safe statistics, filters, kill switch/limits, audited image grants and cleanup respect staff roles.
+7. **COMPLETED WITH EXPLICIT SKIPS — Verification:** 49 tests, browser/mobile, lint/type/scope/secret and production build pass; cloud RLS/Storage/cron and live Polza await credentials.
+8. **COMPLETED — Completion:** related documentation and the completion report record Draft PR #7, zero live calls and the exact pending-live status; Phase 2C remains unstarted.
 
 Only one item may be `IN PROGRESS`; this file is updated as the phase advances.
 
@@ -39,7 +39,7 @@ Only one item may be `IN PROGRESS`; this file is updated as the phase advances.
 6. `feat: add responsive AI visualization flow`
 7. `feat: integrate AI result with cart and requests`
 8. `feat: add AI limits cleanup and administration`
-9. `test: verify Polza visualization security and flow`
+9. `test: verify Gemini visualization security and flow`
 10. `docs: complete Phase 2B Gemini visualization`
 
 ## Stop conditions and decisions

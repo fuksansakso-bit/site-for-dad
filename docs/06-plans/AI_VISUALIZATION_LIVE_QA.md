@@ -1,5 +1,13 @@
 # AI VISUALIZATION LIVE QA
 
+## Execution evidence
+
+- Live Polza Media calls executed: **0**.
+- Reason: `POLZA_AI_API_KEY` is absent; Supabase cloud/service-role and `CRON_SECRET` credentials are also absent locally.
+- Mock/browser evidence: one deterministic full-flow Playwright scenario passed across 320/360/375/390/430 px; it is not reported as provider quality evidence.
+- Provider contract evidence: create/status mapping, 429 bounded retry, 5xx/error normalization and result-import security are covered locally.
+- Required next run: apply the migration, verify private buckets/RLS/cron, then perform at most `AI_LIVE_TEST_LIMIT` rights-cleared calls and record create ID, polling, configured model, import, idempotency and visual review.
+
 **Статус:** `Live visual QA pending`  
 **Фаза:** Phase 2B  
 **Дата проверки доступности:** 2026-08-12  

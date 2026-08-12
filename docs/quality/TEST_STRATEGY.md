@@ -1,5 +1,9 @@
 # Test strategy PROJECT_NAME
 
+## Phase 2B executed verification profile
+
+The local Phase 2B gate runs 49 Vitest tests across prompt/families, states, schemas/errors, aspect/hash/expiry, Polza transport/status/error/retry, direct-upload/storage/RLS/security contracts and cart price isolation. A Playwright scenario covers the five-state mock flow, direct upload interception, progress, before/after, cart, retry, delete and 320/360/375/390/430 px viewports. Lint, strict typecheck, phase-scope/secret scans and production Next.js build pass. The pgTAP RLS suite is committed but remote execution, real private Storage/cron and live Polza quality remain explicit credential-dependent skips; mock output is not live evidence.
+
 ## Phase 2A verification profile
 
 Suites cover pricing/minimum/quantity/MANUAL, phone/WhatsApp, roles; migrations and RLS matrices; server-authoritative immutable orders; Storage permissions; idempotent ETL/count/article/price/media checks; public/admin/mobile browser flows; and service-role leak, anon write, IDOR, CSRF, upload and price-tampering negatives. Remote-only cases are explicitly skipped without credentials and MUST run before cloud activation.

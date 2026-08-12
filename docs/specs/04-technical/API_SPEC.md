@@ -1,5 +1,9 @@
 # API and integration contract specification PROJECT_NAME
 
+## Phase 2B AI contracts
+
+Public metadata-only routes create a job, issue an exact signed upload, confirm the direct Storage upload, start/retry generation, poll owned status, issue short-lived input/result URLs and delete the owned job. They never accept full image bodies, client storage paths, material image URLs or provider responses. Admin actions expose aggregates/filters/settings/cleanup/delete/audited image grants by role; `/api/internal/ai-cleanup` accepts only a constant-time validated `CRON_SECRET`. Mutations apply origin validation, opaque guest ownership, rate limits, idempotency and correlation IDs, then map Polza diagnostics to the documented safe public error taxonomy.
+
 ## Phase 2A HTTP surface
 
 The active surface is public/catalog/calculator/cart/checkout/request pages, a server-authoritative quote/order endpoint, `/api/health`, and staff-authenticated admin mutations. The browser cannot insert orders with the anon key. Zod validation, generic Russian errors, opaque references, origin/CSRF controls and fresh server price calculation are mandatory; UUIDs, enum internals, SQL/RLS errors and service-role details are never public DTO fields.

@@ -1,5 +1,9 @@
 # Cart, checkout and orders specification PROJECT_NAME
 
+## Phase 2B visualization linkage
+
+A cart item MAY carry one opaque `aiVisualizationPublicReference`. Checkout resolves it server-side only when it belongs to the same guest and material, then stores an optional internal job relation; no Base64 or private URL enters cart/order data. AI state never participates in price calculation. Expiry or deletion removes only media access, not material, dimensions, immutable price snapshots or request validity. WhatsApp continues to contain the existing safe request-summary link and never claims that a private image is attached automatically.
+
 ## Phase 2A guest request
 
 Guest cart `localStorage` stores only material identity, dimensions and quantity. Checkout re-resolves materials and recalculates server-side, then writes immutable snapshots and an enumeration-resistant `public_reference`. Confirmation presents request number, preliminary total/manual status, free services, 2–7 calendar days, 12-month warranty and WhatsApp link to `79635851036`; it never claims message delivery.

@@ -4,7 +4,7 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Implementation/mock evaluation active; live visual QA pending credentials |
+| Статус | Implementation/mock evaluation complete; live visual QA pending credentials |
 | Версия | 0.4.0 |
 | Дата | 2026-08-12 |
 | Provider/model | Polza AI / `google/gemini-3.1-flash-image` through Media API |

@@ -1,5 +1,9 @@
 # Admin panel specification PROJECT_NAME
 
+## Phase 2B AI administration
+
+`/admin/ai-visualizations` shows provider/model/prompt version, enabled state, bounded aggregates, filters, duration/storage estimates, attempts, expiry and safe diagnostics without a photo gallery, key, prompt or raw Polza body. OWNER/ADMIN can adjust the database kill switch and safe limits, run cleanup, delete a job and request a five-minute audited image grant. MANAGER receives aggregate read-only statistics and cannot open client photos or mutate limits. The model ID remains environment-controlled in MVP.
+
 ## Phase 2A staff administration
 
 The Russian admin uses Supabase email/password Auth only for active `OWNER`, `ADMIN`, `MANAGER` profiles. OWNER has full access and protected last-owner lifecycle; ADMIN manages catalog, prices, requests, portfolio and settings; MANAGER handles requests and explicitly allowed changes. Every mutation rechecks database role server-side and records a minimized audit diff. There is no customer account or complex CRM.

@@ -1,5 +1,9 @@
 # Logical data model specification PROJECT_NAME
 
+## Phase 2B additive AI projection
+
+Migration `20260812190000_phase_2b_ai_visualization.sql` adds `ai_visualization_jobs`, immutable `ai_visualization_attempts`, safe runtime settings/rate events and an optional `order_items.ai_visualization_job_id`. Jobs store opaque ownership hash, material identity, exact private object paths, SHA-256 request inputs, internal/provider status, model/prompt/output versions, timing, safe errors and expiry. Image bytes, prompts, keys and raw Polza responses are never database fields. Status constraints cover `CREATED`, `UPLOAD_PENDING`, `READY`, `PROCESSING`, `SUCCEEDED`, `FAILED`, `REJECTED`, `EXPIRED` and `DELETED`.
+
 ## Phase 2A simplified projection
 
 The active Supabase schema contains `staff_profiles`, `categories`, `materials`, optional `pricing_rules`, `orders`, immutable `order_items`, `portfolio_items`, `site_settings` and append-only `admin_audit_log`. Integer kopecks and millimetres are canonical. Stable legacy source identity makes ETL idempotent; raw snapshots, worker metadata, sessions, AI jobs and technical noise are not target entities.

@@ -1,5 +1,9 @@
 # Security and privacy specification PROJECT_NAME
 
+## Phase 2B private-photo controls
+
+Generation requires versioned consent and a neutral notice that the temporary photo is sent to Gemini through Polza AI and that output is approximate. An HttpOnly SameSite guest cookie is stored only as a one-way hash on the job; an expiring IP hash is abuse metadata, never a permanent raw IP. Both AI buckets are private, guests receive only exact-path signed grants, and server routes revalidate ownership and published material/image identity. Polza/service-role secrets and the closed prompt remain server-only. Provider-result download enforces HTTPS, Polza host allowlisting, DNS/private-address rejection, redirect/time/byte/MIME/magic/decode bounds. Default retention is 24 hours; delete, expiry, cleanup and privileged image viewing are audited.
+
 ## Phase 2A Supabase boundary
 
 RLS is enabled on every exposed table. Guests read only published catalog/portfolio/public settings and cannot write orders through anon credentials. Active staff role comes from `staff_profiles`, never client metadata. `SUPABASE_SERVICE_ROLE_KEY` is server-only and forbidden in `NEXT_PUBLIC_*`, browser bundles, logs and errors. Admin/order routes validate origin, body, IDs and prices. Production PII remains blocked until existing legal/privacy questions close.

@@ -1,5 +1,9 @@
 # Application architecture specification PROJECT_NAME
 
+## Phase 2B Polza visualization profile
+
+ADR-0014 adds the visualizer inside the same Next.js runtime. The browser prepares a JPEG/PNG/WebP photo and uploads it directly through an exact-path signed grant to private Supabase Storage. Server routes own the guest job, material revalidation, consent, limits, idempotency and asynchronous Polza polling. `PolzaImageVisualizationProvider` hides the official Media API transport; a completed provider image is validated and copied to private `ai-results` before the browser receives a short-lived Supabase URL. No direct Google SDK/API, worker, SAM, mask, Python or GPU service is introduced.
+
 ## Phase 2A active architecture
 
 ADR-0013 replaces the active runtime with one portable Next.js App Router application and Supabase PostgreSQL, Storage and staff-only Auth. Browser code receives only publishable configuration; trusted order creation, price recalculation and staff authorization run server-side. Prisma, Graphile Worker, separate worker, local S3 server, mandatory Docker, AI and complex preview/configurator are legacy, not deployment dependencies.

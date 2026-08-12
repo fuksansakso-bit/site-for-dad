@@ -128,6 +128,7 @@ export default async function HomePage() {
                     <Image
                       alt={category.name}
                       height={560}
+                      loading={index === 0 ? 'eager' : 'lazy'}
                       sizes="(max-width: 760px) 100vw, (max-width: 1100px) 50vw, 33vw"
                       src={publicImageUrl('catalog', category.image_path)!}
                       width={760}

@@ -1,4 +1,8 @@
 import type { NextConfig } from 'next';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const workspaceRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 
 const securityHeaders = [
   { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
@@ -52,8 +56,10 @@ const nextConfig: NextConfig = {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: supabaseImagePattern(),
   },
+  outputFileTracingRoot: workspaceRoot,
   poweredByHeader: false,
   reactStrictMode: true,
+  turbopack: { root: workspaceRoot },
 };
 
 export default nextConfig;

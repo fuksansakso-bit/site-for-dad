@@ -4,10 +4,10 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A/1B.1/1B.2/1C/1D/1E/1F verified; Phase 1G+/production gated |
-| Версия | 0.12.0 |
-| Дата | 2026-08-09 |
-| Global baseline | [GLOBAL_SPEC.md](../GLOBAL_SPEC.md) 0.21.0 |
+| Статус | Phase 1F.1 MVP repair and production-template architecture authorized; AI runtime remains gated |
+| Версия | 0.13.0 |
+| Дата | 2026-08-12 |
+| Global baseline | [GLOBAL_SPEC.md](../GLOBAL_SPEC.md) 0.25.0 |
 | Decisions | [docs/adr](../../adr/) |
 
 ## 1. Назначение and boundaries
@@ -216,6 +216,15 @@ Completed Phase 1C adds one independent `packages/pricing` domain boundary and s
 
 ## 18. Dependencies, risks and open questions
 
+### 18.1. Phase 1F.1 architecture profile
+
+- **P1F1-ARCH-001 — MUST:** configurator bootstrap contains families/system schema only; material discovery is a bounded query port over the active catalog projection and is consumed incrementally by the client.
+- **P1F1-ARCH-002 — MUST:** coverage classification is one domain policy shared by public search, validation/calculation and admin diagnostics; layers MUST NOT independently reinterpret compatibility or pricing readiness.
+- **P1F1-ARCH-003 — MUST:** source-backed records, local coverage overrides, immutable pricing rules and cart quotes remain separate ownership layers; sync cannot overwrite business coverage decisions and browser state cannot become price authority.
+- **P1F1-ARCH-004 — MUST:** staff password hashing/authentication remains inside identity/database ports using Node runtime; web routes do not access raw credential storage directly and no external auth provider is required.
+- **P1F1-ARCH-005 — MUST:** production remains the existing modular monolith plus separate Graphile Worker, PostgreSQL, StoragePort and Nginx boundary; no new microservice, Python service, GPU or AI runtime is introduced.
+- **P1F1-ARCH-006 — MUST:** `ImageVisualizationProvider` is documentation-only in Phase 1F.1; no production interface file, adapter, route, task or provider request is compiled or deployed.
+
 Phase 1D keeps the accepted modular/BFF topology: `/configure` creates an opaque `StandardPreviewState` through a server use case; `/preview` lazy-loads `standard-svg-v2`; the renderer consumes canonical state plus same-origin scene/product layers. Layer descriptors are an allowlisted server mapping from active family/model/article to a checksum-bound manifest. Bytes are provisioned and read through provider-neutral `StoragePort`; the browser never receives object keys or calls AMIGO. Approved supplier raster layers are composed by project-owned SVG/controls, not supplier frontend code. Preview state and immutable pricing snapshots remain separate.
 
 Phase 1E adds framework-independent `packages/cart` totals/status/message/transition policy plus PostgreSQL cart/request adapters behind the same BFF. The browser carries only opaque quote/item/public references; the adapter reloads immutable quotes and writes checkout, audit and outbox atomically. Public request projection is distinct from contact/admin projection. WhatsApp is a fixed-recipient deep-link adapter with copy fallback and no outbound worker/API. Existing worker consumes only durable outbox infrastructure; a restart preserves pending/history rows.
@@ -226,6 +235,7 @@ Dependencies: all specs, ADR/evaluations, data/API/sync/media/AI/storage/securit
 
 | Версия | Дата | Изменение |
 |---|---|---|
+| 0.13.0 | 2026-08-12 | Authorized one shared coverage policy, existing identity extension, VPS templates and documentation-only AI provider boundary. |
 | 0.1.0 | 2026-08-02 | Defined vendor-neutral modular architecture, boundaries, commands/events/jobs, adapters, degradation and operational constraints. |
 | 0.2.0 | 2026-08-02 | Recorded Phase 1A implementation conformance and resolved Foundation stack/topology unknowns while retaining production provider gates. |
 | 0.3.0 | 2026-08-02 | Added `OWNER-DECISION-008` authority boundaries, PostgreSQL operational projection and object-storage image binary split without claiming Phase 1B implementation. |

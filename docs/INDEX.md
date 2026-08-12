@@ -2,7 +2,7 @@
 
 ## 0. Статус
 
-Phase 1A–1F завершены. Revised staff/business Phase 1F имеет статус `PASSED_PHASE_1F_BUSINESS_ADMINISTRATION`; QG-361–420 закрыты, а customer accounts не входят в MVP. Client photo/AI, payment/final design, production and Phase 1G+ remain prohibited.
+Phase 1A–1F завершены. Phase 1F.1 отдельно авторизована из merged-main `289b1baef0b53ac7da457098353ee5e7c1e1953f`; QG-421–430 закрыты, QG-431–480 выполняются. Customer accounts, AI runtime/photo upload, payment/final design, production deployment и Phase 1G+ не разрешены.
 
 ## 1. Порядок обязательного чтения
 
@@ -26,6 +26,7 @@ Phase 1A–1F завершены. Revised staff/business Phase 1F имеет с�
 | Документ | Назначение |
 |---|---|
 | [GLOBAL_SPEC.md](specs/GLOBAL_SPEC.md) | Scope, роли, flows, глобальные FR/NFR, модели, риски и phase boundaries |
+| [Правила canonical specs](specs/README.md) | Единственное размещение нормативных спецификаций, тематические папки и запрет дублей |
 | [GLOSSARY.md](00-global/GLOSSARY.md) | Единые значения catalog, price, preview, media, sync, source authority и operational system of record |
 | [EXTERNAL_SOURCES.md](00-global/EXTERNAL_SOURCES.md) | 15 source records: 14 публичных AMIGO страниц и volatile customizer |
 | [ASSET_RIGHTS_REGISTER.md](00-global/ASSET_RIGHTS_REGISTER.md) | Partner license, asset-level publication, provenance, AI/training/delete границы |
@@ -34,7 +35,7 @@ Phase 1A–1F завершены. Revised staff/business Phase 1F имеет с�
 | [OPEN_QUESTIONS.md](00-global/OPEN_QUESTIONS.md) | Канонический реестр `TBD-*`, владельцев, влияния и критериев закрытия |
 | [SPEC_ROADMAP.md](00-global/SPEC_ROADMAP.md) | Фактический комплект 0B/0C, accepted Foundation ADR, gates и последовательность 1A–1H |
 | [TRACEABILITY_MATRIX.md](00-global/TRACEABILITY_MATRIX.md) | 18 critical chains и полная 40-story связь со спеками, AC и tests |
-| [SPEC_QUALITY_GATE.md](00-global/SPEC_QUALITY_GATE.md) | Passed gates through revised staff/business Phase 1F; QG-361–420 closed, Phase 1G remains unauthorized |
+| [SPEC_QUALITY_GATE.md](00-global/SPEC_QUALITY_GATE.md) | Passed gates through Phase 1F; Phase 1F.1 entry QG-421–430 closed and completion QG-431–480 active |
 
 ## 3. Product specifications
 
@@ -116,6 +117,7 @@ Phase 1A–1F завершены. Revised staff/business Phase 1F имеет с�
 | [PHASE_1D_STANDARD_PREVIEW_REPORT.md](06-plans/completed/PHASE_1D_STANDARD_PREVIEW_REPORT.md) | Routes, four photoreal family profiles, scenes/assets/counts, visual/mobile/recovery/CI/PR evidence and final acceptance |
 | [PHASE_1E_CART_WHATSAPP_ORDERS_PLAN.md](06-plans/active/PHASE_1E_CART_WHATSAPP_ORDERS_PLAN.md) | Authorized guest cart/request/WhatsApp scope, immutable snapshots, security boundary, exact commits and Phase 1F hold |
 | [PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_PLAN.md](06-plans/active/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_PLAN.md) | Completed staff auth/admin, requests/CRM contacts, portfolio/settings/audit execution record; customer accounts are post-MVP |
+| [PHASE_1F1_MVP_FUNCTIONAL_COMPLETION_PLAN.md](06-plans/active/PHASE_1F1_MVP_FUNCTIONAL_COMPLETION_PLAN.md) | Active complete-material/configurator/cart/mobile/staff-password/VPS-readiness plan and strict AI/design hold |
 | [PHASE_1E_CART_WHATSAPP_ORDERS_REPORT.md](06-plans/completed/PHASE_1E_CART_WHATSAPP_ORDERS_REPORT.md) | Phase 1E routes/models, fixed WhatsApp recipient, real DB/browser/security/recovery evidence and acceptance result |
 | [PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_REPORT.md](06-plans/completed/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_REPORT.md) | Staff auth/RBAC/admin/CRM-contact/portfolio/settings/audit/runtime/recovery/CI/PR evidence and passed acceptance without customer accounts |
 | [PREVIEW_AND_CONFIGURATOR_MAPPING_GAPS.md](06-plans/PREVIEW_AND_CONFIGURATOR_MAPPING_GAPS.md) | Exact active family/system/model/variant/source gaps without expanding Phase 1C catalog or pricing |
@@ -135,6 +137,7 @@ Phase 1A–1F завершены. Revised staff/business Phase 1F имеет с�
 | [ADR-0009](adr/ADR-0009-object-storage-and-background-jobs.md) | **Accepted:** S3-compatible object port and separate Graphile Worker |
 | [ADR-0010](adr/ADR-0010-identity-secrets-and-observability-boundary.md) | **Accepted:** identity/secrets/OTLP boundary; production providers deferred |
 | [ADR-0011](adr/ADR-0011-passwordless-email-identity.md) | **Accepted for Phase 1F local/CI:** passwordless e-mail codes, rotating sessions, provider-neutral delivery and Mailpit |
+| [ADR-0012](adr/ADR-0012-staff-password-authentication.md) | **Accepted for Phase 1F.1:** Argon2id login/e-mail password authentication, rotating staff sessions and local-only legacy OTP |
 
 ## 10. Research evidence
 
@@ -169,7 +172,7 @@ Research snapshot не является вечным catalog/price fact. Нор�
 - Кто может выполнить действие — `ROLES_PERMISSIONS` и relevant domain spec.
 - Каких данных не хватает — `OPEN_QUESTIONS` по уникальному `TBD-*`.
 - Как требование проверяется — `TRACEABILITY_MATRIX`, AC и `TEST_STRATEGY`.
-- Можно ли начинать следующий код — нет: revised Phase 1F завершена, а отдельного разрешения на Phase 1G нет; customer accounts, photo/AI/payment and production remain prohibited.
+- Можно ли начинать следующий код — только Phase 1F.1 по активному плану; customer accounts, photo/AI runtime, payment, final design, production deployment и Phase 1G остаются запрещены.
 
 ## 13. Правило навигации
 

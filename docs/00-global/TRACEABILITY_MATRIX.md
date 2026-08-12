@@ -4,11 +4,11 @@
 
 | Поле | Значение |
 |---|---|
-| Фаза | Phase 1A–1F passed; Phase 1G+ hold |
-| Версия | 1.16.0 |
-| Дата | 2026-08-09, Europe/Moscow |
+| Фаза | Phase 1A–1F passed; Phase 1F.1 authorized; Phase 1G+ hold |
+| Версия | 1.17.0 |
+| Дата | 2026-08-12, Europe/Moscow |
 | Состояние покрытия | `COVERED_WITH_VISIBLE_TBD` |
-| Главный источник требований | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.24.0 |
+| Главный источник требований | [GLOBAL_SPEC.md](../specs/GLOBAL_SPEC.md) 0.25.0 |
 | Feature contract | [FEATURE_SPEC.md](../specs/01-product/FEATURE_SPEC.md) |
 | Stories | [USER_STORIES.md](../specs/01-product/USER_STORIES.md) |
 | Acceptance | [ACCEPTANCE_CRITERIA.md](../specs/01-product/ACCEPTANCE_CRITERIA.md) |
@@ -238,6 +238,15 @@ Detailed runtime versions, commit list, skipped production-only checks and accep
 | `QG-398`–`409`, contracts/migrations/browser/security/recovery | Strict BFF schemas, 25 additive migrations, scope/artifact/secret scanners and five-profile Playwright gates | Empty/repeat/upgrade/drift/recovery passed; browser smoke 25/25 and active catalog 5/5; exact Node 24.18.1 CI-equivalent stages passed with isolated data-plane skips recorded |
 | `QG-410`–`420`, docs/history/scope/delivery | Canonical specs, plan/report, twelve commits and Draft PR [#5](https://github.com/bataevabdullah2009-pixel/site-for-dad/pull/5) | `PASSED_PHASE_1F_BUSINESS_ADMINISTRATION`; `/account` 404, customer auth absent, guest/publicReference flow preserved and Phase 1G not started |
 
+### 8.7. Phase 1F.1 authorization and pending evidence
+
+| Gate / behavior | Canonical source | Verification / status |
+|---|---|---|
+| `QG-421`–`430`, scope/spec/pre-flight | `OWNER-DECISION-019/020`, [ADR-0012](../adr/ADR-0012-staff-password-authentication.md), [active plan](../06-plans/active/PHASE_1F1_MVP_FUNCTIONAL_COMPLETION_PLAN.md) and unique profile specs under `docs/specs` | `AUTHORIZED_PHASE_1F1_IN_PROGRESS`; merged Phase 1F baseline, critical routes and local database/worker/storage verified |
+| `QG-431`–`450`, coverage/cart/labels | `P1F1-CONFIG-*`, `P1F1-ADMIN-*`, `P1F1-CART-*`, `P1F1-API-*`, `P1F1-SEC-*` | Runtime, database and browser evidence pending completion |
+| `QG-451`–`468`, mobile/staff/VPS | `P1F1-RESP-*`, `P1F1-AUTH-*`, `P1F1-RBAC-*`, `P1F1-DEPLOY-*`, ADR-0012 | Runtime, security, recovery and artifact evidence pending completion |
+| `QG-469`–`480`, tests/docs/delivery | `P1F1-TEST-*`, active plan and canonical specs/code audit | Completion report, clean commits/push and Draft PR pending |
+
 ## 9. Coverage metrics
 
 | Метрика | Значение |
@@ -261,12 +270,13 @@ Detailed runtime versions, commit list, skipped production-only checks and accep
 | Phase 1D acceptance | `PASSED_PHASE_1D_STANDARD_PREVIEW`; QG-271–310 passed |
 | Phase 1E acceptance | `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`; QG-311–360 passed |
 | Phase 1F acceptance | `PASSED_PHASE_1F_BUSINESS_ADMINISTRATION`; QG-361–420 passed |
+| Phase 1F.1 entry | `AUTHORIZED_PHASE_1F1_IN_PROGRESS`; QG-421–430 passed, QG-431–480 open |
 
 ## 10. Completion conditions
 
 Покрытие считается валидным, если автоматическая проверка подтверждает существование всех linked files и каждого ID, stories сохраняют полный шаблон, acceptance содержит позитивное и негативное проверяемое поведение, test strategy содержит level/preconditions/input/expected result/status, а открытые TBD не обозначены как выполненные tests.
 
-Матрица отражает завершённые Phase 1A–1F. Phase 1E evidence находится в [plan](../06-plans/active/PHASE_1E_CART_WHATSAPP_ORDERS_PLAN.md) и [report](../06-plans/completed/PHASE_1E_CART_WHATSAPP_ORDERS_REPORT.md), а revised Phase 1F — в [plan](../06-plans/active/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_PLAN.md) и [report](../06-plans/completed/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_REPORT.md). Customer accounts, Phase 1G+ и production deployment не разрешены.
+Матрица отражает завершённые Phase 1A–1F и активную Phase 1F.1 по [плану](../06-plans/active/PHASE_1F1_MVP_FUNCTIONAL_COMPLETION_PLAN.md). Customer accounts, AI runtime/photo upload, final design, production deployment и Phase 1G+ не разрешены.
 
 ## 11. История изменений
 
@@ -290,3 +300,4 @@ Detailed runtime versions, commit list, skipped production-only checks and accep
 | 1.14.0 | 2026-08-09 | Linked `OWNER-DECISION-016`, immutable quote-backed cart/request snapshot, fixed-recipient handoff, safe public summary, minimal staff administration, active plan and QG-311–360; production PII and Phase 1F+ stay prohibited. |
 | 1.15.0 | 2026-08-09 | Closed Phase 1E traceability with cart/request/domain/DB/BFF/UI, fixed WhatsApp recipient, public/admin projections, real DB/Chromium/security/recovery evidence, completion report and QG-311–360; Phase 1F remains prohibited. |
 | 1.16.0 | 2026-08-09 | Linked and closed revised Phase 1F staff auth/RBAC/admin/request-contact/portfolio/settings/audit/jobs, preserved guest/publicReference flow, exact CI-equivalent evidence, report and QG-361–420; customer accounts and Phase 1G remain prohibited. |
+| 1.17.0 | 2026-08-12 | Linked `OWNER-DECISION-019/020`, ADR-0012, unique canonical Phase 1F.1 profile requirements, active plan and QG-421–480; implementation evidence remains explicitly open. |

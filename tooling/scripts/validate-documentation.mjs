@@ -1,5 +1,5 @@
 import { access, readFile, readdir } from 'node:fs/promises';
-import { dirname, extname, join, relative, resolve } from 'node:path';
+import { basename, dirname, extname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repositoryRoot = resolve(fileURLToPath(new URL('../..', import.meta.url)));
@@ -32,6 +32,8 @@ async function exists(path) {
 const markdownFiles = await collectMarkdown(repositoryRoot);
 const errors = [];
 const definitions = new Map();
+const specificationNames = new Map();
+const specificationTitles = new Map();
 const linkPattern = /!?\[[^\]]*\]\((<[^>]+>|[^)\s]+)(?:\s+["'][^)]*["'])?\)/g;
 const requirementPattern = /\*\*([A-Z][A-Z0-9_-]*-[0-9]{3,})\s+—\s+(?:MUST|SHOULD|MAY):\*\*/g;
 
@@ -40,6 +42,34 @@ for (const file of markdownFiles) {
   const content = await readFile(file, 'utf8');
   if (repositoryPath.startsWith('docs/specs/') && content.trim().length === 0) {
     errors.push(`${repositoryPath}: empty normative specification is forbidden`);
+  }
+  if (repositoryPath.startsWith('docs/specs/') && repositoryPath !== 'docs/specs/README.md') {
+    const specificationName = basename(repositoryPath).toLocaleLowerCase('en-US');
+    const previousName = specificationNames.get(specificationName);
+    if (previousName !== undefined)
+      errors.push(`${repositoryPath}: canonical specification filename duplicates ${previousName}`);
+    else specificationNames.set(specificationName, repositoryPath);
+
+    const title = content
+      .match(/^#\s+(.+)$/m)?.[1]
+      ?.trim()
+      .toLocaleLowerCase('en-US');
+    if (title === undefined)
+      errors.push(`${repositoryPath}: canonical specification needs one H1 title`);
+    else {
+      const previousTitle = specificationTitles.get(title);
+      if (previousTitle !== undefined)
+        errors.push(`${repositoryPath}: canonical specification title duplicates ${previousTitle}`);
+      else specificationTitles.set(title, repositoryPath);
+    }
+  }
+  if (
+    repositoryPath.startsWith('docs/') &&
+    !repositoryPath.startsWith('docs/specs/') &&
+    /_SPEC\.md$/iu.test(repositoryPath) &&
+    !repositoryPath.startsWith('docs/evaluations/')
+  ) {
+    errors.push(`${repositoryPath}: normative product specifications belong under docs/specs/`);
   }
 
   for (const match of content.matchAll(requirementPattern)) {
@@ -79,6 +109,6 @@ if (errors.length > 0) {
   process.exitCode = 1;
 } else {
   process.stdout.write(
-    `Documentation validation passed for ${markdownFiles.length} files and ${definitions.size} normative IDs.\n`,
+    `Documentation validation passed for ${markdownFiles.length} files, ${specificationNames.size} canonical specs and ${definitions.size} normative IDs.\n`,
   );
 }

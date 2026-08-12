@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Revised Phase 1F named staff lifecycle verified; CUSTOMER reserved post-MVP |
-| Версия | 0.5.0 |
-| Дата | 2026-08-09 |
+| Статус | Phase 1F.1 staff password/security and coverage capabilities authorized; CUSTOMER remains unavailable |
+| Версия | 0.6.0 |
+| Дата | 2026-08-12 |
 | Scope | Public, client, staff, service identities and approvals |
 | Security detail | [SECURITY_PRIVACY.md](../04-technical/SECURITY_PRIVACY.md) |
 
@@ -198,12 +198,21 @@ The guest cart token authorizes only its own cart and checkout; the public reque
 
 ## 14. Dependencies, risks and open questions
 
+### 14.1. Phase 1F.1 staff administration profile
+
+- **P1F1-RBAC-001 — MUST:** OWNER may manage ADMIN/MANAGER credentials, lifecycle, roles and sessions; ADMIN may manage MANAGER only; MANAGER has no staff-management capability.
+- **P1F1-RBAC-002 — MUST:** no actor can grant a role above their own, self-promote, change an OWNER without OWNER authority or use public/customer identity to obtain staff capability.
+- **P1F1-RBAC-003 — MUST:** final active OWNER protection covers disable, role change, credential revoke and every bulk/concurrent path; the database transaction is the final enforcement boundary.
+- **P1F1-RBAC-004 — MUST:** configurator coverage read is staff-only; mutation belongs to OWNER/ADMIN, uses explicit catalog-management capability and cannot alter immutable AMIGO source fields.
+- **P1F1-RBAC-005 — MUST:** password/session administration and coverage changes recheck current staff state/capability at mutation time and revoke affected sessions on disable, privilege reduction or required security response.
+
 Dependencies: `AUTH_ACCOUNTS_SPEC`, `ADMIN_PANEL_SPEC`, `SECURITY_PRIVACY`, domain state machines and ADR-0010. `TBD-BIZ-001` is resolved by `OWNER-DECISION-001`; open items remain `TBD-ACCOUNT-*`, applicable `TBD-INFRA-*`, staff/team model, emergency access and separation thresholds. Main risks are role explosion, broad admin bypass, broken object-level authorization, leaked guest tokens and unaudited service identities.
 
 ## 15. История изменений
 
 | Версия | Дата | Изменение |
 |---|---|---|
+| 0.6.0 | 2026-08-12 | Authorized staff-management hierarchy, coverage capabilities and final-OWNER protection for Phase 1F.1. |
 | 0.1.0 | 2026-08-02 | Определены восемь actors, 22 capabilities, object ownership, separation of duties, state authorization и failure behavior. |
 | 0.2.0 | 2026-08-02 | Разделены governance owners и RBAC `OWNER`, добавлен Phase 1A `SYSTEM_WORKER`, а PriceVersion activation ограничена `OWNER`/`ADMIN` с diff, confirmation и audit. |
 | 0.3.0 | 2026-08-02 | Уточнено, что RBAC-права лишь исполняют решения authority из `OWNER-DECISION-008` и не позволяют менять AMIGO source fields или подменять Business Owner. |

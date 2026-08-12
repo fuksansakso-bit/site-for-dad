@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Версия gate | 1.19.0 |
-| Проверяемая входная база | Phase 0B baseline `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`; Phase 0C baseline `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; Phase 1A completion `943d4a2efa5e05f0d05493633cf5eb549e072a22`; Phase 1B.1 completion baseline `af8411d2b854e572b6b61b214d3e99a88b96cafc`; Phase 1D merged-main / Phase 1E baseline `65780067537418a3230bb3d32ef3fb8e0af06917`; Phase 1F baseline `49695099b0eee3db4a4357eb3f3eb36f78fa3389`; `GLOBAL_SPEC.md` 0.24.0 |
-| Дата последнего self-audit | 2026-08-09, Europe/Moscow |
+| Версия gate | 1.20.0 |
+| Проверяемая входная база | Phase 0B baseline `7105ef03c1fb1cb726161fcbc02cbb0c340e212e`; Phase 0C baseline `83ed7c29bfaccf5d6a0efdcaa72db8bb04660990`; Phase 1A completion `943d4a2efa5e05f0d05493633cf5eb549e072a22`; Phase 1B.1 completion baseline `af8411d2b854e572b6b61b214d3e99a88b96cafc`; Phase 1D merged-main / Phase 1E baseline `65780067537418a3230bb3d32ef3fb8e0af06917`; Phase 1F merged-main / Phase 1F.1 baseline `289b1baef0b53ac7da457098353ee5e7c1e1953f`; `GLOBAL_SPEC.md` 0.25.0 |
+| Дата последнего self-audit | 2026-08-12, Europe/Moscow |
 | Решение по входу в 0B | **PASSED** |
 | Основание письменного решения | Приложенное владельцем задание «AUTHORIZED AMIGO FUNCTIONAL PARITY AND SPECIALIZED SPECS» и повторное указание «так приступай к работе» |
 | Утверждающие роли | Product Owner — владелец проекта; Business Owner — отец владельца проекта (`OWNER-DECISION-001`) |
@@ -27,7 +27,9 @@
 | Phase 1E Completion Gate | **PASSED_PHASE_1E_CART_WHATSAPP_ORDERS** — QG-321–360 закрыты 2026-08-09 |
 | Phase 1F Entry Gate | **AUTHORIZED_PHASE_1F_IN_PROGRESS** — QG-361–370 закрыты 2026-08-09 |
 | Phase 1F Completion Gate | **PASSED_PHASE_1F_BUSINESS_ADMINISTRATION** — QG-371–420 закрыты 2026-08-09 |
-| Разрешённая реализация | Нет активной следующей фазы; customer accounts, Phase 1G+ и production запрещены до отдельного решения |
+| Phase 1F.1 Entry Gate | **AUTHORIZED_PHASE_1F1_IN_PROGRESS** — QG-421–430 закрыты 2026-08-12 |
+| Phase 1F.1 Completion Gate | **IN PROGRESS** — QG-431–480 требуют runtime evidence |
+| Разрешённая реализация | Только Phase 1F.1 по `OWNER-DECISION-019`; customer accounts, AI runtime/photo upload, payment, final design, production deployment и Phase 1G+ запрещены |
 
 Entry gate подтверждает, что исправления 0A.1 внесены и письменное решение начать документную фазу 0B получено. Он не означает готовность ценовой формулы, импорта, приложения или запуска. Открытые TBD блокируют утверждение зависимой спецификации или функции, но не отменяют разрешение создавать документацию 0B с безопасным поведением.
 
@@ -604,7 +606,77 @@ Entry result: **AUTHORIZED_PHASE_1F_IN_PROGRESS**. It does not infer completion 
 
 Completion result: **PASSED_PHASE_1F_BUSINESS_ADMINISTRATION**. All nine exact-toolchain CI-equivalent stages passed through the full harness plus the pinned post-fix browser/catalog-browser/security reruns; the preserved local PostgreSQL/VersityGW/Mailpit environment survived a graceful stop/start, branch delivery is Draft PR [#5](https://github.com/bataevabdullah2009-pixel/site-for-dad/pull/5), customer accounts are absent and Phase 1G was not started.
 
-## 14. История изменений
+## 14. Phase 1F.1 MVP functional completion gates
+
+### 14.1. Entry gate
+
+- [x] **QG-421 — MUST:** `OWNER-DECISION-019` authorizes only Phase 1F.1; `OWNER-DECISION-020` is documentation-only and does not authorize photo/AI runtime or Phase 1G.
+- [x] **QG-422 — MUST:** Phase 1F is merged in main at baseline `289b1baef0b53ac7da457098353ee5e7c1e1953f`; starting tree was clean, main used `--ff-only` and branch is `phase/1f1-mvp-functional-completion`.
+- [x] **QG-423 — MUST:** mandatory global/catalog/configurator/pricing/cart/admin/RBAC/responsive/security/data/API/architecture/test/roadmap/reports/ADR/owner-decision documents were checked without unresolved contradiction.
+- [x] **QG-424 — MUST:** PostgreSQL, VersityGW, Graphile Worker and web readiness pass without data/volume reset; `/`, `/catalog`, `/configure`, `/preview`, `/cart` and `/checkout` return success.
+- [x] **QG-425 — MUST:** active PostgreSQL catalog retains stable MaterialVariant UUIDs and immutable QuoteSnapshot remains the existing cart price authority; no second catalog/pricing/cart/auth is authorized.
+- [x] **QG-426 — MUST:** ADR-0012 supersedes only the staff sign-in factor with Node 24 Argon2id and preserves customer-account absence, named staff, hash-only sessions, RBAC/audit and local-only development fallback.
+- [x] **QG-427 — MUST:** canonical behavior is extended only in unique files under `docs/specs/`; plans/ADR/gates/registers/reports remain governance artifacts outside, and no duplicate spec concern is created.
+- [x] **QG-428 — MUST:** active plan defines one active stage, exact eleven commits, verification/docs/spec-audit/PR, production no-deploy and AI/final-design holds.
+- [x] **QG-429 — MUST:** unknown compatibility/formula remains unmapped/incompatible/manual and cannot receive a random system, price or technical promise.
+- [x] **QG-430 — MUST:** entry documentation passes format, unique ID/link/spec-location checks before production-code changes.
+
+Entry result: **AUTHORIZED_PHASE_1F1_IN_PROGRESS**. Completion evidence remains open.
+
+### 14.2. Completion gate
+
+- [ ] **QG-431 — MUST:** every published visible MaterialVariant is reachable through active-version server search/cursor pagination without bootstrap/full-browser/hardcoded subset.
+- [ ] **QG-432 — MUST:** results expose image/name/article/color/category/system/availability/Russian pricing label and exclude public internal IDs/version/source/rule/debug fields.
+- [ ] **QG-433 — MUST:** classification/precedence correctly separates automatic, compatible manual, unmapped and incompatible; only automatic/manual can be selected.
+- [ ] **QG-434 — MUST:** manual selection returns honest `PRICE_ON_REQUEST`/`MANUAL_REVIEW_REQUIRED`, creates immutable quote and never guesses formula/compatibility.
+- [ ] **QG-435 — MUST:** cursor traversal across beginning/middle/end has no loss/duplicate and stale/context-mismatched cursor fails safely.
+- [ ] **QG-436 — MUST:** `/admin/configurator-coverage` exposes required consistent totals, filters, pagination and human reasons including missing system/model/rule/price/image, hidden/unpublished.
+- [ ] **QG-437 — MUST:** OWNER/ADMIN coverage link/manual/hide/mapping/source/bulk actions are validated, revision/idempotency protected, audited/versioned and sync-safe; MANAGER is denied mutation.
+- [ ] **QG-438 — MUST:** `/configure` exposes all four final actions and uses only server calculation→QuoteSnapshot→cart; invalid configurations cannot add.
+- [ ] **QG-439 — MUST:** `/preview` adds the same QuoteSnapshot and returns to parameters; repeated idempotency key does not duplicate.
+- [ ] **QG-440 — MUST:** calculated/manual/request-price cart results show success, item count/open-cart action and preserve current configuration across refresh.
+- [ ] **QG-441 — MUST:** catalog→configure→preview→cart→checkout→request→WhatsApp passes without registration and with immutable price authority.
+- [ ] **QG-442 — MUST:** public UI maps every listed technical status to approved Russian copy and hides HIDDEN/UNPUBLISHED/internal entity/version/source/rule/UUID/parser fields.
+- [ ] **QG-443 — MUST:** public errors explain cause/action/retry-or-return and reveal only optional support correlation ID, never raw API/provider/stack details.
+- [ ] **QG-444 — MUST:** 320/375/390/430 routes `/`, catalog/detail/configure/preview/cart/checkout/request/admin-login/core-admin have no document overflow, covered CTA or hover-only task.
+- [ ] **QG-445 — MUST:** compact filters/dialogs, configurator controls, images, keyboard forms, admin tables/cards and 44×44 targets pass accessibility/mobile checks.
+- [ ] **QG-446 — MUST:** `/admin/login` accepts login/e-mail/password only for active OWNER/ADMIN/MANAGER and customer identity/routes remain absent.
+- [ ] **QG-447 — MUST:** Argon2id v19 records use unique 16-byte salt, 32-byte tag and recorded RFC parameters; plaintext/hash/salt/token never leaks to client/log/env/CLI.
+- [ ] **QG-448 — MUST:** login generic response, identifier/client throttling, failed tracking, temporary lock and audit pass brute-force/enumeration tests.
+- [ ] **QG-449 — MUST:** successful login prevents fixation through session rotation and production staff cookie is HttpOnly/SameSite=Strict/Secure with 12-hour absolute expiry.
+- [ ] **QG-450 — MUST:** first-password/change-password/logout/logout-all/individual-revoke flows pass with CSRF/origin/audit and other-session revocation.
+- [ ] **QG-451 — MUST:** create-owner/reset-password/list-staff/revoke-sessions CLI commands are interactive/idempotent/safe, hide passwords and print no hash/token.
+- [ ] **QG-452 — MUST:** OWNER/ADMIN/MANAGER management matrix, higher-role/self-promotion denial and concurrent final-OWNER protection pass.
+- [ ] **QG-453 — MUST:** development key/OTP cannot authenticate in production and missing/default production secrets fail typed configuration.
+- [ ] **QG-454 — MUST:** additive migrations pass empty/repeat/upgrade/drift/forward compensation and preserve catalog/price/quote/cart/request/staff/audit/storage data.
+- [ ] **QG-455 — MUST:** Ubuntu 24.04 production Dockerfiles/Compose/Nginx/env/checklists include web/worker/PostgreSQL/S3-compatible storage, health/restart/log/volume/migration boundaries without deployment.
+- [ ] **QG-456 — MUST:** only Nginx HTTP/HTTPS is exposed; DB/storage-admin/Mailpit/metrics/worker ports are private and development tooling is absent.
+- [ ] **QG-457 — MUST:** deployment, backup/restore and rollback checklists are executable/provider-neutral and do not claim closed provider/legal/RPO/RTO or REG.RU API coupling.
+- [ ] **QG-458 — MUST:** Polza/Gemini decision records exact 19 user points and provider-neutral `ImageVisualizationProvider` documentation without runtime interface/adapter/call/upload/credential/result.
+- [ ] **QG-459 — MUST:** unit coverage passes material classification/precedence/manual/labels/cart/password/throttle/session/RBAC/final OWNER.
+- [ ] **QG-460 — MUST:** real PostgreSQL integration passes full cursor traversal/gaps/coverage audit/quote-cart/manual-cart and staff login/password/session/audit.
+- [ ] **QG-461 — MUST:** browser tests pass early/middle/late materials, automatic/manual, configure/preview cart, checkout, OWNER/ADMIN login, MANAGER denial and mobile routes.
+- [ ] **QG-462 — MUST:** security tests reject price/status tamper, brute force, CSRF, fixation, privilege escalation, dev production key, final-OWNER removal and secret/technical leakage.
+- [ ] **QG-463 — MUST:** recovery tests cover PostgreSQL/storage unavailable, stale mapping, removed material, inactive PriceVersion, duplicate cart and revoked/locked staff.
+- [ ] **QG-464 — MUST:** public/configurator queries remain bounded/no-N+1/no runtime AMIGO and no full-catalog browser payload.
+- [ ] **QG-465 — MUST:** production build contains no Polza/Gemini request, client-photo upload, SAM/Python/GPU, Motion/Three.js/starfield or final-design implementation.
+- [ ] **QG-466 — MUST:** documentation validator proves all normative specs are non-empty/uniquely named under `docs/specs`, IDs unique and local links valid; governance artifacts are not misclassified.
+- [ ] **QG-467 — MUST:** code/spec audit links every affected route/entity/command/test to the unique canonical spec and records no unresolved divergence.
+- [ ] **QG-468 — MUST:** format/docs/scope/boundary/lint/type/unit/coverage/migration/build/browser/security and exact CI-equivalent gates pass with any skip explicit.
+- [ ] **QG-469 — MUST:** only related README/changelog/index/global/domain/UX/technical/test/open/traceability/gate/roadmap/gap/plan/report docs are synchronized.
+- [ ] **QG-470 — MUST:** exact eleven logical commits remain separately reviewable without squash/history rewrite.
+- [ ] **QG-471 — MUST:** tracked/untracked worktree is clean and preserved PostgreSQL/storage data survive a graceful verification restart.
+- [ ] **QG-472 — MUST:** branch is pushed and an unmerged Draft PR titled `Phase 1F.1: MVP functional completion and staff authentication` targets main.
+- [ ] **QG-473 — MUST:** no production deployment, customer account, payment, client-photo upload, AI generation/call, SAM, Python AI service, final brand/design, Motion/Three.js/starfield or Phase 1G runtime exists.
+- [ ] **QG-474 — MUST:** completion report records baseline/commits/catalog coverage counts/gaps/cart/labels/mobile/auth/VPS/AI-doc/tests/gate/PR/status.
+- [ ] **QG-475 — MUST:** active published count/configurable/automatic/manual/gap figures are measured from final database state and not copied from assumptions.
+- [ ] **QG-476 — MUST:** HIDDEN/UNPUBLISHED materials are absent publicly yet remain correctly counted/diagnosed for authorized staff.
+- [ ] **QG-477 — MUST:** material image failure degrades to accessible placeholder/manual recovery without exposing storage or misclassifying compatibility.
+- [ ] **QG-478 — MUST:** admin technical detail uses explicit progressive disclosure and remains unavailable to MANAGER/public where prohibited.
+- [ ] **QG-479 — MUST:** one final CI-equivalent run is sufficient; rerun only changed failing stages and record exact evidence without wasteful duplicate suites.
+- [ ] **QG-480 — MUST:** Phase 1F.1 is marked complete only after QG-431–479 evidence; it grants no authority for the documented next AI phase.
+
+## 15. История изменений
 
 | Версия | Дата | Изменение |
 |---|---|---|
@@ -628,5 +700,6 @@ Completion result: **PASSED_PHASE_1F_BUSINESS_ADMINISTRATION**. All nine exact-t
 | 1.17.0 | 2026-08-09 | `OWNER-DECISION-017`, ADR-0011 and QG-361–370 authorize only Phase 1F from merged Phase 1E main; QG-371–420 define passwordless/account/staff/admin/portfolio/settings/audit/jobs/security/recovery/CI/PR completion while production and Phase 1G+ remain prohibited. |
 | 1.18.0 | 2026-08-09 | `OWNER-DECISION-018` revises QG-365–420 before customer WIP is committed: staff-only auth/session/invitations, credential-free request-derived CustomerContact/notes, unified admin, portfolio/settings/audit and guest/publicReference regression replace all customer-account/migration/workspace gates. |
 | 1.19.0 | 2026-08-09 | QG-371–420 closed on staff-only passwordless/RBAC/admin/request-contact/portfolio/settings/audit/jobs, preserved guest/publicReference flow, 25-migration drift/recovery, five-profile browser, exact CI-equivalent, clean push and Draft PR #5 evidence; customer accounts and Phase 1G remain absent. |
+| 1.20.0 | 2026-08-12 | `OWNER-DECISION-019/020`, ADR-0012 and QG-421–480 authorize only Phase 1F.1 material coverage/cart/mobile/staff-password/VPS-template completion while customer accounts, AI runtime, final design and deployment remain excluded. |
 | 0.2.0 | 2026-08-02 | Entry gate обновлён для `GLOBAL_SPEC` 0.4.0 и partner-authorized scope; письменное поручение владельца зафиксировано как разрешение начать 0B; добавлен отдельный completion gate 0B. |
 | 0.1.0 | 2026-08-02 | Предыдущий self-audit 0A.1 для версии 0.3.1; проверки `QG-001`–`087` впоследствии зарезервированы. |

@@ -4,10 +4,10 @@
 
 | Поле | Значение |
 |---|---|
-| Фаза документа | Phase 1A–1F completed; Phase 1G+ hold |
-| Статус roadmap | **PASSED_PHASE_1F_BUSINESS_ADMINISTRATION / PHASE 1G+ HOLD** |
+| Фаза документа | Phase 1A–1F completed; Phase 1F.1 authorized; Phase 1G+ hold |
+| Статус roadmap | **AUTHORIZED_PHASE_1F1_IN_PROGRESS / PHASE 1G+ HOLD** |
 | Scope | [MVP_SCOPE](MVP_SCOPE.md) |
-| Планы / evidence | Phase 1A–1F reports; Phase 1F [plan](active/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_PLAN.md), [report](completed/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_REPORT.md), ADR-0011 and QG-361–420 |
+| Планы / evidence | Phase 1A–1F reports; Phase 1F.1 [plan](active/PHASE_1F1_MVP_FUNCTIONAL_COMPLETION_PLAN.md), ADR-0012 and QG-421–480 |
 
 - **ROADMAP-001 — MUST:** фазы выполняются по порядку 1A–1H; параллельный research MAY идти, но dependent implementation не обходит entry gate.
 - **ROADMAP-002 — MUST:** каждая возможность включается feature flag только после собственных acceptance/security/data gates; наличие кода не равно production activation.
@@ -134,6 +134,18 @@ Execution contract: [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN](active/PHASE_1B2_FULL_AM
 
 `OWNER-DECISION-017/018` authorized and narrowed this phase from merged-main base `49695099b0eee3db4a4357eb3f3eb36f78fa3389`. Phase 1F completed 2026-08-09 as `PASSED_PHASE_1F_BUSINESS_ADMINISTRATION`; QG-361–420, the [plan](active/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_PLAN.md) and [report](completed/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_REPORT.md) are controlling evidence. Customer accounts remain post-MVP, and Phase 1G is not authorized.
 
+## 7.1. PHASE 1F.1 — MVP FUNCTIONAL COMPLETION
+
+| Поле | Содержание |
+|---|---|
+| ID / цель | **ROADMAP-1F1-001:** закрыть configurator coverage/cart/client-label/mobile/staff-security defects MVP and prepare deployable templates without deployment. |
+| Зависимости | Completed 1B.2–1F, active CatalogVersion/PriceVersion, immutable QuoteSnapshot, ADR-0012 and QG-421–430. |
+| Deliverables | Cursor material search/classification; admin coverage overlay; configure/preview cart repair; Russian labels; 320–430 baseline; Argon2id staff auth/CLI/security; Ubuntu Compose/Nginx/checklists. |
+| Definition of Done | QG-431–480, real catalog counts, browser/security/recovery, build/CI-equivalent, clean branch and Draft PR pass; specs match code. |
+| Запрещённые изменения | Customer accounts, photo upload, Polza/Gemini calls, SAM/Python/GPU, payment, final redesign/starfield/Motion/Three.js and production deployment. |
+
+`OWNER-DECISION-019` authorizes only this repair phase from `289b1baef0b53ac7da457098353ee5e7c1e1953f`. `OWNER-DECISION-020` is next-phase documentation only; Phase 1G remains unauthorized.
+
 ## 8. PHASE 1G — AI WINDOW VISUALIZER PILOT
 
 | Поле | Содержание |
@@ -196,3 +208,4 @@ Execution contract: [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN](active/PHASE_1B2_FULL_AM
 | 2.2.0 | 2026-08-09 | `OWNER-DECISION-017`, ADR-0011 and QG-361–370 authorize only Phase 1F: passwordless/local-Mailpit identity, guest migration, account workspace, invitation-only staff, unified admin, portfolio, SiteSettings, audit/jobs; Phase 1G+ and production remain gated. |
 | 2.3.0 | 2026-08-09 | `OWNER-DECISION-018` narrows Phase 1F to staff identity, unified admin, requests/credential-free CRM contacts, portfolio, SiteSettings and audit; all customer accounts/auth/workspace/migration move post-MVP. |
 | 2.4.0 | 2026-08-09 | Phase 1F marked passed with staff-only passwordless auth, OWNER/ADMIN/MANAGER lifecycle, unified Russian admin, requests/CustomerContact notes, portfolio, SiteSettings, audit/jobs, preserved guest flow and exact CI-equivalent evidence; Phase 1G remains unauthorized. |
+| 2.5.0 | 2026-08-12 | `OWNER-DECISION-019/020`, ADR-0012 and QG-421–480 authorize only Phase 1F.1 MVP repair, VPS templates and documentation-only next-phase Polza/Gemini boundary; Phase 1G/runtime AI remains prohibited. |

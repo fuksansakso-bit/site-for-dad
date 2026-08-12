@@ -18,7 +18,9 @@
 
 **Phase 1D — DETERMINISTIC STANDARD WINDOW PREVIEW** завершена на ветке `phase/1d-standard-preview` от merged-main commit `58eb25dcde460291ad98fde157956d7f264a666d`. Гостевой `/preview` использует две локальные photoreal scenes, четыре deterministic family profiles, approved partner layers через `StoragePort`, server-side preview state и visual regression. [Отчёт](docs/06-plans/completed/PHASE_1D_STANDARD_PREVIEW_REPORT.md) и [mapping gaps](docs/06-plans/PREVIEW_AND_CONFIGURATOR_MAPPING_GAPS.md).
 
-Phase 1E завершена со статусом `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`. Суженная `OWNER-DECISION-018` **Phase 1F — BUSINESS ADMINISTRATION, REQUEST MANAGEMENT, PORTFOLIO AND SETTINGS** завершена со статусом `PASSED_PHASE_1F_BUSINESS_ADMINISTRATION` от merged-main commit `49695099b0eee3db4a4357eb3f3eb36f78fa3389`: staff-only passwordless authentication, OWNER/ADMIN/MANAGER lifecycle, единая русская admin shell, request-derived CustomerContact/lead records and notes, portfolio, SiteSettings, audit и существующие catalog/pricing/sync operations работают. Customer accounts/authentication и все `/account` routes остаются post-MVP; Phase 1E guest/WhatsApp/publicReference path сохранён. Evidence: [completion report](docs/06-plans/completed/PHASE_1F_ACCOUNTS_BUSINESS_ADMIN_REPORT.md) и Draft PR [#5](https://github.com/bataevabdullah2009-pixel/site-for-dad/pull/5). Production providers/deployment, payment, client-photo/AI и Phase 1G+ запрещены.
+Phase 1E завершена со статусом `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`. Суженная `OWNER-DECISION-018` **Phase 1F — BUSINESS ADMINISTRATION, REQUEST MANAGEMENT, PORTFOLIO AND SETTINGS** завершена со статусом `PASSED_PHASE_1F_BUSINESS_ADMINISTRATION`: staff-only passwordless authentication, OWNER/ADMIN/MANAGER lifecycle, русская admin shell, request-derived CustomerContact/notes, portfolio, SiteSettings и audit работают; customer accounts отсутствуют.
+
+`OWNER-DECISION-019` разрешает только **Phase 1F.1 — MVP FUNCTIONAL COMPLETION** из merged-main commit `289b1baef0b53ac7da457098353ee5e7c1e1953f`. В работе: полный server-side configurator material coverage, диагностика mapping, QuoteSnapshot cart repair, русские client labels, mobile baseline, Argon2id staff login/security administration и шаблоны российского VPS без deployment. `OWNER-DECISION-020` документирует будущую простую Polza/Gemini AI-визуализацию; загрузка фото и AI API в этой фазе отсутствуют. Активный [план](docs/06-plans/active/PHASE_1F1_MVP_FUNCTIONAL_COMPLETION_PLAN.md).
 
 ## С чего начать
 
@@ -38,9 +40,9 @@ Phase 1E завершена со статусом `PASSED_PHASE_1E_CART_WHATSAPP
 
 ## Структура документации
 
-- `docs/specs/` содержит глобальную и 33 нормативные профильные спецификации product/domain/UX/technical.
+- `docs/specs/` содержит единственный канонический комплект нормативных спецификаций product/domain/UX/technical; правила уникальности и размещения описаны в [docs/specs/README.md](docs/specs/README.md).
 - `docs/00-global/` содержит управляющие и справочные документы: реестры, политики, roadmap, quality gate, допущения и открытые вопросы.
-- `docs/quality/` и `docs/evaluations/` содержат test/evaluation artifacts, а `docs/adr/` — десять принятых решений об устойчивых архитектурных границах.
+- `docs/quality/` и `docs/evaluations/` содержат test/evaluation artifacts, а `docs/adr/` — принятые решения об устойчивых архитектурных границах.
 - `docs/06-plans/` содержит frozen MVP, critical-spec audit, implementation roadmap, technology evaluation и records завершённых Phase 1A–1F.
 
 ## Референсы

@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1F unified business administration implemented and verified |
-| Версия | 0.11.0 |
-| Дата | 2026-08-09 |
+| Статус | Phase 1F verified; Phase 1F.1 coverage/security administration authorized and in progress |
+| Версия | 0.12.0 |
+| Дата | 2026-08-12 |
 | Permissions | [ROLES_PERMISSIONS.md](../01-product/ROLES_PERMISSIONS.md) |
 | Source flows | Catalog, pricing, media, sync and order specs |
 
@@ -186,6 +186,17 @@ The Phase 1B.2 command layer exposes the two-step preview/apply contract for mat
 
 ## 15. Dependencies, risks and open questions
 
+### 15.1. Phase 1F.1 configurator coverage and staff security
+
+- **P1F1-ADMIN-001 — MUST:** `/admin/configurator-coverage` shows total published, configurable, automatic, manual, missing compatibility/system/model/pricing/image, hidden and unpublished counts from one consistent active-version read.
+- **P1F1-ADMIN-002 — MUST:** coverage list is server-filtered/paginated by family, system, category, mapping, pricing and image state and gives a human reason for every problem row.
+- **P1F1-ADMIN-003 — MUST:** OWNER/ADMIN may create/update a local system/material link, set manual pricing, hide/unhide, repair model mapping, open a safe source-record view and apply bounded exact bulk actions. MANAGER is read-only/denied according to capability.
+- **P1F1-ADMIN-004 — MUST:** coverage mutations validate active source/local identities and expected revision, use exact target/confirmation/idempotency, create immutable audit/version history and live in a local overlay never silently overwritten by sync.
+- **P1F1-ADMIN-005 — MUST:** internal UUID/source/rule/version data appears only to authorized OWNER/ADMIN in an explicitly expanded diagnostics region and never in public/client DTO or default admin list text.
+- **P1F1-ADMIN-006 — MUST:** OWNER may create/block/restore/change role/revoke sessions/force password change for ADMIN and MANAGER; ADMIN may do so only for MANAGER; MANAGER cannot manage staff.
+- **P1F1-ADMIN-007 — MUST:** self-promotion, higher-role management, disabling/demoting the final active OWNER, and removing the actor's own final OWNER access fail transactionally under concurrency.
+- **P1F1-ADMIN-008 — MUST:** `/admin/staff`, `/admin/security` and coverage tables use cards or controlled labelled scroll at 320–430 px and preserve 44×44 px actions without hover dependency.
+
 Dependencies: all domain modules, RBAC/auth, sync/media/storage/data/API/security/observability/deployment. Activation roles are resolved by `OWNER-DECISION-002`; open: separation thresholds, support/private access, audit/export retention, bulk limits, alert owners, staff/team assignment and emergency access. Risks: broad admin, direct state edit, stale overwrite, approval of changed revision, secret/PII exposure, inaccessible grids and dangerous production confusion.
 
 ## 16. Связанные требования and history
@@ -194,6 +205,7 @@ Links: `FR-ADMIN-*`, `RBAC-*`, `NFR-AUDIT-*`, `ADMIN-SPEC-001`–`034`.
 
 | Версия | Дата | Изменение |
 |---|---|---|
+| 0.12.0 | 2026-08-12 | Authorized configurator coverage diagnostics/overrides and bounded OWNER/ADMIN/MANAGER security administration. |
 | 0.1.0 | 2026-08-02 | Определены admin IA, capability workflows, safe mutation/approval/bulk/export contracts, failures and tests. |
 | 0.2.0 | 2026-08-02 | Добавлены authoritative local availability, AMIGO freshness gates и `OWNER`/`ADMIN` PriceVersion activation with exact diff/confirmation/audit. |
 | 0.3.0 | 2026-08-02 | Добавлены authority-aware read-only AMIGO fields, отдельные Business Owner commands и явное разделение PostgreSQL media metadata/object-storage binaries по `OWNER-DECISION-008`. |

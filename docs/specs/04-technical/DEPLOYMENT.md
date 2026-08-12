@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A and Phase 1B.1 local/CI workflows verified; production deployment and hosting remain forbidden/unselected |
-| Версия | 0.5.0 |
-| Дата | 2026-08-03 |
+| Статус | Phase 1F.1 Russian VPS templates authorized; production deployment and provider selection remain unexecuted |
+| Версия | 0.6.0 |
+| Дата | 2026-08-12 |
 | Architecture | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | Quality gate | [SPEC_QUALITY_GATE.md](../../00-global/SPEC_QUALITY_GATE.md) |
 
@@ -146,12 +146,24 @@ The completed Phase 1B.1 workflow then verified a full `dev:stop` → `dev` rest
 
 ## 15. Dependencies, risks and open questions
 
+### 15.1. Phase 1F.1 Russian VPS readiness profile
+
+- **P1F1-DEPLOY-001 — MUST:** production template targets Ubuntu 24.04 and Docker Compose with separate Next.js web, Graphile Worker, PostgreSQL, S3-compatible storage and Nginx services while preserving provider-neutral application ports.
+- **P1F1-DEPLOY-002 — MUST:** only Nginx HTTP/HTTPS is published. PostgreSQL, storage/admin, worker control/metrics, Mailpit and internal health are private Compose-network endpoints.
+- **P1F1-DEPLOY-003 — MUST:** web/worker production images use the pinned Node toolchain, reviewed lockfile, non-root runtime, immutable build stages, healthchecks, restart policies and structured stdout/stderr without bundled source secrets/development tools.
+- **P1F1-DEPLOY-004 — MUST:** PostgreSQL and S3-compatible storage use persistent named volumes. Migration is an explicit one-shot reviewed deployment step, never web startup auto-sync.
+- **P1F1-DEPLOY-005 — MUST:** `.env.production.example` contains names/validation guidance only; real database/storage/session/TLS/Polza secrets are injected server-side and production startup fails on missing/default/development values.
+- **P1F1-DEPLOY-006 — MUST:** Nginx template is HTTPS-ready, forwards safe proxy headers, applies body/time/security limits and does not cache admin/private/API mutation responses.
+- **P1F1-DEPLOY-007 — MUST:** deployment, backup, restore and rollback checklists identify preconditions, migration/data compatibility, PostgreSQL dump/restore, object manifest/checksum, secret/config validation, health/smoke and rollback evidence.
+- **P1F1-DEPLOY-008 — MUST:** templates do not call or depend on REG.RU APIs and do not claim an executed production deployment, chosen Russian storage vendor, closed legal/PII gate or verified RPO/RTO.
+
 Dependencies: architecture/data/API/sync/media/AI/storage/security/performance/observability/test strategy/evaluations/ADRs. `TBD-INFRA-002` regional matrix is resolved; open: hosting/CI/CD/runtime, environments/domains, other applicable `TBD-INFRA-*`, RPO/RTO, owners/change windows, release cadence and artifact/signing/flag platforms. Risks: environment leak, irreversible migration, incompatible rollback, unobserved canary, provider prod call from test and data/version coupling.
 
 ## 16. History
 
 | Версия | Дата | Изменение |
 |---|---|---|
+| 0.6.0 | 2026-08-12 | Authorized Ubuntu 24.04 Compose/Nginx/image/env/checklist readiness artifacts without executing deployment or binding REG.RU API. |
 | 0.1.0 | 2026-08-02 | Defined vendor-neutral environments, artifact/config/migration/data release, progressive rollout/rollback and release evidence. |
 | 0.2.0 | 2026-08-02 | Phase 1A-only authorization and exact future regional production evidence matrix recorded; no production deployment authorized. |
 | 0.3.0 | 2026-08-02 | Recorded verified local/CI Foundation lifecycle; production topology, credentials and regional deployment checks remain outside authorization. |

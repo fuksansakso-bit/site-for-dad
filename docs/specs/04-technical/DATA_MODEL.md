@@ -4,9 +4,9 @@
 
 | Поле | Значение |
 |---|---|
-| Статус | Phase 1A–1F implemented; additive staff/admin/CRM-contact/content schema verified |
-| Версия | 0.17.0 |
-| Дата | 2026-08-09 |
+| Статус | Phase 1F.1 additive coverage/password/session schema authorized and in progress |
+| Версия | 0.18.0 |
+| Дата | 2026-08-12 |
 | Architecture | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | Glossary | [GLOSSARY.md](../../00-global/GLOSSARY.md) |
 
@@ -212,10 +212,20 @@ Dependencies: all domain specs, API/storage/security/deployment, ADRs and `OWNER
 - **P1F-DATA-009 — MUST:** internal notes reference request or contact, staff ActorIdentity, bounded text and timestamps and are never copied to a public/request snapshot.
 - **P1F-DATA-010 — MUST:** only staff sessions may be persisted by Phase 1F runtime; the CUSTOMER role may remain reserved but has no authentication/session creation path.
 
+### 19.1. Phase 1F.1 additive model profile
+
+- **P1F1-DATA-001 — MUST:** `ConfiguratorCoverageOverride` records exact material/system/model scope, action/link/manual/hidden, expected source/local revision, effective state, reason, actor, created/superseded timestamps and immutable audit linkage; source sync never updates it.
+- **P1F1-DATA-002 — MUST:** coverage classification is a projection over active CatalogVersion membership, publication/visibility, exact source relationships, local override, CompatibilityRule, pricing scope and approved media; it is not a second catalog copy.
+- **P1F1-DATA-003 — MUST:** staff identity adds unique normalized login and e-mail, Argon2id encoded hash, password revision/change-required/changed timestamp, failed-login counter/window/locked-until and active lifecycle without adding customer credentials.
+- **P1F1-DATA-004 — MUST:** staff session retains token hash only and adds password/session revision plus rotated-from metadata; role/disable/password changes can revoke every affected session transactionally.
+- **P1F1-DATA-005 — MUST:** final active OWNER is protected by transaction/lock/constraint-equivalent checks across disable, role change and credential operations; no destructive migration or shared-table rewrite is used.
+- **P1F1-DATA-006 — MUST:** additive migration passes empty/repeat/upgrade/drift and forward-compensation review and preserves all CatalogVersion, PriceVersion, QuoteSnapshot, cart/request, staff/audit and storage data.
+
 ## 20. History
 
 | Версия | Дата | Изменение |
 |---|---|---|
+| 0.18.0 | 2026-08-12 | Authorized additive coverage overrides and staff credential/session security records without customer accounts or destructive migration. |
 | 0.1.0 | 2026-08-02 | Defined aggregate/entity model, version/provenance, classifications, private media graph, integrity/deletion and evolution rules. |
 | 0.2.0 | 2026-08-02 | Recorded the seven-table Phase 1A infrastructure schema and confirmed that logical business aggregates were not implemented. |
 | 0.3.0 | 2026-08-02 | Added field authority classes, PostgreSQL operational-system semantics and object-storage image binary boundary from `OWNER-DECISION-008`; physical business schema remains unimplemented. |

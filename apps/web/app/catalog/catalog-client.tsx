@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useDeferredValue, useMemo, useState } from 'react';
 
 import { EmptyState, StatusBadge } from '../../components/ui/primitives';
+import { PremiumSelect } from '../../components/ui/premium-select';
 import { formatMoney } from '../../lib/phase2a/pricing';
 import type { Category, PublicMaterial } from '../../lib/phase2a/types';
 
@@ -143,57 +144,46 @@ export function CatalogClient({
             }}
           />
         </label>
-        <label>
-          <span>Наличие</span>
-          <select
-            value={availability}
-            onChange={(event) => {
-              setAvailability(event.target.value);
-              setVisibleCount(24);
-            }}
-          >
-            <option value="">Любое</option>
-            {availabilityOptions.map((label) => (
-              <option key={label} value={label}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <PremiumSelect
+          label="Наличие"
+          onValueChange={(nextValue) => {
+            setAvailability(nextValue);
+            setVisibleCount(24);
+          }}
+          options={[
+            { label: 'Любое', value: '' },
+            ...availabilityOptions.map((label) => ({ label, value: label })),
+          ]}
+          value={availability}
+        />
         {materialTypes.length > 1 && (
-          <label>
-            <span>Тип материала</span>
-            <select
-              value={materialType}
-              onChange={(event) => {
-                setMaterialType(event.target.value);
-                setVisibleCount(24);
-              }}
-            >
-              <option value="">Все типы</option>
-              {materialTypes.map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-        <label>
-          <span>Сортировка</span>
-          <select
-            value={sort}
-            onChange={(event) => {
-              setSort(event.target.value as CatalogSort);
+          <PremiumSelect
+            label="Тип материала"
+            onValueChange={(nextValue) => {
+              setMaterialType(nextValue);
               setVisibleCount(24);
             }}
-          >
-            <option value="default">По умолчанию</option>
-            <option value="name">По названию</option>
-            <option value="price-asc">Сначала дешевле</option>
-            <option value="price-desc">Сначала дороже</option>
-          </select>
-        </label>
+            options={[
+              { label: 'Все типы', value: '' },
+              ...materialTypes.map((type) => ({ label: type, value: type })),
+            ]}
+            value={materialType}
+          />
+        )}
+        <PremiumSelect
+          label="Сортировка"
+          onValueChange={(nextValue) => {
+            setSort(nextValue as CatalogSort);
+            setVisibleCount(24);
+          }}
+          options={[
+            { label: 'По умолчанию', value: 'default' },
+            { label: 'По названию', value: 'name' },
+            { label: 'Сначала дешевле', value: 'price-asc' },
+            { label: 'Сначала дороже', value: 'price-desc' },
+          ]}
+          value={sort}
+        />
       </div>
 
       <div className="catalog-results-line" aria-live="polite">
@@ -213,7 +203,7 @@ export function CatalogClient({
 
       {filtered.length > 0 ? (
         <div className="catalog-grid">
-          {visibleMaterials.map((material) => {
+          {visibleMaterials.map((material, index) => {
             const imageUrl = publicImageUrl(material.primary_image_path);
             return (
               <article className="catalog-card" key={material.slug}>
@@ -223,6 +213,7 @@ export function CatalogClient({
                       <Image
                         alt={`${material.name}${material.color_name ? `, ${material.color_name}` : ''}`}
                         fill
+                        loading={index < 4 ? 'eager' : 'lazy'}
                         sizes="(max-width: 520px) 100vw, (max-width: 900px) 50vw, (max-width: 1280px) 33vw, 25vw"
                         src={imageUrl}
                       />
@@ -240,11 +231,7 @@ export function CatalogClient({
                       Артикул {material.article}
                       {material.color_name ? ` · ${material.color_name}` : ''}
                     </span>
-                    <b>
-                      {material.display_price_kopecks === null
-                        ? 'Стоимость уточнит менеджер'
-                        : `${formatMoney(material.display_price_kopecks)} ${material.display_price_suffix ?? ''}`}
-                    </b>
+                    <b>от {formatMoney(material.display_price_kopecks)}</b>
                   </span>
                 </Link>
                 <div className="catalog-card-actions">

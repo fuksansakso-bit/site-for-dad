@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 
 import { ARTIFACT_ROOT, TRANSFORM_ROOT } from './constants.mjs';
 import { readJson, writeJson } from './io.mjs';
@@ -56,6 +57,9 @@ async function request(endpoint, options = {}) {
 
 export async function loadTransformBundle() {
   const manifest = await readJson(path.join(TRANSFORM_ROOT, 'manifest.json'));
+  const mediaManifest = await readJson(
+    path.join(ARTIFACT_ROOT, 'media', 'catalog-upload-manifest.json'),
+  );
   const names = [
     'categories',
     'materials',
@@ -67,26 +71,43 @@ export async function loadTransformBundle() {
   const values = await Promise.all(
     names.map((name) => readJson(path.join(TRANSFORM_ROOT, `${name}.json`))),
   );
+  const mediaPathByLegacySourceId = new Map();
+  for (const item of mediaManifest.materials ?? []) {
+    if (typeof item.legacySourceId === 'string' && typeof item.storagePath === 'string') {
+      mediaPathByLegacySourceId.set(item.legacySourceId, item.storagePath);
+    }
+  }
+  const materials = values[1].map((material) => ({
+    ...material,
+    primaryImagePath: mediaPathByLegacySourceId.get(material.legacySourceId) ?? null,
+  }));
+  if (materials.some((material) => material.primaryImagePath === null)) {
+    throw new Error('Optimized media manifest does not cover every transformed material.');
+  }
+  const importFingerprint = createHash('sha256')
+    .update(`${manifest.transformFingerprint}:${mediaManifest.manifestChecksumSha256}`)
+    .digest('hex');
   return {
     bundle: {
       categories: values[0],
-      materials: values[1],
+      materials,
       orders: values[2],
       portfolio: values[3],
       siteSettings: values[4],
       categoryExclusions: values[5],
     },
+    importFingerprint,
     manifest,
   };
 }
 
 export async function importToSupabase() {
-  const { bundle, manifest } = await loadTransformBundle();
+  const { bundle, importFingerprint, manifest } = await loadTransformBundle();
   const response = await request('/rest/v1/rpc/phase2a_import', {
     body: JSON.stringify({
       p_payload: bundle,
       p_source_fingerprint: manifest.sourceFingerprint,
-      p_transform_fingerprint: manifest.transformFingerprint,
+      p_transform_fingerprint: importFingerprint,
     }),
     method: 'POST',
     headers: { Prefer: 'return=representation' },
@@ -95,7 +116,7 @@ export async function importToSupabase() {
     importedCounts: manifest.counts,
     rpcResult: response.body,
     sourceFingerprint: manifest.sourceFingerprint,
-    transformFingerprint: manifest.transformFingerprint,
+    transformFingerprint: importFingerprint,
   };
   await writeJson(path.join(ARTIFACT_ROOT, 'import-result.json'), result);
   return result;

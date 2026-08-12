@@ -56,6 +56,7 @@ venv/
 *.db
 .local/
 runtime/
+.local/phase-2a-backups/
 
 # Приватные пользовательские загрузки и производные медиа
 uploads/
@@ -67,3 +68,6 @@ storage/private/
 # Резервные копии редакторов и конфликтов слияния
 *.bak
 *.orig
+
+.vercel
+.env*

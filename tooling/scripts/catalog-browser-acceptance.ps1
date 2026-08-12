@@ -119,7 +119,7 @@ $postgresBin = Join-Path $PostgresRoot 'bin'
 $webWorkingDirectory = Join-Path $repositoryRoot 'apps\web'
 $nextRelativeExecutable = 'node_modules/next/dist/bin/next'
 $nextExecutable = Join-Path $repositoryRoot 'apps\web\node_modules\next\dist\bin\next'
-$composeFile = Join-Path $repositoryRoot 'infrastructure\local\compose.storage.yml'
+$composeFile = Join-Path $repositoryRoot 'legacy\infrastructure\local\compose.storage.yml'
 foreach ($requiredPath in @(
     $nodeExecutable,
     $pnpmExecutable,
@@ -275,7 +275,7 @@ CREATE ROLE foundation_runtime LOGIN PASSWORD '$runtimePassword'
     $env:PGPASSWORD = $migrationPassword
     Invoke-Checked -Executable $psql -Arguments @(
         '-h', '127.0.0.1', '-p', "$databasePort", '-U', 'foundation_migrator', '-d', 'catalog_browser',
-        '-v', 'ON_ERROR_STOP=1', '-f', (Join-Path $repositoryRoot 'infrastructure\local\runtime-grants.sql')
+        '-v', 'ON_ERROR_STOP=1', '-f', (Join-Path $repositoryRoot 'legacy\infrastructure\local\runtime-grants.sql')
     ) -FailureMessage 'Catalog browser runtime grants failed'
 
     if (-not $SkipBuild) {

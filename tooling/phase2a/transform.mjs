@@ -126,7 +126,8 @@ export function transformOrder(order, materialByLegacyId) {
       legacySourceId: `${order.requestNumber}:${String(item.sequence)}`,
       materialLegacySourceId: material.legacySourceId,
       nameSnapshot: firstText(product.material, material.name),
-      pricingStatus: unitPrice === null || totalPrice === null ? 'MANUAL' : 'CALCULATED',
+      pricingModeSnapshot: 'MANUAL',
+      pricingStatus: unitPrice === null || totalPrice === null ? 'MANUAL' : 'KNOWN',
       quantity,
       sequence: item.sequence,
       totalPriceKopecks: totalPrice,
@@ -134,6 +135,11 @@ export function transformOrder(order, materialByLegacyId) {
       widthMm,
     });
   }
+  const knownItems = items.filter((item) => item.pricingStatus === 'KNOWN').length;
+  const createdDate = new Date(order.createdAt);
+  const datePart = Number.isNaN(createdDate.getTime())
+    ? '19700101'
+    : createdDate.toISOString().slice(0, 10).replaceAll('-', '');
   return {
     reason: null,
     row: {
@@ -144,14 +150,17 @@ export function transformOrder(order, materialByLegacyId) {
       customerPhone: order.customerPhone,
       installmentInterest: order.installmentInterest,
       items,
-      knownTotalKopecks: integer(order.knownTotalKopecks),
+      knownTotalKopecks: knownItems === 0 ? null : integer(order.knownTotalKopecks),
       legacySourceId: `legacy-order:${order.legacyId}`,
       locality: order.locality,
       measurementRequested: order.measurementRequested,
-      pricingStatus: order.pricingStatus === 'FULLY_PRICED' ? 'CALCULATED' : 'MANUAL',
-      publicReference: `legacy_${sha256(order.publicReferenceHash).slice(0, 24)}`,
-      requestNumber: order.requestNumber,
-      status: order.status,
+      pricingStatus:
+        knownItems === items.length ? 'KNOWN' : knownItems === 0 ? 'MANUAL' : 'PARTIAL',
+      publicReference: sha256(`legacy-public:${order.publicReferenceHash}`).slice(0, 48),
+      requestNumber: `REQ-${datePart}-${sha256(`legacy-request:${order.legacyId}`).slice(0, 6).toUpperCase()}`,
+      status: ['NEW', 'IN_REVIEW', 'CONTACTED', 'COMPLETED', 'CANCELLED'].includes(order.status)
+        ? order.status
+        : 'IN_REVIEW',
       updatedAt: order.updatedAt,
     },
   };

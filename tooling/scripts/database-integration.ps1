@@ -246,7 +246,7 @@ CREATE ROLE foundation_runtime LOGIN PASSWORD '$runtimePassword'
         -Executable $psql `
         -Arguments @(
             '-h', '127.0.0.1', '-p', "$port", '-U', 'foundation_migrator', '-d', 'foundation_empty',
-            '-v', 'ON_ERROR_STOP=1', '-f', (Join-Path $resolvedRepositoryRoot 'infrastructure\local\runtime-grants.sql')
+            '-v', 'ON_ERROR_STOP=1', '-f', (Join-Path $resolvedRepositoryRoot 'legacy\infrastructure\local\runtime-grants.sql')
         ) `
         -FailureMessage 'Runtime grants failed'
 

@@ -42,9 +42,7 @@ export async function resolveLegacyDatabaseUrl() {
 
 function loadPg() {
   try {
-    const databaseRequire = createRequire(
-      path.join(REPOSITORY_ROOT, 'packages', 'db', 'package.json'),
-    );
+    const databaseRequire = createRequire(path.join(REPOSITORY_ROOT, 'package.json'));
     return databaseRequire('pg');
   } catch (error) {
     throw new Error('Install workspace dependencies before running Phase 2A migration commands.', {

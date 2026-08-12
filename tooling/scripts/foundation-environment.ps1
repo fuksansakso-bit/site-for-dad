@@ -184,7 +184,7 @@ $pnpmExecutable = if (Test-Path -LiteralPath $cachedPnpmExecutable -PathType Lea
     (Get-Command 'pnpm.cmd' -ErrorAction Stop).Source
 }
 $env:PATH = "$(Split-Path -Parent $nodeExecutable);$(Split-Path -Parent $pnpmExecutable);$env:PATH"
-$composeFile = Join-Path $repositoryRoot 'infrastructure\local\compose.storage.yml'
+$composeFile = Join-Path $repositoryRoot 'legacy\infrastructure\local\compose.storage.yml'
 $composeProject = 'project-name-local-storage'
 $composeArguments = @('compose', '--project-name', $composeProject, '--file', $composeFile)
 if ($DockerExecutable -eq '') {
@@ -461,7 +461,7 @@ try {
     Invoke-Checked -Executable $pnpmExecutable -Arguments @('--dir', $repositoryRoot, '--filter', '@project-name/db', 'db:migrate:deploy') -FailureMessage 'Prisma migration deploy failed'
     Invoke-Checked -Executable $pnpmExecutable -Arguments @('--dir', $repositoryRoot, '--filter', '@project-name/jobs', 'jobs:migrate') -FailureMessage 'Graphile migration deploy failed'
     $env:PGPASSWORD = [string]$secrets.migrationPassword
-    Invoke-Checked -Executable $psql -Arguments @('-h', '127.0.0.1', '-p', "$DatabasePort", '-U', 'foundation_migrator', '-d', 'foundation', '-v', 'ON_ERROR_STOP=1', '-f', (Join-Path $repositoryRoot 'infrastructure\local\runtime-grants.sql')) -FailureMessage 'Runtime grants failed'
+    Invoke-Checked -Executable $psql -Arguments @('-h', '127.0.0.1', '-p', "$DatabasePort", '-U', 'foundation_migrator', '-d', 'foundation', '-v', 'ON_ERROR_STOP=1', '-f', (Join-Path $repositoryRoot 'legacy\infrastructure\local\runtime-grants.sql')) -FailureMessage 'Runtime grants failed'
 
     Invoke-Checked -Executable $DockerExecutable -Arguments ($composeArguments + @(
         'up', '--detach', '--wait', '--wait-timeout', '60', 'catalog-storage', 'mailpit'

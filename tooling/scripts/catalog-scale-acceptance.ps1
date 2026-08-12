@@ -202,7 +202,7 @@ CREATE ROLE foundation_runtime LOGIN PASSWORD '$runtimePassword'
     $env:PGPASSWORD = $migrationPassword
     Invoke-Checked -Executable $psql -Arguments @(
         '-h', '127.0.0.1', '-p', "$databasePort", '-U', 'foundation_migrator', '-d', 'catalog_scale',
-        '-v', 'ON_ERROR_STOP=1', '-f', (Join-Path $repositoryRoot 'infrastructure\local\runtime-grants.sql')
+        '-v', 'ON_ERROR_STOP=1', '-f', (Join-Path $repositoryRoot 'legacy\infrastructure\local\runtime-grants.sql')
     ) -FailureMessage 'Catalog scale runtime grants failed'
 
     $env:DATABASE_URL = $runtimeUrl

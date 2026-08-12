@@ -35,6 +35,8 @@ create table public.ai_visualization_jobs (
   material_image_sha256 text check (material_image_sha256 is null or material_image_sha256 ~ '^[0-9a-f]{64}$'),
   combined_request_hash text check (combined_request_hash is null or combined_request_hash ~ '^[0-9a-f]{64}$'),
   result_sha256 text check (result_sha256 is null or result_sha256 ~ '^[0-9a-f]{64}$'),
+  create_idempotency_hash text check (create_idempotency_hash is null or create_idempotency_hash ~ '^[0-9a-f]{64}$'),
+  upload_idempotency_hash text check (upload_idempotency_hash is null or upload_idempotency_hash ~ '^[0-9a-f]{64}$'),
   status public.ai_visualization_status not null default 'CREATED',
   model_name text not null check (char_length(model_name) between 3 and 200),
   prompt_version text not null check (prompt_version ~ '^[a-z0-9][a-z0-9-]{2,79}$'),
@@ -88,6 +90,9 @@ create index ai_jobs_expiry_idx on public.ai_visualization_jobs(expires_at, stat
 create index ai_jobs_dedup_idx on public.ai_visualization_jobs(guest_session_hash, combined_request_hash, completed_at desc)
   where status = 'SUCCEEDED' and deleted_at is null;
 create index ai_jobs_material_idx on public.ai_visualization_jobs(material_id, created_at desc);
+create unique index ai_jobs_create_idempotency_idx
+  on public.ai_visualization_jobs(guest_session_hash, create_idempotency_hash)
+  where create_idempotency_hash is not null;
 
 create table public.ai_visualization_attempts (
   id bigint generated always as identity primary key,

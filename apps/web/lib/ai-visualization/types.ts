@@ -72,6 +72,8 @@ export type AiVisualizationJobRow = {
   material_image_sha256: string | null;
   combined_request_hash: string | null;
   result_sha256: string | null;
+  create_idempotency_hash: string | null;
+  upload_idempotency_hash: string | null;
   status: AiVisualizationStatus;
   model_name: string;
   prompt_version: string;

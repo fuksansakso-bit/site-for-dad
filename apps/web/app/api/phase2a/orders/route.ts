@@ -8,6 +8,7 @@ import {
 } from '../../../../lib/phase2a/request-security';
 import { checkoutSchema } from '../../../../lib/phase2a/schemas';
 import { createSupabaseAdminClient } from '../../../../lib/phase2a/supabase';
+import { getAiGuestSession } from '../../../../lib/ai-visualization/session';
 
 export async function POST(request: Request) {
   if (!isTrustedSameOrigin(request)) {
@@ -49,7 +50,7 @@ export async function POST(request: Request) {
   const slugs = [...new Set(parsed.data.items.map((item) => item.materialSlug))];
   const { data: materials, error: materialError } = await client
     .from('materials')
-    .select('slug,categories!inner(is_published)')
+    .select('id,slug,categories!inner(is_published)')
     .in('slug', slugs)
     .eq('is_published', true)
     .eq('categories.is_published', true);
@@ -59,10 +60,55 @@ export async function POST(request: Request) {
       { status: 409 },
     );
   }
+  const guest = await getAiGuestSession();
+  const references = [
+    ...new Set(
+      parsed.data.items
+        .map((item) => item.aiVisualizationPublicReference)
+        .filter((value): value is string => Boolean(value)),
+    ),
+  ];
+  const visualizationByReference = new Map<string, { id: string; material_id: string }>();
+  if (guest && references.length > 0) {
+    const { data: visualizations, error: visualizationError } = await client
+      .from('ai_visualization_jobs')
+      .select('id,public_reference,material_id,status')
+      .eq('guest_session_hash', guest.hash)
+      .in('public_reference', references)
+      .in('status', ['SUCCEEDED', 'EXPIRED', 'DELETED']);
+    if (visualizationError) {
+      return NextResponse.json(
+        { message: 'Не удалось безопасно проверить AI-визуализацию. Попробуйте позже.' },
+        { status: 503 },
+      );
+    }
+    for (const visualization of visualizations ?? []) {
+      visualizationByReference.set(visualization.public_reference, {
+        id: visualization.id,
+        material_id: visualization.material_id,
+      });
+    }
+  }
+  const materialBySlug = new Map((materials ?? []).map((material) => [material.slug, material.id]));
   const payload = {
     ...parsed.data,
     customerPhone: phone,
-    items: parsed.data.items,
+    aiGuestSessionHash: guest?.hash,
+    items: parsed.data.items.map((item) => {
+      const reference = item.aiVisualizationPublicReference;
+      const visualization = reference ? visualizationByReference.get(reference) : undefined;
+      const validVisualization =
+        visualization && visualization.material_id === materialBySlug.get(item.materialSlug)
+          ? visualization.id
+          : undefined;
+      return {
+        heightMm: item.heightMm,
+        materialSlug: item.materialSlug,
+        quantity: item.quantity,
+        widthMm: item.widthMm,
+        ...(validVisualization ? { aiVisualizationJobId: validVisualization } : {}),
+      };
+    }),
   };
   const { data, error } = await client.rpc('create_order_from_server', { p_payload: payload });
   if (error || !data) {

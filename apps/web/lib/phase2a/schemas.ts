@@ -8,6 +8,7 @@ export const cartItemSchema = z
     widthMm: z.number().int().min(100).max(10_000),
     heightMm: z.number().int().min(100).max(10_000),
     quantity: z.number().int().min(1).max(100),
+    aiVisualizationPublicReference: z.string().regex(/^[0-9a-f]{48}$/u).optional(),
   })
   .strict();
 export const cartSchema = z.array(cartItemSchema).min(1).max(50);

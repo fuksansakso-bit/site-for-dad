@@ -69,6 +69,14 @@ export function CartExperience() {
                   ? 'Стоимость уточнит менеджер'
                   : formatMoney(item.totalPriceKopecks)}
               </p>
+              {cart[index]?.aiVisualizationPublicReference && (
+                <Link
+                  className="button secondary"
+                  href={`/visualizer/${cart[index].aiVisualizationPublicReference}`}
+                >
+                  Открыть AI-визуализацию
+                </Link>
+              )}
               <button className="danger" onClick={() => remove(index)}>
                 Удалить
               </button>

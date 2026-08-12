@@ -1,7 +1,12 @@
 import { formatMoney } from './pricing';
 import type { PricedItem } from './types';
 export const WHATSAPP_PHONE = '79635851036';
-export function createWhatsAppUrl(reference: string, items: PricedItem[], total: number | null) {
+export function createWhatsAppUrl(
+  reference: string,
+  items: PricedItem[],
+  total: number | null,
+  summaryUrl?: string | null,
+) {
   const lines = [
     `Здравствуйте! Хочу обсудить заявку ${reference}.`,
     ...items.map(
@@ -11,6 +16,7 @@ export function createWhatsAppUrl(reference: string, items: PricedItem[], total:
     total === null
       ? 'Стоимость уточнит менеджер.'
       : `Предварительная стоимость: ${formatMoney(total)}.`,
+    ...(summaryUrl ? [`Резюме заявки: ${summaryUrl}`] : []),
   ];
   return `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(lines.join('\n'))}`;
 }

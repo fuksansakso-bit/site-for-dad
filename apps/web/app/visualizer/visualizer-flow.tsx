@@ -420,6 +420,7 @@ export function VisualizerFlow({
     const selectedDimensions = dimensions(width, height);
     const parsed = cartItemSchema.safeParse({
       heightMm: selectedDimensions?.heightMm,
+      ...(publicReference ? { aiVisualizationPublicReference: publicReference } : {}),
       materialSlug: material.slug,
       quantity: 1,
       widthMm: selectedDimensions?.widthMm,

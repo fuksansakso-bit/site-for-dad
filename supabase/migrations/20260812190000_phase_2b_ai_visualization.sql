@@ -150,6 +150,11 @@ create index ai_rate_guest_idx on public.ai_visualization_rate_events(event_type
 create index ai_rate_ip_idx on public.ai_visualization_rate_events(event_type, ip_hash, created_at desc);
 create index ai_rate_expiry_idx on public.ai_visualization_rate_events(expires_at);
 
+alter table public.order_items
+  add column ai_visualization_job_id uuid references public.ai_visualization_jobs(id) on delete set null;
+create index order_items_ai_visualization_idx on public.order_items(ai_visualization_job_id)
+  where ai_visualization_job_id is not null;
+
 create trigger ai_visualization_jobs_touch before update on public.ai_visualization_jobs
   for each row execute function private.touch_updated_at();
 create trigger ai_visualizer_settings_touch before update on public.ai_visualizer_settings
@@ -604,5 +609,88 @@ begin
 end $$;
 revoke all on function public.claim_expired_ai_visualization_jobs(integer) from public, anon, authenticated;
 grant execute on function public.claim_expired_ai_visualization_jobs(integer) to service_role;
+
+create or replace function public.create_order_from_server(p_payload jsonb)
+returns jsonb language plpgsql security definer set search_path = pg_catalog, public as $$
+declare
+  v_order_id uuid;
+  v_public_reference text;
+  v_request_number text := 'REQ-' || to_char(now() at time zone 'UTC','YYYYMMDD') || '-' || upper(substr(replace(gen_random_uuid()::text,'-',''),1,6));
+  v_item jsonb;
+  v_material public.materials%rowtype;
+  v_width bigint;
+  v_height bigint;
+  v_quantity integer;
+  v_unit bigint;
+  v_total bigint;
+  v_known_total bigint := 0;
+  v_all_known boolean := true;
+  v_any_known boolean := false;
+  v_order_pricing public.order_pricing_status;
+  v_ai_job_id uuid;
+  v_guest_session_hash text := nullif(p_payload->>'aiGuestSessionHash', '');
+begin
+  if jsonb_typeof(p_payload) <> 'object'
+    or jsonb_typeof(p_payload->'items') <> 'array'
+    or jsonb_array_length(p_payload->'items') not between 1 and 50
+    or coalesce(p_payload->>'customerName','') !~ '^.{1,160}$'
+    or coalesce(p_payload->>'customerPhone','') !~ '^\+7[0-9]{10}$'
+    or coalesce(p_payload->>'locality','') !~ '^.{1,160}$'
+    or char_length(coalesce(p_payload->>'address','')) > 500
+    or char_length(coalesce(p_payload->>'comment','')) > 2000
+    or (v_guest_session_hash is not null and v_guest_session_hash !~ '^[0-9a-f]{64}$')
+  then raise exception using errcode='22023', message='INVALID_ORDER_PAYLOAD'; end if;
+
+  for v_item in select value from jsonb_array_elements(p_payload->'items') loop
+    begin
+      v_width := (v_item->>'widthMm')::bigint;
+      v_height := (v_item->>'heightMm')::bigint;
+      v_quantity := (v_item->>'quantity')::integer;
+    exception when others then raise exception using errcode='22023',message='INVALID_ORDER_ITEM'; end;
+    if v_width not between 100 and 10000 or v_height not between 100 and 10000 or v_quantity not between 1 and 100 then
+      raise exception using errcode='22023',message='INVALID_ORDER_ITEM';
+    end if;
+    select m.* into strict v_material from public.materials m
+    join public.categories c on c.id=m.category_id
+    where m.slug=v_item->>'materialSlug' and m.is_published and c.is_published for share of m;
+    if v_material.pricing_mode='AREA' then
+      v_unit := greatest(((v_width*v_height*v_material.price_per_m2_kopecks::bigint)+999999)/1000000, v_material.minimum_price_kopecks::bigint);
+      v_known_total := v_known_total + v_unit*v_quantity; v_any_known := true;
+    elsif v_material.pricing_mode='FIXED' then
+      v_unit := v_material.fixed_price_kopecks; v_known_total := v_known_total + v_unit*v_quantity; v_any_known := true;
+    else v_unit := null; v_all_known := false; end if;
+  end loop;
+  v_order_pricing := case when v_all_known then 'KNOWN'::public.order_pricing_status when v_any_known then 'PARTIAL'::public.order_pricing_status else 'MANUAL'::public.order_pricing_status end;
+  insert into public.orders(request_number,customer_name,customer_phone,locality,address,comment,measurement_requested,installment_interest,pricing_status,known_total_kopecks)
+  values(v_request_number,p_payload->>'customerName',p_payload->>'customerPhone',p_payload->>'locality',nullif(p_payload->>'address',''),nullif(p_payload->>'comment',''),coalesce((p_payload->>'measurementRequested')::boolean,false),coalesce((p_payload->>'installmentInterest')::boolean,false),v_order_pricing,case when v_any_known then v_known_total else null end)
+  returning id,public_reference into v_order_id,v_public_reference;
+
+  for v_item in select value from jsonb_array_elements(p_payload->'items') loop
+    v_width := (v_item->>'widthMm')::bigint; v_height := (v_item->>'heightMm')::bigint; v_quantity := (v_item->>'quantity')::integer;
+    select m.* into strict v_material from public.materials m join public.categories c on c.id=m.category_id
+    where m.slug=v_item->>'materialSlug' and m.is_published and c.is_published for share of m;
+    if v_material.pricing_mode='AREA' then v_unit := greatest(((v_width*v_height*v_material.price_per_m2_kopecks::bigint)+999999)/1000000,v_material.minimum_price_kopecks::bigint);
+    elsif v_material.pricing_mode='FIXED' then v_unit := v_material.fixed_price_kopecks; else v_unit := null; end if;
+    v_total := case when v_unit is null then null else v_unit*v_quantity end;
+    v_ai_job_id := null;
+    if v_guest_session_hash is not null and nullif(v_item->>'aiVisualizationJobId','') is not null then
+      begin
+        select j.id into v_ai_job_id
+        from public.ai_visualization_jobs j
+        where j.id = (v_item->>'aiVisualizationJobId')::uuid
+          and j.guest_session_hash = v_guest_session_hash
+          and j.material_id = v_material.id
+          and j.status in ('SUCCEEDED', 'EXPIRED', 'DELETED')
+        limit 1;
+      exception when invalid_text_representation then v_ai_job_id := null; end;
+    end if;
+    insert into public.order_items(order_id,material_id,ai_visualization_job_id,material_name_snapshot,article_snapshot,pricing_mode_snapshot,price_per_m2_kopecks_snapshot,fixed_price_kopecks_snapshot,minimum_price_kopecks_snapshot,width_mm,height_mm,quantity,unit_price_kopecks,total_price_kopecks,pricing_status)
+    values(v_order_id,v_material.id,v_ai_job_id,v_material.name,v_material.article,v_material.pricing_mode,v_material.price_per_m2_kopecks,v_material.fixed_price_kopecks,v_material.minimum_price_kopecks,v_width,v_height,v_quantity,v_unit,v_total,case when v_unit is null then 'MANUAL'::public.order_pricing_status else 'KNOWN'::public.order_pricing_status end);
+  end loop;
+  return jsonb_build_object('publicReference',v_public_reference,'requestNumber',v_request_number,'status','NEW','pricingStatus',v_order_pricing,'knownTotalKopecks',case when v_any_known then v_known_total else null end);
+exception when no_data_found then raise exception using errcode='22023',message='MATERIAL_NOT_AVAILABLE';
+end $$;
+revoke all on function public.create_order_from_server(jsonb) from public, anon, authenticated;
+grant execute on function public.create_order_from_server(jsonb) to service_role;
 
 insert into public.ai_visualizer_settings(id) values (true) on conflict (id) do nothing;

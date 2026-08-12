@@ -44,6 +44,7 @@ export type CartItem = {
   widthMm: number;
   heightMm: number;
   quantity: number;
+  aiVisualizationPublicReference?: string;
 };
 export type PricedItem = CartItem & {
   name: string;

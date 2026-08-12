@@ -1,8 +1,6 @@
 -- Phase 2A simplified Supabase schema.
 -- OWNER-DECISION-021/022; ADR-0013; QG-491-495.
 
-create extension if not exists pgcrypto;
-
 create schema if not exists private;
 revoke all on schema private from public, anon, authenticated;
 
@@ -93,7 +91,7 @@ create table public.pricing_rules (
 create table public.orders (
   id uuid primary key default gen_random_uuid(),
   legacy_source_id text unique,
-  public_reference text not null unique default encode(gen_random_bytes(24), 'hex') check (public_reference ~ '^[0-9a-f]{48}$'),
+  public_reference text not null unique default replace(gen_random_uuid()::text,'-','') || substr(replace(gen_random_uuid()::text,'-',''),1,16) check (public_reference ~ '^[0-9a-f]{48}$'),
   request_number text not null unique check (request_number ~ '^REQ-[0-9]{8}-[0-9A-Z]{6}$'),
   customer_name text not null check (char_length(customer_name) between 1 and 160),
   customer_phone text not null check (customer_phone ~ '^\+7[0-9]{10}$'),
@@ -192,6 +190,36 @@ create table public.migration_runs (
   unique(source_fingerprint, transform_fingerprint)
 );
 
+create view public.public_categories with (security_barrier=true) as
+select name,slug,description,image_path,sort_order
+from public.categories where is_published;
+
+create view public.public_materials with (security_barrier=true) as
+select m.name,m.slug,m.article,m.description,m.color_name,m.material_type,m.primary_image_path,
+  c.name as category_name,c.slug as category_slug,m.sort_order,
+  case m.availability
+    when 'AVAILABLE' then 'В наличии'
+    when 'OUT_OF_STOCK' then 'Нет в наличии'
+    else 'Уточнить наличие'
+  end as availability_label,
+  case m.pricing_mode
+    when 'AREA' then m.price_per_m2_kopecks
+    when 'FIXED' then m.fixed_price_kopecks
+    else null
+  end as display_price_kopecks,
+  case when m.pricing_mode='AREA' then '/ м²' else null end as display_price_suffix
+from public.materials m join public.categories c on c.id=m.category_id
+where m.is_published and c.is_published;
+
+create view public.public_portfolio_items with (security_barrier=true) as
+select title,description,cover_image_path,sort_order
+from public.portfolio_items where is_published;
+
+create view public.public_site_settings with (security_barrier=true) as
+select site_name,logo_path,partner_badge_path,whatsapp_phone,phone,region,lead_time_text,
+  warranty_text,free_measurement,free_delivery,free_installation,installment_text,social_links
+from public.site_settings where id=true;
+
 create or replace function private.touch_updated_at() returns trigger
 language plpgsql set search_path = '' as $$ begin new.updated_at = now(); return new; end $$;
 revoke all on function private.touch_updated_at() from public;
@@ -217,9 +245,12 @@ create or replace function private.protect_last_owner() returns trigger
 language plpgsql security definer set search_path = '' as $$
 begin
   if old.role = 'OWNER' and old.is_active and
-     (tg_op = 'DELETE' or new.role <> 'OWNER' or not new.is_active) and
-     not exists (select 1 from public.staff_profiles p where p.id <> old.id and p.role = 'OWNER' and p.is_active)
-  then raise exception using errcode = '23514', message = 'LAST_OWNER_PROTECTED'; end if;
+     (tg_op = 'DELETE' or new.role <> 'OWNER' or not new.is_active)
+  then
+    perform pg_catalog.pg_advisory_xact_lock(721042001);
+    if not exists (select 1 from public.staff_profiles p where p.id <> old.id and p.role = 'OWNER' and p.is_active)
+    then raise exception using errcode = '23514', message = 'LAST_OWNER_PROTECTED'; end if;
+  end if;
   if tg_op = 'DELETE' then return old; end if; return new;
 end $$;
 revoke all on function private.protect_last_owner() from public;
@@ -242,17 +273,18 @@ alter table public.admin_audit_log enable row level security;
 alter table public.migration_runs enable row level security;
 
 revoke all on all tables in schema public from anon, authenticated;
-grant select on public.categories, public.materials, public.portfolio_items, public.site_settings to anon, authenticated;
+grant select on public.public_categories, public.public_materials, public.public_portfolio_items, public.public_site_settings to anon, authenticated;
+grant select on public.categories, public.materials, public.portfolio_items, public.site_settings to authenticated;
 grant select, insert, update on public.categories, public.materials, public.pricing_rules, public.portfolio_items, public.site_settings to authenticated;
-grant select, update on public.orders to authenticated;
+grant select on public.orders to authenticated;
+grant update(status, internal_note) on public.orders to authenticated;
 grant select on public.order_items, public.admin_audit_log, public.staff_profiles to authenticated;
 grant insert on public.admin_audit_log to authenticated;
 grant select, insert, update, delete on public.staff_profiles to authenticated;
 
-create policy categories_public_read on public.categories for select to anon, authenticated using (is_published or private.current_staff_role() is not null);
-create policy materials_public_read on public.materials for select to anon, authenticated using (is_published or private.current_staff_role() is not null);
-create policy portfolio_public_read on public.portfolio_items for select to anon, authenticated using (is_published or private.current_staff_role() is not null);
-create policy settings_public_read on public.site_settings for select to anon, authenticated using (true);
+create policy categories_staff_read on public.categories for select to authenticated using (private.current_staff_role() is not null);
+create policy materials_staff_read on public.materials for select to authenticated using (private.current_staff_role() is not null);
+create policy portfolio_staff_read on public.portfolio_items for select to authenticated using (private.current_staff_role() is not null);
 
 create policy catalog_admin_all on public.categories for all to authenticated using (private.current_staff_role() in ('OWNER','ADMIN')) with check (private.current_staff_role() in ('OWNER','ADMIN'));
 create policy materials_admin_all on public.materials for all to authenticated using (private.current_staff_role() in ('OWNER','ADMIN')) with check (private.current_staff_role() in ('OWNER','ADMIN'));
@@ -269,20 +301,22 @@ create policy staff_owner_write on public.staff_profiles for all to authenticate
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types) values
   ('catalog','catalog',true,8388608,array['image/webp']),
-  ('portfolio','portfolio',true,8388608,array['image/webp','image/jpeg','image/png']),
+  ('portfolio','portfolio',false,4194304,array['image/webp']),
   ('branding','branding',true,4194304,array['image/webp','image/svg+xml','image/png'])
 on conflict (id) do update set public=excluded.public,file_size_limit=excluded.file_size_limit,allowed_mime_types=excluded.allowed_mime_types;
 
-create policy storage_public_read on storage.objects for select to anon, authenticated using (bucket_id in ('catalog','portfolio','branding'));
+create policy storage_public_read on storage.objects for select to anon, authenticated using (bucket_id in ('catalog','branding'));
+create policy storage_staff_read on storage.objects for select to authenticated using (bucket_id = 'portfolio' and private.current_staff_role() is not null);
 create policy storage_staff_insert on storage.objects for insert to authenticated with check (bucket_id in ('catalog','portfolio','branding') and private.current_staff_role() in ('OWNER','ADMIN'));
 create policy storage_staff_update on storage.objects for update to authenticated using (bucket_id in ('catalog','portfolio','branding') and private.current_staff_role() in ('OWNER','ADMIN')) with check (bucket_id in ('catalog','portfolio','branding') and private.current_staff_role() in ('OWNER','ADMIN'));
 create policy storage_staff_delete on storage.objects for delete to authenticated using (bucket_id in ('catalog','portfolio','branding') and private.current_staff_role() in ('OWNER','ADMIN'));
 
 create or replace function public.phase2a_import(p_payload jsonb, p_source_fingerprint text, p_transform_fingerprint text)
 returns jsonb language plpgsql security definer set search_path = '' as $$
-declare existing jsonb; c jsonb; m jsonb; imported_categories int := 0; imported_materials int := 0;
+declare existing jsonb; c jsonb; m jsonb; o jsonb; i jsonb; p jsonb; s jsonb; v_order_id uuid; v_material_id uuid;
+  imported_categories int := 0; imported_materials int := 0; imported_orders int := 0;
+  imported_portfolio int := 0; imported_settings int := 0;
 begin
-  if coalesce(current_setting('request.jwt.claim.role', true),'') <> 'service_role' then raise exception using errcode='42501', message='SERVICE_ROLE_REQUIRED'; end if;
   select mr.result_counts into existing from public.migration_runs mr where mr.source_fingerprint=p_source_fingerprint and mr.transform_fingerprint=p_transform_fingerprint;
   if existing is not null then return existing || jsonb_build_object('noOp',true); end if;
   if jsonb_typeof(p_payload) <> 'object' or jsonb_typeof(p_payload->'categories') <> 'array' or jsonb_typeof(p_payload->'materials') <> 'array' then raise exception using errcode='22023',message='INVALID_IMPORT_PAYLOAD'; end if;
@@ -300,11 +334,121 @@ begin
     if not found then raise exception using errcode='23503',message='IMPORT_CATEGORY_NOT_FOUND'; end if;
     imported_materials := imported_materials + 1;
   end loop;
-  existing := jsonb_build_object('categories',imported_categories,'materials',imported_materials,'noOp',false);
+  if jsonb_typeof(p_payload->'orders') = 'array' then
+    for o in select value from jsonb_array_elements(p_payload->'orders') loop
+      insert into public.orders(legacy_source_id,public_reference,request_number,customer_name,customer_phone,locality,address,comment,measurement_requested,installment_interest,pricing_status,known_total_kopecks,status,created_at,updated_at)
+      values(o->>'legacySourceId',o->>'publicReference',o->>'requestNumber',o->>'customerName',o->>'customerPhone',o->>'locality',nullif(o->>'address',''),nullif(o->>'comment',''),coalesce((o->>'measurementRequested')::boolean,false),coalesce((o->>'installmentInterest')::boolean,false),(o->>'pricingStatus')::public.order_pricing_status,nullif(o->>'knownTotalKopecks','')::bigint,(o->>'status')::public.order_status,(o->>'createdAt')::timestamptz,(o->>'updatedAt')::timestamptz)
+      on conflict(legacy_source_id) do nothing;
+      select id into strict v_order_id from public.orders where legacy_source_id=o->>'legacySourceId';
+      for i in select value from jsonb_array_elements(o->'items') loop
+        select id into strict v_material_id from public.materials where legacy_source_id=i->>'materialLegacySourceId';
+        insert into public.order_items(legacy_source_id,order_id,material_id,material_name_snapshot,article_snapshot,pricing_mode_snapshot,width_mm,height_mm,quantity,unit_price_kopecks,total_price_kopecks,pricing_status,created_at)
+        values(i->>'legacySourceId',v_order_id,v_material_id,i->>'nameSnapshot',i->>'articleSnapshot',coalesce(i->>'pricingModeSnapshot','MANUAL')::public.pricing_mode,(i->>'widthMm')::int,(i->>'heightMm')::int,(i->>'quantity')::int,nullif(i->>'unitPriceKopecks','')::bigint,nullif(i->>'totalPriceKopecks','')::bigint,(i->>'pricingStatus')::public.order_pricing_status,coalesce((i->>'createdAt')::timestamptz,now()))
+        on conflict(legacy_source_id) do nothing;
+      end loop;
+      imported_orders := imported_orders + 1;
+    end loop;
+  end if;
+  if jsonb_typeof(p_payload->'portfolio') = 'array' then
+    for p in select value from jsonb_array_elements(p_payload->'portfolio') loop
+      if nullif(p->>'coverImagePath','') is not null then
+        insert into public.portfolio_items(legacy_source_id,title,description,category_id,cover_image_path,sort_order,is_published)
+        values(p->>'legacySourceId',p->>'title',nullif(p->>'description',''),(select id from public.categories where legacy_source_id=nullif(p->>'categoryLegacySourceId','')),p->>'coverImagePath',coalesce((p->>'sortOrder')::int,0),coalesce((p->>'isPublished')::boolean,false))
+        on conflict(legacy_source_id) do update set title=excluded.title,description=excluded.description,category_id=excluded.category_id,cover_image_path=excluded.cover_image_path,sort_order=excluded.sort_order,is_published=excluded.is_published;
+        imported_portfolio := imported_portfolio + 1;
+      end if;
+    end loop;
+  end if;
+  if jsonb_typeof(p_payload->'siteSettings') = 'array' and jsonb_array_length(p_payload->'siteSettings') > 0 then
+    s := p_payload->'siteSettings'->0;
+    update public.site_settings set
+      site_name=coalesce(nullif(s->>'businessName',''),site_name),
+      logo_path=nullif(s->>'logoPath',''), partner_badge_path=nullif(s->>'partnerBadgePath',''),
+      whatsapp_phone=coalesce(nullif(s->>'whatsapp',''),whatsapp_phone),
+      phone=coalesce(nullif(s->>'phone',''),phone), region=coalesce(nullif(s->>'region',''),region),
+      lead_time_text=coalesce(nullif(s->>'manufacturingLeadTime',''),lead_time_text),
+      warranty_text=coalesce(nullif(s->>'warranty',''),warranty_text),
+      free_measurement=coalesce((s->>'freeMeasurement')::boolean,free_measurement),
+      free_delivery=coalesce((s->>'freeDelivery')::boolean,free_delivery),
+      free_installation=coalesce((s->>'freeInstallation')::boolean,free_installation),
+      installment_text=coalesce(nullif(s->>'installmentText',''),installment_text),
+      social_links=coalesce(s->'socialLinks',social_links)
+    where id=true;
+    imported_settings := 1;
+  end if;
+  existing := jsonb_build_object('categories',imported_categories,'materials',imported_materials,'orders',imported_orders,'portfolio',imported_portfolio,'settings',imported_settings,'noOp',false);
   insert into public.migration_runs(source_fingerprint,transform_fingerprint,result_counts) values(p_source_fingerprint,p_transform_fingerprint,existing);
   return existing;
 end $$;
 revoke all on function public.phase2a_import(jsonb,text,text) from public, anon, authenticated;
 grant execute on function public.phase2a_import(jsonb,text,text) to service_role;
+
+create or replace function public.create_order_from_server(p_payload jsonb)
+returns jsonb language plpgsql security definer set search_path = pg_catalog, public as $$
+declare
+  v_order_id uuid;
+  v_public_reference text;
+  v_request_number text := 'REQ-' || to_char(now() at time zone 'UTC','YYYYMMDD') || '-' || upper(substr(replace(gen_random_uuid()::text,'-',''),1,6));
+  v_item jsonb;
+  v_material public.materials%rowtype;
+  v_width bigint;
+  v_height bigint;
+  v_quantity integer;
+  v_unit bigint;
+  v_total bigint;
+  v_known_total bigint := 0;
+  v_all_known boolean := true;
+  v_any_known boolean := false;
+  v_order_pricing public.order_pricing_status;
+begin
+  if jsonb_typeof(p_payload) <> 'object'
+    or jsonb_typeof(p_payload->'items') <> 'array'
+    or jsonb_array_length(p_payload->'items') not between 1 and 50
+    or coalesce(p_payload->>'customerName','') !~ '^.{1,160}$'
+    or coalesce(p_payload->>'customerPhone','') !~ '^\+7[0-9]{10}$'
+    or coalesce(p_payload->>'locality','') !~ '^.{1,160}$'
+    or char_length(coalesce(p_payload->>'address','')) > 500
+    or char_length(coalesce(p_payload->>'comment','')) > 2000
+  then raise exception using errcode='22023', message='INVALID_ORDER_PAYLOAD'; end if;
+
+  for v_item in select value from jsonb_array_elements(p_payload->'items') loop
+    begin
+      v_width := (v_item->>'widthMm')::bigint;
+      v_height := (v_item->>'heightMm')::bigint;
+      v_quantity := (v_item->>'quantity')::integer;
+    exception when others then raise exception using errcode='22023',message='INVALID_ORDER_ITEM'; end;
+    if v_width not between 100 and 10000 or v_height not between 100 and 10000 or v_quantity not between 1 and 100 then
+      raise exception using errcode='22023',message='INVALID_ORDER_ITEM';
+    end if;
+    select m.* into strict v_material from public.materials m
+    join public.categories c on c.id=m.category_id
+    where m.slug=v_item->>'materialSlug' and m.is_published and c.is_published for share of m;
+    if v_material.pricing_mode='AREA' then
+      v_unit := greatest(((v_width*v_height*v_material.price_per_m2_kopecks::bigint)+999999)/1000000, v_material.minimum_price_kopecks::bigint);
+      v_known_total := v_known_total + v_unit*v_quantity; v_any_known := true;
+    elsif v_material.pricing_mode='FIXED' then
+      v_unit := v_material.fixed_price_kopecks; v_known_total := v_known_total + v_unit*v_quantity; v_any_known := true;
+    else v_unit := null; v_all_known := false; end if;
+  end loop;
+  v_order_pricing := case when v_all_known then 'KNOWN'::public.order_pricing_status when v_any_known then 'PARTIAL'::public.order_pricing_status else 'MANUAL'::public.order_pricing_status end;
+  insert into public.orders(request_number,customer_name,customer_phone,locality,address,comment,measurement_requested,installment_interest,pricing_status,known_total_kopecks)
+  values(v_request_number,p_payload->>'customerName',p_payload->>'customerPhone',p_payload->>'locality',nullif(p_payload->>'address',''),nullif(p_payload->>'comment',''),coalesce((p_payload->>'measurementRequested')::boolean,false),coalesce((p_payload->>'installmentInterest')::boolean,false),v_order_pricing,case when v_any_known then v_known_total else null end)
+  returning id,public_reference into v_order_id,v_public_reference;
+
+  for v_item in select value from jsonb_array_elements(p_payload->'items') loop
+    v_width := (v_item->>'widthMm')::bigint; v_height := (v_item->>'heightMm')::bigint; v_quantity := (v_item->>'quantity')::integer;
+    select m.* into strict v_material from public.materials m join public.categories c on c.id=m.category_id
+    where m.slug=v_item->>'materialSlug' and m.is_published and c.is_published for share of m;
+    if v_material.pricing_mode='AREA' then v_unit := greatest(((v_width*v_height*v_material.price_per_m2_kopecks::bigint)+999999)/1000000,v_material.minimum_price_kopecks::bigint);
+    elsif v_material.pricing_mode='FIXED' then v_unit := v_material.fixed_price_kopecks; else v_unit := null; end if;
+    v_total := case when v_unit is null then null else v_unit*v_quantity end;
+    insert into public.order_items(order_id,material_id,material_name_snapshot,article_snapshot,pricing_mode_snapshot,price_per_m2_kopecks_snapshot,fixed_price_kopecks_snapshot,minimum_price_kopecks_snapshot,width_mm,height_mm,quantity,unit_price_kopecks,total_price_kopecks,pricing_status)
+    values(v_order_id,v_material.id,v_material.name,v_material.article,v_material.pricing_mode,v_material.price_per_m2_kopecks,v_material.fixed_price_kopecks,v_material.minimum_price_kopecks,v_width,v_height,v_quantity,v_unit,v_total,case when v_unit is null then 'MANUAL'::public.order_pricing_status else 'KNOWN'::public.order_pricing_status end);
+  end loop;
+  return jsonb_build_object('publicReference',v_public_reference,'requestNumber',v_request_number,'status','NEW','pricingStatus',v_order_pricing,'knownTotalKopecks',case when v_any_known then v_known_total else null end);
+exception when no_data_found then raise exception using errcode='22023',message='MATERIAL_NOT_AVAILABLE';
+end $$;
+revoke all on function public.create_order_from_server(jsonb) from public, anon, authenticated;
+grant execute on function public.create_order_from_server(jsonb) to service_role;
 
 insert into public.site_settings(id) values(true) on conflict(id) do nothing;

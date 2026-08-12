@@ -4,10 +4,10 @@
 
 | Поле | Значение |
 |---|---|
-| Фаза документа | Phase 1A–1F completed; Phase 1F.1 authorized; Phase 1G+ hold |
+| Фаза документа | Phase 1A–1F completed; Phase 2A simplification authorized; Phase 1F.1 superseded as active trajectory; AI/final redesign hold |
 | Статус roadmap | **AUTHORIZED_PHASE_1F1_IN_PROGRESS / PHASE 1G+ HOLD** |
 | Scope | [MVP_SCOPE](MVP_SCOPE.md) |
-| Планы / evidence | Phase 1A–1F reports; Phase 1F.1 [plan](active/PHASE_1F1_MVP_FUNCTIONAL_COMPLETION_PLAN.md), ADR-0012 and QG-421–480 |
+| Планы / evidence | Phase 1A–1F reports; Phase 2A [plan](active/PHASE_2A_SUPABASE_VERCEL_MIGRATION_PLAN.md), ADR-0013 and QG-481–540 |
 
 - **ROADMAP-001 — MUST:** фазы выполняются по порядку 1A–1H; параллельный research MAY идти, но dependent implementation не обходит entry gate.
 - **ROADMAP-002 — MUST:** каждая возможность включается feature flag только после собственных acceptance/security/data gates; наличие кода не равно production activation.
@@ -146,6 +146,20 @@ Execution contract: [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN](active/PHASE_1B2_FULL_AM
 
 `OWNER-DECISION-019` authorizes only this repair phase from `289b1baef0b53ac7da457098353ee5e7c1e1953f`. `OWNER-DECISION-020` is next-phase documentation only; Phase 1G remains unauthorized.
 
+`OWNER-DECISION-021` supersedes this as the active trajectory. Phase 1F.1 evidence and preserved WIP remain historical/recoverable, but its configurator/preview/custom Argon2id/VPS topology is not carried into Phase 2A.
+
+## 7.2. PHASE 2A — SUPABASE + VERCEL SIMPLIFICATION
+
+| Поле | Содержание |
+|---|---|
+| ID / цель | **ROADMAP-2A-001:** replace the complex self-managed runtime with one commercial-MVP Next.js application using Supabase PostgreSQL/Storage/staff-only Auth/RLS. |
+| Зависимости | Accepted Phase 1 catalog/price/request/rights evidence; `OWNER-DECISION-021`; ADR-0013; source dump and media manifest. |
+| Deliverables | Minimal SQL model/RLS/buckets; idempotent ETL; public catalog/calculator/local cart/guest request/WhatsApp; Russian staff admin; standard Next.js runtime; Vercel-ready config; manual backup/restore. |
+| Definition of Done | QG-491–540, exact data/capacity evidence, source retained, build/tests, clean logical commits, pushed branch/tag and Draft PR; missing cloud credentials recorded as manual activation only. |
+| Запрещённые изменения | Customer accounts, payment, AI/photo upload, complex preview/configurator, final premium redesign, source deletion, fake cloud/production claim, merge. |
+
+`OWNER-DECISION-021` authorizes only this migration from tagged baseline `3a0d7662a1b22724641ab29ca1cbd55fd575598e`. It does not authorize Phase 1G, AI, final redesign or production launch before legal/privacy/plan gates.
+
 ## 8. PHASE 1G — AI WINDOW VISUALIZER PILOT
 
 | Поле | Содержание |
@@ -209,3 +223,4 @@ Execution contract: [PHASE_1B2_FULL_AMIGO_CATALOG_PLAN](active/PHASE_1B2_FULL_AM
 | 2.3.0 | 2026-08-09 | `OWNER-DECISION-018` narrows Phase 1F to staff identity, unified admin, requests/credential-free CRM contacts, portfolio, SiteSettings and audit; all customer accounts/auth/workspace/migration move post-MVP. |
 | 2.4.0 | 2026-08-09 | Phase 1F marked passed with staff-only passwordless auth, OWNER/ADMIN/MANAGER lifecycle, unified Russian admin, requests/CustomerContact notes, portfolio, SiteSettings, audit/jobs, preserved guest flow and exact CI-equivalent evidence; Phase 1G remains unauthorized. |
 | 2.5.0 | 2026-08-12 | `OWNER-DECISION-019/020`, ADR-0012 and QG-421–480 authorize only Phase 1F.1 MVP repair, VPS templates and documentation-only next-phase Polza/Gemini boundary; Phase 1G/runtime AI remains prohibited. |
+| 2.6.0 | 2026-08-12 | `OWNER-DECISION-021`, ADR-0013 and QG-481–540 replace the active Phase 1F.1 trajectory with Phase 2A Supabase/Vercel simplification; AI, customer accounts, final redesign and unverified production remain prohibited. |

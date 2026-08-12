@@ -26,7 +26,7 @@ export default defineConfig({
           command: `pnpm.cmd --filter @project-name/web exec next start --hostname 127.0.0.1 --port ${webPort}`,
           reuseExistingServer: false,
           timeout: 120_000,
-          url: `${baseURL}/api/v1/health/live`,
+          url: `${baseURL}/api/health`,
         },
       }),
   projects: [

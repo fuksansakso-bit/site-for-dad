@@ -1,7 +1,11 @@
-import { defineFoundationTestConfig } from '@project-name/tooling/vitest';
+import { defineConfig } from 'vitest/config';
 
-export default defineFoundationTestConfig({
+export default defineConfig({
   test: {
+    clearMocks: true,
+    environment: 'node',
     include: ['test/**/*.test.ts'],
+    passWithNoTests: false,
+    restoreMocks: true,
   },
 });

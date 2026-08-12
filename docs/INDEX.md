@@ -1,5 +1,11 @@
 # Карта документации PROJECT_NAME
 
+## Phase 2C final experience
+
+- [Active Phase 2C plan](06-plans/active/PHASE_2C_FINAL_DESIGN_PLAN.md), [canonical contract](specs/GLOBAL_SPEC.md#611-phase-2c-final-experience-contract), [quality gate](00-global/SPEC_QUALITY_GATE.md#17-phase-2c-final-premium-design-gates) and [implementation roadmap](06-plans/IMPLEMENTATION_ROADMAP.md).
+- Final design system, typography, motion, component inventory, route UX audit, release QA and completion report are Phase 2C deliverables and MUST contain actual implementation evidence rather than placeholders.
+- Target delivery is a directly verified Vercel Preview and unmerged Draft PR in `fuksansakso-bit/site-for-dad`; production promotion is excluded.
+
 ## Phase 2B operations
 
 - [Completed plan](06-plans/active/PHASE_2B_GEMINI_AI_VISUALIZATION_PLAN.md), [completion report](06-plans/completed/PHASE_2B_GEMINI_AI_VISUALIZATION_REPORT.md), [live QA](06-plans/AI_VISUALIZATION_LIVE_QA.md), [AI product spec](specs/02-domain/AI_WINDOW_VISUALIZER_SPEC.md), [Polza pipeline](specs/04-technical/AI_PIPELINE.md), [evaluation](evaluations/AI_EVALUATION_SPEC.md) and [ADR-0014](adr/ADR-0014-polza-ai-window-visualization.md).
@@ -8,7 +14,7 @@
 
 ## 0. Статус
 
-Phase 1A–1F и Phase 2A завершены. Phase 2B implementation завершена в Draft PR #7 со статусом `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`: live Polza и remote Supabase RLS/Storage/cron ожидают credentials. Direct Google API/SDK, SAM/masks/segmentation, Python/GPU/worker service, customer accounts, payment, final premium redesign, destructive source retirement, unverified production launch и Phase 2C не разрешены.
+Phase 1A–1F и Phase 2A завершены. Phase 2B implementation завершена со статусом `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`: live Polza и remote Supabase RLS/Storage/cron ожидают credentials. `OWNER-DECISION-024` разрешает только Phase 2C presentation/interaction work from `bdaa053`; direct Google API/SDK, SAM/masks/segmentation, Python/GPU/worker service, customer accounts, payment, destructive source retirement, merge и production launch не разрешены.
 
 ## 1. Порядок обязательного чтения
 

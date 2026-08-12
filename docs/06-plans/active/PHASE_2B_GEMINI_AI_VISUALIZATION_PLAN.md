@@ -25,7 +25,7 @@
 5. **COMPLETED — Product surfaces:** responsive five-state visualizer, before/after, entry points, cart/request linkage and owned deletion are implemented.
 6. **COMPLETED — Administration:** safe statistics, filters, kill switch/limits, audited image grants and cleanup respect staff roles.
 7. **COMPLETED WITH EXPLICIT SKIPS — Verification:** 49 tests, browser/mobile, lint/type/scope/secret and production build pass; cloud RLS/Storage/cron and live Polza await credentials.
-8. **COMPLETED — Completion:** related documentation and the completion report record Draft PR #7, zero live calls and the exact pending-live status; Phase 2C remains unstarted.
+8. **COMPLETED — Completion:** related documentation and the completion report record Draft PR #7, zero live calls and the exact pending-live status; Phase 2C was unstarted at this completion boundary and was authorized only later by `OWNER-DECISION-024`.
 
 Only one item may be `IN PROGRESS`; this file is updated as the phase advances.
 

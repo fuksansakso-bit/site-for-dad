@@ -1,8 +1,8 @@
 # PROJECT_NAME
 
-> Phase 2B implementation is complete in Draft PR [#7](https://github.com/bataevabdullah2009-pixel/site-for-dad/pull/7) with status `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`. Real Polza calls: 0; cloud RLS/Storage/cron activation remains manual. Phase 2C has not started.
+> Phase 2C final premium design is authorized and in progress on `phase/2c-final-premium-design` from protected target-main baseline `bdaa053`. Phase 2B remains `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`: real Polza calls are 0 and cloud RLS/Storage/cron activation remains manual. Phase 2C is Preview-only; merge and production promotion are not authorized.
 
-> Phase 2B runtime: существующий Next.js App Router + Supabase PostgreSQL/Storage/staff-only Auth/RLS получает простую guest-only AI-визуализацию через Polza AI Media API. Обычный запуск не требует Docker/Python/GPU/worker; прямой Google API/SDK не используется. Cloud/live activation требует собственных Supabase/Polza credentials. Финальный дизайн и Phase 2C не начаты.
+> Active runtime remains the existing Next.js App Router + Supabase PostgreSQL/Storage/staff-only Auth/RLS and optional guest-only Polza AI visualization. `OWNER-DECISION-024` changes its visual and interaction layer only: light-first premium interior-tech UI, local typography, bounded starfield, complete public/admin route polish, responsive/accessibility/performance/visual QA and a target-account Vercel Preview.
 
 `PROJECT_NAME` — рабочее обозначение веб-приложения локального бизнеса по изготовлению и установке рулонных жалюзи, систем «Зебра»/«День-Ночь», горизонтальных алюминиевых и вертикальных жалюзи.
 
@@ -26,7 +26,9 @@ Phase 1E завершена со статусом `PASSED_PHASE_1E_CART_WHATSAPP
 
 `OWNER-DECISION-021/022` и ADR-0013 завершили **Phase 2A — Supabase + Vercel simplification**: один Next.js App Router, Supabase PostgreSQL/Storage/staff Auth/RLS, простой калькулятор, localStorage-корзина, гостевая заявка/WhatsApp и русская админка. Docker/Prisma/Graphile/VersityGW/Mailpit/AI/сложный preview не входят в активный runtime. Облачная Supabase activation остаётся ручным шагом без credentials; Preview Vercel создан только для тестирования. [План](docs/06-plans/active/PHASE_2A_SUPABASE_VERCEL_MIGRATION_PLAN.md) и [отчёт](docs/06-plans/completed/PHASE_2A_SUPABASE_VERCEL_MIGRATION_REPORT.md).
 
-`OWNER-DECISION-023` и ADR-0014 авторизуют **Phase 2B — SIMPLE POLZA GEMINI AI WINDOW VISUALIZATION** из merged-main commit `49ce3679de28c612662f78273cd265d73221163d`: private direct upload в Supabase, закрытый prompt, асинхронный Polza Media job с моделью `google/gemini-3.1-flash-image`, private result import, consent/ownership/limits/24-hour cleanup, before/after и безопасная связь с корзиной/заявкой. Прямой Gemini API, Google SDK, SAM/segmentation/masks, Python/GPU/worker service, customer accounts, final design, production launch и Phase 2C запрещены. [Активный план](docs/06-plans/active/PHASE_2B_GEMINI_AI_VISUALIZATION_PLAN.md).
+`OWNER-DECISION-023` и ADR-0014 завершили implementation **Phase 2B — SIMPLE POLZA GEMINI AI WINDOW VISUALIZATION**: private direct upload в Supabase, закрытый prompt, асинхронный Polza Media job, private result import, consent/ownership/limits/24-hour cleanup, before/after и безопасная связь с корзиной/заявкой. Live/cloud activation остаётся pending без credentials. [План](docs/06-plans/active/PHASE_2B_GEMINI_AI_VISUALIZATION_PLAN.md) и [отчёт](docs/06-plans/completed/PHASE_2B_GEMINI_AI_VISUALIZATION_REPORT.md).
+
+`OWNER-DECISION-024` разрешает **Phase 2C — PREMIUM INTERIOR TECH DESIGN, TYPOGRAPHY, MOTION, ERGONOMICS AND RELEASE POLISH** из target `main` commit `bdaa053eee6491a9286355707008a39cbac1abff`. Работа охватывает финальную систему токенов и типографики, короткое first-visit starfield-вступление, полноценную главную, все существующие публичные и административные маршруты, mobile navigation, доступность, performance и visual regression. Бизнес-данные, цена, Supabase/Polza contracts и privacy boundary не меняются. Финальный бренд/логотип остаётся `TBD-DESIGN-001`; `PROJECT_NAME` — только внутренний codename. [Активный план Phase 2C](docs/06-plans/active/PHASE_2C_FINAL_DESIGN_PLAN.md).
 
 `OWNER-DECISION-021` заменил прежнюю траекторию и разрешил **Phase 2A — SUPABASE + VERCEL SIMPLIFICATION MIGRATION** из commit `3a0d7662a1b22724641ab29ca1cbd55fd575598e`, защищённого тегом `pre-supabase-vercel-migration`. Phase 2A завершена на границе code/Preview; Prisma, Graphile Worker, VersityGW, Mailpit, обязательный Docker, сложный конфигуратор/preview и AI исключены из active runtime, а история сохранена в Git и [LEGACY_FEATURES.md](LEGACY_FEATURES.md). [План Phase 2A](docs/06-plans/active/PHASE_2A_SUPABASE_VERCEL_MIGRATION_PLAN.md).
 
@@ -111,4 +113,4 @@ pnpm.cmd --filter @project-name/db pricing:bootstrap
 
 ## Текущая граница работы
 
-Phase 1A–1F и Phase 2A завершены; Phase 2B implementation завершена со статусом `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`. Customer accounts, payment, direct Google AI, SAM/Python/GPU/worker service, финальный премиальный редизайн, удаление исходных данных, неподтверждённый production launch и Phase 2C остаются на hold.
+Phase 1A–1F и Phase 2A завершены; Phase 2B implementation завершена со статусом `IMPLEMENTATION_COMPLETE_POLZA_LIVE_PROVIDER_PENDING`; Phase 2C final premium design авторизована и выполняется. Customer accounts, payment, direct Google AI, SAM/Python/GPU/worker service, удаление исходных данных, merge и production launch остаются на hold.

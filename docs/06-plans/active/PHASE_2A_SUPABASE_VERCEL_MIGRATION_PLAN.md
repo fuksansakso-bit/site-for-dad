@@ -21,8 +21,8 @@ One standard Next.js application runs with environment-configured Supabase and n
 | # | Stage | Status | Dependency / evidence |
 |---:|---|---|---|
 | 1 | Read canonical docs; audit Git/runtime/data/capacity; preserve pre-existing WIP; create tag/branch | `COMPLETED` | stash `ce787c4f…`; baseline and local data evidence |
-| 2 | Authorize scope, ADR, gate and target contracts | `IN_PROGRESS` | this plan, `OWNER-DECISION-021`, ADR-0013 |
-| 3 | Create minimal Supabase SQL/RLS/Storage/Auth model and environment boundary | `PENDING` | schema tests and no service-role browser path |
+| 2 | Authorize scope, ADR, gate and target contracts | `COMPLETED` | this plan, `OWNER-DECISION-021`, ADR-0013, `LEGACY_FEATURES.md` |
+| 3 | Create minimal Supabase SQL/RLS/Storage/Auth model and environment boundary | `IN_PROGRESS` | schema tests and no service-role browser path |
 | 4 | Create old PostgreSQL dump, checksummed export/media manifest, transform, optimize, import and repeat verification | `PENDING` | old data remains intact; stable source identity |
 | 5 | Replace public runtime with catalog/search/detail, simple calculator, local cart, checkout, request and WhatsApp | `PENDING` | server recalculation and immutable item snapshots |
 | 6 | Replace staff auth/admin with Supabase Auth, active profiles, role checks, audit and last-OWNER guard | `PENDING` | OWNER/ADMIN/MANAGER negative matrix |

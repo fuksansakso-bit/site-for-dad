@@ -8,6 +8,7 @@
 ### Added
 
 - `OWNER-DECISION-021`, ADR-0013, QG-481–540 and the active Phase 2A plan authorize the Supabase + Vercel simplification from protected baseline `3a0d7662a1b22724641ab29ca1cbd55fd575598e`; the target is one standard Next.js application with Supabase PostgreSQL/Storage/staff-only Auth/RLS and no customer accounts, AI, final redesign or mandatory Docker runtime.
+- Defined the Phase 2A guest-only catalog → calculator → local cart → server-recalculated request → WhatsApp scope, staff-only administration and explicit legacy inventory without starting the final redesign or AI.
 
 - `OWNER-DECISION-019`, ADR-0012, QG-421–480 and the active Phase 1F.1 plan authorize complete configurator material coverage/diagnostics, QuoteSnapshot cart repair, Russian client labels, critical mobile baseline, Argon2id staff password/security administration and Russian VPS readiness templates from merged-main `289b1baef0b53ac7da457098353ee5e7c1e1953f`.
 - `OWNER-DECISION-020` records a documentation-only next-phase `ImageVisualizationProvider` and simple asynchronous Polza Media API → Gemini candidate without SAM/Python/GPU; Phase 1F.1 contains no photo upload, AI provider call or generated result.

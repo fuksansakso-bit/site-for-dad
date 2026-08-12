@@ -2,7 +2,7 @@
 
 ## 0. Статус
 
-Phase 1A–1F завершены. Phase 1F.1 отдельно авторизована из merged-main `289b1baef0b53ac7da457098353ee5e7c1e1953f`; QG-421–430 закрыты, QG-431–480 выполняются. Customer accounts, AI runtime/photo upload, payment/final design, production deployment и Phase 1G+ не разрешены.
+Phase 1A–1F завершены. `OWNER-DECISION-021` авторизует Phase 2A Supabase + Vercel simplification из tagged baseline `3a0d7662a1b22724641ab29ca1cbd55fd575598e`; QG-481–490 закрывают entry, QG-491–540 выполняются. Customer accounts, AI/photo upload, payment, final premium redesign, destructive source retirement, unverified production launch и Phase 1G+ не разрешены.
 
 ## 1. Порядок обязательного чтения
 

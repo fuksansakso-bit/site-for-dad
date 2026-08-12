@@ -308,6 +308,16 @@ Phase 1C acceptance 2026-08-08 сохранил CatalogVersion v2 и актив�
 - **SCOPE-042 — MUST:** стандартный preview и AI-примерка имеют разные типы результата, data/privacy boundaries и release gates.
 - **SCOPE-043 — MUST:** разработка следует Phase 1A–1H из [IMPLEMENTATION_ROADMAP](../06-plans/IMPLEMENTATION_ROADMAP.md); завершение документационного gate не разрешает следующий этап автоматически.
 - **SCOPE-044 — MUST:** MVP customer journey is entirely guest-only and uses the existing safe public request reference after submission; no customer credential or registration gate exists.
+- **P2A-SCOPE-001 — MUST:** Phase 2A public product contains only a business landing page, published catalog/search/filters/material detail, simple calculator, browser cart, guest request/WhatsApp handoff, published portfolio and staff administration.
+- **P2A-SCOPE-002 — MUST:** the guest journey is `Главная → Каталог → Материал → Размеры → Расчёт → Корзина → Заявка → WhatsApp`; it MUST NOT require registration or expose a customer account.
+- **P2A-SCOPE-003 — MUST:** the active calculator accepts category, material, width, height and quantity; UI MAY accept centimetres but server/domain state uses integer millimetres and integer kopecks.
+- **P2A-SCOPE-004 — MUST:** active pricing modes are `AREA`, `FIXED` and `MANUAL`; every numerical result is recalculated on the server, the 150,000-kopeck minimum applies to each item quantity, and `MANUAL` displays «Стоимость уточнит менеджер» without `0 ₽`.
+- **P2A-SCOPE-005 — MUST:** Phase 2A staff identity consists only of active `OWNER`, `ADMIN` and `MANAGER` Supabase users linked to server-checked `staff_profiles`; no client metadata is authoritative.
+- **P2A-SCOPE-006 — MUST:** active staff administration covers categories, materials, price, availability, visibility, requests, portfolio, settings and staff permissions without becoming a CRM/manufacturing system.
+- **P2A-SCOPE-007 — MUST:** Supabase PostgreSQL, Storage and staff-only Auth with RLS are the only active data/media/identity runtime; the application remains a standard portable Next.js application.
+- **P2A-SCOPE-008 — MUST:** one approved primary catalog image per material is migrated as deduplicated optimized WebP; raw snapshots, duplicate derivatives, AI/client photos and infrastructure volumes are not cloud application data.
+- **P2A-SCOPE-009 — MUST NOT:** complex configurator, standard preview, AI/Polza/Gemini/SAM/Python, customer photo upload, Graphile jobs, AMIGO scraping, Mailpit and mandatory Docker appear in public navigation, client bundle or active deployment.
+- **P2A-SCOPE-010 — MUST NOT:** final premium visual redesign begins in Phase 2A; the UI is clean, responsive and operational only.
 
 ### 6.2. После MVP или после отдельного quality gate
 
@@ -332,6 +342,9 @@ Phase 1C acceptance 2026-08-08 сохранил CatalogVersion v2 и актив�
 - **SCOPE-029 — MUST NOT:** AI не меняет комнату и не выбирает товар вместо клиента.
 - **SCOPE-030 — MUST NOT:** стиль, тексты, структура или брендинг LAYEL не копируются.
 - **SCOPE-033 — MUST NOT:** MVP не выполняет автоматическое кредитное решение и не подписывает договор рассрочки онлайн без отдельной утверждённой спецификации.
+- **P2A-NONGOAL-001 — MUST NOT:** Phase 2A creates customer registration, customer passwords, `/account`, online payment, official WhatsApp sending, automated installment approval or a complex CRM.
+- **P2A-NONGOAL-002 — MUST NOT:** Phase 2A deletes the old PostgreSQL database, object storage, Git history or preserved Phase 1F.1 WIP automatically.
+- **P2A-NONGOAL-003 — MUST NOT:** a Vercel Preview, Supabase import, backup or RLS test is reported successful without direct evidence and required credentials.
 
 ## 7. Продуктовые принципы
 
@@ -361,6 +374,16 @@ Phase 1C acceptance 2026-08-08 сохранил CatalogVersion v2 и актив�
 Разрешения MUST назначаться по операциям, а не только по названию экрана. Одна персона MAY иметь несколько внутренних ролей, но каждое действие фиксирует фактически использованное разрешение.
 
 ## 9. End-to-end сценарии
+
+Phase 2A supersedes the active runtime of historical `FLOW-002`–`007`, `FLOW-009/010/013` while preserving their records. Its canonical client flow is:
+
+| ID | Сценарий | Основной путь | Безопасный fallback |
+|---|---|---|---|
+| `P2A-FLOW-001` | Каталог к материалу | Главная → поиск/фильтр каталога → опубликованная категория/материал. | Нет результата/изображения → понятное пустое состояние/placeholder без внутренних данных. |
+| `P2A-FLOW-002` | Простой расчёт | Материал → ширина/высота → количество → server-authoritative AREA/FIXED result. | MANUAL/неполная цена → «Стоимость уточнит менеджер», без нуля и догадки. |
+| `P2A-FLOW-003` | Корзина и заявка | localStorage items → server refresh → validated contact → immutable request/items → public reference. | Изменённый/скрытый материал или цена явно пересчитывается/останавливается; cart input сохраняется. |
+| `P2A-FLOW-004` | WhatsApp | Результат заявки → безопасный encoded `wa.me/79635851036` URL → явное действие клиента. | Нет WhatsApp → номер/текст доступны для ручного копирования; отправка/доставка не заявляется. |
+| `P2A-FLOW-005` | Staff administration | `/admin/login` → active staff profile → role-scoped materials/orders/portfolio/settings/staff mutation → audit. | Нет/неактивный профиль или недостаточная роль → deny without data mutation or internal error disclosure. |
 
 | ID | Сценарий | Основной путь | Безопасный fallback |
 |---|---|---|---|

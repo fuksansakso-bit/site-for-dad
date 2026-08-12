@@ -2,7 +2,7 @@
 
 `PROJECT_NAME` — рабочее обозначение веб-приложения локального бизнеса по изготовлению и установке рулонных жалюзи, систем «Зебра»/«День-Ночь», горизонтальных алюминиевых и вертикальных жалюзи.
 
-Продукт должен помочь клиенту изучить реальный ассортимент и наличие, получить предварительный расчёт для одного или нескольких окон, примерить выбранный материал на фотографии и передать результат владельцу бизнеса. Владельцу приложение должно дать единый управляемый контур каталога, цен, остатков, заявок, замеров, заказов, контента и аналитики.
+Продукт помогает клиенту изучить реальный ассортимент и наличие, получить простой предварительный расчёт, собрать гостевую корзину и передать заявку владельцу бизнеса через WhatsApp. Владельцу приложение даёт лёгкий управляемый контур каталога, цен, наличия, заявок, портфолио и настроек без клиентских аккаунтов и сложной CRM.
 
 ## Текущая фаза
 
@@ -21,6 +21,8 @@
 Phase 1E завершена со статусом `PASSED_PHASE_1E_CART_WHATSAPP_ORDERS`. Суженная `OWNER-DECISION-018` **Phase 1F — BUSINESS ADMINISTRATION, REQUEST MANAGEMENT, PORTFOLIO AND SETTINGS** завершена со статусом `PASSED_PHASE_1F_BUSINESS_ADMINISTRATION`: staff-only passwordless authentication, OWNER/ADMIN/MANAGER lifecycle, русская admin shell, request-derived CustomerContact/notes, portfolio, SiteSettings и audit работают; customer accounts отсутствуют.
 
 `OWNER-DECISION-019` разрешает только **Phase 1F.1 — MVP FUNCTIONAL COMPLETION** из merged-main commit `289b1baef0b53ac7da457098353ee5e7c1e1953f`. В работе: полный server-side configurator material coverage, диагностика mapping, QuoteSnapshot cart repair, русские client labels, mobile baseline, Argon2id staff login/security administration и шаблоны российского VPS без deployment. `OWNER-DECISION-020` документирует будущую простую Polza/Gemini AI-визуализацию; загрузка фото и AI API в этой фазе отсутствуют. Активный [план](docs/06-plans/active/PHASE_1F1_MVP_FUNCTIONAL_COMPLETION_PLAN.md).
+
+`OWNER-DECISION-021` заменяет эту активную траекторию и разрешает **Phase 2A — SUPABASE + VERCEL SIMPLIFICATION MIGRATION** из commit `3a0d7662a1b22724641ab29ca1cbd55fd575598e`, защищённого тегом `pre-supabase-vercel-migration`. Цель — один стандартный Next.js App Router runtime с Supabase PostgreSQL/Storage/staff-only Auth/RLS, простым калькулятором, localStorage-корзиной, гостевой заявкой/WhatsApp и русской админкой. Prisma, Graphile Worker, VersityGW, Mailpit, обязательный Docker, сложный конфигуратор/preview и AI выводятся из active runtime; история сохраняется в Git и [LEGACY_FEATURES.md](LEGACY_FEATURES.md). Активный [план Phase 2A](docs/06-plans/active/PHASE_2A_SUPABASE_VERCEL_MIGRATION_PLAN.md).
 
 ## С чего начать
 
@@ -90,4 +92,4 @@ pnpm.cmd --filter @project-name/db pricing:bootstrap
 
 ## Текущая граница работы
 
-Phase 1A–1F завершены. Customer accounts, payment, client-photo/AI, production deployment and Phase 1G+ remain on hold; Phase 1G не разрешена.
+Phase 1A–1F завершены; Phase 2A выполняется. Customer accounts, payment, client-photo/AI, финальный премиальный редизайн, удаление исходных данных, неподтверждённый production launch и Phase 1G+ остаются на hold.

@@ -13,17 +13,19 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@project-name/catalog": "workspace:*",
     "@project-name/cart": "workspace:*",
+    "@project-name/catalog": "workspace:*",
     "@project-name/config": "workspace:*",
     "@project-name/contracts": "workspace:*",
     "@project-name/db": "workspace:*",
     "@project-name/identity": "workspace:*",
     "@project-name/jobs": "workspace:*",
     "@project-name/observability": "workspace:*",
-    "@project-name/pricing": "workspace:*",
     "@project-name/preview": "workspace:*",
+    "@project-name/pricing": "workspace:*",
     "@project-name/storage": "workspace:*",
+    "@supabase/ssr": "0.12.4",
+    "@supabase/supabase-js": "2.112.3",
     "next": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
@@ -31,11 +33,13 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
     "@project-name/tooling": "workspace:*",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "eslint-config-next": "catalog:",
+    "tailwindcss": "4.3.3",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },

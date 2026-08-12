@@ -1,146 +1,73 @@
-import { randomUUID } from 'node:crypto';
+import { requireStaff } from '../../../lib/phase2a/staff';
+import { createSupabaseServerClient } from '../../../lib/phase2a/supabase';
+import { updateSettings } from '../actions';
+import { AdminFrame } from '../admin-frame';
 
-import { requireBusinessAdminPrincipal } from '../../../lib/business-admin-session';
-import { getWebBusinessAdministration } from '../../../lib/catalog-runtime';
-import { activateSiteSettings } from './actions';
-
-export const dynamic = 'force-dynamic';
-
-const notices: Readonly<Record<string, string>> = {
-  BUSINESS_ADMIN_CONFLICT: 'Настройки уже изменились. Обновите страницу.',
-  BUSINESS_ADMIN_INVALID_INPUT: 'Проверьте значения и причину изменения.',
-  SITE_SETTINGS_ACTIVATED: 'Новая версия настроек активирована.',
-};
-
-function moment(value: string): string {
-  return new Intl.DateTimeFormat('ru-RU', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-    timeZone: 'Europe/Moscow',
-  }).format(new Date(value));
-}
-
-export default async function SiteSettingsPage({
-  searchParams,
-}: {
-  readonly searchParams: Promise<{ readonly notice?: string }>;
-}): Promise<React.JSX.Element> {
-  const { principal, role } = await requireBusinessAdminPrincipal();
-  const revisions = await getWebBusinessAdministration().listSettings({
-    actorId: principal.actorId,
-    correlationId: `site-settings-list-${randomUUID()}`,
-    role,
-  });
-  const active = revisions.find((item) => item.status === 'ACTIVE');
-  if (active === undefined) throw new Error('ACTIVE_SITE_SETTINGS_MISSING');
-  const notice = (await searchParams).notice;
+export default async function SettingsAdmin() {
+  const staff = await requireStaff(['OWNER', 'ADMIN']);
+  const client = await createSupabaseServerClient();
+  const { data } = client
+    ? await client.from('site_settings').select('*').eq('id', true).single()
+    : { data: null };
 
   return (
-    <main className="settings-admin-page">
-      <header className="business-page-heading">
-        <div>
-          <p>Контакты и условия</p>
-          <h1>Настройки сайта</h1>
-        </div>
-        <span>Активна версия #{active.version}</span>
-      </header>
-      {notice === undefined ? null : (
-        <p className="request-admin-notice">{notices[notice] ?? notice}</p>
+    <AdminFrame staff={staff}>
+      <h1>Настройки сайта</h1>
+      {data && (
+        <form action={updateSettings} className="form">
+          <label>
+            Название
+            <input name="siteName" defaultValue={data.site_name} required maxLength={160} />
+          </label>
+          <label>
+            Новый логотип (необязательно)
+            <input name="logo" type="file" accept="image/jpeg,image/png,image/webp" />
+          </label>
+          <label>
+            WhatsApp
+            <input name="whatsapp" defaultValue={data.whatsapp_phone} pattern="7[0-9]{10}" />
+          </label>
+          <label>
+            Телефон
+            <input name="phone" defaultValue={data.phone} pattern="\+7[0-9]{10}" />
+          </label>
+          <label>
+            Регион
+            <input name="region" defaultValue={data.region} required maxLength={160} />
+          </label>
+          <label>
+            Срок
+            <input name="leadTime" defaultValue={data.lead_time_text} required maxLength={160} />
+          </label>
+          <label>
+            Гарантия
+            <input name="warranty" defaultValue={data.warranty_text} required maxLength={160} />
+          </label>
+          <label>
+            <span>
+              <input type="checkbox" name="measurement" defaultChecked={data.free_measurement} />{' '}
+              Бесплатный замер
+            </span>
+          </label>
+          <label>
+            <span>
+              <input type="checkbox" name="delivery" defaultChecked={data.free_delivery} />{' '}
+              Бесплатная доставка
+            </span>
+          </label>
+          <label>
+            <span>
+              <input type="checkbox" name="installation" defaultChecked={data.free_installation} />{' '}
+              Бесплатная установка
+            </span>
+          </label>
+          <label>
+            Рассрочка
+            <textarea name="installment" defaultValue={data.installment_text} maxLength={1000} />
+          </label>
+          <button>Сохранить</button>
+        </form>
       )}
-      <form action={activateSiteSettings} className="settings-admin-form">
-        <input name="expectedVersion" type="hidden" value={active.version} />
-        <label>
-          Название бизнеса
-          <input
-            defaultValue={active.settings.businessName}
-            maxLength={120}
-            name="businessName"
-            required
-          />
-        </label>
-        <label>
-          WhatsApp
-          <input
-            defaultValue={`+${active.settings.whatsappRecipient}`}
-            inputMode="tel"
-            name="whatsappRecipient"
-            pattern="\+?[1-9][0-9]{7,14}"
-            required
-          />
-        </label>
-        <label>
-          Территория работы
-          <input
-            defaultValue={active.settings.territory}
-            maxLength={160}
-            name="territory"
-            required
-          />
-        </label>
-        <label>
-          Срок изготовления
-          <input
-            defaultValue={active.settings.manufacturingLeadTime}
-            maxLength={120}
-            name="manufacturingLeadTime"
-            required
-          />
-        </label>
-        <label>
-          Гарантия
-          <input defaultValue={active.settings.warranty} maxLength={120} name="warranty" required />
-        </label>
-        <label>
-          Замер
-          <input
-            defaultValue={active.settings.services.measurement}
-            maxLength={80}
-            name="measurement"
-            required
-          />
-        </label>
-        <label>
-          Доставка
-          <input
-            defaultValue={active.settings.services.delivery}
-            maxLength={80}
-            name="delivery"
-            required
-          />
-        </label>
-        <label>
-          Установка
-          <input
-            defaultValue={active.settings.services.installation}
-            maxLength={80}
-            name="installation"
-            required
-          />
-        </label>
-        <label className="settings-wide-field">
-          Рассрочка
-          <input disabled value={active.settings.installmentText} />
-          <small>До отдельного решения допускается только эта безопасная формулировка.</small>
-        </label>
-        <label className="settings-wide-field">
-          Причина новой версии
-          <textarea maxLength={500} minLength={5} name="reason" required rows={3} />
-        </label>
-        <button className="primary-button" type="submit">
-          Создать и активировать новую версию
-        </button>
-      </form>
-      <section className="settings-history">
-        <h2>История версий</h2>
-        {revisions.map((item) => (
-          <article key={item.id}>
-            <strong>Версия #{item.version}</strong>
-            <span>{item.status}</span>
-            <p>{item.reason}</p>
-            <time>{moment(item.createdAt)}</time>
-          </article>
-        ))}
-      </section>
-    </main>
+    </AdminFrame>
   );
 }
